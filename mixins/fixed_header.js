@@ -7,49 +7,77 @@
 
 Endash.FixedListHeaders = {
 
-	containerView: SC.View,
-
 	reloadIfNeeded: function() {
+		var invalid = this._invalidIndexes;
+		if (!invalid || !this.get('isVisibleInWindow'))
+			var skipHeader = true
+
 		var ret = sc_super()
 		
-    var invalid = this._invalidIndexes;
-    if (!invalid || !this.get('isVisibleInWindow'))
-			return ret
-			
-		this.setFixedHeader()
+		if(!skipHeader)
+			this.setFixedHeader()
+
 		return ret
-	}
+	},
 	
 	setFixedHeader: function() {
+		// console.log('setFixedHeader')
+		if(!this.get('content'))
+			return
+			
 		var header, offset, content, idx,
 			content, item, scrollView,
 			nowShowing = this.get('nowShowing'),
 			idx = nowShowing.get('min'),
 			groups = this.get('_contentGroupIndexes'),
-			isGroup = groups.contains(idx)
+			isGroup = groups.contains(idx),
+			content = this.get('content'),
+			item = content.objectAt(idx)
 			
-		if(!isGroup || idx == this._fixedHeaderIdx)
-			return		
+		if(idx === this._fixedHeaderIdx)
+		 	return
 		
-		content = this.get('content'),
-		item = content.objectAt(idx)
-
+		if(!isGroup) {
+		 	if(item.get('parentItem') == content.objectAt(this._fixedHeaderIdx))
+				return
+			else 
+				idx = content.indexOf(item.get('parentItem'))
+		}
+		
 		if(this._fixedHeader)
 			this._fixedHeader.destroy()
 
 		header = this.itemViewForContentIndex(idx)
-		header.get('parentView').removeChild(header)
-		header.set('layerId', this.get('layerId') + '-header')
 
-		scrollView = this.getPath('.parentView.parentView')
-		scrollView.appendChild(header)
-
+		delete this._sc_itemViews[idx]
+		
+		scrollView = this.getPath('parentView.parentView')
 		offset = scrollView.$().offset()
-		header.$().css('position', 'fixed').css('top', offset.y).css('left', offset.x)
+
+		header.$().css('position', 'fixed').css('z-index', '5000').css('top', offset.top).css('left', offset.left + 1)
+			.css('right', null).css('width', this.get('frame').width + 1)
+			
+		header.set('layerId', this.get('layerId') + '-header')
 
 		this._fixedHeader = header
 		this._fixedHeaderIdx = idx
-	}
+	},
+	
+	layoutForContentIndex: function(idx) {
+		var view = this.itemViewForContentIndex(idx)
+		if(view.isGroup && view == this.get('currentGroup'))
+			
+		else
+			return sc_super()
+	},
+	
+	currentGroup: function() {
+		
+	}.property('nowShowing').cacheable(),
+	
+	frameDidChange: function() {
+		this.setFixedHeader()
+	}.observes('frame')
 	
 }
 	
