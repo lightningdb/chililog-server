@@ -86,7 +86,6 @@ Endash.FixedListHeaders = {
     } else {
       if((group !== oldGroup) || this._layoutHeader) {
         header = this.itemViewForContentIndex(group);
-        offset = scrollView.$().offset();
 
         if(!header.get('layer')) {
           this._layoutHeader = true;
@@ -102,7 +101,7 @@ Endash.FixedListHeaders = {
 
           this._group = group;
 
-          layout = {top: offset.top, left: offset.left, width: this.get('frame').width};
+          layout = {top: 0, left: 0, width: this.get('frame').width};
           header.$().css(layout).css('z-index', '5000').addClass('sc-group-item');
           scrollView.get('layer').appendChild(header.get('layer'));
           header.adjust(layout);
