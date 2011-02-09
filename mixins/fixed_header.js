@@ -114,6 +114,9 @@ Endash.FixedListHeaders = {
           // and set the layout 
           layout = {top: 0, left: 0, width: this.get('frame').width};
           scrollView.get('layer').appendChild(header.get('layer'));
+          
+          // HAAAACK
+          header.$().addClass('sc-group-item');
           header.adjust(layout);
         }
 
