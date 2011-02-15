@@ -107,7 +107,6 @@ public class MqManager
             _systemUsername = AppProperties.getInstance().getJaasSystemUsername();
             _systemPassword = AppProperties.getInstance().getJaasSystemPassword();
             _systemRoleName = AppProperties.getInstance().getJaasSystemRole();
-
             return;
         }
         catch (Exception e)
@@ -248,7 +247,7 @@ public class MqManager
             _logger.info("HornetQ Message Queue Already Stopped.");
             return;
         }
-        
+
         _logger.info("Stopping HornetQ Message Queue ...");
         _csf.close();
         _hornetqServer.stop();
