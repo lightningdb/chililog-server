@@ -121,9 +121,6 @@ public class Repository
 
     /**
      * Start the queue for this repository
-     * 
-     * @param systemUserClientSession
-     *            connection to MQ server
      */
     public void startQueue() throws ChiliLogException
     {

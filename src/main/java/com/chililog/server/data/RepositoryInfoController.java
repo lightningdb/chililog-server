@@ -43,8 +43,6 @@ public class RepositoryInfoController extends BaseController
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static RepositoryInfoController getInstance()
     {

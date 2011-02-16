@@ -1,0 +1,82 @@
+<!--
+  Ant build file to convert our .textile files into html, etc.
+  Outputs are placed into the target/docs directory
+-->
+
+<project name="com.chililog.server.docs" default="all">
+
+	<!--
+	    set these properties to reflect your configuration
+	    
+        src.dir - the src/docs directory. If running from maven, this is set in POM.xml and
+                  the ${basedir} value is ignored because in ANT you cannot change properties
+                  
+        target.dir - the target.docs folder
+         
+	    wikitext.standalone.dir - the folder containing the wikitext jars
+	    -->
+    <property name="src.dir" value="${basedir}" />
+	<property name="target.dir" value="${src.dir}/../../target/docs" />
+    <property name="wikitext.standalone" value="${src.dir}/mylyn-wikitext" />
+
+	<path id="wikitext.classpath">
+		<fileset dir="${wikitext.standalone}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<taskdef classpathref="wikitext.classpath" resource="org/eclipse/mylyn/wikitext/core/util/anttask/tasks.properties" />
+
+	<target name="all" depends="clean, developer_guide, user_guide">
+	</target>
+
+	<target name="clean" description="Delete existing html output">
+		<delete>
+			<fileset dir="${src.dir}">
+				<include name="*.html" />
+			</fileset>
+		</delete>
+		<delete dir="${target.dir}" />
+		<mkdir dir="${target.dir}" />
+	</target>
+
+	<target name="developer_guide" description="Generate the developer guide doc">
+		<wikitext-to-html markupLanguage="Textile" formatOutput="true" xhtmlStrict="true" overwrite="true">
+			<fileset dir="${src.dir}/developer_guide">
+				<include name="*.textile" />
+			</fileset>
+			<stylesheet url="developer_guide" />
+		</wikitext-to-html>
+		<copy todir="${target.dir}/developer_guide">
+			<fileset dir="${src.dir}/developer_guide">
+				<exclude name="**/*.textile" />
+			</fileset>
+		</copy>
+        <delete>
+            <fileset dir="${src.dir}/developer_guide">
+                <include name="*.html" />
+            </fileset>
+        </delete>
+	</target>
+
+	<target name="user_guide" description="Generate the user guide doc">
+		<wikitext-to-html markupLanguage="Textile" formatOutput="true" xhtmlStrict="true" overwrite="true">
+			<fileset dir="${src.dir}/user_guide">
+				<include name="*.textile" />
+			</fileset>
+			<stylesheet url="user_guide" />
+		</wikitext-to-html>
+        <copy todir="${target.dir}/user_guide">
+            <fileset dir="${src.dir}/user_guide">
+                <exclude name="**/*.textile" />
+            </fileset>
+        </copy>
+        <delete>
+            <fileset dir="${src.dir}/developer_guide">
+                <include name="*.html" />
+            </fileset>
+        </delete>
+	</target>
+
+
+</project>

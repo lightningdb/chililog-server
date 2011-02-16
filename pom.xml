@@ -33,15 +33,42 @@
       </resource>
     </resources>
     <plugins>
-      <!-- Compile options -->
+      <!-- Wikitext conversion to HTML. Generate during packaging -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <target>
+            <property name="src.dir" value="${basedir}/src/docs"/>
+            <ant antfile="${basedir}/src/docs/build.xml">
+              <target name="all" />
+            </ant>
+          </target>
         </configuration>
+      </plugin>
+
+      <!-- Javadocs. Generate during packaging. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Unit testing options -->
@@ -77,12 +104,36 @@
                 vartimestamp
                 project.properties['build.machinename'] = java.net.InetAddress.getLocalHost().getHostName()
                 project.properties['build.username'] = System.getProperty("user.name")
-            </source>
+              </source>
             </configuration>
           </execution>
         </executions>
       </plugin>
 
+      <!-- Assembly plugin to build our distribution package -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assemble/distribution.xml</descriptor>
+          </descriptors>
+          <archive>
+            <manifest>
+              <mainClass>com.chililog.server.App</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -158,6 +209,50 @@
       <version>2.1.2.Final</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <!-- Development Settings -->
+    <profile>
+      <id>development</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2</version>
+            <configuration>
+              <source>1.6</source>
+              <target>1.6</target>
+              <debug>true</debug>
+              <optimize>false</optimize>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- Production Settings -->
+    <profile>
+      <id>production</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>2.0.2</version>
+            <configuration>
+              <source>1.6</source>
+              <target>1.6</target>
+              <debug>false</debug>
+              <optimize>true</optimize>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <repositories>
     <repository>

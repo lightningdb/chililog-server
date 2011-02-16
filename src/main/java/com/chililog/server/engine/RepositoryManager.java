@@ -48,8 +48,6 @@ public class RepositoryManager
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static RepositoryManager getInstance()
     {

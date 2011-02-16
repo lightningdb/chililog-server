@@ -55,8 +55,6 @@ public class StringsProperties
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static StringsProperties getInstance()
     {
@@ -67,7 +65,7 @@ public class StringsProperties
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() or the first access to
      * SingletonHolder.INSTANCE, not before.
      * 
-     * @see http://en.wikipedia.org/wiki/Singleton_pattern
+     * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder
     {
@@ -154,7 +152,7 @@ public class StringsProperties
     /**
      * Gets the string identified by <code>stringCode</code>.
      * 
-     * @param stringName
+     * @param stringCode
      *            Id of the string in strings.properties file
      * @return String or null if not found.
      */
@@ -166,7 +164,7 @@ public class StringsProperties
     /**
      * Gets the string identified by <code>stringCode</code>.  If not found, <code>defaultValue</code> is returned.
      * 
-     * @param stringName
+     * @param stringCode
      *            Id of the string in strings.properties file
      * @param defaultValue
      *            String to return if the string associated with <code>stringCode</code> is null, empty or whitespaces.

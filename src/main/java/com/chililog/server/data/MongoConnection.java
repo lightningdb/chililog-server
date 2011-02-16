@@ -41,8 +41,6 @@ public class MongoConnection
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static MongoConnection getInstance()
     {

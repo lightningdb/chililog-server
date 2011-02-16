@@ -47,8 +47,6 @@ public class SystemProperties
 
 	/**
 	 * Returns the singleton instance for this class
-	 * 
-	 * @return
 	 */
 	public static SystemProperties getInstance()
 	{

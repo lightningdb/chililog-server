@@ -71,8 +71,6 @@ public class MqManager
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static MqManager getInstance()
     {

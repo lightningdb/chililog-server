@@ -21,10 +21,11 @@ package com.chililog.server.common;
 import org.apache.log4j.Logger;
 
 /**
- * Wrapper for Log4J that does string formatting only when required
+ * Wrapper for Log4J that does string formatting only when required. See
+ * http://stackoverflow.com/questions/943367/string-format-with-lazy-evaluation.
  * 
  * @author vibul
- * @see http://stackoverflow.com/questions/943367/string-format-with-lazy-evaluation
+ * 
  */
 public class Log4JLogger
 {
@@ -34,6 +35,7 @@ public class Log4JLogger
      * Private constructor. User <code>getLogger</code> instead.
      * 
      * @param clazz
+     *            Class in which the logger is going to be used. Class name will be used for the log category.
      */
     private Log4JLogger(Class<?> clazz)
     {
@@ -44,7 +46,8 @@ public class Log4JLogger
      * Returns an instance of this Logger to use
      * 
      * @param clazz
-     * @return
+     *            Class in which the logger is going to be used. Class name will be used for the log category.
+     * @return Instance of the logger for the specific class that is to be used.
      */
     public static Log4JLogger getLogger(Class<?> clazz)
     {
@@ -55,7 +58,9 @@ public class Log4JLogger
      * Write a message with a priority of TRACE
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void trace(String format, Object... args)
     {
@@ -78,7 +83,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void trace(Throwable t, String format, Object... args)
     {
@@ -99,7 +106,9 @@ public class Log4JLogger
      * Write a message with a priority of DEBUG
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void debug(String format, Object... args)
     {
@@ -122,7 +131,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void debug(Throwable t, String format, Object... args)
     {
@@ -143,7 +154,9 @@ public class Log4JLogger
      * Write a message with a priority of INFO
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void info(String format, Object... args)
     {
@@ -166,7 +179,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void info(Throwable t, String format, Object... args)
     {
@@ -187,7 +202,9 @@ public class Log4JLogger
      * Write a message with a priority of WARN
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void warn(String format, Object... args)
     {
@@ -207,7 +224,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void warn(Throwable t, String format, Object... args)
     {
@@ -225,7 +244,9 @@ public class Log4JLogger
      * Write a message with a priority of ERROR
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void error(String format, Object... args)
     {
@@ -245,7 +266,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void error(Throwable t, String format, Object... args)
     {
@@ -263,7 +286,9 @@ public class Log4JLogger
      * Write a message with a priority of FATAL
      * 
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void fatal(String format, Object... args)
     {
@@ -283,7 +308,9 @@ public class Log4JLogger
      * @param t
      *            Exception
      * @param format
+     *            string with placeholders
      * @param args
+     *            placeholder substitutes
      */
     public void fatal(Throwable t, String format, Object... args)
     {

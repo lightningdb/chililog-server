@@ -38,8 +38,6 @@ public class ChiliLogException extends Exception
 
     /**
      * Error code associated with this exception
-     * 
-     * @return
      */
     public String getErrorCode()
     {
@@ -57,8 +55,10 @@ public class ChiliLogException extends Exception
     /**
      * Constructor with error code
      * 
-     * @param messageId
+     * @param errorCode
+     *            Error code to use to load message
      * @param args
+     *            Error message place holder substitutes
      */
     public ChiliLogException(String errorCode, Object... args)
     {

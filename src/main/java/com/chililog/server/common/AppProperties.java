@@ -68,8 +68,6 @@ public class AppProperties
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static AppProperties getInstance()
     {

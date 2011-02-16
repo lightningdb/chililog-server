@@ -62,9 +62,6 @@ public abstract class BaseBO
 
     /**
      * Converts our properties into
-     * 
-     * @param dbObject
-     *            mongoDB database object that can be used for saving
      */
     public DBObject toDBObject() throws ChiliLogException
     {
@@ -101,8 +98,6 @@ public abstract class BaseBO
 
     /**
      * Returns the version of this record. The version number is used in optimistic locking
-     * 
-     * @return
      */
     public long getRecordVersion()
     {

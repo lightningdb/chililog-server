@@ -43,8 +43,6 @@ public class UserController extends BaseController
 
     /**
      * Returns the singleton instance for this class
-     * 
-     * @return
      */
     public static UserController getInstance()
     {
