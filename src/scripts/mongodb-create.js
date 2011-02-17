@@ -69,7 +69,7 @@ db.user_roles.ensureIndex({ username : 1 });
 db.user_roles.ensureIndex({ role : 1 });
 db.user_profiles.ensureIndex({ username : 1 });
 
-print("\nCreating Admin User");
+print("\nCreating ChiliLog Admin User");
 var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
@@ -80,34 +80,10 @@ var adminUser = {
 };
 db.users.insert(adminUser);
 
-print("\nCreating ChiliLog Repoistory User");
-var chiliLogRepoWriterUser = {
-	username: "chililog_repository_writer",
-	password: "7V6jYeYyAkEYgaDYPt/t1cDN+YflMzW93lxDkrQOqroKP9LH+5ybo2JWRThf3dYlm/hZs6fnyl0YmzSkixFis9MYMRAWtUDq", // YumCha
-	roles: [ "chililog_repository_writer" ],
-	status: "Active",
-	display_name: "ChiliLog Repository Writer",
-	record_version: new NumberLong(1) 
-};
-db.users.insert(chiliLogRepoWriterUser);
-
-
-print("\nCreating Test Repoistory User");
-var testRepoWriterUser = {
-	username: "test_repository_writer",
-	password: "2C0//865cl6ssclowI7R9/fdGn4xtFMLRmZPApueodrLRbwyygIOV6nT+0U3wpx73RGfBLD//LrVFI6NsVJPBzlvvGKa7xLn", // SpringRolls
-	roles: [ "test_repository_writer" ],
-	status: "Active",
-	display_name: "Test Repository Writer",
-	record_version: new NumberLong(1) 
-};
-db.users.insert(testRepoWriterUser);
-
-
 // *************************************************************
 // Setup Repositories
 //*************************************************************
-print("\nAdding ChiliLog repository");
+print("\nAdding ChiliLog Repository");
 var chiliLogRepo = {
 	name: "chililog",
 	display_name: "ChiliLog Log",

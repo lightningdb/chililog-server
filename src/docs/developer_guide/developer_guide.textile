@@ -1,8 +1,114 @@
-h1. Test
+h1. ChiliLog Developer Guide
 
-This is a quick **test** 
+h2. 1. Setting Up Your Development Environment
 
-h1. Test 2
+h3. 1.1 Getting the Source Code
+
+The code is located at "http://github.com/chililog/chililog-server":http://github.com/chililog/chililog-server.
+ 
+To get a read only copy:
+
+pre(code).. 
+    git clone git://github.com/chililog/chililog-server.git
+    cd chililog-server
 
 
-h2. Test 3
+
+h3. 1.2 Install mongoDB
+
+1. Download "mongoDB":http://www.mongodb.org/downloads.
+
+2. Follow the "instructions":http://www.mongodb.org/display/DOCS/Quickstart to install and start mongoDB.
+
+3. Initialise ChiliLog by running the @scripts/mongodb-create.js@ script.
+* It will create a new database called @chililog@ on your mongoDB server.
+* A new ChiliLog user with the username @admin@ and password @admin@ is also created.
+
+pre(code)..      
+    $ mongo mongodb-create.js 
+    MongoDB shell version: 1.6.5
+    connecting to: test
+        
+    Adding db.system.user 'chililog'
+    {
+        "_id" : ObjectId("4d200e387f2dea40d435b113"),
+        "user" : "chililog",
+        "readOnly" : false,
+        "pwd" : "47865e05bc9a72f4add54ce2b0a1bae8"
+    }
+    
+    Creating Config collection
+    
+    Adding Config 'schemaversion'
+    {
+        "_id" : ObjectId("4d56241698c2b62ac88f5c4d"),
+        "name" : "schemaversion",
+        "value" : 1
+    }
+    
+    Creating ChiliLog Admin User
+        
+    Adding ChiliLog Repository
+
+    Finish
+
+
+
+h3. 1.3 Install Tools
+
+1. Install "Maven 3":http://maven.apache.org/download.html or higher.
+
+2. Install "Ant 1.8":http://ant.apache.org/ or higher.
+
+3. Install "SproutCore 1.4.5":http://www.sproutcore.com/get-started/ or higher. 
+* SproutCore is only needed if you are planning to play around with the user interface.
+* SproutCore requires ruby and ruby gem to have been installed.
+
+
+
+h3. 1.4 Install Eclipse IDE
+
+1. Install "Eclipse":http://www.eclipse.org/downloads/.
+* I personally use the __"Eclipse IDE for Java EE Developers"__ package.
+
+2. Start Eclipse
+
+3. Install Eclipse Plugins via the Eclipse Marketplace.  
+* "m2eclipse":http://m2eclipse.sonatype.org/installing-m2eclipse.html for Maven; and 
+* "EGit":http://www.eclipse.org/egit for Git.
+
+4. Import the @chililog-server@ project into your workspace.
+* From the menu toolbar, select @File > Import@.
+* From the popup window, select @Existing Maven Projects@ in the @Maven@ folder.  
+* Click @Next@ and then select the @chililog-server@ directory.
+
+5. Add Git support. 
+* Right click the project in the workspace
+* From the popup context menu, select @Teams  > Share Project@.
+* Select @Git@ and then click @Next@.
+
+6. Add code styles. 
+* From the menus, select @Window > Preferences@.
+* In the popup window, select @Java > Code Style > Formatter@.
+* Click @Import@ and select @scripts/ChiliLog-JavaCodeStyle.xml@.
+
+In end, your IDE should look as follows.
+
+
+!EclipseIDE.png! 
+
+
+h2. 2. Architecture
+
+
+
+
+
+h2. 3. Contributing
+
+Just fork the code and submit Pull Requests.
+
+
+
+
+ 

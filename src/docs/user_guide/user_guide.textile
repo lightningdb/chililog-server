@@ -1,1 +1,32 @@
-h1. Under Construction
+h1. ChiliLog User Guide
+
+h2. 1. Background
+
+We are finding it increasingly difficult to access timely and relevant log information.
+
+Paradoxically, we are suffering from both:
+
+* *Log Overload*<br/>Applications nowadays involve more disparate and distribute components, each of which maintains its own log(s). In addition, applications have become more complex and more logging is required to sufficiently support debugging.
+
+* *Load Starvation*<br/>Due to logs being distributed amongst multiple tiers and varying technologies, as well as due to security concerns, it has become increasingly difficult to physically access the logs. Network operations lock down servers and devices and often do not provide timely access to developers.
+ 
+Here are some scenarios where we've run into problems.
+
+* *Track down n-Tier applications issues*<br/>In order to track down problems in n-Tier web applications, you often needs to view logs from your application, web server, operating system and network devices.  This often requires the viewing of 3 or 4 different log files at the same time.<br/>Also, access to logs may be difficult at times due to security constraints in access devices. 
+
+* *Monitoring Periodic Jobs*<br/>Logs of periodic jobs (nightly, weekly, monthly) needs to be checked.  There is no budget for automating the process so a person is assigned to undertake the checking.  We've found this is prone to errors and quite often, the person forgets to check!
+
+* *Monitoring of Application Performance*<br/>A person is required to log into the application to review application statistic or reports.  There is no budget to automate the process so a person is assigned to undertake the checking.  We've found this is prone to errors and it physically impossible to monitor the application every second of the day.
+
+* *Metric Based Logging does not tell the whole story*<br/>Metrics only tells us something is wrong - not why.  For example, metrics logging will only tell you when your CPU is at 100% for over 1 minute.  To understand why, you need the see your application logs to see the types of transactions being processed at that point in time.
+
+ChiliLog aims to reduce the pain by:
+
+* *Log Aggregation*<br/>ChiliLog will consolidate logs into 1 repository to make querying easy.  ChiliLog will also capture application data alongside metrics to help analyse the cause of the problem.
+
+* *Log Analysis*<br/>By capturing log information in real time and providing a web UI to access the information, developers will have access to timely information and network ops can keep developers off the servers.  Also, because log entries are parsed to extract data, logs can be filtered to quickly provide relevant information. 
+
+* *Log Monitoring*<br/>ChiliLog will automate the checking of logs for error conditions.
+
+
+ 
