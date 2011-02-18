@@ -98,13 +98,217 @@ In end, your IDE should look as follows.
 !EclipseIDE.png! 
 
 
-h2. 2. Architecture
+
+h2. 2. Components
+
+The ChiliLog server looks as follows:
+
+!ChiliLogComponents.png!
+
+
+h3. 2.2 Data Store - mongoDB
+
+ChiliLog server needs to store semi-structured data quickly.
+
+We want able to dynamically define (and re-define) parsing rules to extract data from all sorts of different log entries.  As such, we cannot pre-determine the type of data that is to be stored.  This makes it difficult to define up front the SQL columns we need.  Sure we can dynamically add/remove columns as need be in an SQL database, however it seems more troublesome that using mongoDB.
+
+We decided on "mongoDB":http://www.mongodb.org/ over a number of other non-SQL data stores because:
+
+* Simple
+* Scalable
+* Mature and is used in production
+
+Here's a "comparison":http://www.mongodb.org/display/DOCS/MongoDB,+CouchDB,+MySQL+Compare+Grid that we took into consideration. 
+
+
+h3. 2.3 Message Queue - HornetQ
+
+We decided to queue incoming log entries rather than directly process and write them to mongoDB.
+
+Why use a message queue and not write directly to mongoDB?
+
+The main reason is scalability. Using a message queue allows buffering of incoming data so that processing (parsing and writing to mongoDB) can be throttled.  This means that we can handle higher peak loads without overloading the hardware.
+
+We decided on "HornetQ":http://www.jboss.org/hornetq because:
+
+* Claims to be the "fastest":http://community.jboss.org/wiki/HornetQ-thePerformanceLeaderinEnterpriseMessaging
+* Allows for different protocol to be used by client side importers so that organization security frameworks can be met.  Current options are
+** JMS
+** STOMP over TCP/IP
+** STOMP over WebSockets
+* Allows for server side log entry routing (i.e. a log entry may be parsed differently and save to 2 or more different repositories).  This centralizes execution of routing logic to the server.
+
+
+h3. 2.4 Workers
+
+Workers are responsible for:
+
+* Processing incoming log entries on the message queue
+* Monitoring logs and sending notifications upon a trigger effect 
+
+To allow for tight integration with HornetQ we've implemented workers as Java classes.
+ 
+
+h3. 2.5 Web Server - Netty
+
+We got tired of Servlets and wanted to play with something different ... so "Netty":http://www.jboss.org/netty it is. 
+
+It is small, extensible and fast.
+
+Most importantly, it is also embeddable so that we eliminate a dependency on an external web server.  Apart from mongoDB, every other component of ChiliLog is embedded and intergration into a single Java app.  
+
+We wrote custom Netty handlers to implement the ChiliLog REST API.
+ 
+
+h3. 2.6 Web UI - SproutCore
+
+We've implemented our web UI as a fully fat javascript client using "SproutCore":http://www.sproutcore.com.
+
+Again, got sick of working with server side web page technology and want to do something different.
+
+Here's "why":http://www.veebsbraindump.com/2010/08/my-take-on-what-is-sproutcore/ we chose SproutCore.
+
+Our web UI layer is delivered to the browser via the web server and interacts with the web server via its REST API. 
 
 
 
+h2. 3. Data Model
+
+h3. 3.1 Definitions  
+
+* *Log*<br/>Information output from a device, system or application detailing events and activity.
+
+* *Log Entry*<br/>A record, detailing a specific event or activity, that is stored in a log.  For example, for a text log file, a log entry maybe considered as a line item. 
+
+* *Repository*<br/>A "bucket" within ChiliLog where one or more logs can be stored.
+
+* *Repository Entry*<br/>A record, detailing a specific event or activity, that is stored in a repository.  It corresponds to a log entry.
+
+* *Repository Field*<br/>A data item within a repository entry. For example, the timestamp of a repository entry is a field.
 
 
-h2. 3. Contributing
+
+h3. 3.2 Implementation
+
+The data model is implemented within a mongoDB database.
+
+By default, the database is called @chililog@.
+
+A repository is implemented as a collection within the @chililog@ database.  For example, if a repository is named @abc@ then its mongoDB collection is named @abc_repoistory@.
+
+A repository entry is implemented as a document (or record) in the collection.
+
+A repository field is implemented as a field within a document.
+
+The meta-data that describes a repository is stored in the @repositories_info@ collection.
+
+User details for authentication is stored in the @users@ collection. 
+
+
+h3. 3.3 Data Access
+
+The Java code for access mongoDB is kept in the @com.chililog.server.data@ package.
+
+A mongoDB document is represented as a strongly-typed __Business Objects__ within ChiliLog.  For example, a document in the @users@ collection is represented by the @UserBO@ class.
+
+__Controllers__ are used for reading and writing business objects.  For example, @UserController@ is used for reading and writing @UserBO@ objects into the @users@ collection.
+
+Controllers can also return a list of business objects matching a specific __List Criteria__.
+
+pre(code)..
+    DB db = MongoConnection.getInstance().getConnection();
+    
+    // Insert 
+    UserBO user = new UserBO();
+    user.setUsername("UserTestUser1");
+    user.setPassword("abc123!", true);
+    user.addRole("Role1");
+    user.addRole("Role2");        
+    user.setDisplayName("Lloyd Christmas");
+    UserController.getInstance().save(db, user);
+
+    // Get
+    UserBO user2 = UserController.getInstance().get(db, "UserTestUser1");
+
+    // Delete
+    UserController.getInstance().remove(db, user2);
+    
+    // List
+    UserListCriteria criteria= new UserListCriteria();
+    criteria.setRole("ListRoleA");
+    List<UserBO> list = UserController.getInstance().getList(db, criteria);
+    
+
+Note that a mongoDB database connection is allocated by @MongoConnection@.  It provides an authenticated connection.  The credentials are read from the __app.properties__ file.
+
+
+h2. 4. Security Model
+
+
+h2. 5. HornetQ Integration
+
+
+
+h2. 6. General Coding Notes
+
+h3. 6.1 Singletons
+
+We decided to use the singleton pattern because: 
+
+* Light-weight and less code compared to interface/factory/impl pattern and/or dependency injection frameworks.  ChiliLog server does not have to be embedded so we don't have to cater for "plug-ins".
+* Better than static classes because we can use inheritance
+
+
+h3. 6.2 Strings
+
+Strings are externalised into the __src/main/resources/strings.properties__ file.
+
+pre(code).. 
+    #
+    # com.chililog.server.data
+    #
+    Data.MongoDB.AuthenticationError=Invalid username or password to access mongodb '%s'.
+    Data.MongoDB.ConnectionError=Cannot connect to MongDb. %s.
+    Data.MongoDB.FieldNotFoundError=Cannot find field '%s'. 
+    Data.MongoDB.QueryError=Error querying the database. '%s'. 
+    Data.MongoDB.SaveError=Error saving a record to the database. '%s'. 
+    Data.MongoDB.RemoveError=Error removing a record from the database. '%s'. 
+
+p. The @com.chililog.sever.common.StringProperties@ class is use to read strings from this file.
+
+
+h3. 6.3 Exceptions
+
+We use a standard exception @com.chililog.sever.common.ChiliLogException@.
+
+Use @ChiliLogException.getErrorCode()@ to retrieve the error that triggered the exception.  
+
+Error codes are tightly integrated with Strings (see above section).  The error code is the same as a string code.  The error message is the string value.
+
+
+h3. 6.4 Application and System Properties
+
+All application and system properties used in the code are strongly typed and cached in the @com.chililog.sever.common.AppProperties@ and  @com.chililog.sever.common.SystemProperties@ respectively.
+
+@SystemProperties@ reads properties as set when starting the JVM.
+
+@AppProperties@ reads properties from the __src/main/resources/app.properties__ file.  Values in this file can be overriden by creating a new app.properties file and setting system property @chililog.config.directory@ to the name of the directory where the override app.properties file is located.
+
+
+h3. 6.4 Logging
+
+We are using log4J to manage logging inside ChiliLog server.
+
+The configuration is located in the __src/main/resources/log4j.xml file.  Note that:
+
+To override this, ....
+
+* @org.apache.log4j.AsyncAppender@ is used so that logging does not block.
+* We have our own @com.chililog.server.engine.InternalLog4JAppender@ appender which writes directly to mongoDB. Because @AsyncAppender@ is used, blocking during writes will not be an issue.
+
+
+
+h2. 7. Contributing
 
 Just fork the code and submit Pull Requests.
 
