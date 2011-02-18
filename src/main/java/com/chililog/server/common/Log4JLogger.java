@@ -18,11 +18,21 @@
 
 package com.chililog.server.common;
 
+import java.io.File;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.xml.DOMConfigurator;
 
 /**
+ * <p>
  * Wrapper for Log4J that does string formatting only when required. See
  * http://stackoverflow.com/questions/943367/string-format-with-lazy-evaluation.
+ * </p>
+ * <p>
+ * To debug Log4J, add the following VM command line argument <code>-Dlog4j.debug</code>.
+ * </p>
  * 
  * @author vibul
  * 
@@ -32,14 +42,24 @@ public class Log4JLogger
     private final Logger _inner;
 
     /**
-     * Private constructor. User <code>getLogger</code> instead.
-     * 
-     * @param clazz
-     *            Class in which the logger is going to be used. Class name will be used for the log category.
+     * Initialize log4J to look for the override configuration if one exists
      */
-    private Log4JLogger(Class<?> clazz)
+    static
     {
-        _inner = Logger.getLogger(clazz);
+        // We don't use the SystemProperties class because it triggers the logger!
+        // See code in org.apache.log4j.LogManager static block
+
+        String configDir = System.getProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY);
+        if (!StringUtils.isEmpty(configDir))
+        {
+            File overrideLog4JXML = new File(configDir, "log4j.xml");
+            if (overrideLog4JXML.exists())
+            {
+                DOMConfigurator config = new DOMConfigurator();
+                config.doConfigure(overrideLog4JXML.getPath(), LogManager.getLoggerRepository());
+            }
+        }
+
     }
 
     /**
@@ -52,6 +72,17 @@ public class Log4JLogger
     public static Log4JLogger getLogger(Class<?> clazz)
     {
         return new Log4JLogger(clazz);
+    }
+
+    /**
+     * Private constructor. User <code>getLogger</code> instead.
+     * 
+     * @param clazz
+     *            Class in which the logger is going to be used. Class name will be used for the log category.
+     */
+    private Log4JLogger(Class<?> clazz)
+    {
+        _inner = Logger.getLogger(clazz);
     }
 
     /**

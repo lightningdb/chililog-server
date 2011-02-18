@@ -209,6 +209,8 @@ h3. 3.3 Data Access
 
 The Java code for access mongoDB is kept in the @com.chililog.server.data@ package.
 
+The mongoDB Java "driver":http://www.mongodb.org/display/DOCS/Java+Language+Center is used for communicating with mongoDB.
+
 A mongoDB document is represented as a strongly-typed __Business Objects__ within ChiliLog.  For example, a document in the @users@ collection is represented by the @UserBO@ class.
 
 __Controllers__ are used for reading and writing business objects.  For example, @UserController@ is used for reading and writing @UserBO@ objects into the @users@ collection.

@@ -60,6 +60,7 @@ public class App
     {
         try
         {
+
             // Setup our shutdown hooks
             Runtime.getRuntime().addShutdownHook(new Thread()
             {

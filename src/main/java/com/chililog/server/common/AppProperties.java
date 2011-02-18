@@ -58,6 +58,19 @@ import org.apache.log4j.Logger;
  * AppProperties.getInstance().getBuildTimestamp();
  * </code>
  * 
+ * <h3>Property Loading</h3>
+ * 
+ * We use convention to load the properties.
+ * <ol>
+ * <li>We search for all fields with upper case letters in their names. For example, <code>APP_NAME<code>.</li>
+ * <li>We search for the corresponding field cache variable. The field name is converted to camel case and prefixed with
+ * underscore. For example, <code>_appName</code>li>
+ * <li>Next, we search for a load method to parse the entry in the property file. The field name is converted to camel
+ * case and prefixed with "load". For example, <code>loadAppName</code></li>
+ * <li>If the method is found, it is called and the result is used to set the cache variable identified in step #2.</li>
+ * </ol>
+ * 
+ * 
  * @author vibul
  * @since 1.0
  */
