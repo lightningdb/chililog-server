@@ -45,7 +45,7 @@
 			<fileset dir="${src.dir}/developer_guide">
 				<include name="*.textile" />
 			</fileset>
-			<stylesheet url="developer_guide" />
+			<stylesheet url="developer_guide.css" />
 		</wikitext-to-html>
 		<copy todir="${target.dir}/developer_guide">
 			<fileset dir="${src.dir}/developer_guide">
