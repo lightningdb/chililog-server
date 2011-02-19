@@ -22,9 +22,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.util.Hashtable;
 import java.util.Properties;
 import java.util.UUID;
@@ -163,13 +163,14 @@ public class AppProperties
         {
             Properties properties = new Properties();
 
-            // Load from class path
-            URL url = ClassLoader.getSystemResource(APP_PROPERTY_FILE_NAME);
-            fis = new FileInputStream(new File(url.getFile()));
-            properties.load(fis);
-            fis.close();
-            fis = null;
-
+            // Load default from class path
+            InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(APP_PROPERTY_FILE_NAME);
+            if (is == null) {
+                throw new FileNotFoundException("Default app.properties file inside JAR not found");
+            }
+            properties.load(is);
+            is.close();
+            
             // Load overrides
             File configDirectory = SystemProperties.getInstance().getChiliLogConfigDirectory();
             if (configDirectory != null)

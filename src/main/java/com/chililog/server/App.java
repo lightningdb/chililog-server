@@ -18,9 +18,13 @@
 
 package com.chililog.server;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.InetSocketAddress;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -49,6 +53,7 @@ import com.chililog.server.engine.RepositoryManager;
 public class App
 {
     static Log4JLogger _logger = Log4JLogger.getLogger(App.class);
+    private static final String STOP_ME_FILENAME = "STOP_ME";
 
     /**
      * Big Bang method. It all starts here!
@@ -60,30 +65,15 @@ public class App
     {
         try
         {
-
-            // Setup our shutdown hooks
-            Runtime.getRuntime().addShutdownHook(new Thread()
-            {
-                public void run()
-                {
-                    try
-                    {
-                        stopChiliLogServer();
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.error("Shutdown error: " + e.getMessage(), e);
-                    }
-                }
-            });
-
             startChiliLogServer();
+
+            addShutdownPoller();
 
             // Wait for input to stop (the read is required for Eclipse)
             // System.out.println("Press any key to stop.\n\n");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-            bufferedReader.read();
-            System.exit(0);
+            // BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+            // bufferedReader.read();
+            // writeShutdownFile();
 
             // Finish
             return;
@@ -111,7 +101,7 @@ public class App
 
         MqManager.getInstance().start();
         RepositoryManager.getInstance().startup();
-        
+
         Thread.sleep(2000);
 
         _logger.info("CHILILOG Server Started");
@@ -150,5 +140,60 @@ public class App
 
         // Bind and start to accept incoming connections.
         bootstrap.bind(new InetSocketAddress(8080));
+    }
+
+    /**
+     * Polls for the shutdown file - and shuts down if one is found
+     */
+    static void addShutdownPoller()
+    {
+        final File file = new File(".", STOP_ME_FILENAME);
+        if (file.exists())
+        {
+            file.delete();
+        }
+
+        final Timer timer = new Timer("ChiliLog Server Shutdown Timer", true);
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                if (file.exists())
+                {
+                    try
+                    {
+                        stopChiliLogServer();
+                        timer.cancel();
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.error("Shutdown error: " + e.getMessage(), e);
+                    }
+                    finally
+                    {
+                        Runtime.getRuntime().exit(0);
+                    }
+                }
+            }
+        }, 1000, 1000);
+    }
+
+    /**
+     * Writes the shutdown file to stop the server
+     * 
+     * @throws Exception
+     */
+    static void writeShutdownFile() throws Exception
+    {
+        Writer out = new OutputStreamWriter(new FileOutputStream(new File(".", STOP_ME_FILENAME)));
+        try
+        {
+            out.write("shutdown");
+        }
+        finally
+        {
+            out.close();
+        }
     }
 }
