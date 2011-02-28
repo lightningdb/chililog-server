@@ -233,6 +233,20 @@ public class AppPropertiesTest
     }
     
     @Test
+    public void testWebIpAddress() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getWebIpAddress();
+        assertEquals("localhost", s);        
+    }
+    
+    @Test
+    public void testWebIpPort() throws UnknownHostException
+    {
+        int s = AppProperties.getInstance().getWebIpPort();
+        assertEquals(8989, s);        
+    }
+    
+    @Test
 	public void testToString()
 	{
 		String s = AppProperties.getInstance().toString();

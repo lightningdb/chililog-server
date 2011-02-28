@@ -165,12 +165,13 @@ public class AppProperties
 
             // Load default from class path
             InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(APP_PROPERTY_FILE_NAME);
-            if (is == null) {
+            if (is == null)
+            {
                 throw new FileNotFoundException("Default app.properties file inside JAR not found");
             }
             properties.load(is);
             is.close();
-            
+
             // Load overrides
             File configDirectory = SystemProperties.getInstance().getChiliLogConfigDirectory();
             if (configDirectory != null)
@@ -764,6 +765,40 @@ public class AppProperties
     static int loadMqRedeliveryDelayMilliseconds(Properties properties)
     {
         return loadInt(properties, MQ_REDELIVERY_DELAY_MILLISECONDS);
+    }
+
+    /**
+     * Returns the IP address to use for binding our web server
+     */
+    public String getWebIpAddress()
+    {
+        return _webIpAddress;
+    }
+
+    static final String WEB_IP_ADDRESS = "web.ip_address";
+
+    private String _webIpAddress = null;
+
+    static String loadWebIpAddress(Properties properties)
+    {
+        return loadString(properties, WEB_IP_ADDRESS);
+    }
+
+    /**
+     * Returns the IP port to use for binding our web server
+     */
+    public int getWebIpPort()
+    {
+        return _webIpPort;
+    }
+
+    static final String WEB_IP_PORT = "web.ip_port";
+
+    private int _webIpPort = 0;
+
+    static int loadWebIpPort(Properties properties)
+    {
+        return loadInt(properties, WEB_IP_PORT, 9898);
     }
 
     /**

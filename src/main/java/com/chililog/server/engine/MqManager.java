@@ -125,11 +125,11 @@ public class MqManager
     {
         if (_hornetqServer != null)
         {
-            _logger.info("HornetQ Message Queue Already Started.");
+            _logger.info("Message Queue Already Started.");
             return;
         }
 
-        _logger.info("Starting HornetQ Message Queue ...");
+        _logger.info("Starting Message Queue ...");
         AppProperties appProperties = AppProperties.getInstance();
 
         // Use log4j
@@ -176,7 +176,7 @@ public class MqManager
         _hornetqServer.getHornetQServerControl().addSecuritySettings("jms.queue.hornetq.management", _systemRoleName,
                 _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName);
 
-        _logger.info("HornetQ Message Queue Started.");
+        _logger.info("Message Queue Started.");
         return;
     }
 

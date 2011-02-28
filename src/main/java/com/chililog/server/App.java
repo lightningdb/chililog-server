@@ -37,6 +37,7 @@ import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.common.SystemProperties;
 import com.chililog.server.engine.MqManager;
 import com.chililog.server.engine.RepositoryManager;
+import com.chililog.server.ui.HttpServerPipelineFactory;
 
 /**
  * ChiliLog Server Application.
