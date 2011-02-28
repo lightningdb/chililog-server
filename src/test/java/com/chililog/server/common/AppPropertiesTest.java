@@ -237,6 +237,7 @@ public class AppPropertiesTest
     {
         String s = AppProperties.getInstance().getWebIpAddress();
         assertEquals("localhost", s);        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_ADDRESS));
     }
     
     @Test
@@ -244,6 +245,47 @@ public class AppPropertiesTest
     {
         int s = AppProperties.getInstance().getWebIpPort();
         assertEquals(8989, s);        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_PORT));
+    }
+    
+    @Test
+    public void testWebSSLEnabled() throws UnknownHostException
+    {
+        boolean b = AppProperties.getInstance().getWebSslEnabled();
+        assertFalse(b);        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_SSL_ENABLED));
+    }
+    
+    @Test
+    public void testWebKeyStorePath() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getWebKeyStorePath();
+        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PATH));
+    }
+    
+    @Test
+    public void testWebKeyStorePassword() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getWebKeyStorePassword();
+        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PASSWORD));
+    }
+    
+    @Test
+    public void testWebKeyStoreKeyPassword() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getWebKeyStoreKeyPassword();
+        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_KEY_PASSWORD));
+    }
+
+    @Test
+    public void testWebKeyStaticFilesDirectory() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getWebStaticFilesDirectory();
+        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_STATIC_FILES_DIRECTORY));
     }
     
     @Test

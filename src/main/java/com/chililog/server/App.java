@@ -22,22 +22,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
-
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.jboss.netty.logging.Log4JLoggerFactory;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.common.SystemProperties;
 import com.chililog.server.engine.MqManager;
 import com.chililog.server.engine.RepositoryManager;
-import com.chililog.server.ui.HttpServerPipelineFactory;
+import com.chililog.server.ui.WebServerManager;
 
 /**
  * ChiliLog Server Application.
@@ -102,6 +95,7 @@ public class App
 
         MqManager.getInstance().start();
         RepositoryManager.getInstance().startup();
+        WebServerManager.getInstance().start();
 
         Thread.sleep(2000);
 
@@ -118,29 +112,13 @@ public class App
         _logger.info("CHILILOG Server shutting down.");
 
         RepositoryManager.getInstance().shutdown();
+        MqManager.getInstance().stop();
+        WebServerManager.getInstance().stop();
 
         // Wait 2 seconds for everything to stop properly
         Thread.sleep(2000);
 
         _logger.info("CHILILOG Server successfully shutdown.");
-    }
-
-    /**
-     * Configure Netty
-     */
-    static void startNetty()
-    {
-        InternalLoggerFactory.setDefaultFactory(new Log4JLoggerFactory());
-
-        // Configure the server.
-        ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-                Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-
-        // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
-
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(8080));
     }
 
     /**

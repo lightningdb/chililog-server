@@ -64,7 +64,7 @@ public class WebServerManager
      * SingletonHolder is loaded on the first execution of Singleton.getInstance() or the first access to
      * SingletonHolder.INSTANCE, not before.
      * 
-     * @see http://en.wikipedia.org/wiki/Singleton_pattern
+     * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder
     {

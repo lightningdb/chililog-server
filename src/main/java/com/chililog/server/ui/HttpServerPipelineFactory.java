@@ -11,11 +11,17 @@ package com.chililog.server.ui;
 
 import static org.jboss.netty.channel.Channels.*;
 
+import javax.net.ssl.SSLEngine;
+
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.handler.stream.ChunkedWriteHandler;
+
+import com.chililog.server.common.AppProperties;
 
 /**
  * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
@@ -31,26 +37,40 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
      */
     public ChannelPipeline getPipeline() throws Exception
     {
+        AppProperties appProperties = AppProperties.getInstance();
+
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
-        // Uncomment the following line if you want HTTPS
-        // SSLEngine engine = SecureChatSslContextFactory.getServerContext().createSSLEngine();
-        // engine.setUseClientMode(false);
-        // pipeline.addLast("ssl", new SslHandler(engine));
+        // SSL handling
+        if (appProperties.getWebSslEnabled())
+        {
+            SSLEngine engine = SslContextManager.getInstance().getServerContext().createSSLEngine();
+            engine.setUseClientMode(false);
+            pipeline.addLast("ssl", new SslHandler(engine));
+        }
 
+        // Decodes ChannelBuffer into HTTP Request message
         pipeline.addLast("decoder", new HttpRequestDecoder());
 
         // Uncomment the following line if you don't want to handle HttpChunks.
         // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
 
+        // Encodes HTTTPRequest message to ChannelBuffer
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
-        // Remove the following line if you don't want automatic content compression.
-        pipeline.addLast("deflater", new HttpContentCompressor());
+        // Chunked handler for SSL large static file downloads
+        if (appProperties.getWebSslEnabled())
+        {
+            pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
+        }
 
+        // Compress
+        //pipeline.addLast("deflater", new HttpContentCompressor());
+
+        // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());
 
-        return pipeline;        
+        return pipeline;
     }
 }

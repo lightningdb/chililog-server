@@ -38,7 +38,7 @@ import com.chililog.server.common.Log4JLogger;
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 {
-    static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
     private BaseService _service = null;
 
@@ -77,7 +77,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             }
 
             uri = uri.toLowerCase();
-            if (uri.startsWith("/echo/"))
+            if (uri.startsWith("/static/"))
+            {
+                _service = new StaticFileService();
+            }
+            else if (uri.startsWith("/echo/"))
             {
                 _service = new EchoService();
             }
@@ -110,16 +114,18 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         boolean _willBeClosed = false;
         try
         {
-            _logger.error(e.getCause(), "ERROR handling request. %1", e.getCause().getMessage());
+            Throwable cause = e.getCause();            
+            HttpResponseStatus responseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR;
+            
+            _logger.error(cause, "ERROR handling request. %1", cause.getMessage());
 
-            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.INTERNAL_SERVER_ERROR);
+            HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
 
             response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
             StringBuffer sb = new StringBuffer();
-            sb.append(e.getCause().getMessage() + "\n");
-            sb.append(e.getCause().toString());
+            sb.append("ERROR: " + e.getCause().getMessage() + "\n");
+            sb.append("STACK TRACE: " + e.getCause().toString());
             response.setContent(ChannelBuffers.copiedBuffer(sb.toString(), CharsetUtil.UTF_8));
 
             ChannelFuture future = e.getChannel().write(response);

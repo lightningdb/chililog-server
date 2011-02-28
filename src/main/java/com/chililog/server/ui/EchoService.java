@@ -14,6 +14,7 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.jboss.netty.handler.codec.http.HttpVersion.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -73,7 +74,8 @@ public class EchoService extends BaseService
             buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
             buf.append("===================================\r\n");
 
-            buf.append("VERSION: " + request.getProtocolVersion() + "\r\n");
+            buf.append("SERVER TIME: " + new Date().toString() + "\r\n");
+            buf.append("HTTP VERSION: " + request.getProtocolVersion() + "\r\n");
             buf.append("HOSTNAME: " + getHost(request, "unknown") + "\r\n");
             buf.append("REQUEST_URI: " + request.getUri() + "\r\n\r\n");
 

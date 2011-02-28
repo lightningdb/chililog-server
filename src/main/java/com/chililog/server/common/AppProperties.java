@@ -802,6 +802,125 @@ public class AppProperties
     }
 
     /**
+     * Returns Flag to indicate if the SSL is to be supported
+     */
+    public boolean getWebSslEnabled()
+    {
+        return _webSslEnabled;
+    }
+
+    static final String WEB_SSL_ENABLED = "web.ssl_enabled";
+
+    private boolean _webSslEnabled = false;
+
+    static boolean loadWebSslEnabled(Properties properties)
+    {
+        return loadBoolean(properties, WEB_SSL_ENABLED, false);
+    }
+    
+    /**
+     * Returns the path to the key store to use for SSL
+     */
+    public String getWebKeyStorePath()
+    {
+        return _webKeyStorePath;
+    }
+
+    static final String WEB_KEY_STORE_PATH = "web.key_store_path";
+
+    private String _webKeyStorePath = null;
+
+    static String loadWebKeyStorePath(Properties properties)
+    {
+        return loadString(properties, WEB_KEY_STORE_PATH, null);
+    }
+    
+    /**
+     * Returns the password to the key store to use for SSL
+     */
+    public String getWebKeyStorePassword()
+    {
+        return _webKeyStorePassword;
+    }
+
+    static final String WEB_KEY_STORE_PASSWORD = "web.key_store_password";
+
+    private String _webKeyStorePassword = null;
+
+    static String loadWebKeyStorePassword(Properties properties)
+    {
+        return loadString(properties, WEB_KEY_STORE_PASSWORD, null);
+    }
+
+    /**
+     * Returns the password to the key inside to the key store to use for SSL
+     */
+    public String getWebKeyStoreKeyPassword()
+    {
+        return _webKeyStoreKeyPassword;
+    }
+
+    static final String WEB_KEY_STORE_KEY_PASSWORD = "web.key_store_key_password";
+
+    private String _webKeyStoreKeyPassword = null;
+
+    static String loadWebKeyStoreKeyPassword(Properties properties)
+    {
+        return loadString(properties, WEB_KEY_STORE_KEY_PASSWORD, null);
+    }
+    
+    /**
+     * Returns the path to the trust store to use for SSL
+     */
+    public String getWebTrustStorePath()
+    {
+        return _webTrustStorePath;
+    }
+
+    static final String WEB_TRUST_STORE_PATH = "web.trust_store_path";
+
+    private String _webTrustStorePath = null;
+
+    static String loadWebTrustStorePath(Properties properties)
+    {
+        return loadString(properties, WEB_TRUST_STORE_PATH, null);
+    }
+    
+    /**
+     * Returns the password to the trust store to use for SSL
+     */
+    public String getWebTrustStorePassword()
+    {
+        return _webTrustStorePassword;
+    }
+
+    static final String WEB_TRUST_STORE_PASSWORD = "web.trust_store_password";
+
+    private String _webTrustStorePassword = null;
+
+    static String loadWebTrustStorePassword(Properties properties)
+    {
+        return loadString(properties, WEB_TRUST_STORE_PASSWORD, null);
+    }
+    
+    /**
+     * Returns the password to the trust store to use for SSL
+     */
+    public String getWebStaticFilesDirectory()
+    {
+        return _webStaticFilesDirectory;
+    }
+
+    static final String WEB_STATIC_FILES_DIRECTORY = "web.static_files.directory";
+
+    private String _webStaticFilesDirectory = null;
+
+    static String loadWebStaticFilesDirectory(Properties properties)
+    {
+        return loadString(properties, WEB_STATIC_FILES_DIRECTORY, ".");
+    }
+    
+    /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 
      * @param properties
