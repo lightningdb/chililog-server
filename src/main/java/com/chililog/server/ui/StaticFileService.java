@@ -19,9 +19,15 @@ import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import javax.activation.MimetypesFileTypeMap;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -55,6 +61,8 @@ import com.chililog.server.common.Log4JLogger;
 public class StaticFileService extends BaseService
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileService.class);
+    private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+    private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
 
     /**
      * Process the message
@@ -64,6 +72,7 @@ public class StaticFileService extends BaseService
     {
         HttpRequest request = (HttpRequest) e.getMessage();
 
+        // We don't handle 100 Continue because we only allow GET method.
         if (request.getMethod() != HttpMethod.GET)
         {
             sendError(ctx, METHOD_NOT_ALLOWED);
@@ -89,6 +98,19 @@ public class StaticFileService extends BaseService
             return;
         }
 
+        // Cache Validation
+        String ifModifiedSince = request.getHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
+        if (!StringUtils.isBlank(ifModifiedSince))
+        {
+            SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+            Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
+            if (ifModifiedSinceDate.getTime() == file.lastModified())
+            {
+                sendNotModified(ctx);
+                return;
+            }
+        }
+
         // Open file for sending back
         RandomAccessFile raf;
         try
@@ -104,18 +126,15 @@ public class StaticFileService extends BaseService
 
         // Turn compression on/off
         boolean doCompression = checkDoCompression(filePath, fileLength);
-        ChannelHandler deflater = ctx.getPipeline().get("deflater");
-        if (deflater instanceof ConditionalHttpContentCompressor)
-        {
-            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
-        }
+        toogleCompression(ctx, doCompression);
+
+        _logger.debug("Getting URI:%s  FILE:%s", request.getUri(), filePath);
 
         // Create the response
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentLength(response, fileLength);
-        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, convertFileExtensionToMimeType(filePath));
-        response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "max-age="
-                + AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+        setContentTypeHeader(response, file);
+        setDateAndCacheHeaders(response, file);
 
         // Write the content.
         Channel ch = e.getChannel();
@@ -162,7 +181,7 @@ public class StaticFileService extends BaseService
 
                 public void operationProgressed(ChannelFuture future, long amount, long current, long total)
                 {
-                    _logger.debug("%s: %d / %d (+%d)%n", filePath, current, total, amount);
+                    _logger.debug("Zero-Coping file %s: %d / %d (+%d) bytes", filePath, current, total, amount);
                 }
             });
         }
@@ -197,6 +216,11 @@ public class StaticFileService extends BaseService
         // Remove /static prefix
         uri = uri.substring(7);
 
+        if (StringUtils.isBlank(uri))
+        {
+            return null;
+        }
+
         // Convert file separators.
         uri = uri.replace('/', File.separatorChar);
 
@@ -209,7 +233,7 @@ public class StaticFileService extends BaseService
         }
 
         // Convert to absolute path.
-        return AppProperties.getInstance().getWebStaticFilesDirectory() + File.separator + uri;
+        return AppProperties.getInstance().getWebStaticFilesDirectory() + uri;
     }
 
     /**
@@ -222,7 +246,12 @@ public class StaticFileService extends BaseService
      */
     private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status)
     {
+        toogleCompression(ctx, false);
+
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
+        setDateHeader(response);
+
+        // Send error back as plain text in the body
         response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
         response.setContent(ChannelBuffers.copiedBuffer("Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
 
@@ -231,16 +260,20 @@ public class StaticFileService extends BaseService
     }
 
     /**
-     * Tries to figure out the MIME type of a file based on the file name
+     * If file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      * 
-     * @param filePath
-     *            Path to file
-     * @return MIME type. e.g. "text/html"
+     * @param ctx
+     *            Context
      */
-    private String convertFileExtensionToMimeType(String filePath)
+    private void sendNotModified(ChannelHandlerContext ctx)
     {
-        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-        return mimeTypesMap.getContentType(filePath);
+        toogleCompression(ctx, false);
+
+        HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
+        setDateHeader(response);
+
+        // Close the connection as soon as the error message is sent.
+        ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
     }
 
     /**
@@ -268,5 +301,92 @@ public class StaticFileService extends BaseService
             return true;
         }
         return false;
+    }
+
+    /**
+     * Sets the content type header on an HTTP Response
+     * 
+     * @param response
+     *            HTTP response
+     * @param file
+     *            file to extract content type
+     */
+    private void setContentTypeHeader(HttpResponse response, File file)
+    {
+        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, convertFileExtensionToMimeType(file.getPath()));
+    }
+
+    /**
+     * Tries to figure out the MIME type of a file based on the file name
+     * 
+     * @param filePath
+     *            Path to file
+     * @return MIME type. e.g. "text/html"
+     */
+    private String convertFileExtensionToMimeType(String filePath)
+    {
+        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+        return mimeTypesMap.getContentType(filePath);
+    }
+
+    /**
+     * Sets the Date header for the HTTP response
+     * 
+     * @param response
+     *            HTTP response
+     * @param file
+     *            file to extract content type
+     */
+    private void setDateHeader(HttpResponse response)
+    {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
+        
+        Calendar time = new GregorianCalendar();
+        response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+    }
+    
+    /**
+     * Sets the Date and Cache headers for the HTTP Response
+     * 
+     * @param response
+     *            HTTP response
+     * @param file
+     *            file to extract content type
+     */
+    private void setDateAndCacheHeaders(HttpResponse response, File filetoCache)
+    {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
+        
+        // Date header
+        Calendar time = new GregorianCalendar();
+        response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+
+        // Add cache headers
+        time.add(Calendar.SECOND, AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+        response.setHeader(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
+
+        response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "private, max-age="
+                + AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+
+        response.setHeader(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(new Date(filetoCache.lastModified())));
+    }
+    
+    /**
+     * Turn on/off compression
+     * 
+     * @param ctx
+     *            contenxt
+     * @param doCompression
+     *            True to turn compression on, False to turn it off
+     */
+    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression)
+    {
+        ChannelHandler deflater = ctx.getPipeline().get("deflater");
+        if (deflater instanceof ConditionalHttpContentCompressor)
+        {
+            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
+        }
     }
 }
