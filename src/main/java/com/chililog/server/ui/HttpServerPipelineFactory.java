@@ -15,7 +15,6 @@ import javax.net.ssl.SSLEngine;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
-import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -66,7 +65,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         }
 
         // Compress
-        //pipeline.addLast("deflater", new HttpContentCompressor());
+        pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
 
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());

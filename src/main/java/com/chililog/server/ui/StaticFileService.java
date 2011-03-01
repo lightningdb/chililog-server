@@ -20,16 +20,20 @@ import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import javax.activation.MimetypesFileTypeMap;
+
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelFutureProgressListener;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.DefaultFileRegion;
 import org.jboss.netty.channel.FileRegion;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
@@ -59,20 +63,21 @@ public class StaticFileService extends BaseService
     public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception
     {
         HttpRequest request = (HttpRequest) e.getMessage();
+
         if (request.getMethod() != HttpMethod.GET)
         {
             sendError(ctx, METHOD_NOT_ALLOWED);
             return;
         }
 
-        final String path = convertUriToPhysicalFilePath(request.getUri());
-        if (path == null)
+        // Check
+        final String filePath = convertUriToPhysicalFilePath(request.getUri());
+        if (filePath == null)
         {
             sendError(ctx, FORBIDDEN);
             return;
         }
-
-        File file = new File(path);
+        File file = new File(filePath);
         if (file.isHidden() || !file.exists())
         {
             sendError(ctx, NOT_FOUND);
@@ -84,6 +89,7 @@ public class StaticFileService extends BaseService
             return;
         }
 
+        // Open file for sending back
         RandomAccessFile raf;
         try
         {
@@ -96,24 +102,55 @@ public class StaticFileService extends BaseService
         }
         long fileLength = raf.length();
 
+        // Turn compression on/off
+        boolean doCompression = checkDoCompression(filePath, fileLength);
+        ChannelHandler deflater = ctx.getPipeline().get("deflater");
+        if (deflater instanceof ConditionalHttpContentCompressor)
+        {
+            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
+        }
+
+        // Create the response
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentLength(response, fileLength);
-
-        Channel ch = e.getChannel();
-
-        // Write the initial line and the header.
-        ch.write(response);
+        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, convertFileExtensionToMimeType(filePath));
+        response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "max-age="
+                + AppProperties.getInstance().getWebStaticFilesCacheSeconds());
 
         // Write the content.
+        Channel ch = e.getChannel();
         ChannelFuture writeFuture;
-        if (AppProperties.getInstance().getWebSslEnabled())
+        if (doCompression)
         {
-            // Cannot use zero-copy with HTTPS.
+            // Cannot use ChunkedFile or zero-copy if we want to do compression
+            // Must read file contents and set it as the contents
+            byte[] buffer = new byte[(int) fileLength];
+            raf.readFully(buffer);
+            raf.close();
+
+            response.setContent(ChannelBuffers.copiedBuffer(buffer));
+            writeFuture = ch.write(response);
+        }
+        else if (AppProperties.getInstance().getWebSslEnabled())
+        {
+            // Cannot use zero-copy with HTTPS
+
+            // Write the initial line and the header.
+            ch.write(response);
+
+            // Write chunks
             writeFuture = ch.write(new ChunkedFile(raf, 0, fileLength, 8192));
         }
         else
         {
             // No encryption - use zero-copy.
+            // However zero-copy does not seem to work with compression
+            // Only use zero-copy for large files like movies and music
+
+            // Write the initial line and the header.
+            ch.write(response);
+
+            // Zero-copy
             final FileRegion region = new DefaultFileRegion(raf.getChannel(), 0, fileLength);
             writeFuture = ch.write(region);
             writeFuture.addListener(new ChannelFutureProgressListener()
@@ -125,7 +162,7 @@ public class StaticFileService extends BaseService
 
                 public void operationProgressed(ChannelFuture future, long amount, long current, long total)
                 {
-                    _logger.debug("%s: %d / %d (+%d)%n", path, current, total, amount);
+                    _logger.debug("%s: %d / %d (+%d)%n", filePath, current, total, amount);
                 }
             });
         }
@@ -159,7 +196,7 @@ public class StaticFileService extends BaseService
 
         // Remove /static prefix
         uri = uri.substring(7);
-        
+
         // Convert file separators.
         uri = uri.replace('/', File.separatorChar);
 
@@ -193,4 +230,43 @@ public class StaticFileService extends BaseService
         ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
     }
 
+    /**
+     * Tries to figure out the MIME type of a file based on the file name
+     * 
+     * @param filePath
+     *            Path to file
+     * @return MIME type. e.g. "text/html"
+     */
+    private String convertFileExtensionToMimeType(String filePath)
+    {
+        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+        return mimeTypesMap.getContentType(filePath);
+    }
+
+    /**
+     * <p>
+     * Figure out if we should do try to do HTTP compression or not based on the file extension and file size
+     * </p>
+     * 
+     * @param filePath
+     *            Path to the file
+     * @return true if compression on the file should be performed, false if not
+     */
+    private boolean checkDoCompression(String filePath, long fileLength)
+    {
+        // If < 4096 bytes, compression makes the file bigger and/or CPU used vs time saved is small
+        // If > 1 MB, don't compress. Just chunk download because it takes too much memory to read everything in
+        if (fileLength < 4096 || fileLength > 1048576)
+        {
+            return false;
+        }
+
+        String s = filePath.toLowerCase();
+        if (s.endsWith(".html") || s.endsWith(".htm") || s.endsWith(".js") || s.endsWith(".css") || s.endsWith(".txt")
+                || s.endsWith(".json") || s.endsWith(".xml"))
+        {
+            return true;
+        }
+        return false;
+    }
 }

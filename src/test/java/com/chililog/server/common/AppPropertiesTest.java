@@ -42,132 +42,132 @@ import com.chililog.server.common.SystemProperties;
  */
 public class AppPropertiesTest
 {
-	private static Logger _logger = Logger.getLogger(AppPropertiesTest.class);
+    private static Logger _logger = Logger.getLogger(AppPropertiesTest.class);
 
-	private static File _tempDir = null;
+    private static File _tempDir = null;
 
-	@BeforeClass
-	public static void testClassInit() throws Exception
-	{
-		String baseTempPath = System.getProperty("java.io.tmpdir");
-		_tempDir = new File(baseTempPath + File.separator + "tempDir_" + new Date().getTime());
-		if (_tempDir.exists() == false)
-		{
-			_tempDir.mkdir();
-		}
-		_tempDir.deleteOnExit();
-		_logger.debug("_tempDir=" + _tempDir.getPath());
+    @BeforeClass
+    public static void testClassInit() throws Exception
+    {
+        String baseTempPath = System.getProperty("java.io.tmpdir");
+        _tempDir = new File(baseTempPath + File.separator + "tempDir_" + new Date().getTime());
+        if (_tempDir.exists() == false)
+        {
+            _tempDir.mkdir();
+        }
+        _tempDir.deleteOnExit();
+        _logger.debug("_tempDir=" + _tempDir.getPath());
 
-		System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
+        System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
 
-		// Reload properties
-		SystemProperties.getInstance().loadProperties();
-	}
+        // Reload properties
+        SystemProperties.getInstance().loadProperties();
+    }
 
-	@Before
-	@After
-	public void testCleanup() throws Exception
-	{
-		// No override
-		System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
-		for (File f : _tempDir.listFiles())
-		{
-			f.delete();
-		}
+    @Before
+    @After
+    public void testCleanup() throws Exception
+    {
+        // No override
+        System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
+        for (File f : _tempDir.listFiles())
+        {
+            f.delete();
+        }
 
-		// Reload properties so that we start with default
-		SystemProperties.getInstance().loadProperties();
-	}
+        // Reload properties so that we start with default
+        SystemProperties.getInstance().loadProperties();
+    }
 
-	@Test
-	public void testAppName()
-	{
-		String s = AppProperties.getInstance().getAppName();
-		assertTrue(s.equalsIgnoreCase("ChiliLog Server"));
-	}
+    @Test
+    public void testAppName()
+    {
+        String s = AppProperties.getInstance().getAppName();
+        assertTrue(s.equalsIgnoreCase("ChiliLog Server"));
+    }
 
-	@Test
-	public void testBuildTimestamp()
-	{
-		String s = AppProperties.getInstance().getBuildTimestamp();
-		assertTrue(StringUtils.isNotBlank(s));
-	}
+    @Test
+    public void testBuildTimestamp()
+    {
+        String s = AppProperties.getInstance().getBuildTimestamp();
+        assertTrue(StringUtils.isNotBlank(s));
+    }
 
-	@Test
-	public void testBuildMachineName() throws UnknownHostException
-	{
-		String s = AppProperties.getInstance().getBuildMachineName();
-		assertEquals(java.net.InetAddress.getLocalHost().getHostName(), s);
-	}
-	
-	@Test
-	public void testBuildUserName() throws UnknownHostException
-	{
-		String s = AppProperties.getInstance().getBuildUserName();
-		assertEquals(System.getProperty("user.name"), s);
-	}
-	
+    @Test
+    public void testBuildMachineName() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getBuildMachineName();
+        assertEquals(java.net.InetAddress.getLocalHost().getHostName(), s);
+    }
+
+    @Test
+    public void testBuildUserName() throws UnknownHostException
+    {
+        String s = AppProperties.getInstance().getBuildUserName();
+        assertEquals(System.getProperty("user.name"), s);
+    }
+
     @Test
     public void testDbIpAddress() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getDbIpAddress();
-        assertEquals("localhost", s);        
+        assertEquals("localhost", s);
     }
-    
+
     @Test
     public void testDbIpPort() throws UnknownHostException
     {
         int s = AppProperties.getInstance().getDbIpPort();
-        assertEquals(27017, s);        
+        assertEquals(27017, s);
     }
 
     @Test
     public void testDbName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getDbName();
-        assertEquals("chililog", s);        
+        assertEquals("chililog", s);
     }
-    
+
     @Test
     public void testDbUserName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getDbUserName();
-        assertEquals("chililog", s);        
+        assertEquals("chililog", s);
     }
 
     @Test
     public void testDbPassowrd() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getDbPassword();
-        assertEquals("chililog12", s);        
+        assertEquals("chililog12", s);
     }
-    
+
     @Test
     public void testJaasLoginModuleClassName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getJaasLoginModuleClassName();
-        assertEquals("com.chililog.server.security.MongoDBJAASLoginModule", s);        
+        assertEquals("com.chililog.server.security.MongoDBJAASLoginModule", s);
     }
 
     @Test
     public void testJaasConfigurationClassName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getJaasConfigurationClassName();
-        assertEquals("com.chililog.server.security.JAASConfiguration", s);        
+        assertEquals("com.chililog.server.security.JAASConfiguration", s);
     }
 
     @Test
     public void testJaasConfigurationName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getJaasConfigurationName();
-        assertEquals("notused", s);        
+        assertEquals("notused", s);
     }
 
     @Test
     public void testJaasCallbackHandlerClassName() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getJaasCallbackHandlerClassName();
-        assertEquals("com.chililog.server.security.JAASCallbackHandler", s);        
+        assertEquals("com.chililog.server.security.JAASCallbackHandler", s);
     }
 
     @Test
@@ -176,7 +176,7 @@ public class AppPropertiesTest
         String s = AppProperties.getInstance().getJaasSystemUsername();
         assertTrue(!StringUtils.isBlank(s));
     }
-    
+
     @Test
     public void testJaasSystemPassword() throws UnknownHostException
     {
@@ -187,7 +187,7 @@ public class AppPropertiesTest
     public void testJaasSystemRole() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getJaasSystemRole();
-        assertEquals("system", s);        
+        assertEquals("system", s);
     }
 
     @Test
@@ -195,7 +195,7 @@ public class AppPropertiesTest
     {
         assertFalse(AppProperties.getInstance().getMqPersistenceEnabled());
     }
-    
+
     @Test
     public void testMqClusteredEnabled() throws UnknownHostException
     {
@@ -219,64 +219,64 @@ public class AppPropertiesTest
     {
         assertTrue(AppProperties.getInstance().getMqCoreProtocolEnabled());
     }
-    
+
     @Test
     public void testMqStompProtocolEnabled() throws UnknownHostException
     {
         assertTrue(AppProperties.getInstance().getMqStompProtocolEnabled());
     }
-    
+
     @Test
     public void testMqStompWebSocketProtocolEnabled() throws UnknownHostException
     {
         assertFalse(AppProperties.getInstance().getMqStompWebSocketProtocolEnabled());
     }
-    
+
     @Test
     public void testWebIpAddress() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWebIpAddress();
-        assertEquals("localhost", s);        
+        assertEquals("localhost", s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_ADDRESS));
     }
-    
+
     @Test
     public void testWebIpPort() throws UnknownHostException
     {
         int s = AppProperties.getInstance().getWebIpPort();
-        assertEquals(8989, s);        
+        assertEquals(8989, s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_PORT));
     }
-    
+
     @Test
     public void testWebSSLEnabled() throws UnknownHostException
     {
         boolean b = AppProperties.getInstance().getWebSslEnabled();
-        assertFalse(b);        
+        assertFalse(b);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_SSL_ENABLED));
     }
-    
+
     @Test
     public void testWebKeyStorePath() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWebKeyStorePath();
-        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PATH));
     }
-    
+
     @Test
     public void testWebKeyStorePassword() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWebKeyStorePassword();
-        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PASSWORD));
     }
-    
+
     @Test
     public void testWebKeyStoreKeyPassword() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWebKeyStoreKeyPassword();
-        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_KEY_PASSWORD));
     }
 
@@ -284,16 +284,24 @@ public class AppPropertiesTest
     public void testWebKeyStaticFilesDirectory() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWebStaticFilesDirectory();
-        assertTrue(StringUtils.isBlank(s));        
+        assertTrue(s.equals("/tmp") || s.equals("./static")); // cater for debug and release builds
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_STATIC_FILES_DIRECTORY));
     }
-    
+
     @Test
-	public void testToString()
-	{
-		String s = AppProperties.getInstance().toString();
-		assertTrue(StringUtils.isNotBlank(s));
-		_logger.debug("\n" + s);
-	}
-	
+    public void testWebStaticFilesCacheSeconds() throws UnknownHostException
+    {
+        int s = AppProperties.getInstance().getWebStaticFilesCacheSeconds();
+        assertTrue(s == 3 || s == 31535000); // cater for debug and release builds
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_STATIC_FILES_CACHE_SECONDS));
+    }
+
+    @Test
+    public void testToString()
+    {
+        String s = AppProperties.getInstance().toString();
+        assertTrue(StringUtils.isNotBlank(s));
+        _logger.debug("\n" + s);
+    }
+
 }

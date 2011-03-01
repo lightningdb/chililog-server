@@ -116,7 +116,7 @@
         <version>2.2</version>
         <configuration>
           <descriptors>
-            <descriptor>src/assemble/distribution.xml</descriptor>
+            <descriptor>src/assemble/package.xml</descriptor>
           </descriptors>
           <archive>
             <manifest>
@@ -218,6 +218,9 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <build>
+        <filters>
+          <filter>src/main/resource.filters/debug.properties</filter>
+        </filters>      
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -233,10 +236,13 @@
         </plugins>
       </build>
     </profile>
-    <!-- Production Settings -->
+    <!-- Release Settings -->
     <profile>
-      <id>production</id>
+      <id>release</id>
       <build>
+        <filters>
+          <filter>src/main/resource.filters/release.properties</filter>
+        </filters>      
         <plugins>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>

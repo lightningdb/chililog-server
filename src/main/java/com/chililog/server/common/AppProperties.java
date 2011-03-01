@@ -921,6 +921,23 @@ public class AppProperties
     }
     
     /**
+     * Returns the IP port to use for binding our web server
+     */
+    public int getWebStaticFilesCacheSeconds()
+    {
+        return _webStaticFilesCacheSeconds;
+    }
+
+    static final String WEB_STATIC_FILES_CACHE_SECONDS = "web.static_files.cache_seconds";
+
+    private int _webStaticFilesCacheSeconds = 0;
+
+    static int loadWebStaticFilesCacheSeconds(Properties properties)
+    {
+        return loadInt(properties, WEB_STATIC_FILES_CACHE_SECONDS, 0);
+    }
+    
+    /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 
      * @param properties
