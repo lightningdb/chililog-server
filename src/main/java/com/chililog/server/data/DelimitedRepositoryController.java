@@ -34,7 +34,13 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * Controller to read/write into a repository with a delimited log format
+ * Controller to read/write into a repository with a delimited log format. For example,
+ * </p>
+ * <code>
+ * field1|field2|field3
+ * </code>
+ * <p>
+ * The fields are delimited by the pipe character (|). 
  * </p>
  * <p>
  * Unlike other data controllers, this controller is NOT a singleton. This is because many repositories may need to use

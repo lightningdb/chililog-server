@@ -20,15 +20,29 @@ package com.chililog.server.ui;
 
 import static org.junit.Assert.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.TimeZone;
+import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 
 /**
@@ -54,7 +68,7 @@ public class WebServerManagerTest
     }
 
     @Test
-    public void testEchoGET() throws IOException
+    public void testEchoGET2() throws IOException
     {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/echo/test");
@@ -68,14 +82,15 @@ public class WebServerManagerTest
             sb.append(str + "\n");
         }
         in.close();
-        
+
         _logger.info(sb.toString());
-        
+
         assertTrue(sb.toString().contains("REQUEST_URI: /echo/test"));
     }
-    
+
     /**
      * We should get back a 404 file not found
+     * 
      * @throws IOException
      */
     @Test(expected = FileNotFoundException.class)
@@ -84,6 +99,136 @@ public class WebServerManagerTest
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/not/found");
         url.getContent();
+    }
+
+    /**
+     * We should get back a 404 file not found
+     * 
+     * @throws IOException
+     * @throws ParseException 
+     */
+    @Test()
+    public void testStaticFileCache() throws IOException, ParseException
+    {
+        String TEXT = "abc\n123";
+        
+        String dir = AppProperties.getInstance().getWebStaticFilesDirectory();
+        String fileName = UUID.randomUUID().toString() + ".txt";
+        File file = new File(dir, fileName);
+
+        FileOutputStream fos = new FileOutputStream(file);
+        OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
+        out.write(TEXT);
+        out.close();
+
+        // Refresh
+        file = new File(file.getPath());
+
+        // ******************************************************
+        // Initial request
+        // ******************************************************
+        // Create a URL for the desired page
+        URL url = new URL("http://localhost:8989/static/" + fileName);
+        URLConnection conn = url.openConnection();
+
+        // Read all the text returned by the server
+        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuffer sb = new StringBuffer();
+        String str;
+        while ((str = in.readLine()) != null)
+        {
+            sb.append(str + "\n");
+        }
+        in.close();
+
+        assertEquals(TEXT, sb.toString().trim());
+
+        // Get headers
+        HashMap<String, String> headers = new HashMap<String, String>();
+        for (int i = 0;; i++)
+        {
+            String name = conn.getHeaderFieldKey(i);
+            String value = conn.getHeaderField(i);
+            if (name == null && value == null)
+            {
+                break;
+            }
+            if (name == null)
+            {
+                _logger.debug("*** Intial Call, Response code: %s", value);
+            }
+            else
+            {
+                headers.put(name, value);
+                _logger.debug("%s = %s", name, value);
+            }
+        }
+                
+        assertEquals("7", headers.get("Content-Length"));
+        assertEquals("text/plain", headers.get("Content-Type"));
+        
+        // Check last modified should be the same as the file's last modified date
+        SimpleDateFormat fmt = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        fmt.setTimeZone(TimeZone.getTimeZone("GMT"));                
+        assertEquals(fmt.format(new Date(file.lastModified())), headers.get("Last-Modified"));
+        
+        // Check Expiry
+        Date expires = fmt.parse(headers.get("Expires"));        
+        Date serverDate = fmt.parse(headers.get("Date"));        
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(serverDate);
+        cal.add(Calendar.SECOND, AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+        assertEquals(cal.getTimeInMillis(), expires.getTime());
+                
+        // ******************************************************
+        // Cache Validation
+        // ******************************************************
+        url = new URL("http://localhost:8989/static/" + fileName);
+        conn = url.openConnection();
+        conn.setIfModifiedSince(fmt.parse(headers.get("Last-Modified")).getTime());
+        
+        in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        sb = new StringBuffer();
+        while ((str = in.readLine()) != null)
+        {
+            sb.append(str + "\n");
+        }
+        in.close();
+
+        // No content should be returned
+        assertEquals("", sb.toString().trim());
+        
+        HashMap<String, String> headers2 = new HashMap<String, String>();
+        String responseCode = "";
+        for (int i = 0;; i++)
+        {
+            String name = conn.getHeaderFieldKey(i);
+            String value = conn.getHeaderField(i);
+            if (name == null && value == null)
+            {
+                break;
+            }
+            if (name == null)
+            {
+                responseCode = value;
+                _logger.debug("*** Cache Call, Response code: %s", value);
+            }
+            else
+            {
+                headers2.put(name, value);
+                _logger.debug("%s = %s", name, value);
+            }
+        }
+        
+        // Should get back a 304
+        assertEquals("HTTP/1.1 304 Not Modified", responseCode);
+        assertTrue(!StringUtils.isBlank(headers2.get("Date")));
+        
+        // ******************************************************
+        // Finish
+        // ******************************************************
+        // Clean up
+        file.delete();
     }
 
 }

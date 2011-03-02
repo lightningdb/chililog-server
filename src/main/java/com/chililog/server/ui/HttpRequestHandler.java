@@ -44,11 +44,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 
     /**
      * <p>
-     * Route messages to specialised handlers based on the request URI.
+     * Route messages a to specialised service based on the request URI.
      * <ul>
-     * <li>/echo/ - echo handler</li>
-     * <li>/api/ - api handler</li>
-     * <li>/static/ - static file handler</li>
+     * <li>/echo/* - echo service for testing</li>
+     * <li>/api/* - api service exposes a RESTful interface for ChiliLog management and query</li>
+     * <li>/workbench/* - workbench service provides a browser based tool for ChiliLog management and query</li>
+     * <li>/static/* - static file service serves up static files</li>
      * </ul>
      * </p>
      * <p>
@@ -77,7 +78,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             }
 
             uri = uri.toLowerCase();
-            if (uri.startsWith("/static/"))
+            if (uri.startsWith("/api/"))
+            {
+                _service = new ApiService();
+            }
+            else if (uri.startsWith("/static/"))
             {
                 _service = new StaticFileService();
             }

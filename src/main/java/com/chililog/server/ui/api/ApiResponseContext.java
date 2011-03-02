@@ -7,27 +7,9 @@
  * License.
  */
 
-package com.chililog.server.ui;
+package com.chililog.server.ui.api;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-
-/**
- * Base class for all services responsible for processing HTTP requests.
- * 
- * @author vibul
- * 
- */
-public abstract class BaseService
+public class ApiResponseContext
 {
-    /**
-     * Process the incoming message
-     * 
-     * @param ctx
-     *            Netty Channel Handler Context
-     * @param e
-     *            Message Event
-     * @throws Exception
-     */
-    public abstract void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception;
+
 }

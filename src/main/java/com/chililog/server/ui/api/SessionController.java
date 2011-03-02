@@ -7,27 +7,22 @@
  * License.
  */
 
-package com.chililog.server.ui;
+package com.chililog.server.ui.api;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
+import org.jboss.netty.handler.codec.http.HttpRequest;
 
 /**
- * Base class for all services responsible for processing HTTP requests.
- * 
- * @author vibul
- * 
+ * Session controller handles login and logout
  */
-public abstract class BaseService
+public class SessionController extends BaseController
 {
-    /**
-     * Process the incoming message
-     * 
-     * @param ctx
-     *            Netty Channel Handler Context
-     * @param e
-     *            Message Event
-     * @throws Exception
-     */
-    public abstract void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception;
+     public SessionController()
+     {
+         
+     }
+     
+     public void login(HttpRequest request, String requestContent)
+     {
+         
+     }
 }
