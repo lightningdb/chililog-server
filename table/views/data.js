@@ -6,188 +6,155 @@
 // ==========================================================================
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
-
-  rowHeight: 40,
-
-  cellWrapperView: SC.View.extend(SC.Control, {
+  rowHeight: 30,
+  
+  backgroundColor: 'grey',
+  
+  exampleView: SC.View.extend({
+    backgroundColor: 'white',
     isPoolable: YES,
     layerIsCacheable: YES,
+
+    classNames: ['sc-dataview-row', 'sc-list-item-view'],
+    
+    sleepInDOMPool: function() {
+      if(this._hasSlept)
+        return
+        
+      this._sc_cell_views.forEach(function(c) {
+        c.get('layer')
+      }, this)
+      
+      this._hasSlept = YES
+    },
     
     renderLayout: function(context, firstTime) {
-      if(firstTime) {
-        sc_super();
-      }
+      if(firstTime)
+        sc_super()
     }
   }),
 
-  exampleView: SC.LabelView.extend({
+  cellView: SC.LabelView.extend({
+    backgroundColor: 'white',
+    isPoolable: YES,
+    layerIsCacheable: YES,
     contentValueKeyBinding: '*column.key'
   }),
   
-  // @index should be the transformed index, so we can grab the column
+  init: function() {
+    sc_super();
 
-  exampleViewForItem: function(item, index) {
-    var columns = this.get('columns'),
-      column = columns.objectAt(this.columnForIndex(index)),
-      ret;
-  
-    if(ret = column.get('exampleView')) {
-      return ret;
-    }
-  
-    return this.get('exampleView');
-  },
-  
-  exampleViewForItem: function() {
-    var exampleViews = this._exampleViews;
+    this._allocateItemView = this.allocateItemView;
     
-    if(!exampleViews) {
-      this._exampleViews = exampleViews = [];
-    }
-      
-    if(!exampleViews[0]) {
-      exampleViews[0] = this.get('cellWrapperView').extend({
-        childViews: 'contentView'.w(),
-        contentView: this.get('exampleView').extend({
-          columnBinding: '.parentView*column',
-          contentBinding: '.parentView*content'
-        })
-      });
-    }
-    
-    return exampleViews[0];
-  },
-  
-  /* 
-    Transform the visible rows and columns into one set of indexes e.g, 
-    for three columns:
-    
-    content[0] => [0, 1, 2, ...]
-    content[1] => [..., 3, 4, 5, ...]
-    
-    These indexes can be translated back with integer division and modulus
-    operations. Appropriate methods are provided.
-    
-    etc
-  */
-  
-  computeNowShowing: function(rect) {
-    var contentIndexes = this.contentIndexesInRect(rect || this.get('clippingFrame')),
-    len = this.get('length'), 
-    max = contentIndexes.get('max');
-    
-    if (max > len) contentIndexes = contentIndexes.copy().remove(len, max-len).freeze();
-
-    var numColumns = this.getPath('columns.length'),
-      ret = SC.IndexSet.create(),
-      first = contentIndexes.get('min'),
-      last = contentIndexes.get('max'),
-      i, j;
-
-    for(i = first; i <= last; i++) {
-      if(this.contentIndexIsGroup(null, null, i)) {
-        ret.add(i * numColumns);
-      } else {
-        ret.add(i * numColumns, numColumns);
-      }
-    }
-
-    return ret;
-  },
-
-  setAttributesForItem: function(item, index, attrs) {
-    var del = this.get('contentDelegate'), 
-        isGroupView = this.contentIndexIsGroup(this, this.get('content'), this.contentIndexForIndex(index)),
-        ExampleView = this.exampleViewForItem(item, index),
-        content = this.get("content"),
-        contentIndex = this.contentIndexForIndex(index),
+    this.allocateItemView = function(exampleView, attrs) {
+      var ret = this._allocateItemView(exampleView, attrs),
         columns = this.get('columns'),
-        column = columns.objectAt(this.columnForIndex(index));
+        column, cell, cells = [], cellViews;
 
-    // 
-    // FIGURE OUT "NORMAL" ATTRIBUTES
-    //
-    attrs.createdFromExampleView = ExampleView;
-    attrs.parentView = this.get('containerView') || this;
-    attrs.contentIndex = contentIndex;
-    attrs.owner = attrs.displayDelegate = this;
-    attrs.content = item;
-    attrs.page = this.page;
-    attrs.layerId = this.layerIdFor(index);
-    attrs.isEnabled = del.contentIndexIsEnabled(this, content, contentIndex);
-    attrs.isSelected = del.contentIndexIsSelected(this, content, contentIndex);
-    attrs.outlineLevel = del.contentIndexOutlineLevel(this, content, contentIndex);
-    attrs.disclosureState = del.contentIndexDisclosureState(this, content, contentIndex);
-    attrs.isVisibleInWindow = this.get('isVisibleInWindow');
-    attrs.isGroupView = isGroupView;
-    attrs.column = column;
-    attrs.layout = this.layoutForContentIndex(index);
-    if (!attrs.layout) attrs.layout = ExampleView.prototype.layout;
+      cellViews = ret._sc_cell_views = [];
 
-    return attrs;
+      for(var i = 0, len = columns.get('length'); i < len; i++) {
+        cell = this._createNewCellView(ret, i, attrs);
+        cellViews[i] = cell;
+        cells.push(cell);
+      }
+
+      ret.set('childViews', cells);
+      // ret.replaceLayer();
+
+      return ret;
+    },
   },
-
-  /* 
-    These methods are for translating back from transformed indexes
-    (i.e. [0, 1, 2] => content[0] for 3 columns).
-  */  
-
-  columnForIndex: function(idx) {
+  
+  cellViewForColumn: function(col) {
     var columns = this.get('columns'),
-      num = columns.get('length');
-      
-    return idx % num;
-  },
-  
-  contentItemForIndex: function(idx) {
-    return this.get('content').objectAt(this.contentIndexForIndex(idx));
-  },
-  
-  contentIndexForIndex: function(idx) {
-    var numColumns = this.getPath('columns.length');
-    return Math.floor(idx / numColumns);
-  },
-  
-  
-  /*
-    Takes the transformed index and breaks out the row and column indexes,
-    then spits out the layout
-  */
+      column = columns.objectAt(col),
+      ret;
 
-  layoutForContentIndex: function(idx) {
-    var ret = arguments.callee.base.call(this, this.contentIndexForIndex(idx)),
-      columns = this.get('columns'),
-      col = this.columnForIndex(idx);
+    if(ret = column.get('exampleView')) return ret;
 
-    ret.left = this.offsetForColumnIndex(col);
-    ret.width = columns.objectAt(col).get('width')
-
-    return ret;
+    return this.get('cellView');
   },
-  
-  /*
-    Basically does the same thing as #rowOffsetForContentIndex but for columns
-  */
-  
-  offsetForColumnIndex: function(idx) {
-    var offsets = this._colOffsets,
-      offset, columns;
-  
-    if(!offsets) {
-      offsets = this._colOffsets = [];
-    }
+
+
+
+  wakePooledView: function(view, attrs) {
+    // configure
+    this.configureItemView(view, attrs);
+
+    // awake from the pool, etc.
+    if (view.awakeFromPool) item.awakeFromPool(view.owningPool, this);
     
-    if(!(offset = offsets[idx])) {
-      columns = this.get('columns');
-  
-      if(idx === 0) {
-        offsets[idx] = 0;
+    var layer = view.get('layer')
+    layer.style.top = attrs.layout.top + "px"
+    
+    return
+    
+    var columns = this.get('columns'),
+      column, cell, E;
+      
+    for(var i = 0, len = columns.get('length'); i < len; i++) {
+      cell = view._sc_cell_views[i];
+
+      if (cell.isPoolable) {
+        cell.beginPropertyChanges();
+        cell.set('contentIndex', attrs.contentIndex);
+        // cell.set('content', attrs.content);
+        cell.set('layerId', view.get('layerId') + '-' + i)
+        cell.endPropertyChanges();
       } else {
-        offsets[idx] = this.offsetForColumnIndex(idx - 1) + columns.objectAt(idx - 1).get('width');
+        cell.destroy();
+        cell = this._createNewCellView(view, i, attrs);
+        view._sc_cell_views[i] = cell;
+        view.appendChild(cell);
       }
     }
+  },
+
+  _createNewCellView: function(itemView, col, attrs) {
+    var columns = this.get('columns'),
+      column = columns.objectAt(col),
+      E = this.cellViewForColumn(col),
+      attrs = SC.clone(attrs);
+
+    attrs.parentView = itemView;
+    attrs.layerId = itemView.get('layerId') + '-' + col
+    attrs.column = column;
+    attrs.columnIndex = col;
+    attrs.contentValueKey = column.get('key');
+    attrs.layout = this.layoutForColumn(col);
+    (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
+    
+    return E.create(attrs);
+  },
   
-    return offsets[idx];
+  layoutForColumn: function(col) {
+    var columns = this.get('columns'),
+      column = columns.objectAt(col),
+      width = column.get('width');
+      
+    return {
+      left: this.offsetForColumn(col),
+      width: this.widthForColumn(col)
+    };
+  },
+  
+  offsetForColumn: function(col) {
+    if(col === 0) return 0;
+
+    var offsets = (this._columnOffsets || (this._columnOffsets = []));
+    
+    offsets[col] = this.offsetForColumn(col - 1) + this.widthForColumn(col - 1);
+    
+    return offsets[col];
+  },
+  
+  widthForColumn: function(col) {
+    var columns = this.get('columns'),
+      column = columns.objectAt(col),
+      width = column.get('width');
+      
+    return width;
   }
 
 });
