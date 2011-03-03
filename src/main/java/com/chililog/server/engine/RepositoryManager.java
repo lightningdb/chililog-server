@@ -31,10 +31,23 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * The repository manager is responsible managing for start/stop/reload our repositories
+ * The repository manager is responsible managing for start/stop/reload all our repositories (as represented by the 
+ * {@link Repository} class).
  * </p>
+ * 
+ * <pre>
+ * // Start all repositories
+ * RepositoryManager.getInstance().start();
+ * 
+ * // Reload individual repositories if repository configuration has been updated
+ * RepositoryManager.getInstance().loadRepositories();
+ * 
+ * // Stop all repositories
+ * RepositoryManager.getInstance().stop();
+ * </pre>
+ * 
  * <p>
- * It is assumed that mongoDB and HornetQ is started.
+ * It is assumed that mongoDB and HornetQ (via {@link MqManager}) has been started.
  * </p>
  * 
  * @author vibul
@@ -83,7 +96,7 @@ public class RepositoryManager
      * Should be called once at the start of the application
      * </p>
      */
-    public synchronized void startup() throws ChiliLogException
+    public synchronized void start() throws ChiliLogException
     {
         loadRepositories();
         for (Repository repo : _repositories)
@@ -220,7 +233,7 @@ public class RepositoryManager
      * 
      * @throws Exception
      */
-    public synchronized void shutdown() throws Exception
+    public synchronized void stop() throws Exception
     {
         for (Repository repo : _repositories)
         {

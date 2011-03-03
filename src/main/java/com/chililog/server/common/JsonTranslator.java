@@ -78,7 +78,7 @@ public class JsonTranslator
         try
         {
             GsonBuilder builder = new GsonBuilder();
-            if (AppProperties.getInstance().getJsonPetty())
+            if (AppProperties.getInstance().getJsonPretty())
             {
                 builder.setPrettyPrinting();
             }

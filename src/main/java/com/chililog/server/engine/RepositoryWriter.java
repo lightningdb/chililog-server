@@ -33,7 +33,10 @@ import com.chililog.server.data.RepositoryEntryBO;
 import com.mongodb.DB;
 
 /**
- * Responsible for reading entries off the message queue and writing it to mongoDB
+ * <p>
+ * The RepositoryWriter runs as a worker thread that reading entries off the message queue, parses them and writes them
+ * to mongoDB.
+ * </p>
  * 
  * @author vibul
  * 

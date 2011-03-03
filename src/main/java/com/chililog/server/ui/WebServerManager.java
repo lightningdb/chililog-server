@@ -34,10 +34,24 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * Manages the web server used to serve up REST API and WorkBench to our users.
+ * The WebServerManager controls the embedded Netty web server used to provide ChiliLog's management, analysis and
+ * notification functions to users.
+ * </p>
+ * 
+ * <pre>
+ * // Start web server
+ * WebServerManager.getInstance().start();
+ * 
+ * // Stop web server
+ * WebServerManager.getInstance().stop();
+ * </pre>
+ * 
+ * <p>
+ * The web server's request handling pipeline is setup by {@link HttpServerPipelineFactory}.
  * </p>
  * <p>
- * The web server is the user's gateway to ChiliLog's management, analysis and notification functions.
+ * The pipeline uses {@link HttpRequestHandler} to route requests to services for processing. Routing is based on the
+ * request URI.  Example of servers are {@link EchoService} and {@link StaticFileService}.
  * </p>
  * 
  * @author vibul

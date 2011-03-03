@@ -50,6 +50,14 @@ import com.chililog.server.common.Log4JLogger;
  * <li><code>/static/*</code> - static file service serves up static files</li>
  * </ul>
  * </p>
+ * <p>
+ * If a route cannot be found, 404 Not Found is returned.
+ * </p>
+ * <p>
+ * If there an uncaught exception during processing, a 500 Internal Server Error is returned. The content of the
+ * response is set to the error message. The content type is "text/plain".
+ * 
+ * </p>
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 {
@@ -77,6 +85,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             }
 
             // Route
+            // Could have used reflection but since we have so few routes, it is quicker to hard code
             uri = uri.toLowerCase();
             if (uri.startsWith("/api/"))
             {

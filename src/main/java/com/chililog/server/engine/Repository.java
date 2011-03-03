@@ -25,15 +25,29 @@ import org.apache.commons.lang.NullArgumentException;
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
+import com.chililog.server.data.RepositoryController;
+import com.chililog.server.data.RepositoryEntryBO;
 import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 
 /**
  * <p>
- * A repository is a collection of message queues and worker threads. The message queues allows to communicate with the
- * outside world while the worker threads does all the processing.
+ * From a logical view point, a repository is a "bucket" within ChiliLog where entries from one or more logs are be
+ * stored.
  * </p>
- * 
+ * <p>
+ * From a software view point:
+ * </p>
+ * <ul>
+ * <li>a repository's specification or meta-data is represented by {@link RepositoryInfoBO}.</li>
+ * <li>an individual repository entry (a line in a log file) is represented by {@link RepositoryEntryBO} and is stored
+ * in mongoDB as a record in a collection.</li>
+ * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
+ * processing.</li>
+ * <li>The worker threads, {@link RepositoryWriter}, reads the queued log entries and writes them to mongoDB using
+ * {@link RepositoryController} classes. The exact type of controller is specified as part of the repository definition
+ * in {@link RepositoryInfoBO}.</li>
+ * </ul>
  * 
  * @author vibul
  * 
@@ -113,7 +127,7 @@ public class Repository
         {
             return;
         }
-        
+
         startQueue();
         startWriters();
         _status = Status.ONLINE;
@@ -164,7 +178,7 @@ public class Repository
      * @throws ChiliLogException
      */
     public void startWriters() throws ChiliLogException
-    {                
+    {
         // Make sure existing threads are stopped
         stopWriters();
 

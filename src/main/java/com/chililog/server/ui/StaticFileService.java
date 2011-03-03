@@ -69,8 +69,34 @@ import com.chililog.server.common.Log4JLogger;
  * </p>
  * <p>
  * The number of seconds that browsers are expected to cache all files is specified by the
- * <code>web.static_files.cache_seconds</code> in the <code>app.properties</code> file.
+ * <code>web.static_files.cache_seconds</code> in the <code>app.properties</code> file. This is how caching works
  * </p>
+ * 
+ * <pre>
+ * Request #1 Headers
+ * ===================
+ * GET /static/file1.txt HTTP/1.1
+ * 
+ * Response #1 Headers
+ * ===================
+ * HTTP/1.1 200 OK
+ * Date:               Tue, 01 Mar 2011 22:44:26 GMT
+ * Last-Modified:      Wed, 30 Jun 2010 21:36:48 GMT
+ * Expires:            Tue, 01 Mar 2012 22:44:26 GMT
+ * Cache-Control:      private, max-age=31536000
+ * 
+ * Request #2 Headers
+ * ===================
+ * GET /static/file1.txt HTTP/1.1
+ * If-Modified-Since:  Wed, 30 Jun 2010 21:36:48 GMT
+ * 
+ * Response #2 Headers
+ * ===================
+ * HTTP/1.1 304 Not Modified
+ * Date:               Tue, 01 Mar 2011 22:44:28 GMT
+ * 
+ * </pre>
+ * 
  * <p>
  * Compression is turned off for all files except those that:
  * <ul>
@@ -322,8 +348,8 @@ public class StaticFileService extends Service
         }
 
         String s = filePath.toLowerCase();
-        if (s.endsWith(".html") || s.endsWith(".htm") || s.endsWith(".js") || s.endsWith(".css") || s.endsWith(".txt")
-                || s.endsWith(".json") || s.endsWith(".xml"))
+        if (s.endsWith(".html") || s.endsWith(".js") || s.endsWith(".css") || s.endsWith(".txt") || s.endsWith(".json")
+                || s.endsWith(".xml"))
         {
             return true;
         }

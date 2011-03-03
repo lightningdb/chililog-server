@@ -94,7 +94,7 @@ public class App
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());
 
         MqManager.getInstance().start();
-        RepositoryManager.getInstance().startup();
+        RepositoryManager.getInstance().start();
         WebServerManager.getInstance().start();
 
         Thread.sleep(2000);
@@ -111,7 +111,7 @@ public class App
     {
         _logger.info("CHILILOG Server shutting down.");
 
-        RepositoryManager.getInstance().shutdown();
+        RepositoryManager.getInstance().stop();
         MqManager.getInstance().stop();
         WebServerManager.getInstance().stop();
 

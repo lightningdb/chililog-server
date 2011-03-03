@@ -52,8 +52,18 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * Manages our HornetQ server and connections to it
+ * The Message Queue Manager hides the complexities of the embedded HornetQ server. It provides a simple API to manage
+ * the HornetQ server including start, stop, querying queues and establishing connections to the server for message
+ * processing.
  * </p>
+ * 
+ * <pre>
+ * // Start HornetQ
+ * MqManager.getInstance().start();
+ * 
+ * // Stop HornetQ
+ * MqManager.getInstance().stop();
+ * </pre>
  * 
  * @author vibul
  * 

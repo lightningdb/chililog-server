@@ -179,7 +179,7 @@ h3. 3.1 Definitions
 
 * *Log Entry*<br/>A record, detailing a specific event or activity, that is stored in a log.  For example, for a text log file, a log entry maybe considered as a line item. 
 
-* *Repository*<br/>A "bucket" within ChiliLog where one or more logs can be stored.
+* *Repository*<br/>A "bucket" within ChiliLog where entries from one or more logs are be stored.
 
 * *Repository Entry*<br/>A record, detailing a specific event or activity, that is stored in a repository.  It corresponds to a log entry.
 

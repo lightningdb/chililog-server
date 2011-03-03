@@ -32,7 +32,9 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 import com.chililog.server.common.AppProperties;
 
 /**
+ * <p>
  * Sets up the pipeline of handlers for incoming HTTP requests.
+ * </p>
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory
 {

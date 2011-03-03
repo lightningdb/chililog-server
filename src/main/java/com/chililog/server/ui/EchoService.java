@@ -80,8 +80,8 @@ public class EchoService extends Service
             }
 
             buf.setLength(0);
-            buf.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-            buf.append("===================================\r\n");
+            buf.append("WELCOME TO THE CHILILOG WEB SERVER\r\n");
+            buf.append("==================================\r\n");
 
             buf.append("SERVER TIME: " + new Date().toString() + "\r\n");
             buf.append("HTTP VERSION: " + request.getProtocolVersion() + "\r\n");

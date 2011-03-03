@@ -338,7 +338,7 @@ public class AppProperties
     /**
      * If true, JSON serialization is to be human readable. If false, white spaces will be eliminated.
      */
-    public boolean getJsonPetty()
+    public boolean getJsonPretty()
     {
         return _jsonPretty;
     }
@@ -347,7 +347,7 @@ public class AppProperties
 
     private boolean _jsonPretty = false;
 
-    static boolean loadJsonPetty(Properties properties)
+    static boolean loadJsonPretty(Properties properties)
     {
         return loadBoolean(properties, JSON_PRETTY, false);
     }
