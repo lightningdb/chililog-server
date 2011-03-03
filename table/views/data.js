@@ -7,11 +7,11 @@
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   rowHeight: 30,
+  rowSpacing: 1,
   
-  backgroundColor: 'grey',
+  // reloadIfNeeded: function(nowShowing, scrollOnly) {
   
   exampleView: SC.View.extend({
-    backgroundColor: 'white',
     isPoolable: YES,
     layerIsCacheable: YES,
 
@@ -21,31 +21,56 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       if(this._hasSlept)
         return
         
+      // why is the layer getting detached and why does this stop it?
       this._sc_cell_views.forEach(function(c) {
-        c.get('layer')
+        c.get('contentView').get('layer')
       }, this)
       
       this._hasSlept = YES
     },
     
+    // we'll handle layout from hereon out thank you
     renderLayout: function(context, firstTime) {
       if(firstTime)
         sc_super()
+    },
+    
+    render: function(context, firstTime) {
+      var classArray = [];
+
+      classArray.push((this.get('contentIndex') % 2 === 0) ? 'even' : 'odd');
+      context.addClass(classArray);
+
+      sc_super();
+    },
+    
+    // reset classes
+    awakeFromPool: function() {
+      var layer = this.$();
+      var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
+      layer.toggleClass('even', eo == 'even')
+      layer.toggleClass('odd', eo == 'odd')
     }
+    
+  }),
+  
+  cellView: SC.View.extend({
+    isPoolable: YES,
+    classNames: ['table-cell']
   }),
 
-  cellView: SC.LabelView.extend({
-    backgroundColor: 'white',
+  cellContentView: SC.LabelView.extend({
     isPoolable: YES,
     layerIsCacheable: YES,
     contentValueKeyBinding: '*column.key'
   }),
+
   
   init: function() {
     sc_super();
 
+    // sc_super doesnt work with mixins, so cache and then call separately
     this._allocateItemView = this.allocateItemView;
-    
     this.allocateItemView = function(exampleView, attrs) {
       var ret = this._allocateItemView(exampleView, attrs),
         columns = this.get('columns'),
@@ -60,8 +85,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       }
 
       ret.set('childViews', cells);
-      // ret.replaceLayer();
-
       return ret;
     },
   },
@@ -73,22 +96,23 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
 
     if(ret = column.get('exampleView')) return ret;
 
-    return this.get('cellView');
+    return this.get('cellContentView');
   },
-
-
 
   wakePooledView: function(view, attrs) {
     // configure
     this.configureItemView(view, attrs);
 
     // awake from the pool, etc.
-    if (view.awakeFromPool) item.awakeFromPool(view.owningPool, this);
+    if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
     
     var layer = view.get('layer')
-    layer.style.top = attrs.layout.top + "px"
-    
-    return
+    if (SC.platform.touch) {
+      layer.style.top = ''
+      this._repositionView(layer, attrs.layout)
+    } else {
+      layer.style.top = attrs.layout.top + "px"
+    }
     
     var columns = this.get('columns'),
       column, cell, E;
@@ -99,8 +123,14 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       if (cell.isPoolable) {
         cell.beginPropertyChanges();
         cell.set('contentIndex', attrs.contentIndex);
-        // cell.set('content', attrs.content);
         cell.set('layerId', view.get('layerId') + '-' + i)
+        cell.endPropertyChanges();
+
+        cell = cell.get('contentView')
+        cell.beginPropertyChanges();
+        cell.set('contentIndex', attrs.contentIndex);
+        cell.set('content', attrs.content);
+        cell.set('layerId', view.get('layerId') + '-' + i + '-content')
         cell.endPropertyChanges();
       } else {
         cell.destroy();
@@ -115,17 +145,24 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     var columns = this.get('columns'),
       column = columns.objectAt(col),
       E = this.cellViewForColumn(col),
+      wrapper = this.get('cellView'),
       attrs = SC.clone(attrs);
 
-    attrs.parentView = itemView;
+
+    // attrs.parentView = itemView;
     attrs.layerId = itemView.get('layerId') + '-' + col
     attrs.column = column;
     attrs.columnIndex = col;
     attrs.contentValueKey = column.get('key');
     attrs.layout = this.layoutForColumn(col);
     (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
-    
-    return E.create(attrs);
+
+    return wrapper.create(attrs, {
+      childViews: ['contentView'],
+      contentView: E.extend(attrs, {layerId: attrs.layerId + '-content', layout: {left: 10, right: 10}})
+    })
+
+    // return E.create(attrs);
   },
   
   layoutForColumn: function(col) {
@@ -155,6 +192,15 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       width = column.get('width');
       
     return width;
+  },
+  
+  _repositionView: function(layer, layout) {
+    var transform = "";
+    transform += 'translate3d(0px, ' + layout.top + 'px,0) ';
+    if (layer) {
+      layer.style.webkitTransform = transform;
+      layer.style.webkitTransformOrigin = "top left";
+    }
   }
 
 });

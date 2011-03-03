@@ -20,18 +20,19 @@ SC.TableView = SC.View.extend({
     @type SC.Array
   */
   content: null,
+  columns: null,
   
   /**
     The height of each row in the TableView
     
     @property {Number}
   */
-  rowHeight:22,
+  rowHeight:30,
   
-  selection:null,
-  
-  target:null,
-  action:null,
+  // selection:null,
+  // 
+  // target:null,
+  // action:null,
   
   /**
     IF YES, a table header will be rendered. Note that if a table header is not rendered, 
@@ -40,6 +41,7 @@ SC.TableView = SC.View.extend({
     @property {Boolean}
   */
   useHeaders: YES,
+  // useHeaders: NO,
   
   /**
     The height of the header row
@@ -60,7 +62,7 @@ SC.TableView = SC.View.extend({
     
     @property {SC.View}
   */
-  exampleView: SC.ListItemView,
+  // exampleView: SC.ListItemView,
   
   /**
     An example ScrollView that will be used to paint the scrollpane of the tableView. 
@@ -76,7 +78,7 @@ SC.TableView = SC.View.extend({
     
     @property {SC.ListView}
   */
-  exampleFolderedListView: null,
+  // exampleFolderedListView: null,
   
   /**
     Use this method to swap out a column on the columns collection.
@@ -84,29 +86,29 @@ SC.TableView = SC.View.extend({
     @property {SC.TableColumn} column The column object that should be added to the collection.
     @property {Number} idx The index of the column to be replaced.
   */
-  replaceColumn: function(column, idx){
-    var columns=this.get('columns').copy();
-        
-    if (idx>=columns.length){
-      return;
-    }
-    
-    columns[idx]=column;
-    this.set('columns',columns);
-    columns=null;
-  },
+  // replaceColumn: function(column, idx){
+  //   var columns=this.get('columns').copy();
+  //       
+  //   if (idx>=columns.length){
+  //     return;
+  //   }
+  //   
+  //   columns[idx]=column;
+  //   this.set('columns',columns);
+  //   columns=null;
+  // },
   
-  isSelectable: YES,
-  isEditable: YES,
-  canEditContent: YES,
+  // isSelectable: YES,
+  // isEditable: YES,
+  // canEditContent: YES,
   
   /**
      Equivalent of the orderBy property of an SC.ArrayController. It is actually bound to the content orderBy property
 
      @private
    */
-  sortDescriptor: null,
-  sortDescriptorBinding: '*content.orderBy',
+  // sortDescriptor: null,
+  // sortDescriptorBinding: '*content.orderBy',
   
   createChildViews: function() {
     
@@ -149,48 +151,48 @@ SC.TableView = SC.View.extend({
     }));
     
     childViews.push(childView);
-    
-    if (this.get('exampleFolderedListView'))
-    {
-      
-      this._dataView = childView = this.createChildView(this.get('exampleScrollView').design({
-        autohidesVerticalScroller: NO,
-        layout: { left: 6, right: 0, top: this.get('headerHeight'), bottom: 0 },
-        verticalScrollOffset:0,
-        hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
-        contentView: this.get('exampleFolderedListView').design({
-          layout:{top:0,left:0,right:0,bottom:0},
-          // exampleView: this.get('exampleView'),
-          keys: [],
-          columnWidths: [],
-          rowHeight: this.get('rowHeight'),
-          table: this,
-          contentBinding: SC.Binding.from('.content.arrangedObjects',this),
-          selectionBinding: SC.Binding.from('.selection',this),
-          targetBinding: SC.Binding.from('.target',this),
-          actionBinding: SC.Binding.from('.action',this),
-          contentValueKey: 'name',
-          hasContentIcon: this.get('hasContentIcon'),
-          contentIconKey: 'icon',
-          newTargetBinding: SC.Binding.from('.delegate',this),
-          newActionBinding: SC.Binding.from('.newAction',this),
-          canReorderContent: this.get('canReorderContent'),
-          canEditContent: this.get('canEditContent'),
-          canDeleteContent: this.get('canDeleteContent'),
-          allowDeselectAll: this.get('allowDeselectAll'),
-          delegate: this.get('delegate'),
-          beginEditingSelectionBinding: this.get('beginEditingSelectionPath') || SC.binding('.beginEditingSelection',this.get('delegate')),
-          folderedListViewDelegate: this.get('delegate'),
-          isDropTarget: this.get('isDropTarget'),
-          isSelectable: this.get('isSelectable'),
-          allowActionOnFolder: this.get('allowActionOnFolder'),
-          needsContextMenuBinding: SC.Binding.from('.needsContextMenu',this)
-        })
-      }));
-    }
-    
-    else
-    {
+    // 
+    // if (this.get('exampleFolderedListView'))
+    // {
+    //   
+    //   this._dataView = childView = this.createChildView(this.get('exampleScrollView').design({
+    //     autohidesVerticalScroller: NO,
+    //     layout: { left: 6, right: 0, top: this.get('headerHeight'), bottom: 0 },
+    //     verticalScrollOffset:0,
+    //     hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
+    //     contentView: this.get('exampleFolderedListView').design({
+    //       layout:{top:0,left:0,right:0,bottom:0},
+    //       // exampleView: this.get('exampleView'),
+    //       keys: [],
+    //       columnWidths: [],
+    //       rowHeight: this.get('rowHeight'),
+    //       table: this,
+    //       contentBinding: SC.Binding.from('.content.arrangedObjects',this),
+    //       selectionBinding: SC.Binding.from('.selection',this),
+    //       targetBinding: SC.Binding.from('.target',this),
+    //       actionBinding: SC.Binding.from('.action',this),
+    //       contentValueKey: 'name',
+    //       hasContentIcon: this.get('hasContentIcon'),
+    //       contentIconKey: 'icon',
+    //       newTargetBinding: SC.Binding.from('.delegate',this),
+    //       newActionBinding: SC.Binding.from('.newAction',this),
+    //       canReorderContent: this.get('canReorderContent'),
+    //       canEditContent: this.get('canEditContent'),
+    //       canDeleteContent: this.get('canDeleteContent'),
+    //       allowDeselectAll: this.get('allowDeselectAll'),
+    //       delegate: this.get('delegate'),
+    //       beginEditingSelectionBinding: this.get('beginEditingSelectionPath') || SC.binding('.beginEditingSelection',this.get('delegate')),
+    //       folderedListViewDelegate: this.get('delegate'),
+    //       isDropTarget: this.get('isDropTarget'),
+    //       isSelectable: this.get('isSelectable'),
+    //       allowActionOnFolder: this.get('allowActionOnFolder'),
+    //       needsContextMenuBinding: SC.Binding.from('.needsContextMenu',this)
+    //     })
+    //   }));
+    // }
+    // 
+    // else
+    // {
       this._dataView = childView = this.createChildView(this.get('exampleScrollView').design({
         isVisible: YES,
         layout: {
@@ -201,7 +203,7 @@ SC.TableView = SC.View.extend({
         },
         hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
         borderStyle: SC.BORDER_NONE,
-        contentView: SC.DataView.design({
+        contentView: Endash.DataView.design({
 
           classNames: ['sc-table-data-view'],
 
@@ -233,15 +235,15 @@ SC.TableView = SC.View.extend({
         autohidesVerticalScroller: NO,
         horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this)
       }));
-    }
+    // }
     
     childViews.push(childView);
     
     this.set('childViews',childViews);
     
-    if (this.get('exampleFolderedListView')){
-      this._sctv_updateFolderedListViewProperties();
-    }
+    // if (this.get('exampleFolderedListView')){
+      // this._sctv_updateFolderedListViewProperties();
+    // }
     
     if(!this.columnsBinding)
     {
@@ -290,6 +292,7 @@ SC.TableView = SC.View.extend({
      @private
    */
   _sctv_resetRules: function() {
+    return
     this._offsets = [];
     this._widths = [];
     

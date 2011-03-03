@@ -390,6 +390,9 @@ Endash.CollectionFastPath = {
     Reloads.
   */
   reloadIfNeeded: function(nowShowing, scrollOnly) {
+    // if(!this.get('columns'))
+      // return
+      
     var rand = Math.random()
     SC.Benchmark.start('reload ' + rand)
     var content = this.get("content"), invalid;
@@ -667,7 +670,7 @@ Endash.CollectionFastPath = {
   */
   touchScrollDidChange: function(left, top) {
     // prevent getting too many in close succession.
-    if (Date.now() - this._lastTouchScrollTime < 40) return;
+    if (Date.now() - this._lastTouchScrollTime < 35) return;
     
     var clippingFrame = this.get('clippingFrame');
     
