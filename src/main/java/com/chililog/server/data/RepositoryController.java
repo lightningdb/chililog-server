@@ -26,7 +26,7 @@ package com.chililog.server.data;
  * @author vibul
  * 
  */
-public abstract class RepositoryController extends BaseController
+public abstract class RepositoryController extends Controller
 {
     /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates

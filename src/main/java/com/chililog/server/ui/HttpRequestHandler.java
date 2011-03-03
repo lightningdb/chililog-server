@@ -1,11 +1,20 @@
-/*
- * Copyright 2009 Red Hat, Inc. Red Hat licenses this file to you under the Apache License, version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific language governing permissions and limitations under the
- * License.
- */
+//
+// Copyright 2010 Cinch Logic Pty Ltd.
+//
+// http://www.chililog.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package com.chililog.server.ui;
 
@@ -33,33 +42,23 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * Routes handling of the request to other specialised handlers
+ * Route messages to specialised services based on the request URI.
+ * <ul>
+ * <li><code>/echo/*</code> - echo service for testing</li>
+ * <li><code>/api/*</code> - api service exposes a RESTful interface for ChiliLog management and query</li>
+ * <li><code>/workbench/*</code> - workbench service provides a browser based tool for ChiliLog management and query</li>
+ * <li><code>/static/*</code> - static file service serves up static files</li>
+ * </ul>
  * </p>
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
-    private BaseService _service = null;
+    private Service _service = null;
 
     /**
-     * <p>
-     * Route messages a to specialised service based on the request URI.
-     * <ul>
-     * <li>/echo/* - echo service for testing</li>
-     * <li>/api/* - api service exposes a RESTful interface for ChiliLog management and query</li>
-     * <li>/workbench/* - workbench service provides a browser based tool for ChiliLog management and query</li>
-     * <li>/static/* - static file service serves up static files</li>
-     * </ul>
-     * </p>
-     * <p>
-     * Note that we cannot change the existing pipeline so we have to dispatch it to our own handler.
-     * </p>
-     * 
-     * @param ctx
-     *            Context
-     * @param e
-     *            Message event
+     * Handles incoming messages by routing to services
      */
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
@@ -73,10 +72,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             String uri = request.getUri();
             if (StringUtils.isBlank(uri))
             {
-                writeNotFoundResponse(e);
+                send404NotFound(e);
                 return;
             }
 
+            // Route
             uri = uri.toLowerCase();
             if (uri.startsWith("/api/"))
             {
@@ -92,7 +92,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             }
             else
             {
-                writeNotFoundResponse(e);
+                send404NotFound(e);
                 return;
             }
         }
@@ -111,7 +111,24 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
     }
 
     /**
-     * Upon exception, send back a 500 - internal server error
+     * <p>
+     * Upon exception, send an HTTP Response with a status of <code>500 Internal Server Error</code> back to the caller.
+     * </p>
+     * <p>
+     * The error details is returned as text in the response content. For example:
+     * </p>
+     * 
+     * <pre>
+     * ERROR: error message
+     * 
+     * STACK TRACE:  Test Error
+     * at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:68)
+     * at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+     * at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+     * at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+     * at java.lang.reflect.Method.invoke(Method.java:597)
+     * at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
+     * </pre>
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
@@ -119,9 +136,9 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         boolean _willBeClosed = false;
         try
         {
-            Throwable cause = e.getCause();            
+            Throwable cause = e.getCause();
             HttpResponseStatus responseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR;
-            
+
             _logger.error(cause, "ERROR handling request. %1", cause.getMessage());
 
             HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
@@ -129,7 +146,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
             StringBuffer sb = new StringBuffer();
-            sb.append("ERROR: " + e.getCause().getMessage() + "\n");
+            sb.append("ERROR: " + e.getCause().getMessage() + "\n\n");
             sb.append("STACK TRACE: " + e.getCause().toString());
             response.setContent(ChannelBuffers.copiedBuffer(sb.toString(), CharsetUtil.UTF_8));
 
@@ -150,12 +167,12 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
     }
 
     /**
-     * Send back a 404 not found
+     * Sends an HTTP Response with a status of <code>404 Not Found</code> back to the caller
      * 
      * @param e
      *            Message event that we are processing
      */
-    private void writeNotFoundResponse(MessageEvent e)
+    private void send404NotFound(MessageEvent e)
     {
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
         ChannelFuture future = e.getChannel().write(response);

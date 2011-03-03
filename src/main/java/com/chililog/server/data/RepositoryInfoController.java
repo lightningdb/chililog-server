@@ -37,7 +37,7 @@ import com.mongodb.MongoException;
  * @author vibul
  * 
  */
-public class RepositoryInfoController extends BaseController
+public class RepositoryInfoController extends Controller
 {
     public static final String MONGODB_COLLECTION_NAME = "repositories_info";
 

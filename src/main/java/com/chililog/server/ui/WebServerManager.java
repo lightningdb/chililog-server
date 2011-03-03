@@ -34,13 +34,10 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * Manages the HTTP REST and Static File web server.
+ * Manages the web server used to serve up REST API and WorkBench to our users.
  * </p>
  * <p>
- * The REST API is the means by which external tools control and query this ChiliLog server.
- * </p>
- * <p>
- * Serving static files means that the SproutCore UI can be served through the same web server.
+ * The web server is the user's gateway to ChiliLog's management, analysis and notification functions.
  * </p>
  * 
  * @author vibul
@@ -48,8 +45,8 @@ import com.chililog.server.common.Log4JLogger;
  */
 public class WebServerManager
 {
-    static Log4JLogger _logger = Log4JLogger.getLogger(WebServerManager.class);
-    static final ChannelGroup _allChannels = new DefaultChannelGroup("WebServerManager");
+    private static Log4JLogger _logger = Log4JLogger.getLogger(WebServerManager.class);
+    private static final ChannelGroup _allChannels = new DefaultChannelGroup("WebServerManager");
     private ChannelFactory _channelFactory = null;
 
     /**
@@ -96,7 +93,7 @@ public class WebServerManager
             _logger.info("Web Sever Already Started.");
             return;
         }
-        
+
         _logger.info("Starting Web Sever ...");
 
         _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
@@ -112,7 +109,7 @@ public class WebServerManager
         InetSocketAddress socket = new InetSocketAddress(AppProperties.getInstance().getWebIpAddress(), AppProperties
                 .getInstance().getWebIpPort());
         Channel channel = bootstrap.bind(socket);
-                
+
         _allChannels.add(channel);
 
         _logger.info("Starting Web Sever Started.");
@@ -130,7 +127,7 @@ public class WebServerManager
 
         _channelFactory.releaseExternalResources();
         _channelFactory = null;
-        
+
         _logger.info("Web Sever Stopped.");
-}
+    }
 }

@@ -37,7 +37,7 @@ import com.mongodb.MongoException;
  * @author vibul
  * 
  */
-public class UserController extends BaseController
+public class UserController extends Controller
 {
     public static final String MONGODB_COLLECTION_NAME = "users";
 

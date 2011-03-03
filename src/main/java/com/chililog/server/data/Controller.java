@@ -34,12 +34,12 @@ import com.mongodb.WriteConcern;
  * @author vibul
  * 
  */
-public abstract class BaseController
+public abstract class Controller
 {
     /**
      * Basic constructor
      */
-    public BaseController()
+    public Controller()
     {
         return;
     }

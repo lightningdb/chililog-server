@@ -106,7 +106,7 @@ public class AppPropertiesTest
         String s = AppProperties.getInstance().getBuildUserName();
         assertEquals(System.getProperty("user.name"), s);
     }
-
+    
     @Test
     public void testDbIpAddress() throws UnknownHostException
     {

@@ -54,9 +54,9 @@ import org.apache.log4j.Logger;
  * 
  * <h3>Example</h3>
  * 
- * <code>
+ * <pre>
  * AppProperties.getInstance().getBuildTimestamp();
- * </code>
+ * </pre>
  * 
  * <h3>Property Loading</h3>
  * 
@@ -333,6 +333,23 @@ public class AppProperties
     static String loadBuildUserName(Properties properties)
     {
         return loadString(properties, BUILD_USER_NAME);
+    }
+
+    /**
+     * If true, JSON serialization is to be human readable. If false, white spaces will be eliminated.
+     */
+    public boolean getJsonPetty()
+    {
+        return _jsonPretty;
+    }
+
+    static final String JSON_PRETTY = "json.pretty";
+
+    private boolean _jsonPretty = false;
+
+    static boolean loadJsonPetty(Properties properties)
+    {
+        return loadBoolean(properties, JSON_PRETTY, false);
     }
 
     /**
@@ -817,7 +834,7 @@ public class AppProperties
     {
         return loadBoolean(properties, WEB_SSL_ENABLED, false);
     }
-    
+
     /**
      * Returns the path to the key store to use for SSL
      */
@@ -834,7 +851,7 @@ public class AppProperties
     {
         return loadString(properties, WEB_KEY_STORE_PATH, null);
     }
-    
+
     /**
      * Returns the password to the key store to use for SSL
      */
@@ -868,7 +885,7 @@ public class AppProperties
     {
         return loadString(properties, WEB_KEY_STORE_KEY_PASSWORD, null);
     }
-    
+
     /**
      * Returns the path to the trust store to use for SSL
      */
@@ -885,7 +902,7 @@ public class AppProperties
     {
         return loadString(properties, WEB_TRUST_STORE_PATH, null);
     }
-    
+
     /**
      * Returns the password to the trust store to use for SSL
      */
@@ -902,7 +919,7 @@ public class AppProperties
     {
         return loadString(properties, WEB_TRUST_STORE_PASSWORD, null);
     }
-    
+
     /**
      * Returns the password to the trust store to use for SSL
      */
@@ -919,7 +936,7 @@ public class AppProperties
     {
         return loadString(properties, WEB_STATIC_FILES_DIRECTORY, ".");
     }
-    
+
     /**
      * Returns the IP port to use for binding our web server
      */
@@ -936,7 +953,7 @@ public class AppProperties
     {
         return loadInt(properties, WEB_STATIC_FILES_CACHE_SECONDS, 0);
     }
-    
+
     /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 

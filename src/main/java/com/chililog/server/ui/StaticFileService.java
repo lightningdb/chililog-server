@@ -1,11 +1,20 @@
-/*
- * Copyright 2009 Red Hat, Inc. Red Hat licenses this file to you under the Apache License, version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy of the License at:
- * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific language governing permissions and limitations under the
- * License.
- */
+//
+// Copyright 2010 Cinch Logic Pty Ltd.
+//
+// http://www.chililog.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package com.chililog.server.ui;
 
@@ -52,13 +61,31 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * Static file service just sends back static files
+ * Static file service serves static files stored on the file system.
  * </p>
  * <p>
- * This is copied from the Netty File Server sample
+ * The root directory under which to search for file is specified by the <code>web.static_files.directory</code> in the
+ * <code>app.properties</code> file.
+ * </p>
+ * <p>
+ * The number of seconds that browsers are expected to cache all files is specified by the
+ * <code>web.static_files.cache_seconds</code> in the <code>app.properties</code> file.
+ * </p>
+ * <p>
+ * Compression is turned off for all files except those that:
+ * <ul>
+ * <li>have an extension of ".html", ".txt", ".json", ".js", ".xml" or ".css", and</li>
+ * <li>are between 4K and 1MB in size.</li>
+ * </ul>
+ * File extension restrictions are put in as these types of text files are the most common and compress well. We don't
+ * want to compress files that are too small because the result can be bigger than the original. Also, we don't want to
+ * compress files that are too big because it can waste CPU.
+ * </p>
+ * <p>
+ * This code is based on the Netty HTTP File Server sample (http://www.jboss.org/netty/documentation.html).
  * </p>
  */
-public class StaticFileService extends BaseService
+public class StaticFileService extends Service
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileService.class);
     private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
@@ -341,11 +368,11 @@ public class StaticFileService extends BaseService
     {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
-        
+
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
     }
-    
+
     /**
      * Sets the Date and Cache headers for the HTTP Response
      * 
@@ -358,7 +385,7 @@ public class StaticFileService extends BaseService
     {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
-        
+
         // Date header
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
@@ -372,7 +399,7 @@ public class StaticFileService extends BaseService
 
         response.setHeader(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(new Date(filetoCache.lastModified())));
     }
-    
+
     /**
      * Turn on/off compression
      * 
