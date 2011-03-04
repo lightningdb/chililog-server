@@ -18,28 +18,15 @@
 
 package com.chililog.server.ui;
 
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.MessageEvent;
-
 /**
- * Base class for all services responsible for processing HTTP requests.
+ * Codes for strings in the strings.properties file
  * 
  * @author vibul
  * 
  */
-public abstract class Service
+public class Strings
 {
-    public static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    public static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
+    public static final String PREFIX = "UI.";
+    public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFound";
 
-    /**
-     * Process the incoming message
-     * 
-     * @param ctx
-     *            Netty Channel Handler Context
-     * @param e
-     *            Message Event
-     * @throws Exception
-     */
-    public abstract void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception;
 }

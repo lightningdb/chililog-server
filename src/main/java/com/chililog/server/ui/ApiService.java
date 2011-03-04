@@ -30,6 +30,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.NotImplementedException;
@@ -44,10 +48,12 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpChunk;
+import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
+import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.ui.api.ErrorAO;
@@ -179,16 +185,24 @@ public class ApiService extends Service
      */
     private void instanceApiProcessor() throws Exception
     {
-        String uri = _request.getUri();
-        String[] segments = uri.split("/");
-        String apiName = segments[1];
+        String className = null;
+        try
+        {
+            String uri = _request.getUri();
+            String[] segments = uri.split("/");
+            String apiName = segments[2];
 
-        apiName = WordUtils.capitalizeFully(apiName, new char[]
-        { '_' });
+            apiName = WordUtils.capitalizeFully(apiName, new char[]
+            { '_' });
 
-        String className = "com.chililog.server.ui.api." + apiName;
-        Class<?> apiClass = ClassUtils.getClass(className);
-        _apiProcessor = (Worker) ConstructorUtils.invokeConstructor(apiClass, null);
+            className = "com.chililog.server.ui.api." + apiName;
+            Class<?> apiClass = ClassUtils.getClass(className);
+            _apiProcessor = (Worker) ConstructorUtils.invokeConstructor(apiClass, null);
+        }
+        catch (ClassNotFoundException ex)
+        {
+            throw new ChiliLogException(ex, Strings.API_NOT_FOUND_ERROR, className, _request.getUri());
+        }
     }
 
     /**
@@ -262,6 +276,7 @@ public class ApiService extends Service
 
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getResponseStatus());
+        setDateHeader(response);
         response.setHeader(CONTENT_TYPE, result.getResponseContentType());
 
         if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray)
@@ -304,19 +319,20 @@ public class ApiService extends Service
 
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
+        setDateHeader(response);
         response.setHeader(CONTENT_TYPE, "text/json; charset=UTF-8");
 
         ErrorAO errorAO = new ErrorAO(ex);
-        
+
         ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(4096);
         ChannelBufferOutputStream os = new ChannelBufferOutputStream(buffer);
         PrintStream ps = new PrintStream(os, true, "UTF-8");
         JsonTranslator.getInstance().toJson(errorAO, ps);
         ps.close();
-        os.close();       
-        
+        os.close();
+
         response.setContent(buffer);
-        
+
         if (keepAlive)
         {
             // Add 'Content-Length' header only for a keep-alive connection.
@@ -362,4 +378,20 @@ public class ApiService extends Service
         e.getChannel().write(response);
     }
 
+    /**
+     * Sets the Date header for the HTTP response
+     * 
+     * @param response
+     *            HTTP response
+     * @param file
+     *            file to extract content type
+     */
+    private void setDateHeader(HttpResponse response)
+    {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
+
+        Calendar time = new GregorianCalendar();
+        response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+    }
 }

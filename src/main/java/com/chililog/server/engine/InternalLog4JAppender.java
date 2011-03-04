@@ -26,7 +26,7 @@ import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.data.BaseBO;
+import com.chililog.server.data.BO;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.MongoUtils;
 import com.chililog.server.data.RepositoryEntryBO;
@@ -134,7 +134,7 @@ public class InternalLog4JAppender extends AppenderSkeleton
             MongoUtils.setDate(dbObject, RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new Date());
             MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME, "");
 
-            MongoUtils.setLong(dbObject, BaseBO.RECORD_VERSION_FIELD_NAME, (long) 1);
+            MongoUtils.setLong(dbObject, BO.RECORD_VERSION_FIELD_NAME, (long) 1);
 
             _coll.insert(dbObject);
 

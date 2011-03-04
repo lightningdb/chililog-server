@@ -35,7 +35,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryInfoBO extends BaseBO implements Serializable
+public class RepositoryInfoBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 

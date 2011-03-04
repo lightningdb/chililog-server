@@ -206,7 +206,7 @@ public class RepositoryInfoController extends Controller
         query.put(RepositoryInfoBO.NAME_FIELD_NAME, repository.getName());
         if (repository.isExistingRecord())
         {
-            query.put(BaseBO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getInternalID()));
+            query.put(BO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getInternalID()));
         }
         long i = coll.getCount(query);
         if (i > 0)

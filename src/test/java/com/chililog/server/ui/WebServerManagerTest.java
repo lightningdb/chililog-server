@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.ParseException;
@@ -95,7 +96,7 @@ public class WebServerManagerTest
     }
 
     /**
-     * We should get back a 404 file not found
+     * We should get back a 404 file not found when we cannot route to a service
      * 
      * @throws IOException
      */
@@ -328,6 +329,68 @@ public class WebServerManagerTest
     }
 
     /**
+     * Check if our 304 Not Modified is working when getting a static file.
+     * 
+     * @throws IOException
+     * @throws ParseException
+     */
+    @Test()
+    public void testApiNotFound() throws IOException, ParseException
+    {
+        // ******************************************************
+        // Cache Validation
+        // ******************************************************
+        URL url = new URL("http://localhost:8989/api/notfound");
+        URLConnection conn = url.openConnection();
+
+        StringBuffer sb = new StringBuffer();
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (IOException ex)
+        {
+            HttpURLConnection httpConn = (HttpURLConnection)conn;
+            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
+            String str;
+            while ((str = in.readLine()) != null)
+            {
+                sb.append(str + "\n");
+            }
+            in.close();
+        }
+
+        HashMap<String, String> headers2 = new HashMap<String, String>();
+        String responseCode = "";
+        for (int i = 0;; i++)
+        {
+            String name = conn.getHeaderFieldKey(i);
+            String value = conn.getHeaderField(i);
+            if (name == null && value == null)
+            {
+                break;
+            }
+            if (name == null)
+            {
+                responseCode = value;
+                _logger.debug("*** Cache Call, Response code: %s", value);
+            }
+            else
+            {
+                headers2.put(name, value);
+                _logger.debug("%s = %s", name, value);
+            }
+        }
+        _logger.debug(sb.toString());
+        
+        // Should get back a 304
+        assertEquals("HTTP/1.1 500 Internal Server Error", responseCode);
+        assertTrue(!StringUtils.isBlank(headers2.get("Date")));
+        assertTrue(sb.toString().contains("\"Message\": \"Cannot find API class 'com.chililog.server.ui.api.Notfound' for URI: '/api/notfound.'\""));
+    }
+
+    /**
      * Uncompress. See http://www.jcraft.com/jzlib/. This is the same lib that is used inside netty
      * 
      * @param input
@@ -384,7 +447,7 @@ public class WebServerManagerTest
     /**
      * Create a random string
      */
-    public class RandomString
+    public static class RandomString
     {
 
         private final char[] symbols = new char[36];

@@ -20,7 +20,6 @@ package com.chililog.server.common;
 
 import static org.junit.Assert.*;
 
-import org.apache.log4j.Logger;
 import org.junit.Test;
 
 /**
@@ -30,7 +29,7 @@ import org.junit.Test;
  */
 public class ChiliLogExceptionTest
 {
-    private static Logger _logger = Logger.getLogger(ChiliLogExceptionTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(ChiliLogExceptionTest.class);
 
     @Test
     public void testNoSubstitutes()

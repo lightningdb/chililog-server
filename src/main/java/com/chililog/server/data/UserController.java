@@ -214,7 +214,7 @@ public class UserController extends Controller
         query.put(UserBO.USERNAME_FIELD_NAME, user.getUsername());
         if (user.isExistingRecord())
         {
-            query.put(BaseBO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", user.getInternalID()));
+            query.put(BO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", user.getInternalID()));
         }
         long i = coll.getCount(query);
         if (i > 0)

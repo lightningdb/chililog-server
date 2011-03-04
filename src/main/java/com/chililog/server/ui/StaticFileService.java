@@ -114,8 +114,6 @@ import com.chililog.server.common.Log4JLogger;
 public class StaticFileService extends Service
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileService.class);
-    private static final String HTTP_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
-    private static final String HTTP_DATE_GMT_TIMEZONE = "GMT";
 
     /**
      * Process the message

@@ -38,7 +38,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class UserBO extends BaseBO implements Serializable
+public class UserBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -242,7 +242,7 @@ public class UserBO extends BaseBO implements Serializable
      * @author vibul
      * 
      */
-    public enum Status
+    public static enum Status
     {
         /**
          * User can login

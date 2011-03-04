@@ -69,7 +69,7 @@ public abstract class Controller
      * @throws ChiliLogException
      *             if there is an error during saving
      */
-    public void save(DB db, BaseBO businessObject) throws ChiliLogException
+    public void save(DB db, BO businessObject) throws ChiliLogException
     {
         if (db == null)
         {
@@ -87,17 +87,17 @@ public abstract class Controller
             if (businessObject.isExistingRecord())
             {
                 long recordVersion = businessObject.getRecordVersion();
-                obj.put(BaseBO.RECORD_VERSION_FIELD_NAME, recordVersion + 1);
+                obj.put(BO.RECORD_VERSION_FIELD_NAME, recordVersion + 1);
 
                 BasicDBObject query = new BasicDBObject();
-                query.put(BaseBO.INTERNAL_ID_FIELD_NAME, obj.get(BaseBO.INTERNAL_ID_FIELD_NAME));
-                query.put(BaseBO.RECORD_VERSION_FIELD_NAME, recordVersion);
+                query.put(BO.INTERNAL_ID_FIELD_NAME, obj.get(BO.INTERNAL_ID_FIELD_NAME));
+                query.put(BO.RECORD_VERSION_FIELD_NAME, recordVersion);
 
                 coll.update(query, obj, false, false, this.getDBWriteConern());
             }
             else
             {
-                obj.put(BaseBO.RECORD_VERSION_FIELD_NAME, (long)1);
+                obj.put(BO.RECORD_VERSION_FIELD_NAME, (long)1);
                 coll.insert(obj);
             }
         }
@@ -117,7 +117,7 @@ public abstract class Controller
      * @throws ChiliLogException
      *             if there is any error during deleting
      */
-    public void remove(DB db, BaseBO businessObject) throws ChiliLogException
+    public void remove(DB db, BO businessObject) throws ChiliLogException
     {
         if (db == null)
         {
@@ -134,7 +134,7 @@ public abstract class Controller
             if (businessObject.isExistingRecord())
             {
                 DBObject obj = new BasicDBObject();
-                obj.put(BaseBO.INTERNAL_ID_FIELD_NAME, businessObject.getInternalID());
+                obj.put(BO.INTERNAL_ID_FIELD_NAME, businessObject.getInternalID());
                 coll.remove(obj);
             }
         }

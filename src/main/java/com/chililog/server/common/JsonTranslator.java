@@ -82,7 +82,7 @@ public class JsonTranslator
             {
                 builder.setPrettyPrinting();
             }
-            builder.setDateFormat("yyyy-MM-ddTHH:mm:ssZ");
+            builder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
             builder.setFieldNamingStrategy(new ChiliLogFieldNamingStrategy());
             builder.disableHtmlEscaping();
             _gson = builder.create();
@@ -157,14 +157,14 @@ public class JsonTranslator
      * @author vibul
      * 
      */
-    public class ChiliLogFieldNamingStrategy implements FieldNamingStrategy
+    public static class ChiliLogFieldNamingStrategy implements FieldNamingStrategy
     {
 
         @Override
         public String translateName(Field field)
         {
             StringBuilder sb = new StringBuilder(field.getName());
-            sb.replace(0, 1, sb.substring(1, 1).toUpperCase());
+            sb.replace(0, 2, sb.substring(1, 2).toUpperCase());
             return sb.toString();
         }
 

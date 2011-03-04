@@ -24,7 +24,16 @@ import com.chililog.server.common.ChiliLogException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-public abstract class BaseBO
+/**
+ * <p>
+ * A Business Object represents an object in our data model. It provides a strongly typed means by which we can access
+ * read and write mongoDB records.
+ * </p>
+ * 
+ * @author vibul
+ * 
+ */
+public abstract class BO
 {
     private DBObject _dbObject = null;
 
@@ -34,7 +43,7 @@ public abstract class BaseBO
     /**
      * Basic constructor
      */
-    public BaseBO()
+    public BO()
     {
         return;
     }
@@ -46,7 +55,7 @@ public abstract class BaseBO
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public BaseBO(DBObject dbObject)
+    public BO(DBObject dbObject)
     {
         _dbObject = dbObject;
         return;
