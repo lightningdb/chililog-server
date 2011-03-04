@@ -1,7 +1,7 @@
-sc_require('views/thumb');
-SC.TableHeaderCellView = SC.View.extend(SC.Button,{
+sc_require('table/views/thumb');
+SC.TableHeaderCellView = SC.View.extend({
   
-  layout: {top:0, bottom:0},
+  layout: {top:0, bottom:1},
   
   column: null,
   
@@ -17,12 +17,12 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button,{
   sortDescriptorBinding: '.parentView.sortDescriptor',
   
   // childViews: 'sortStateView labelView thumbView'.w(),
-  childViews: 'labelView'.w(),
+  childViews: 'labelView thumbView'.w(),
     
   labelView: SC.View.extend({
     tagName: 'label',
     
-    layout:{left:5,right:5,top:0,bottom:0},
+    layout:{left:8,right:8,top:0,bottom:0},
     
     valueBinding: '.parentView.column.title',
     
@@ -31,7 +31,9 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button,{
       context.push(this.get('value'));
     }
   }),
-  // 
+
+  // We're going to disable this for now
+
   // /** 
   //   This View renders the arrow indicating sort state
   //   
@@ -55,14 +57,15 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button,{
   //     this.displayDidChange();
   //   }.observes('sortState')
   // }),
-  // 
-  // thumbView: SC.ThumbView.extend({
-  //   delegateBinding: '.parentView',
-  //   layout: {
-  //     top: 0, bottom: 0, right: 0, width: 16
-  //   },
-  //   isVisibleBinding: '.parentView*column.isResizable'
-  // }),
+  
+  thumbView: Endash.ThumbView.extend({
+    delegateBinding: '.parentView',
+    layout: {
+      top: 0, bottom: 0, right: 0, width: 15
+    },
+    isVisibleBinding: '.parentView*column.isResizable'
+  }),
+  
   // 
   // /** @private */
   // sortState: function() {
@@ -123,11 +126,11 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button,{
   //   }
   // },
   // 
-  // /** @private */
-  // mouseDown: function(evt) {
-  //   this._initialX = evt.pageX;
-  //   return sc_super();
-  // },
+  /** @private */
+  mouseDown: function(evt) {
+    this._initialX = evt.pageX;
+    // return sc_super();
+  },
   //   
   // /** @private */
   // mouseDragged: function(evt) {
@@ -202,33 +205,33 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button,{
   // },
   // 
   // 
-  // /** @private */
-  // thumbViewWasDragged: function(view, offset, evt) {
-  //   var column = this.get('column'),
-  //     width = column.get('width') || 100,
-  //     minWidth = column.get('minWidth') || 20,
-  //     maxWidth = column.get('maxWidth'),
-  //     newWidth;
-  //     
-  //   newWidth = Math.max(minWidth, width + offset.x);
-  //   if(maxWidth)
-  //   {
-  //     newWidth = Math.min(maxWidth, newWidth);
-  //   }
-  // 
-  //   column.set('width', newWidth);
-  //   this.invokeDelegateMethod(this.delegate, 'thumbWasDragged', this, offset, evt);
-  // },
-  // 
-  // /** @private */
-  // thumbViewDidBeginDrag: function(view, offset, evt) {
-  //   this.set('dragging',YES);
-  // },
-  // 
-  // /** @private */
-  // thumbViewDidEndDrag: function(view, offset, evt){
-  //   this.set('dragging',NO);
-  //   this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
-  // }
+  /** @private */
+  thumbViewWasDragged: function(view, offset, evt) {
+    var column = this.get('column'),
+      width = column.get('width') || 100,
+      minWidth = column.get('minWidth') || 20,
+      maxWidth = column.get('maxWidth'),
+      newWidth;
+      
+    newWidth = Math.max(minWidth, width + offset.x);
+    if(maxWidth)
+    {
+      newWidth = Math.min(maxWidth, newWidth);
+    }
+  
+    column.set('width', newWidth);
+    this.invokeDelegateMethod(this.delegate, 'thumbWasDragged', this, offset, evt);
+  },
+
+  /** @private */
+  thumbViewDidBeginDrag: function(view, offset, evt) {
+    this.set('dragging',YES);
+  },
+  
+  /** @private */
+  thumbViewDidEndDrag: function(view, offset, evt){
+    this.set('dragging',NO);
+    this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
+  }
 
 });

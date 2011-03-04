@@ -14,13 +14,13 @@ SC.TableHeaderView = SC.View.extend(SC.SimpleLayout, {
   thicknessPath: 'column.width',
   
   /** @private */
-  startOffset: 1,
+  startOffset: -1,
   
   /** @private */
-  offsetDelta: -1,
+  offsetDelta: 2,
   
   /** @private */
-  widthDelta: 1,
+  widthDelta: -2,
   
   /** @private */
   columnsDidChange: function() {
@@ -80,10 +80,10 @@ SC.TableHeaderView = SC.View.extend(SC.SimpleLayout, {
     //   SC.$(view).removeClass('dragging');
     // },
     // 
-    // /** @private */
-    // thumbWasDragged: function(view, offset, evt){
-    //   this._sl_layoutChildViews();
-    // },
+    /** @private */
+    thumbWasDragged: function(view, offset, evt){
+      this._sl_layoutChildViews();
+    },
     // 
     // /** @private */
     // adjustDrag: function(view, offset) {

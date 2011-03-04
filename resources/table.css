@@ -1,0 +1,39 @@
+
+.sc-table-header {
+  background: static_url('resources/table_header_background.png') !important;
+/*  background-position: bottom left;*/
+/*  border-bottom: 1px solid white;*/
+}
+
+.sc-table-header .sc-table-cell {
+  z-index: 2 !important;
+/*  border-right: 1px solid rgba(0, 0, 0, .1);*/
+  overflow: visible !important;
+}
+
+.sc-table-header .sc-table-cell {
+/*  border-left: 1px solid rgba(255, 255, 255, .5);*/
+}
+
+.sc-table-header label {
+  font-family: Helvetica !important;
+  line-height: 30px !important;
+  font-weight: normal;
+  color: #363636;
+}
+
+.sc-thumb-view {
+  z-index: 3 !important;
+  overflow: visible;
+/*  background-color: red;*/
+}
+
+.dragger {
+  position: absolute;
+  top: 0px;
+  right: -3px;
+  width: 0px;
+  bottom: 0px;
+  border-right: 1px solid rgba(255, 255, 255, .5);
+  border-left: 1px solid rgba(0, 0, 0, .1);
+}

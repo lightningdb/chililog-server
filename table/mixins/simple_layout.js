@@ -35,7 +35,7 @@ SC.SimpleLayout = {
 	},
 
   layoutForView: function(idx, view) {
-		var ret = {top: 0, left: 0, right: 0, bottom: 0}
+    var ret = {top: 0, left: 0, right: 0, bottom: 0}
 		var direction = this.get('layoutDirection')
 		if((direction == SC.LAYOUT_HORIZONTAL))
 			delete ret['right']

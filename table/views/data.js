@@ -4,61 +4,16 @@
 //            Portions ©2008-2009 Apple Inc. All rights reserved.
 // License:   Licened under MIT license (see license.js)
 // ==========================================================================
+sc_require('table/views/table_row')
+sc_require('table/views/table_cell')
+
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   rowHeight: 30,
   rowSpacing: 1,
   
-  // reloadIfNeeded: function(nowShowing, scrollOnly) {
-  
-  exampleView: SC.View.extend({
-    isPoolable: YES,
-    layerIsCacheable: YES,
-
-    classNames: ['sc-dataview-row', 'sc-list-item-view'],
-    
-    sleepInDOMPool: function() {
-      if(this._hasSlept)
-        return
-        
-      // why is the layer getting detached and why does this stop it?
-      this._sc_cell_views.forEach(function(c) {
-        c.get('contentView').get('layer')
-      }, this)
-      
-      this._hasSlept = YES
-    },
-    
-    // we'll handle layout from hereon out thank you
-    renderLayout: function(context, firstTime) {
-      if(firstTime)
-        sc_super()
-    },
-    
-    render: function(context, firstTime) {
-      var classArray = [];
-
-      classArray.push((this.get('contentIndex') % 2 === 0) ? 'even' : 'odd');
-      context.addClass(classArray);
-
-      sc_super();
-    },
-    
-    // reset classes
-    awakeFromPool: function() {
-      var layer = this.$();
-      var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
-      layer.toggleClass('even', eo == 'even')
-      layer.toggleClass('odd', eo == 'odd')
-    }
-    
-  }),
-  
-  cellView: SC.View.extend({
-    isPoolable: YES,
-    classNames: ['table-cell']
-  }),
-
+  exampleView: SC.TableRowView,
+  cellView: Endash.TableCellView,
   cellContentView: SC.LabelView.extend({
     isPoolable: YES,
     layerIsCacheable: YES,
@@ -67,8 +22,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
 
   
   init: function() {
-    sc_super();
-
     // sc_super doesnt work with mixins, so cache and then call separately
     this._allocateItemView = this.allocateItemView;
     this.allocateItemView = function(exampleView, attrs) {
@@ -80,15 +33,21 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
 
       for(var i = 0, len = columns.get('length'); i < len; i++) {
         cell = this._createNewCellView(ret, i, attrs);
+        cell.updateLayerLocation()
         cellViews[i] = cell;
         cells.push(cell);
       }
 
       ret.set('childViews', cells);
+      
+      // ret.layoutCells()
       return ret;
-    },
+    }
+    
+    sc_super();
+
   },
-  
+
   cellViewForColumn: function(col) {
     var columns = this.get('columns'),
       column = columns.objectAt(col),
@@ -103,9 +62,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     // configure
     this.configureItemView(view, attrs);
 
-    // awake from the pool, etc.
-    if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
-    
     var layer = view.get('layer')
     if (SC.platform.touch) {
       layer.style.top = ''
@@ -113,6 +69,8 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     } else {
       layer.style.top = attrs.layout.top + "px"
     }
+    
+    attrs.parentView = view
     
     var columns = this.get('columns'),
       column, cell, E;
@@ -139,6 +97,10 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
         view.appendChild(cell);
       }
     }
+    
+    // awake from the pool, etc.
+    if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
+    
   },
 
   _createNewCellView: function(itemView, col, attrs) {
@@ -149,7 +111,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       attrs = SC.clone(attrs);
 
 
-    // attrs.parentView = itemView;
+    attrs.parentView = itemView;
     attrs.layerId = itemView.get('layerId') + '-' + col
     attrs.column = column;
     attrs.columnIndex = col;
@@ -159,15 +121,17 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
 
     return wrapper.create(attrs, {
       childViews: ['contentView'],
-      contentView: E.extend(attrs, {layerId: attrs.layerId + '-content', layout: {left: 10, right: 10}})
+      contentView: E.extend(attrs, {parentView: null, layerId: attrs.layerId + '-content', layout: {left: 10, right: 10}})
     })
-
-    // return E.create(attrs);
+  },
+  
+  columnWidthsChanged: function(column) {
+    this._columnOffsets = (this._columnOffsets || []).slice(0, column)
   },
   
   layoutForColumn: function(col) {
     var columns = this.get('columns'),
-      column = columns.objectAt(col),
+      column = columns.objectAt(col || 0),
       width = column.get('width');
       
     return {
@@ -201,6 +165,59 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       layer.style.webkitTransform = transform;
       layer.style.webkitTransformOrigin = "top left";
     }
-  }
+  },
+  
+  computeLayout: function() {
+    var ret = sc_super();
+    ret.minWidth = this.offsetForColumn((this.get('columns') || []).get('length'))
+    this.set('calculatedWidth', ret.minWidth)
+    this.set('calculatedHeight',ret.minHeight);
+    return ret ;
+  },
+  
+  /** @private */
+  _sctv_contentDidChange: function() {
+    this.reload(null);
+  }.observes('*content.[]'),
+
+  // /** @private */
+  _sctv_columnsDidChange: function() {
+    var columns = this.get('columns');
+    if(SC.none(columns) || columns.get('length') < 1 || columns === this._columns)
+    {
+      return this;
+    }
+
+    var observer = this._sctv_columnsRangeObserver;
+    var func = this._sctv_columnsRangeDidChange;
+
+    if(this._columns)
+    {
+      this._columns.removeRangeObserver(observer);
+    }
+
+    observer = columns.addRangeObserver(null, this, func, null, true);      
+    this._sctv_columnsRangeObserver = observer ;
+
+    this._columns = columns;
+    this._sctv_columnsRangeDidChange()
+  }.observes('columns'),
+  
+  _sctv_columnsRangeDidChange: function(content, object, key, indexes) {
+    if (!object && (key === '[]')) {
+      this._columnsNeedReloading(indexes.get('min'))
+      this.computeLayout();
+    } else {
+      this.contentPropertyDidChange(object, key, indexes);
+    }
+  },
+  
+  _columnsNeedReloading: function(col) {
+    // redraw!!!
+    
+    this.reloadIfNeeded(SC.IndexSet.create())
+    this.clearDOMPools()
+    this.reloadIfNeeded()
+  },
 
 });

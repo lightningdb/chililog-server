@@ -48,7 +48,7 @@ SC.TableView = SC.View.extend({
     
     @property {Number}
   */
-  headerHeight:38,
+  headerHeight:30,
   
   /**
     If set to NO the horizontal scroller will be suppressed.
@@ -114,7 +114,7 @@ SC.TableView = SC.View.extend({
     
     var childViews = [], childView=null;
     
-     this._tableHeaderView = childView = this.createChildView(SC.ScrollView.design({
+    this._tableHeaderView = childView = this.createChildView(SC.ScrollView.design({
       
       isVisibleBinding: SC.Binding.from('.useHeaders', this),
       
@@ -251,243 +251,100 @@ SC.TableView = SC.View.extend({
     }
   },
 
-  /** @private */
-  _sctv_contentDidChange: function() {
-    this._dataView.get('contentView').reload(null);
-  }.observes('*content.[]'),
-  
-  /** @private */
-  _sctv_columnsDidChange: function() {
-    var columns = this.get('columns');
-    if(SC.none(columns) || columns.get('length') < 1 || columns === this._columns)
-    {
-      return this;
-    }
-      
-    var observer = this._sctv_columnsRangeObserver;
-    var func = this._sctv_columnsRangeDidChange;
-      
-    if(this._columns)
-    {
-      this._columns.removeRangeObserver(observer);
-    }
 
-    observer = columns.addRangeObserver(SC.IndexSet.create(0,columns.length), this, func, null);      
-    this._sctv_columnsRangeObserver = observer ;
-
-    this._sctv_resetRules();
-    this._columns = columns;
-    
-    this._dataView.get('contentView').computeLayout();
-    
-    if (this.get('exampleFolderedListView')){
-      this._sctv_updateFolderedListViewProperties();
-    }
-    
-  }.observes('columns'),
   
-  /**
-     Called when order or size of columns changes
-
-     @private
-   */
-  _sctv_resetRules: function() {
-    return
-    this._offsets = [];
-    this._widths = [];
-    
-    var columns = this.get('columns'),
-      stylesheet = this._stylesheet,
-      left = 6,
-      offsets = this._offsets,
-      widths = this._widths,
-      width;
-    
-    if(stylesheet)
-    {
-      stylesheet.destroy();
-    }
-      
-    stylesheet = this._stylesheet = SC.CSSStyleSheet.create();
-
-    columns.forEach(function(column, i) {
-      offsets[i] = left;
-      stylesheet.insertRule(this._sctv_ruleForColumn(i), i);
-      left += widths[i] + 1;
-    }, this);
-    
-    this._dataView.get('contentView').set('calculatedWidth', left);
-  },
+    // /**
+    //   Changes the sort descriptor based on the column that is passed and the current sort state
+    // 
+    //   @param {SC.TableColumn} column The column to sort by
+    //   @param {String} sortState The desired sort state (ASC|DESC)
+    // */
+    // sortByColumn: function(column, sortState) {
+    //   if(sortState !== "ASC")
+    //   {
+    //     sortState = "ASC";
+    //   }
+    //   else
+    //   {
+    //     sortState = "DESC";
+    //   }
+    //   this.set('sortDescriptor', sortState + " " + column.get('key'));
+    // },
+    // 
+    // // reordering
+    // 
+    // /**
+    //   Returns a ghost view for a given column 
+    //   
+    //   @param {SC.TableColumn} column The column to return the ghost view for.
+    // */
+    // ghostForColumn: function(column) {
+    //   var columns = this.get('columns'),
+    //     idx = columns.indexOf(column),
+    //     el = this._dataView.get('contentView').ghostForColumn(idx);
+    //     
+    //   this._ghostLeft = this._tableHeaderView.get('contentView').offsetForView(idx) + 1;
+    //   this._ghost = el;
+    //   el.style.left='%@px'.fmt(this._ghostLeft);
+    //   el.style.top='%@px'.fmt(this.get('headerHeight'));
+    //   this.get('layer').appendChild(el);
+    //   
+    // },
+    // 
+    // /**
+    //   Called by the TableHeaderView when a column is being dragged
+    //   
+    //   @param {SC.TableColumn} column the column being dragged
+    // */
+    // draggingColumn: function(column) {
+    //   this.$().addClass('reordering-columns');
+    //   // this.ghostForColumn(column);
+    //   this._dragging = column;
+    // },
+    // 
+    // /** 
+    //   Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
+    //   
+    //   @param {Number} offset The offset by which the column has been dragged
+    // */
+    // columnDragged: function(offset) {
+    //   this._ghostLeft += offset;
+    //   // SC.$(this._ghost).css('left', this._ghostLeft + "px !important");
+    // },
+    // 
+    // /** 
+    //   Called by the TableHeaderView when a column has stopped dragging.
+    //  */
+    // endColumnDrag: function() {
+    //   this.$().removeClass('reordering-columns');
+    //   if (!SC.none(this._ghost))
+    //   {
+    //     this.get('layer').removeChild(this._ghost);
+    //   }
+    //   this._// ghost = this._blocker = null;
+    //   this._// ghostLeft = null;
+    //   this._sctv_resetRules();
+    //   if (this.get('exampleFolderedListView')){
+    //     this._sctv_updateFolderedListViewProperties();
+    //   }
+    //   this._dataView.get('contentView').reload(null);
+    // },
+    // 
+    // /** @private */
+    // _sctv_updateFolderedListViewProperties: function () {
+    //  var dataView = this._dataView.get('contentView');
+    //  if (dataView && dataView.set){
+    //    var columns = this.get('columns'),
+    //        columnKeys = [], columnWidths = [];
+    //        
+    //    for (var i=0;i<columns.length;i++){
+    //      columnKeys.push(columns[i].get('key'));
+    //      columnWidths.push(columns[i].get('width'));
+    //    }
+    //    dataView.set('keys',columnKeys);
+    //    dataView.set('columnWidths',columnWidths);
+    //  }
+    // 
+    // }
   
-  /**
-     Generates a CSS class for the given column
-
-     @private
-   */
-  _sctv_ruleForColumn: function(column) {
-    var columns = this.get('columns'),
-      col = columns.objectAt(column),
-      width;
-      if (!col.get('isFlexible')){
-        width = col.get('width') - 1;
-        this._widths[column] = width ;
-        return ['#'+this.get('layerId')+' div.column-' + column + ' {',
-            'width: ' + width + 'px !important;',
-            'left: ' + this._offsets[column] + 'px !important;',
-          '}'].join("");
-      }
-      else
-      {
-        var totalWidth = this.$().width();
-        width = totalWidth-this._offsets[column]-2;
-        for (var i=column+1;i<columns.length;i++){
-          width-=columns.objectAt(i).get('width');
-        }
-        
-        if (width<=0)
-        {
-           width = col.get('width') - 1;
-        }
-        this._widths[column] = width ;
-        col.set('width', width+4);
-        return ['#'+this.get('layerId')+' div.column-' + column + ' {',
-            'width: ' + width + 'px !important;',
-            'left: ' + this._offsets[column] + 'px !important;',
-          '}'].join("");
-      }
-  },
-  
-  /** @private */
-  _sctv_columnsRangeDidChange: function(columns, object, key, indexes) {
-    if(this._ghost)
-    {
-      return;
-    }
-      
-    columns = this.get('columns');
-    
-    var  len = columns.get('length');
-
-    if(indexes !== 0)
-    {
-      indexes = indexes.firstObject();
-    }
-    
-    var diff = columns.objectAt(indexes).get('width') - this._widths[indexes] - 1;
-    var css = this._stylesheet;
-    
-    if (this.get('exampleFolderedListView')){
-      this._sctv_updateFolderedListViewProperties();
-    }
-    
-    if(Math.abs(diff) > 0) {
-      for(var i = indexes; i < len; i++) {
-        css.deleteRule(i);
-        if(i > indexes)
-        {
-          this._offsets[i] += diff;
-        }
-        css.insertRule(this._sctv_ruleForColumn(i), i);
-      }
-      
-      this._dataView.get('contentView').calculatedWidth += diff;
-      this._dataView.get('contentView').adjust(this._dataView.get('contentView').computeLayout());
-    }
-    
-  },
-  
-  /**
-    Changes the sort descriptor based on the column that is passed and the current sort state
-  
-    @param {SC.TableColumn} column The column to sort by
-    @param {String} sortState The desired sort state (ASC|DESC)
-  */
-  sortByColumn: function(column, sortState) {
-    if(sortState !== "ASC")
-    {
-      sortState = "ASC";
-    }
-    else
-    {
-      sortState = "DESC";
-    }
-    this.set('sortDescriptor', sortState + " " + column.get('key'));
-  },
-  
-  // reordering
-  
-  /**
-    Returns a ghost view for a given column 
-    
-    @param {SC.TableColumn} column The column to return the ghost view for.
-  */
-  ghostForColumn: function(column) {
-    var columns = this.get('columns'),
-      idx = columns.indexOf(column),
-      el = this._dataView.get('contentView').ghostForColumn(idx);
-      
-    this._ghostLeft = this._tableHeaderView.get('contentView').offsetForView(idx) + 1;
-    this._ghost = el;
-    el.style.left='%@px'.fmt(this._ghostLeft);
-    el.style.top='%@px'.fmt(this.get('headerHeight'));
-    this.get('layer').appendChild(el);
-    
-  },
-
-  /**
-    Called by the TableHeaderView when a column is being dragged
-    
-    @param {SC.TableColumn} column the column being dragged
-  */
-  draggingColumn: function(column) {
-    this.$().addClass('reordering-columns');
-    // this.ghostForColumn(column);
-    this._dragging = column;
-  },
-  
-  /** 
-    Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
-    
-    @param {Number} offset The offset by which the column has been dragged
-  */
-  columnDragged: function(offset) {
-    this._ghostLeft += offset;
-    // SC.$(this._ghost).css('left', this._ghostLeft + "px !important");
-  },
-  
-  /** 
-    Called by the TableHeaderView when a column has stopped dragging.
-   */
-  endColumnDrag: function() {
-    this.$().removeClass('reordering-columns');
-    if (!SC.none(this._ghost))
-    {
-      this.get('layer').removeChild(this._ghost);
-    }
-    this._// ghost = this._blocker = null;
-    this._// ghostLeft = null;
-    this._sctv_resetRules();
-    if (this.get('exampleFolderedListView')){
-      this._sctv_updateFolderedListViewProperties();
-    }
-    this._dataView.get('contentView').reload(null);
-  },
-  
-  /** @private */
-  _sctv_updateFolderedListViewProperties: function () {
-   var dataView = this._dataView.get('contentView');
-   if (dataView && dataView.set){
-     var columns = this.get('columns'),
-         columnKeys = [], columnWidths = [];
-         
-     for (var i=0;i<columns.length;i++){
-       columnKeys.push(columns[i].get('key'));
-       columnWidths.push(columns[i].get('width'));
-     }
-     dataView.set('keys',columnKeys);
-     dataView.set('columnWidths',columnWidths);
-   }
-
-  }
-
 });
