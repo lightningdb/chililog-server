@@ -1,12 +1,31 @@
-sc_require('views/table_cell')
+// sc_require('views/table_cell')
 
 SC.TableRowView = SC.View.extend({
+  backgroundColor: 'white',
   isPoolable: YES,
   layerIsCacheable: YES,
 
   columnsBinding: '.parentView.columns',
 
   classNames: ['sc-dataview-row', 'sc-list-item-view'],
+  
+  init: function() {
+    sc_super();
+    
+    var columns = this.getPath('parentView.columns'),
+      column, cell, cells = [], cellViews;
+
+    cellViews = this._sc_cell_views = [];
+
+    for(var i = 0, len = columns.get('length'); i < len; i++) {
+      cell = this._createNewCellView(i);
+      cell.updateLayerLocation();
+      cellViews[i] = cell;
+      cells.push(cell);
+    }
+
+    this.set('childViews', cells);
+  },
 
   render: function(context, firstTime) {
     if(firstTime) {
@@ -20,8 +39,7 @@ SC.TableRowView = SC.View.extend({
   
   // we'll handle layout from here-on-out thank you
   renderLayout: function(context, firstTime) {
-    if(firstTime)
-      sc_super()
+    if(firstTime) sc_super();
   },
   
   layoutForCell: function(col) {
@@ -40,32 +58,60 @@ SC.TableRowView = SC.View.extend({
   },
   
   columnsDidChange: function() {
-    if(this.get('columns'))
-      this.layoutAllCells();
+    if(this.get('columns')) this.layoutAllCells();
   }.observes('columns'),
   
-  // reset classes
   awakeFromPool: function() {
+    // striping
     var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
+    this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
 
-    // Why did this stop working?
-    // var layer = this.$();    
-    // layer.toggleClass('even', eo == 'even')
-    // layer.toggleClass('odd', eo == 'odd')
+    // cell updating
+    var columns = this.getPath('parentView.columns'),
+      column, cell, E;
+      
+    for(var i = 0, len = columns.get('length'); i < len; i++) {
+      cell = this._sc_cell_views[i];
+      if (cell.isPoolable) {
+        this.updateCell(i);
+      } else {
+        cell.destroy();
+        cell = this._createNewCellView(i);
+        this._sc_cell_views[i] = cell;
+        this.appendChild(cell);
+      }
+    }
+  },
+  
+  updateCell: function(idx) {
+    // this is faster than using bindings
+    
+    var cellView = this._sc_cell_views[idx];
+    var contentView = cellView.get('contentView');
+    
+    cellView.beginPropertyChanges();
+    cellView.set('contentIndex', this.get('contentIndex'));
+    cellView.set('layerId', this.get('layerId') + '-' + idx);
+    cellView.endPropertyChanges();
 
-    this.get('layer').className = this.get('classNames').join(" ") + " " + eo
+    contentView.beginPropertyChanges();
+    contentView.set('contentIndex', this.get('contentIndex'));
+    contentView.set('content', this.get('content'));
+    contentView.set('layerId', this.get('layerId') + '-' + idx + '-content');
+    contentView.endPropertyChanges();
+    
+    return;
   },
   
   sleepInDOMPool: function() {
-    if(this._hasSlept)
-      return
+    if(this._hasSlept) return
       
     // why is the layer getting detached and why does this stop it?
     this._sc_cell_views.forEach(function(c) {
-      c.get('contentView').get('layer')
-    }, this)
+      c.get('contentView').get('layer');
+    }, this);
     
-    this._hasSlept = YES
+    this._hasSlept = YES;
   },
 
   setPositionForCell: function(i) {
@@ -74,18 +120,47 @@ SC.TableRowView = SC.View.extend({
       layer = view.get('layer'),
       transform;
 
-    layer = view.get('layer')
+    layer = view.get('layer');
     if (layer) {
       if(SC.isTouch) {
         transform = 'translate3d(' + layout.left + 'px, 0px,0) ';
-        layer.style.left = ''
+        layer.style.left = '';
         layer.style.webkitTransform = transform;
         layer.style.webkitTransformOrigin = "top left";
       } else {
-        layer.style.left = layout.left + "px"
+        layer.style.left = layout.left + "px";
       }
       layer.style.width = layout.width + "px";
     }
+  },
+  
+  _createNewCellView: function(col) {
+    var columns = this.getPath('parentView.columns'),
+      column = columns.objectAt(col),
+      E = this.get('parentView').cellViewForColumn(col),
+      wrapper = this.get('parentView').get('cellView'),
+      attrs = {};
+    
+    attrs.parentView = this;
+    attrs.layerId = this.get('layerId') + '-' + col;
+    
+    attrs.column = column;
+    attrs.columnIndex = col;
+    attrs.content = this.get('content');
+    attrs.contentIndex = this.get('contentIndex');
+    
+    attrs.contentValueKey = column.get('key');
+    attrs.layout = this.layoutForCell(col);
+    (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
+
+    return wrapper.create(attrs, {
+      childViews: ['contentView'],
+      contentView: E.extend(attrs, {
+        parentView: null, 
+        layerId: attrs.layerId + '-content', 
+        layout: {left: 10, right: 10}
+      })
+    });
   }
 
   

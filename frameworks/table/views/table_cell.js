@@ -1,4 +1,5 @@
 Endash.TableCellView = SC.View.extend({
+  // wantsAcceleratedLayer: YES,
   isPoolable: YES,
   classNames: ['table-cell'],
   

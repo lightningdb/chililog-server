@@ -1,0 +1,1 @@
+# config :table, :required => ['endash']

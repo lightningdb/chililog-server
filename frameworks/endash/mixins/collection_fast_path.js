@@ -670,7 +670,7 @@ Endash.CollectionFastPath = {
   */
   touchScrollDidChange: function(left, top) {
     // prevent getting too many in close succession.
-    if (Date.now() - this._lastTouchScrollTime < 35) return;
+    if (Date.now() - this._lastTouchScrollTime < 15) return;
     
     var clippingFrame = this.get('clippingFrame');
     
@@ -697,7 +697,7 @@ Endash.CollectionFastPath = {
     
 
     
-    r.add(max, 3)
+    r.add(max, 10)
 
 
     if (max > len || min < 0) {

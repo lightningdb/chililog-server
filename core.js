@@ -1,1 +1,1 @@
-Endash = {}
+window.Endash = {}
