@@ -4,7 +4,7 @@
 //            Portions ©2008-2010 Apple, Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-sc_require('table/views/table_header_cell');
+sc_require('views/table_header_cell');
 SC.TableHeaderView = SC.View.extend(SC.SimpleLayout, {
   
   /** @private */

@@ -4,8 +4,8 @@
 //            Portions ©2008-2010 Apple, Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
-sc_require('table/views/table_header');
-sc_require('table/views/table_cell');
+sc_require('views/table_header');
+sc_require('views/table_cell');
 
 
 SC.TableView = SC.View.extend({

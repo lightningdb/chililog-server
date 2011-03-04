@@ -1,4 +1,5 @@
-sc_require('table/views/thumb');
+sc_require('views/thumb');
+
 SC.TableHeaderCellView = SC.View.extend({
   
   layout: {top:0, bottom:1},

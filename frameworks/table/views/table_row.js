@@ -1,3 +1,5 @@
+sc_require('views/table_cell')
+
 SC.TableRowView = SC.View.extend({
   isPoolable: YES,
   layerIsCacheable: YES,

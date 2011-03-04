@@ -5,8 +5,6 @@
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
 
-sc_require('views/table_cell.js');
-
 SC.SORT_ASCENDING  = 'ascending';
 SC.SORT_DESCENDING = 'descending';
 

@@ -4,8 +4,8 @@
 //            Portions ©2008-2009 Apple Inc. All rights reserved.
 // License:   Licened under MIT license (see license.js)
 // ==========================================================================
-sc_require('table/views/table_row')
-sc_require('table/views/table_cell')
+sc_require('views/table_row')
+sc_require('views/table_cell')
 
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
