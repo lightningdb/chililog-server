@@ -7,11 +7,12 @@ SC.TableRowView = SC.View.extend({
   classNames: ['sc-dataview-row', 'sc-list-item-view'],
 
   render: function(context, firstTime) {
-    var classArray = [];
+    if(firstTime) {
+      var classArray = [];
 
-    classArray.push((this.get('contentIndex') % 2 === 0) ? 'even' : 'odd');
-    context.addClass(classArray);
-
+      classArray.push((this.get('contentIndex') % 2 === 0) ? 'even' : 'odd');
+      context.addClass(classArray);
+    }
     sc_super();
   },
   
@@ -43,10 +44,14 @@ SC.TableRowView = SC.View.extend({
   
   // reset classes
   awakeFromPool: function() {
-    var layer = this.$();
     var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
-    layer.toggleClass('even', eo == 'even')
-    layer.toggleClass('odd', eo == 'odd')
+
+    // Why did this stop working?
+    // var layer = this.$();    
+    // layer.toggleClass('even', eo == 'even')
+    // layer.toggleClass('odd', eo == 'odd')
+
+    this.get('layer').className = this.get('classNames').join(" ") + " " + eo
   },
   
   sleepInDOMPool: function() {
