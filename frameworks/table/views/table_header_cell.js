@@ -23,7 +23,7 @@ SC.TableHeaderCellView = SC.View.extend({
   labelView: SC.View.extend({
     tagName: 'label',
     
-    layout:{left:8,right:8,top:0,bottom:0},
+    layout:{left:8,right:15,top:0,bottom:0},
     
     valueBinding: '.parentView.column.title',
     

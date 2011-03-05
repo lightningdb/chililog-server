@@ -2,16 +2,8 @@
   background: static_url('resources/table_header_background.png') !important;
 }
 
-/*
-.sc-table-header {
-  background: static_url('resources/table_header_background.png') !important;
-}*/
-
 .sc-table-header .sc-table-cell {
   overflow: visible !important;
-}
-
-.sc-table-header .sc-table-cell {
 }
 
 .sc-table-header label {
@@ -19,22 +11,30 @@
   line-height: 30px !important;
   font-weight: normal;
   color: #363636;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sc-thumb-view {
-  z-index: 3 !important;
-  overflow: visible;
-}
+  .sc-table-header .sc-thumb-view {
+    z-index: 3 !important;
+    overflow: visible;
+    background: static_url('resources/grippy2.png') 6px center no-repeat !important;
+  }
 
-.dragger {
-  position: absolute;
-  top: 0px;
-  right: -3px;
-  width: 0px;
-  bottom: 0px;
-  border-right: 1px solid rgba(255, 255, 255, .5);
-  border-left: 1px solid rgba(0, 0, 0, .1);
-}
+    .sc-table-header .sc-thumb-view:hover, .sc-table-header .sc-thumb-view.dragging {
+      background: static_url('resources/grippy.png') 6px center no-repeat !important;
+    }
+
+    .sc-table-header .dragger {
+      position: absolute;
+      top: 0px;
+      right: -3px;
+      width: 0px;
+      bottom: 0px;
+      border-right: 1px solid rgba(255, 255, 255, .5);
+      border-left: 1px solid rgba(0, 0, 0, .1);
+    }
+    
 .sc-dataview-row.odd {
   background-color: rgb(243, 245, 247) !important;
 }
