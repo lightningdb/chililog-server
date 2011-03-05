@@ -35,6 +35,10 @@
       border-left: 1px solid rgba(0, 0, 0, .1);
     }
     
+    .sc-table-header .dragging .dagger {
+      display: none !important;
+    }
+    
 .sc-dataview-row.odd {
   background-color: rgb(243, 245, 247) !important;
 }

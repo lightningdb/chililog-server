@@ -66,6 +66,10 @@ SC.TableRowView = SC.View.extend({
     var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
     this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
 
+    this.updateCells();
+  },
+  
+  updateCells: function() {
     // cell updating
     var columns = this.getPath('parentView.columns'),
       column, cell, E;
@@ -73,7 +77,9 @@ SC.TableRowView = SC.View.extend({
     for(var i = 0, len = columns.get('length'); i < len; i++) {
       cell = this._sc_cell_views[i];
       if (cell.isPoolable) {
-        this.updateCell(i);
+        column = columns.objectAt(i)
+        this.setPositionForCell(i)
+        this.updateCell(i, column);
       } else {
         cell.destroy();
         cell = this._createNewCellView(i);
@@ -83,23 +89,30 @@ SC.TableRowView = SC.View.extend({
     }
   },
   
-  updateCell: function(idx) {
+  updateCell: function(idx, column) {
     // this is faster than using bindings
     
     var cellView = this._sc_cell_views[idx];
     var contentView = cellView.get('contentView');
     
     cellView.beginPropertyChanges();
+    contentView.beginPropertyChanges();
+    
+    if(cellView.get('column') != column) {
+      cellView.set('column', column);
+      cellView.set('columnIndex', idx);
+      contentView.set('column', column);
+      contentView.set('columnIndex', idx);
+    }
+    
     cellView.set('contentIndex', this.get('contentIndex'));
     cellView.set('layerId', this.get('layerId') + '-' + idx);
-    cellView.endPropertyChanges();
-
-    contentView.beginPropertyChanges();
     contentView.set('contentIndex', this.get('contentIndex'));
     contentView.set('content', this.get('content'));
     contentView.set('layerId', this.get('layerId') + '-' + idx + '-content');
+
     contentView.endPropertyChanges();
-    
+    cellView.endPropertyChanges();
     return;
   },
   

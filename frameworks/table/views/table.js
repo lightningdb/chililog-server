@@ -291,44 +291,50 @@ SC.TableView = SC.View.extend({
     //   
     // },
     // 
-    // /**
-    //   Called by the TableHeaderView when a column is being dragged
-    //   
-    //   @param {SC.TableColumn} column the column being dragged
-    // */
-    // draggingColumn: function(column) {
-    //   this.$().addClass('reordering-columns');
-    //   // this.ghostForColumn(column);
-    //   this._dragging = column;
-    // },
-    // 
-    // /** 
-    //   Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
-    //   
-    //   @param {Number} offset The offset by which the column has been dragged
-    // */
-    // columnDragged: function(offset) {
-    //   this._ghostLeft += offset;
-    //   // SC.$(this._ghost).css('left', this._ghostLeft + "px !important");
-    // },
-    // 
-    // /** 
-    //   Called by the TableHeaderView when a column has stopped dragging.
-    //  */
-    // endColumnDrag: function() {
-    //   this.$().removeClass('reordering-columns');
-    //   if (!SC.none(this._ghost))
-    //   {
-    //     this.get('layer').removeChild(this._ghost);
-    //   }
-    //   this._// ghost = this._blocker = null;
-    //   this._// ghostLeft = null;
-    //   this._sctv_resetRules();
-    //   if (this.get('exampleFolderedListView')){
-    //     this._sctv_updateFolderedListViewProperties();
-    //   }
-    //   this._dataView.get('contentView').reload(null);
-    // },
+    /**
+      Called by the TableHeaderView when a column is being dragged
+      
+      @param {SC.TableColumn} column the column being dragged
+    */
+    draggingColumn: function(column) {
+      return
+      this.$().addClass('reordering-columns');
+      // this.ghostForColumn(column);
+      this._dragging = column;
+    },
+    
+    /** 
+      Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
+      
+      @param {Number} offset The offset by which the column has been dragged
+    */
+    columnDragged: function(offset) {
+      return
+      this._ghostLeft += offset;
+      // SC.$(this._ghost).css('left', this._ghostLeft + "px !important");
+    },
+    
+    /** 
+      Called by the TableHeaderView when a column has stopped dragging.
+     */
+    endColumnDrag: function() {
+      // return
+      this.$().removeClass('reordering-columns');
+      if (!SC.none(this._ghost))
+      {
+        this.get('layer').removeChild(this._ghost);
+      }
+      this._ghost = this._blocker = null;
+      this._ghostLeft = null;
+      // this._dataView._columnsNeedReloading(0);
+      // this._sctv_resetRules();
+      this.get('columns').notifyPropertyChange('[]');
+      
+      // if (this.get('exampleFolderedListView')){
+      //   this._sctv_updateFolderedListViewProperties();
+      // }
+      // this._dataView.get('contentView').reload(null);
+    },
     // 
     // /** @private */
     // _sctv_updateFolderedListViewProperties: function () {

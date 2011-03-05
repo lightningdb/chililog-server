@@ -458,7 +458,7 @@ Endash.CollectionFastPath = {
       for (var itemIdx in imap) {
         itemIdx = parseInt(itemIdx, 10);
         if (isNaN(itemIdx)) continue;
-        
+
         var view = imap[itemIdx];
         
         if (this._indexMap[itemIdx] === view) delete this._indexMap[itemIdx];
@@ -529,7 +529,7 @@ Endash.CollectionFastPath = {
 
       // remove from DOM
       this.removeChild(item);
-      
+
       // release the item
       this.releaseItemView(item);
     }

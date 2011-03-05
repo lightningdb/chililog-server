@@ -1,6 +1,6 @@
 // sc_require('views/thumb');
 
-SC.TableHeaderCellView = SC.View.extend({
+SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   
   layout: {top:0, bottom:1},
   
@@ -130,56 +130,56 @@ SC.TableHeaderCellView = SC.View.extend({
   /** @private */
   mouseDown: function(evt) {
     this._initialX = evt.pageX;
-    // return sc_super();
+    return sc_super();
   },
-  //   
-  // /** @private */
-  // mouseDragged: function(evt) {
-  //   var x = evt.pageX,
-  //       isReorderable = this.getPath('column.isReorderable');
-  //   
-  //   if (!isReorderable){
-  //     return YES;
-  //   }
-  //   
-  //   if(!this._dragging)
-  //   {
-  //      if(Math.abs(this._initialX - x) < 6)
-  //      {
-  //       return;
-  //     }
-  //     else {
-  //       this._dragging = YES;
-  //       this.set('dragging', YES);
-  //       this.invokeDelegateMethod(this.delegate, 'headerDidBeginDrag', this, evt);
-  //       return YES;
-  //     }
-  //   }
-  //     var lastX = this._lastX;
-  //     if(SC.none(lastX))
-  //     {
-  //       lastX = this._lastX = x;
-  //     }
-  // 
-  //   var offset = x - lastX;
-  //   this._lastX = x;
-  //   
-  //   this.invokeDelegateMethod(this.delegate, 'headerWasDragged', this, offset, evt);
-  //   return YES;
-  // },
-  // 
-  // /** @private */
-  // mouseUp: function(evt) {
-  //   if(this._dragging) {
-  //     this.set('dragging', NO);
-  //     this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
-  //     this._dragging = false;
-  //   } else {
-  //     this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
-  //   }
-  //   this._lastX = null;
-  //   return sc_super();
-  // },
+    
+  /** @private */
+  mouseDragged: function(evt) {
+    var x = evt.pageX
+        // isReorderable = this.getPath('column.isReorderable');
+    
+    // if (!isReorderable){
+      // return YES;
+    // }
+    
+    if(!this._dragging)
+    {
+       if(Math.abs(this._initialX - x) < 6)
+       {
+        return;
+      }
+      else {
+        this._dragging = YES;
+        this.set('dragging', YES);
+        this.invokeDelegateMethod(this.delegate, 'headerDidBeginDrag', this, evt);
+        return YES;
+      }
+    }
+      var lastX = this._lastX;
+      if(SC.none(lastX))
+      {
+        lastX = this._lastX = x;
+      }
+  
+    var offset = x - lastX;
+    this._lastX = x;
+    
+    this.invokeDelegateMethod(this.delegate, 'headerWasDragged', this, offset, evt);
+    return YES;
+  },
+  
+  /** @private */
+  mouseUp: function(evt) {
+    if(this._dragging) {
+      this.set('dragging', NO);
+      this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
+      this._dragging = false;
+    } else {
+      this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
+    }
+    this._lastX = null;
+    return sc_super();
+  },
   // 
   // 
   // // ..........................................................

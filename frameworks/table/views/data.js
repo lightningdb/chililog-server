@@ -17,7 +17,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   cellContentView: SC.LabelView.extend({
     isPoolable: YES,
     layerIsCacheable: YES,
-    contentValueKeyBinding: '*column.key'
+    contentValueKeyBinding: '*column.key',
+    
+    contentValueKeyDidChange: function() {
+      this.updatePropertyFromContent('value', '*', 'contentValueKey');
+    }.observes('contentValueKey')
   }),
 
   cellViewForColumn: function(col) {
@@ -61,7 +65,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     if(col === 0) return 0;
 
     var offsets = (this._columnOffsets || (this._columnOffsets = []));
-    
     offsets[col] = this.offsetForColumn(col - 1) + this.widthForColumn(col - 1);
     
     return offsets[col];
@@ -125,6 +128,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   }.observes('columns'),
   
   _sctv_columnsRangeDidChange: function(content, object, key, indexes) {
+    console.log('range change')
     if (!object && (key === '[]')) {
       this._columnsNeedReloading(indexes.get('min'));
       this.computeLayout();
@@ -135,10 +139,47 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   
   _columnsNeedReloading: function(col) {
     // redraw!!!
+    // this.reset();
+    var content = this.get('content'),
+      nowShowing = this.get('nowShowing'),
+      item, view;
+      
+    nowShowing.forEach(function(row) {
+      item = content.objectAt(row);
+      view = this.mappedViewForItem(item, row);
+      view.updateCells();
+    }, this);
+  },
+  
+  /**
+    @private
+    Sends a view to a DOM pool.
+  */
+  sendToDOMPool: function(view) {
+    var pool = this.domPoolForExampleView(view.createdFromExampleView);
+    pool.push(view);
+    var f = view.get("frame");
     
-    this.reloadIfNeeded(SC.IndexSet.create());
-    this.clearDOMPools();
-    this.reloadIfNeeded();
+    this._repositionView(view.get('layer'), {top: -(f.height + 2)})
+    
+    // view.adjust({ top: -f.height });
+    view.set("layerId", SC.guidFor(view));
+    if (view.sleepInDOMPool) view.sleepInDOMPool();
+  },
+
+  reset: function() {
+    this.reloadIfNeeded(SC.IndexSet.create(), true);
+    delete this._viewMap;
+    delete this._indexMap;
+    var pools = this._domPools || (this._domPools = {});
+    for (var p in pools) {
+      for(var i = 0, len = pools[p].length; i < len; i++) {
+        pools[p][i].destroy();
+      }
+      pools[p].length = 0;
+    }
+    
+    this.reloadIfNeeded(null, true);
   }
 
 });
