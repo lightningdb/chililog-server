@@ -7,12 +7,15 @@
 }
 
 .sc-table-header label {
+  display: block;
   font-family: Helvetica !important;
   line-height: 30px !important;
   font-weight: normal;
   color: #363636;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: auto !important;
+  margin: 0px !important;
 }
 
   .sc-table-header .sc-thumb-view {
@@ -28,7 +31,7 @@
     .sc-table-header .dragger {
       position: absolute;
       top: 0px;
-      right: -3px;
+      right: -2px;
       width: 0px;
       bottom: 0px;
       border-right: 1px solid rgba(255, 255, 255, .5);
@@ -39,6 +42,36 @@
       display: none !important;
     }
     
-.sc-dataview-row.odd {
+.sc-table-data-view .sc-dataview-row.odd {
   background-color: rgb(243, 245, 247) !important;
+}
+
+
+
+
+
+
+.sc-table-data-view .table-cell {
+  border-right: 1px solid rgba(0, 0, 0, .05);
+}
+
+.sc-table-data-view .table-cell .sc-label-view {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-family: Helvetica;
+  line-height: 30px !important;
+  
+  color: #333;
+}
+
+.sc-table-data-view .sc-label-view.column-0 {
+  font-weight: bold !important;
+}
+
+.sc-table-data-view .sc-dataview-row {
+  border-bottom: 1px solid #DDD;
+}
+
+.sc-table-data-view .odd {
+  background-color: #f3f5f7;
 }

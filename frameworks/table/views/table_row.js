@@ -1,32 +1,15 @@
 // sc_require('views/table_cell')
 
-SC.TableRowView = SC.View.extend({
+SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   backgroundColor: 'white',
   isPoolable: YES,
   layerIsCacheable: YES,
+  thicknessKey: 'width',
 
   columnsBinding: '.parentView.columns',
 
   classNames: ['sc-dataview-row', 'sc-list-item-view'],
   
-  init: function() {
-    sc_super();
-    
-    var columns = this.getPath('parentView.columns'),
-      column, cell, cells = [], cellViews;
-
-    cellViews = this._sc_cell_views = [];
-
-    for(var i = 0, len = columns.get('length'); i < len; i++) {
-      cell = this._createNewCellView(i);
-      cell.updateLayerLocation();
-      cellViews[i] = cell;
-      cells.push(cell);
-    }
-
-    this.set('childViews', cells);
-  },
-
   render: function(context, firstTime) {
     if(firstTime) {
       var classArray = [];
@@ -41,55 +24,54 @@ SC.TableRowView = SC.View.extend({
   renderLayout: function(context, firstTime) {
     if(firstTime) sc_super();
   },
-  
-  layoutForCell: function(col) {
-    return this.get('parentView').layoutForColumn(col);
-  },
+ 
+  _trv_columnsDidChange: function() {
+    this.beginPropertyChanges();
+    var cellViews = this._sc_cell_views || (this._sc_cell_views = []),
+      columns = this.get('columns'),
+      numCells = cellViews.get('length'),
+      numCols = columns.get('length'), i;
+      
+    if(!this.get('columns')) return
 
-  layoutAllCells: function() {
-    this.columnWidthDidChange(0);
-  },
-
-  columnWidthDidChange: function(idx) {
-    var cells = (this._sc_cell_views || []);
-    for(var i = idx; i < cells.length; i++) {
-      this.setPositionForCell(i);
+    this.set('thicknesses', this.get('columns'))
+    
+    for(i = numCols; i < numCells; i++) {
+      cellViews[i].destroy()
+      cellViews.removeAt(i)
     }
-  },
-  
-  columnsDidChange: function() {
-    if(this.get('columns')) this.layoutAllCells();
+    
+    for(i = numCells; i < numCols; i++) {
+      cell = this._createNewCellView(i);
+      cellViews[i] = cell;
+      this.appendChild(cell)
+    }
+    
+    this.endPropertyChanges();
+    this._updateCells();
   }.observes('columns'),
-  
+
   awakeFromPool: function() {
     // striping
     var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
     this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
 
-    this.updateCells();
+    this._updateCells();
   },
   
-  updateCells: function() {
+  _updateCells: function() {
     // cell updating
-    var columns = this.getPath('parentView.columns'),
+    // var columns = this.getPath('parentView.columns'),
+    var columns = this.get('columns'),
       column, cell, E;
       
     for(var i = 0, len = columns.get('length'); i < len; i++) {
-      cell = this._sc_cell_views[i];
-      if (cell.isPoolable) {
-        column = columns.objectAt(i)
-        this.setPositionForCell(i)
-        this.updateCell(i, column);
-      } else {
-        cell.destroy();
-        cell = this._createNewCellView(i);
-        this._sc_cell_views[i] = cell;
-        this.appendChild(cell);
-      }
+      column = columns.objectAt(i)
+      this._updateCell(i, column);
     }
   },
   
-  updateCell: function(idx, column) {
+  _updateCell: function(idx, column) {
     // this is faster than using bindings
     
     var cellView = this._sc_cell_views[idx];
@@ -127,13 +109,12 @@ SC.TableRowView = SC.View.extend({
     this._hasSlept = YES;
   },
 
-  setPositionForCell: function(i) {
-    var layout = this.layoutForCell(i),
-      view = this._sc_cell_views[i],
-      layer = view.get('layer'),
+  repositionView: function(view, layout) {
+    if(!view) return
+    
+    var layer = view.get('layer'),
       transform;
 
-    layer = view.get('layer');
     if (layer) {
       if(SC.isTouch) {
         transform = 'translate3d(' + layout.left + 'px, 0px,0) ';
@@ -144,11 +125,14 @@ SC.TableRowView = SC.View.extend({
         layer.style.left = layout.left + "px";
       }
       layer.style.width = layout.width + "px";
+    } else {
+      view.adjust(layout);
     }
   },
   
   _createNewCellView: function(col) {
-    var columns = this.getPath('parentView.columns'),
+    var columns = this.get('columns'),
+    // var columns = this.getPath('parentView.columns'),
       column = columns.objectAt(col),
       E = this.get('parentView').cellViewForColumn(col),
       wrapper = this.get('parentView').get('cellView'),
@@ -163,10 +147,12 @@ SC.TableRowView = SC.View.extend({
     attrs.contentIndex = this.get('contentIndex');
     
     attrs.contentValueKey = column.get('key');
-    attrs.layout = this.layoutForCell(col);
+    // attrs.layout = this.layoutForCell(col);
     (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
 
     return wrapper.create(attrs, {
+      layoutDelegate: this,
+      layoutIndex: col,
       childViews: ['contentView'],
       contentView: E.extend(attrs, {
         parentView: null, 

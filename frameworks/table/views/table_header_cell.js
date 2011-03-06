@@ -180,32 +180,32 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
     this._lastX = null;
     return sc_super();
   },
+  
+  
+  // ..........................................................
+  // touch support
   // 
-  // 
-  // // ..........................................................
-  // // touch support
-  // // 
-  // touchStart: function(evt){
-  //   return this.mouseDown(evt);
-  // },
-  // 
-  // touchEnd: function(evt){
-  //   return this.mouseUp(evt);
-  // },
-  // 
-  // touchesDragged: function(evt, touches) {
-  //   return this.mouseDragged(evt);
-  // },
-  // 
-  // touchEntered: function(evt){
-  //   return this.mouseEntered(evt);
-  // },
-  // 
-  // touchExited: function(evt){
-  //   return this.mouseExited(evt);
-  // },
-  // 
-  // 
+  touchStart: function(evt){
+    return this.mouseDown(evt);
+  },
+  
+  touchEnd: function(evt){
+    return this.mouseUp(evt);
+  },
+  
+  touchesDragged: function(evt, touches) {
+    return this.mouseDragged(evt);
+  },
+  
+  touchEntered: function(evt){
+    return this.mouseEntered(evt);
+  },
+  
+  touchExited: function(evt){
+    return this.mouseExited(evt);
+  },
+  
+  
   /** @private */
   thumbViewWasDragged: function(view, offset, evt) {
     var column = this.get('column'),

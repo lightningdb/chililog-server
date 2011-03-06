@@ -7,8 +7,8 @@ Endash.TableCellView = SC.View.extend({
     if(firstTime)
       return sc_super()
   },
-  
-  widthDidChange: function() {
-    this.get('parentView').columnWidthDidChange(this.get('columnIndex'))
-  }.observes('*column.width')
+  // 
+  // widthDidChange: function() {
+  //   this.get('parentView').columnWidthDidChange(this.get('columnIndex'))
+  // }.observes('*column.width')
 }),
