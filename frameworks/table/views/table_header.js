@@ -57,7 +57,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
   headerDidBeginDrag: function(view, offset, evt) {
     this._dragging = view;
     // this.get('table').draggingColumn(view.get('column'));
-    SC.$(view).addClass('dragging');
+    // SC.$(view).addClass('dragging');
   },
   
   /** @private */
@@ -69,6 +69,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   headerDidEndDrag: function(view, evt) {
     // this.get('table').endColumnDrag();
+    console.log('ending drag')
     this._dragging = null;
     this._totalOffset = null;
     this.layoutViewsFrom(0);
@@ -84,15 +85,20 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   adjustDrag: function(view, offset) {
     var direction = this.get('layoutDirection');
-    var frame = view.get('frame');
-    var put = (this._totalOffset || this.offsetForView(view.get('columnIndex'))) + offset;
-    view.adjust('left', put);
+    
+    var put = (this._totalOffset === 0 ? 0 : (this._totalOffset || this.offsetForView(view.get('columnIndex')))) + offset;
+    // this.repositionView(view, {left: put});
     this._totalOffset = put;
     this.set('_draggingOffset', put);
     
     var childViews = this._layoutViews;
     var idx = childViews.indexOf(view);
     var view2, idx2;
+    var columns = this.get('columns')
+
+    var layout = {left: put, width: this.thicknessForView(idx)}
+    view.adjust(layout);
+
   
     if(offset < 1 && idx > 0)
     {
@@ -105,9 +111,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
         idx2 = idx + 1;
       }
     }
-  
+
     view2 = childViews.objectAt(idx2);
-    if(!view2 || view2.spacer)
+    if(!view2 || view2.spacer || !columns.objectAt(idx2).get('isReorderable'))
     {
       return;
     }
@@ -131,7 +137,6 @@ SC.TableHeaderView = SC.TableRowView.extend({
   
   /** @private */
   swapViews: function(view1, view2) {
-
     var childViews = this._layoutViews;
     var columns = this.get('columns');
   

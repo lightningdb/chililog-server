@@ -1,5 +1,5 @@
 .sc-table-header {
-  background: static_url('resources/table_header_background.png') !important;
+  background: static_url('resources/table_header_background_3.png') !important;
 }
 
 .sc-table-header .sc-table-cell {
@@ -69,8 +69,13 @@
 }
 
 .sc-table-data-view .sc-dataview-row {
-  border-bottom: 1px solid #DDD;
+  border-bottom: 1px solid rgba(0, 0, 0, .09);
 }
+
+.sc-table-data-view .odd.sc-dataview-row {
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+}
+
 
 .sc-table-data-view .odd {
   background-color: #f3f5f7;

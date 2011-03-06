@@ -107,8 +107,8 @@ SC.TableView = SC.View.extend({
 
      @private
    */
-  // sortDescriptor: null,
-  // sortDescriptorBinding: '*content.orderBy',
+  sortDescriptor: null,
+  sortDescriptorBinding: '*content.orderBy',
   
   createChildViews: function() {
     
@@ -259,17 +259,20 @@ SC.TableView = SC.View.extend({
     //   @param {SC.TableColumn} column The column to sort by
     //   @param {String} sortState The desired sort state (ASC|DESC)
     // */
-    // sortByColumn: function(column, sortState) {
-    //   if(sortState !== "ASC")
-    //   {
-    //     sortState = "ASC";
-    //   }
-    //   else
-    //   {
-    //     sortState = "DESC";
-    //   }
-    //   this.set('sortDescriptor', sortState + " " + column.get('key'));
-    // },
+    sortByColumn: function(column, sortState) {
+      if(sortState !== "ASC")
+      {
+        sortState = "ASC";
+      }
+      else
+      {
+        sortState = "DESC";
+      }
+      
+      console.log('sortbycolumn')
+      
+      this.set('sortDescriptor', sortState + " " + column.get('key'));
+    },
     // 
     // // reordering
     // 

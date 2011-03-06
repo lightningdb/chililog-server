@@ -17,6 +17,10 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   sortDescriptor: null,
   sortDescriptorBinding: '.parentView.sortDescriptor',
   
+  // 
+  // displayProperties: ['dragging', 'sortState'],
+  //
+  
   // childViews: 'sortStateView labelView thumbView'.w(),
   childViews: 'labelView thumbView'.w(),
     
@@ -67,39 +71,37 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
     isVisibleBinding: '.parentView*column.isResizable'
   }),
   
-  // 
-  // /** @private */
-  // sortState: function() {
-  //   var key = this.get('sortDescriptor');
-  //   if(!key || this.spacer)
-  //   {
-  //     return;
-  //   }
-  //   
-  //   var descending = NO;
-  // 
-  //   if(SC.typeOf(key) === "array")
-  //   {
-  //     key = key[0];
-  //   }
-  //     
-  //   if (key.indexOf('ASC') > -1) {
-  //        key = key.split('ASC ')[1];
-  //      } else if (key.indexOf('DESC') > -1) {
-  //        key = key.split('DESC ')[1];
-  //        descending = YES;
-  //      }
-  //   if(key === this.get('column').get('key'))
-  //   {
-  //     return descending ? "DESC" : "ASC";
-  //   }
-  //   
-  //   return "none";
-  // }.property('sortDescriptor').cacheable(),
-  // 
-  // displayProperties: ['dragging', 'sortState'],
-  // 
-  // sortStateBinding: '*column.sortState',
+  
+  /** @private */
+  sortState: function() {
+    var key = this.get('sortDescriptor');
+    if(!key || this.spacer)
+    {
+      return;
+    }
+    
+    var descending = NO;
+  
+    if(SC.typeOf(key) === "array")
+    {
+      key = key[0];
+    }
+      
+    if (key.indexOf('ASC') > -1) {
+         key = key.split('ASC ')[1];
+       } else if (key.indexOf('DESC') > -1) {
+         key = key.split('DESC ')[1];
+         descending = YES;
+       }
+    if(key === this.get('column').get('key'))
+    {
+      return descending ? "DESC" : "ASC";
+    }
+    
+    return "none";
+  }.property('sortDescriptor').cacheable(),
+
+  sortStateBinding: '*column.sortState',
   // 
   // render: function(context, firstTime) {
   //   var href, toolTip, classes, theme;
@@ -135,12 +137,12 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
     
   /** @private */
   mouseDragged: function(evt) {
-    var x = evt.pageX
-        // isReorderable = this.getPath('column.isReorderable');
+    var x = evt.pageX,
+      isReorderable = this.getPath('column.isReorderable');
     
-    // if (!isReorderable){
-      // return YES;
-    // }
+    if (!isReorderable){
+      return YES;
+    }
     
     if(!this._dragging)
     {
@@ -175,7 +177,7 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
       this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
       this._dragging = false;
     } else {
-      // this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
+      this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
     }
     this._lastX = null;
     return sc_super();

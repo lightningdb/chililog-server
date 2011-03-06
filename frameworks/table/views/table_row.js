@@ -27,29 +27,39 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
  
   _trv_columnsDidChange: function() {
     this.beginPropertyChanges();
-    var cellViews = this._sc_cell_views || (this._sc_cell_views = []),
+    var cellViews = this._sc_cell_views || (this._sc_cell_views = {}),
       columns = this.get('columns'),
-      numCells = cellViews.get('length'),
-      numCols = columns.get('length'), i, cell;
+      // numCells = cellViews.get('length'),
+      numCells = this._layoutViews ? this._layoutViews.get('length') : 0,
+      numCols = columns.get('length'),
+      // map = this._viewsByColumn || (this._viewsByColumn = {}),
+      i, cell;
       
     if(!this.get('columns')) return;
 
     this.set('thicknesses', this.get('columns'));
     
-    for(i = numCols; i < numCells; i++) {
-      cellViews[i].destroy();
-      cellViews.removeAt(i);
-    }
+    // for(i = numCols; i < numCells; i++) {
+    //   cellViews[i].destroy();
+    //   cellViews.removeAt(i);
+    // }
     
     for(i = numCells; i < numCols; i++) {
       cell = this._createNewCellView(i);
-      cellViews[i] = cell;
+      cellViews[SC.guidFor(columns.objectAt(i))] = cell;
       this.appendChild(cell);
     }
     
     this.endPropertyChanges();
     this._updateCells();
   }.observes('columns'),
+  
+  viewForIndex: function(i) {
+    var columns = this.get('columns'),
+      column = columns.objectAt(i),
+      views = this._sc_cell_views;
+    return views[SC.guidFor(column)];
+  },
 
   awakeFromPool: function() {
     // striping
@@ -74,18 +84,15 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   _updateCell: function(idx, column) {
     // this is faster than using bindings
     
-    var cellView = this._sc_cell_views[idx];
+    var cellView = this._sc_cell_views[SC.guidFor(column)];
     var contentView = cellView.get('contentView');
     
     cellView.beginPropertyChanges();
     contentView.beginPropertyChanges();
-    
-    if(cellView.get('column') != column) {
-      cellView.set('column', column);
-      cellView.set('columnIndex', idx);
-      contentView.set('column', column);
-      contentView.set('columnIndex', idx);
-    }
+
+    // column is the same, position might not be
+    cellView.set('columnIndex', idx);
+    contentView.set('columnIndex', idx);
     
     cellView.set('contentIndex', this.get('contentIndex'));
     cellView.set('layerId', this.get('layerId') + '-' + idx);
@@ -102,7 +109,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     if(this._hasSlept) return
       
     // why is the layer getting detached and why does this stop it?
-    this._sc_cell_views.forEach(function(c) {
+    this._layoutViews.forEach(function(c) {
       c.get('contentView').get('layer');
     }, this);
     
@@ -137,6 +144,8 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       E = this.get('parentView').cellViewForColumn(col),
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
+      
+    
     
     attrs.parentView = this;
     attrs.layerId = this.get('layerId') + '-' + col;

@@ -112,19 +112,23 @@ SC.SimpleLayout = {
     if(!index) index = 0;
     this.expireLayoutFrom(index);
   
-    var thicknesses = this.get('thicknesses'), views = this._layoutViews;
-    
-    if(!views) return;
+    var thicknesses = this.get('thicknesses'), view;
     
     for(var i = index, len = thicknesses.get('length'); i < len; i++) {
-      if(!this.shouldLayoutView || this.shouldLayoutView(views[i], i)) {
-        this.repositionView(views[i], this.layoutForView(i, views[i]));
+      view = this.viewForIndex(i);
+      if(!this.shouldLayoutView || this.shouldLayoutView(view, i)) {
+        this.repositionView(view, this.layoutForView(i, view));
       }
     }
     
     this.set('totalThickness', this.offsetForView(len));
     this.adjust('minWidth', this.get('totalThickness'));
     this.set('calculatedWidth', this.get('totalThickness'));
+  },
+  
+  viewForIndex: function(i) {
+    var views = this._layoutViews;
+    return views[i];
   },
   
   repositionView: function(view, layout) {
