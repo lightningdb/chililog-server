@@ -83,12 +83,15 @@ SC.SimpleLayout = {
     this._dv_thicknessesRangeObserver = observer ;
   
     this._thicknesses = thicknesses
-    this.thicknessesRangeDidChange(null, null, '[]')
+
+    this.expireLayoutFrom(0);
+    this._sl_layoutChildViews(0);
   }.observes('thicknesses'),
 
   thicknessesRangeDidChange: function(content, object, key, indexes) {
     if (!object && (key === '[]')) {
-      this._sl_layoutChildViews(indexes);
+      this.layoutViewsFrom(0);
+      this._updateCells();
     } else {
       if(this.contentPropertyDidChange) this.contentPropertyDidChange(object, key, indexes);
     }
@@ -96,22 +99,27 @@ SC.SimpleLayout = {
   
   contentPropertyDidChange: function(object, key, indexes) {
     if(key == this.get('thicknessKey')) {
-      this.expireLayoutFrom(indexes ? indexes.get('min') : 0)
+      this.layoutViewsFrom(indexes ? indexes.get('min') : 0)
     }
   },
   
   expireLayoutFrom: function(index) {
-    this._offsetCache = this._offsetCache.slice(0, index);
-    this.layoutViewsFrom(index)
+    this._offsetCache = this._offsetCache ? this._offsetCache.slice(0, index) : null;
+    // this.layoutViewsFrom(index)
   },
   
   layoutViewsFrom: function(index) {
     if(!index) index = 0
-    
+    this.expireLayoutFrom(index)
+  
     var thicknesses = this.get('thicknesses'), views = this._layoutViews;
     
+    if(!views) return
+    
     for(var i = index, len = thicknesses.get('length'); i < len; i++) {
-      this.repositionView(views[i], this.layoutForView(i, views[i]))
+      if(!this.shouldLayoutView || this.shouldLayoutView(views[i], i)) {
+        this.repositionView(views[i], this.layoutForView(i, views[i]))
+      }
     }
     
     this.set('totalThickness', this.offsetForView(len));
