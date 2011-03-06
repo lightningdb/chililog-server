@@ -175,7 +175,7 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
       this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
       this._dragging = false;
     } else {
-      this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
+      // this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
     }
     this._lastX = null;
     return sc_super();
