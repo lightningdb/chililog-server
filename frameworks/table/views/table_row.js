@@ -30,21 +30,21 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     var cellViews = this._sc_cell_views || (this._sc_cell_views = []),
       columns = this.get('columns'),
       numCells = cellViews.get('length'),
-      numCols = columns.get('length'), i;
+      numCols = columns.get('length'), i, cell;
       
-    if(!this.get('columns')) return
+    if(!this.get('columns')) return;
 
-    this.set('thicknesses', this.get('columns'))
+    this.set('thicknesses', this.get('columns'));
     
     for(i = numCols; i < numCells; i++) {
-      cellViews[i].destroy()
-      cellViews.removeAt(i)
+      cellViews[i].destroy();
+      cellViews.removeAt(i);
     }
     
     for(i = numCells; i < numCols; i++) {
       cell = this._createNewCellView(i);
       cellViews[i] = cell;
-      this.appendChild(cell)
+      this.appendChild(cell);
     }
     
     this.endPropertyChanges();
@@ -66,7 +66,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       column, cell, E;
       
     for(var i = 0, len = columns.get('length'); i < len; i++) {
-      column = columns.objectAt(i)
+      column = columns.objectAt(i);
       this._updateCell(i, column);
     }
   },

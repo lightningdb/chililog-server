@@ -86,23 +86,23 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var direction = this.get('layoutDirection');
     var frame = view.get('frame');
     var put = (this._totalOffset || this.offsetForView(view.get('columnIndex'))) + offset;
-    view.adjust('left', put)
-    this._totalOffset = put
+    view.adjust('left', put);
+    this._totalOffset = put;
     this.set('_draggingOffset', put);
     
     var childViews = this._layoutViews;
     var idx = childViews.indexOf(view);
-    var view2;
+    var view2, idx2;
   
     if(offset < 1 && idx > 0)
     {
-      var idx2 = idx - 1;
+      idx2 = idx - 1;
     }
     else 
     {
       if(offset > 1 && idx < childViews.get('length') - 1)
       {
-        var idx2 = idx + 1;
+        idx2 = idx + 1;
       }
     }
   
@@ -140,8 +140,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var column1 = columns.objectAt(index1);
     var column2 = columns.objectAt(index2);
     
-    view1.set('columnIndex', index2)
-    view2.set('columnIndex', index1)
+    view1.set('columnIndex', index2);
+    view2.set('columnIndex', index1);
   
     childViews.beginPropertyChanges();
     columns.beginPropertyChanges();
