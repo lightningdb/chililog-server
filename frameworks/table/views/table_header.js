@@ -22,6 +22,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       column: column,
       columnIndex: col,
       layoutDelegate: this,
+      layoutIndex: col,
       delegate: this,
       first: col === 0,
       layout: layout
