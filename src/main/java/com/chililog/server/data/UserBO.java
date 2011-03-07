@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.security.PasswordManager;
+import com.chililog.server.security.CryptoUtils;
 import com.mongodb.DBObject;
 
 /**
@@ -136,7 +136,7 @@ public class UserBO extends BO implements Serializable
     {
         if (isPlainText)
         {
-            _password = PasswordManager.hashPassword(password, null);
+            _password = CryptoUtils.createHash(password, null);
         }
         else
         {
@@ -155,7 +155,7 @@ public class UserBO extends BO implements Serializable
      */
     public boolean validatePassword(String plainTextPassword) throws ChiliLogException
     {
-        return PasswordManager.verifyPassword(plainTextPassword, _password);
+        return CryptoUtils.verifyHash(plainTextPassword, _password);
     }
 
     /**
