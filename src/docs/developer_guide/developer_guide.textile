@@ -77,17 +77,21 @@ h3. 1.4 Install Eclipse IDE
 * "m2eclipse":http://m2eclipse.sonatype.org/installing-m2eclipse.html for Maven; and 
 * "EGit":http://www.eclipse.org/egit for Git.
 
-4. Import the @chililog-server@ project into your workspace.
+4. Generate Eclipse project files.
+* At the shell prompt, run @mvn eclipse:eclipse compile@
+* @.project@ and @.classpath@ files will be generated.
+
+5. Import the @chililog-server@ project into your workspace.
 * From the menu toolbar, select @File > Import@.
 * From the popup window, select @Existing Maven Projects@ in the @Maven@ folder.  
 * Click @Next@ and then select the @chililog-server@ directory.
 
-5. Add Git support. 
+6. Add Git support. 
 * Right click the project in the workspace
 * From the popup context menu, select @Teams  > Share Project@.
 * Select @Git@ and then click @Next@.
 
-6. Add code styles. 
+7. Add code styles. 
 * From the menus, select @Window > Preferences@.
 * In the popup window, select @Java > Code Style > Formatter@.
 * Click @Import@ and select @scripts/ChiliLog-JavaCodeStyle.xml@.

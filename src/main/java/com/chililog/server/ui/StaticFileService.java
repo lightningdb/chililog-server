@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.activation.MimetypesFileTypeMap;
@@ -153,7 +154,7 @@ public class StaticFileService extends Service
         String ifModifiedSince = request.getHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
         if (!StringUtils.isBlank(ifModifiedSince))
         {
-            SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+            SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
             if (ifModifiedSinceDate.getTime() == file.lastModified())
             {
@@ -311,7 +312,7 @@ public class StaticFileService extends Service
     }
 
     /**
-     * If file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
+     * When file timestamp is the same as what the browser is sending up, send a "304 Not Modified"
      * 
      * @param ctx
      *            Context
@@ -355,7 +356,7 @@ public class StaticFileService extends Service
     }
 
     /**
-     * Sets the content type header on an HTTP Response
+     * Sets the content type header for the HTTP Response
      * 
      * @param response
      *            HTTP response
@@ -364,20 +365,8 @@ public class StaticFileService extends Service
      */
     private void setContentTypeHeader(HttpResponse response, File file)
     {
-        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, convertFileExtensionToMimeType(file.getPath()));
-    }
-
-    /**
-     * Tries to figure out the MIME type of a file based on the file name
-     * 
-     * @param filePath
-     *            Path to file
-     * @return MIME type. e.g. "text/html"
-     */
-    private String convertFileExtensionToMimeType(String filePath)
-    {
         MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-        return mimeTypesMap.getContentType(filePath);
+        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
     }
 
     /**
@@ -390,7 +379,7 @@ public class StaticFileService extends Service
      */
     private void setDateHeader(HttpResponse response)
     {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
         Calendar time = new GregorianCalendar();
@@ -407,7 +396,7 @@ public class StaticFileService extends Service
      */
     private void setDateAndCacheHeaders(HttpResponse response, File filetoCache)
     {
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
+        SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
         // Date header
@@ -428,7 +417,7 @@ public class StaticFileService extends Service
      * Turn on/off compression
      * 
      * @param ctx
-     *            contenxt
+     *            context
      * @param doCompression
      *            True to turn compression on, False to turn it off
      */

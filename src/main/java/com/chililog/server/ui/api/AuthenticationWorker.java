@@ -18,60 +18,56 @@
 
 package com.chililog.server.ui.api;
 
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 
 /**
  * <p>
- * Session API handles:
+ * Authentication API handles:
  * <ul>
  * <li>login - HTTP POST method</li>
  * <li>logout - HTTP DELETE method</li>
  * </p>
  */
-public class SessionWorker extends Worker
+public class AuthenticationWorker extends Worker
 {
     /**
      * Constructor
      */
-    public SessionWorker()
+    public AuthenticationWorker(HttpRequest request)
     {
+        super(request);
         return;
     }
 
     /**
-     * Validate request to make sure we can process it
+     * Can only create and delete sessions
      */
     @Override
-    public ApiResult initialize(HttpRequest request)
+    public HttpMethod[] getSupportedMethods()
     {
-        ApiResult result = new ApiResult();
-        try
-        {
-
-        }
-        catch (Exception ex)
-        {
-
-        }
-        return result;
+        return new HttpMethod[]
+        { HttpMethod.POST, HttpMethod.DELETE };
     }
 
     /**
-     * Process incoming message
+     * Need special processing because for POST (login), there is no authentication token as yet
      */
+    @Override
+    protected ApiResult validateAuthenticationToken()
+    {
+        if (this.getRequest().getMethod() == HttpMethod.POST)
+        {
+            return new ApiResult();
+        }
+        return super.validateAuthenticationToken();
+    }
+
     @Override
     public ApiResult process(Object requestContent)
     {
-        ApiResult result = new ApiResult();
-        try
-        {
-
-        }
-        catch (Exception ex)
-        {
-
-        }
-        return result;
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

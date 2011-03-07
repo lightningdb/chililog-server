@@ -18,8 +18,14 @@
 
 package com.chililog.server.ui.api;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
+import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.ui.api.Worker.ContentIOStyle;
 
 /**
@@ -35,7 +41,7 @@ import com.chililog.server.ui.api.Worker.ContentIOStyle;
  */
 public class ApiResult
 {
-    private HttpResponseStatus _httpResponseStatus = HttpResponseStatus.OK;
+    private HttpResponseStatus _responseStatus = HttpResponseStatus.OK;
 
     private String _responseContentType = "text/json; charset=UTF-8";
 
@@ -43,12 +49,14 @@ public class ApiResult
 
     private Object _responseContent = null;
 
+    private HashMap<String, String> _headers = new HashMap<String, String>();
+
     /**
      * Determines if the call is successful or not
      */
     public boolean isSuccess()
     {
-        return _httpResponseStatus == HttpResponseStatus.OK;
+        return _responseStatus == HttpResponseStatus.OK;
     }
 
     /**
@@ -56,12 +64,12 @@ public class ApiResult
      */
     public HttpResponseStatus getResponseStatus()
     {
-        return _httpResponseStatus;
+        return _responseStatus;
     }
 
     public void setHttpResponseStatus(HttpResponseStatus httpResponseStatus)
     {
-        _httpResponseStatus = httpResponseStatus;
+        _responseStatus = httpResponseStatus;
     }
 
     /**
@@ -115,6 +123,43 @@ public class ApiResult
     public void setResponseContent(Object responseContent)
     {
         _responseContent = responseContent;
+    }
+
+    /**
+     * Translates the specified object <code>o</code> into JSON and sets it as the content
+     * 
+     * @param o
+     *            Object to translate into JSON and then return to the caller
+     * @throws UnsupportedEncodingException
+     */
+    public void setResponseContentToJson(Object o)
+    {
+        try
+        {
+            _responseContentType = "text/json; charset=UTF-8";
+            _responseContentIOStyle = ContentIOStyle.ByteArray;
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos, true, "UTF-8");
+            JsonTranslator.getInstance().toJson(o, ps);
+            ps.close();
+
+            _responseContent = baos.toByteArray();
+        }
+        catch (Exception ex)
+        {
+            // We should not get UnsupportedEncodingException ... but you never know.
+            // Just throw again
+            throw new RuntimeException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     * Headers that will be returned to the caller
+     */
+    public HashMap<String, String> getHeaders()
+    {
+        return _headers;
     }
 
 }

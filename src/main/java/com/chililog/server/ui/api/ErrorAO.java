@@ -22,15 +22,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 /**
- * <p>Error API Object is returned to the caller in the event of an error or exception during processing.</p>
+ * <p>
+ * Error API Object is returned to the caller in the event of an error or exception during processing.
+ * </p>
  * 
  * @author vibul
- *
+ * 
  */
 public class ErrorAO
 {
     private String _message;
-    
+
     private String _stackTrace;
 
     /**
@@ -40,20 +42,34 @@ public class ErrorAO
     {
         return;
     }
-    
+
+    /**
+     * Constructor allowing the setting to properties
+     * 
+     * @param message
+     *            Human readable message
+     * @param stackTrace
+     *            Stack trace
+     */
+    public ErrorAO(String message, String stackTrace)
+    {
+        _message = message;
+        _stackTrace = stackTrace;
+    }
+
     /**
      * Basic constructor
      */
     public ErrorAO(Throwable ex)
     {
         _message = ex.getMessage();
-        
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw, true);
         ex.printStackTrace(pw);
         pw.close();
         _stackTrace = sw.getBuffer().toString();
-        
+
         return;
     }
 
@@ -82,6 +98,5 @@ public class ErrorAO
     {
         _stackTrace = stackTrace;
     }
-    
-    
+
 }

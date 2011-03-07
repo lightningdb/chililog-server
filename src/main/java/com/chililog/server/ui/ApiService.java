@@ -33,6 +33,7 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.ClassUtils;
@@ -44,6 +45,7 @@ import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
+import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -57,18 +59,34 @@ import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.ui.api.ErrorAO;
+import com.chililog.server.ui.api.AuthenticationWorker;
 import com.chililog.server.ui.api.Worker;
 import com.chililog.server.ui.api.Worker.ContentIOStyle;
 import com.chililog.server.ui.api.ApiResult;
 
 /**
  * <p>
- * Dispatches an API request to an API object for it to be processed.
+ * Routes the request to an API worker for processing
  * </p>
  * <p>
- * The expected format of the URI is <code>/api/[Object]</code> where <code>[Object]</code> is the name of the API
- * object to which the caller wishes to perform an action.
+ * The expected format of the URI is <code>/api/{WorkerName}</code> where <code>{WorkerName}</code> is the name of the
+ * API worker class to invoke.
  * </p>
+ * <p>
+ * For example, <code>/api/Session</code> will invoke the {@link AuthenticationWorker} worker.
+ * </p>
+ * <p>
+ * If there is an exception during processing, a <code>500 Internal Server Error</code> is returned. The content of the
+ * response is the {@ ErrorAO} is returned. The content of the response is
+ * the @ ErrorAO} is returned. The content of the response is the @ ErrorAO} in JSON format.
+ * </p>
+ * 
+ * <pre>
+ * {
+ *    "Message": "Cannot find API class 'com.chililog.server.ui.api.Notfound' for URI: '/api/notfound.'",
+ *    "StackTrace": "com.chililog.server.common.ChiliLogException: Cannot find ..."
+ * }
+ * </pre>
  */
 public class ApiService extends Service
 {
@@ -100,11 +118,10 @@ public class ApiService extends Service
             {
                 // Initialize
                 _request = (HttpRequest) e.getMessage();
-                instanceApiProcessor();
-                result = _apiProcessor.initialize(_request);
+                result = instanceApiProcessor();
                 if (!result.isSuccess())
                 {
-                    writeResponse(e, result);
+                    writeResponse(ctx, e, result);
                     return;
                 }
 
@@ -141,7 +158,7 @@ public class ApiService extends Service
                 else
                 {
                     // No chunks. Process it.
-                    writeResponse(e, invokeApiProcessorNoChunks());
+                    writeResponse(ctx, e, invokeApiProcessorNoChunks());
                     return;
                 }
             }
@@ -152,7 +169,7 @@ public class ApiService extends Service
                 {
                     // No more chunks. Process it.
                     _readingChunks = false;
-                    writeResponse(e, invokeApiProcessorWithChunks());
+                    writeResponse(ctx, e, invokeApiProcessorWithChunks());
                     return;
                 }
                 else
@@ -166,7 +183,7 @@ public class ApiService extends Service
         }
         catch (Exception ex)
         {
-            writeResponse(e, ex);
+            writeResponse(ctx, e, ex);
         }
         finally
         {
@@ -183,7 +200,7 @@ public class ApiService extends Service
      * instanced.
      * </p>
      */
-    private void instanceApiProcessor() throws Exception
+    private ApiResult instanceApiProcessor() throws Exception
     {
         String className = null;
         try
@@ -195,9 +212,11 @@ public class ApiService extends Service
             apiName = WordUtils.capitalizeFully(apiName, new char[]
             { '_' });
 
-            className = "com.chililog.server.ui.api." + apiName;
+            className = "com.chililog.server.ui.api." + apiName + "Worker";
             Class<?> apiClass = ClassUtils.getClass(className);
-            _apiProcessor = (Worker) ConstructorUtils.invokeConstructor(apiClass, null);
+            _apiProcessor = (Worker) ConstructorUtils.invokeConstructor(apiClass, _request);
+            
+            return _apiProcessor.validate();
         }
         catch (ClassNotFoundException ex)
         {
@@ -269,7 +288,7 @@ public class ApiService extends Service
      * @param result
      *            {@link ApiResult} API processing result
      */
-    private void writeResponse(MessageEvent e, ApiResult result)
+    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, ApiResult result)
     {
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
@@ -279,13 +298,23 @@ public class ApiService extends Service
         setDateHeader(response);
         response.setHeader(CONTENT_TYPE, result.getResponseContentType());
 
-        if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray)
+        for (Entry<String, String> header : result.getHeaders().entrySet())
         {
-            response.setContent(ChannelBuffers.copiedBuffer((byte[]) result.getResponseContent()));
-        }
-        else
+            response.setHeader(header.getKey(), header.getValue());
+        }        
+        
+        if (result.getResponseContent() != null)
         {
-            throw new NotImplementedException("ContentIOStyle " + result.getResponseContentIOStyle().toString());
+            if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray)
+            {
+                byte[] content = (byte[]) result.getResponseContent();
+                toogleCompression(ctx, content.length > 4096);  // Compress if > 4K
+                response.setContent(ChannelBuffers.copiedBuffer(content));
+            }
+            else
+            {
+                throw new NotImplementedException("ContentIOStyle " + result.getResponseContentIOStyle().toString());
+            }
         }
 
         if (keepAlive)
@@ -312,11 +341,14 @@ public class ApiService extends Service
      * @param ex
      *            Exception that was thrown
      */
-    private void writeResponse(MessageEvent e, Exception ex) throws Exception
+    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, Exception ex) throws Exception
     {
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
 
+        // No need to compress errors. Will be small in size
+        toogleCompression(ctx, false);
+        
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         setDateHeader(response);
@@ -393,5 +425,22 @@ public class ApiService extends Service
 
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
+    }
+    
+    /**
+     * Turn on/off compression
+     * 
+     * @param ctx
+     *            context
+     * @param doCompression
+     *            True to turn compression on, False to turn it off
+     */
+    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression)
+    {
+        ChannelHandler deflater = ctx.getPipeline().get("deflater");
+        if (deflater instanceof ConditionalHttpContentCompressor)
+        {
+            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
+        }
     }
 }

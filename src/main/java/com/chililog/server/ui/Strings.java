@@ -28,5 +28,7 @@ public class Strings
 {
     public static final String PREFIX = "UI.";
     public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFound";
+    public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameter";
+    public static final String URI_QUERY_STRING_PARAMETER_ERROR = PREFIX + "UriQueryStringParameter";
 
 }
