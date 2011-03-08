@@ -11,7 +11,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   backgroundColor: 'white',
   rowHeight: 30,
   rowSpacing: 1,
-  isSelectable: YES,
   exampleView: SC.TableRowView,
   cellView: Endash.TableCellView,
   cellContentView: SC.LabelView.extend({

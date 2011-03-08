@@ -17,7 +17,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     } else {
       this.$().removeClass('sel');
     }
-    // this.$().toggleClass('sel', isSelected)
     console.log('isselectedidchange')
   }.observes('isSelected'),
   
@@ -43,7 +42,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       // numCells = cellViews.get('length'),
       numCells = this._layoutViews ? this._layoutViews.get('length') : 0,
       numCols = columns.get('length'),
-      // map = this._viewsByColumn || (this._viewsByColumn = {}),
       i, cell;
       
     if(!this.get('columns')) return;
@@ -87,8 +85,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   },
   
   _updateCells: function() {
-    // cell updating
-    // var columns = this.getPath('parentView.columns'),
     var columns = this.get('columns'),
       column, cell, E;
       
@@ -156,24 +152,18 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   
   _createNewCellView: function(col) {
     var columns = this.get('columns'),
-    // var columns = this.getPath('parentView.columns'),
       column = columns.objectAt(col),
       E = this.get('parentView').cellViewForColumn(col),
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
       
-    
-    
     attrs.parentView = this;
     attrs.layerId = this.get('layerId') + '-' + col;
-    
     attrs.column = column;
     attrs.columnIndex = col;
     attrs.content = this.get('content');
     attrs.contentIndex = this.get('contentIndex');
-    
     attrs.contentValueKey = column.get('key');
-    // attrs.layout = this.layoutForCell(col);
     (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
 
     return wrapper.create(attrs, {
