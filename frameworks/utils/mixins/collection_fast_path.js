@@ -649,11 +649,16 @@ Endash.CollectionFastPath = {
       // add new and map
       var newView = this.addItemView(exampleView, object, index);
     } else {
-      var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
-
-      this.setAttributesForItem(object, index, attrs);
-      this.configureItemView(current, attrs);
+      this._updateItemView(current, object, index);
     }
+  },
+  
+  _updateItemView: function(current, object, index) {
+    var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
+
+    this.setAttributesForItem(object, index, attrs);
+    this.configureItemView(current, attrs);
+    
   },
   
   

@@ -11,7 +11,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   backgroundColor: 'white',
   rowHeight: 30,
   rowSpacing: 1,
-  
+  isSelectable: YES,
   exampleView: SC.TableRowView,
   cellView: Endash.TableCellView,
   cellContentView: SC.LabelView.extend({
@@ -68,11 +68,19 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     pool.push(view);
     var f = view.get("frame");
     
-    this._repositionView(view.get('layer'), {top: -(f.height + 2)})
+    this._repositionView(view.get('layer'), {top: -(f.height + 2)});
     
     // view.adjust({ top: -f.height });
     view.set("layerId", SC.guidFor(view));
     if (view.sleepInDOMPool) view.sleepInDOMPool();
+  },
+  
+  _updateItemView: function(current, object, index) {
+    var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
+
+    this.setAttributesForItem(object, index, attrs);
+    this.configureItemView(current, attrs);
+    this._repositionView(current.get('layer'), attrs.layout);
   },
 
   reset: function() {
@@ -88,6 +96,19 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     }
     
     this.reloadIfNeeded(null, true);
-  }
+  },
+  
+  contentIndexForLayerId: function(id) {
+    if (!id || !(id = id.toString())) return null ; // nothing to do
+    
+    var base = this._baseLayerId;
+    if (!base) base = this._baseLayerId = SC.guidFor(this)+"-";
+    
+    // no match
+    if ((id.length <= base.length) || (id.indexOf(base) !== 0)) return null ; 
+    var ret = Number(id.split('-')[1])
+    return isNaN(ret) ? null : ret ;
+  },
+  
 
 });

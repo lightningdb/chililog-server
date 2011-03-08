@@ -226,7 +226,7 @@ SC.TableView = SC.View.extend({
           contentBinding: SC.Binding.from('.content',this),
           delegate: this.get('delegate'),
           isDropTarget: this.get('isDropTarget'),
-          isSelectable: this.get('isSelectable'),
+          // isSelectable: this.get('isSelectable'),
           
           // exampleView: this.get('exampleView')
         }),

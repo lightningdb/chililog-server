@@ -10,6 +10,17 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
 
   classNames: ['sc-dataview-row', 'sc-list-item-view'],
   
+  isSelectedDidChange: function() {
+    var isSelected = this.get('isSelected')
+    if(isSelected) {
+      this.$().addClass('sel');
+    } else {
+      this.$().removeClass('sel');
+    }
+    // this.$().toggleClass('sel', isSelected)
+    console.log('isselectedidchange')
+  }.observes('isSelected'),
+  
   render: function(context, firstTime) {
     if(firstTime) {
       var classArray = [];
@@ -65,6 +76,12 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     // striping
     var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
     this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
+    
+    if(this.get('isSelected')) {
+      this.$().addClass('sel');
+    } else {
+      this.$().removeClass('sel');
+    }
 
     this._updateCells();
   },
