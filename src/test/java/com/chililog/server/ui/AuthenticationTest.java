@@ -104,19 +104,17 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
-        //_logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
+        //_logger.debug(ApiUtils.formatResponseForLogging(responseCode, headers, content));
 
         assertEquals("HTTP/1.1 405 Method Not Allowed", responseCode);
         assertNotNull(headers.get("Date"));
         assertEquals("POST, DELETE", headers.get("Allow"));
-        
-        // No content
         assertNull(headers.get("Content-Type"));
         assertNull(content);
     }
@@ -143,19 +141,17 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
-        //_logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
+        //_logger.debug(ApiUtils.formatResponseForLogging(responseCode, headers, content));
 
         assertEquals("HTTP/1.1 405 Method Not Allowed", responseCode);
         assertNotNull(headers.get("Date"));
         assertEquals("POST, DELETE", headers.get("Allow"));
-        
-        // No content
         assertNull(headers.get("Content-Type"));
         assertNull(content);
     }
@@ -185,16 +181,14 @@ public class AuthenticationTest
         out.close();
 
         // Get response
-        String responseContent = WebServerManagerTest.getResponseContent(conn);
+        String responseContent = ApiUtils.getResponseContent(conn);
         
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
         assertEquals("HTTP/1.1 200 OK", responseCode);
         assertNotNull(headers.get("Date"));
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
-        // No content
         assertNull(headers.get("Content-Type"));
         assertEquals("", responseContent);
     }
@@ -232,16 +226,14 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            responseContent = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
         
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
-        
-        // Content
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Bad username or password."));
@@ -280,16 +272,14 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            responseContent = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
         
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
-        
-        // Content
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Bad username or password."));
@@ -328,16 +318,14 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            responseContent = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
         
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
         assertEquals("HTTP/1.1 400 Bad Request", responseCode);
         assertNotNull(headers.get("Date"));
-        
-        // Content
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("'Username' is required but not supplied."));
@@ -376,18 +364,157 @@ public class AuthenticationTest
         }
         catch (Exception ex)
         {
-            responseContent = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
         
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
         assertEquals("HTTP/1.1 400 Bad Request", responseCode);
         assertNotNull(headers.get("Date"));
-        
-        // Content
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Password' is required but not supplied."));
     }
+    
+    /**
+     * DELETE - logout successful
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testDELETE() throws IOException
+    {    
+        // Login
+        String authToken = ApiUtils.login("AuthenticationTest", "hello there");
+        
+        // Logout
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("DELETE");
+        conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authToken);
+        
+        String logoutResponseContent = ApiUtils.getResponseContent(conn);
+
+        HashMap<String, String> logoutHeaders = new HashMap<String, String>();
+        String logoutResponseCode = ApiUtils.getResponseHeaders(conn, logoutHeaders);
+
+        assertEquals("HTTP/1.1 200 OK", logoutResponseCode);
+        assertNotNull(logoutHeaders.get("Date"));
+        assertEquals("", logoutResponseContent);
+    }
+    
+    /**
+     * DELETE - logout failed. Authentication token not present
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testDELETE_AuthenticationTokenNotPresent() throws IOException
+    {    
+        // Logout
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("DELETE");
+        
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        
+        // Content
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Authentication token is invalid. Please login again."));
+    }
+
+    /**
+     * DELETE - logout failed. Authentication token is bad
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testDELETE_AuthenticationTokenInvalid() throws IOException
+    {    
+        // Logout
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("DELETE");
+        conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, "badtoken");
+
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        
+        // Content
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Authentication token is invalid. Please login again."));
+    }
+
+    /**
+     * DELETE - logout failed. Authentication token expired
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testDELETE_AuthenticationTokenExpired() throws IOException
+    {    
+        // Login
+        String authToken = ApiUtils.login("AuthenticationTest", "hello there", ExpiryType.Absolute, -1);
+
+        // Logout
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("DELETE");
+        conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authToken);
+
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        
+        // Content
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Authentication token expired. Please login again."));
+    }
+    
 }

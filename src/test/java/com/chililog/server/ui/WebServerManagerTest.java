@@ -37,7 +37,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -349,11 +348,11 @@ public class WebServerManagerTest
         }
         catch (Exception ex)
         {
-            content = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
+            content = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
 
         //_logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
 
@@ -449,113 +448,4 @@ public class WebServerManagerTest
         }
     }
 
-    /**
-     * Get the response as a string
-     * 
-     * @param httpConn
-     * @return
-     * @throws IOException
-     */
-    public static String getResponseContent(HttpURLConnection httpConn) throws IOException
-    {
-        if (httpConn.getInputStream() == null)
-        {
-            return null;
-        }
-        else
-        {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
-            String str;
-            while ((str = in.readLine()) != null)
-            {
-                sb.append(str + "\n");
-            }
-            in.close();
-
-            return sb.toString();
-        }
-    }
-
-    /**
-     * Gets the error response as a string
-     * 
-     * @param httpConn
-     * @return
-     * @throws IOException
-     */
-    public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException
-    {
-        if (httpConn.getErrorStream() == null)
-        {
-            return null;
-        }
-        else
-        {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
-            String str;
-            while ((str = in.readLine()) != null)
-            {
-                sb.append(str + "\n");
-            }
-            in.close();
-
-            return sb.toString();
-        }
-    }
-
-    /**
-     * Gets the headers
-     * 
-     * @param conn
-     * @param headers
-     * @return 1st response line
-     */
-    public static String getResponseHeaders(URLConnection conn, HashMap<String, String> headers)
-    {
-        String responseCode = "";
-        for (int i = 0;; i++)
-        {
-            String name = conn.getHeaderFieldKey(i);
-            String value = conn.getHeaderField(i);
-            if (name == null && value == null)
-            {
-                break;
-            }
-            if (name == null)
-            {
-                responseCode = value;
-            }
-            else
-            {
-                headers.put(name, value);
-            }
-        }
-        return responseCode;
-    }
-
-    /**
-     * Format response for logging
-     * 
-     * @param responseCode
-     * @param headers
-     * @param content
-     * @return
-     */
-    public static String formatResponseForLogging(String responseCode, HashMap<String, String> headers, String content)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("HTTP Response: ");
-        sb.append(responseCode);
-        sb.append("\n");
-        for (Entry<String, String> e : headers.entrySet())
-        {
-            sb.append(String.format("Header %s = %s", e.getKey(), e.getValue()));
-        }
-        sb.append("\nCONTENT: ");
-        sb.append(content == null ? "{No Content}" : content);
-        sb.append("\n");
-        return sb.toString();
-    }
 }

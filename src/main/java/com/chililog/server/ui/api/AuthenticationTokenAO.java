@@ -21,6 +21,7 @@ package com.chililog.server.ui.api;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -45,6 +46,8 @@ import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
  */
 public class AuthenticationTokenAO
 {
+    private String _id;
+
     private String _username;
 
     private ExpiryType _expiryType;
@@ -69,6 +72,7 @@ public class AuthenticationTokenAO
      */
     public AuthenticationTokenAO(AuthenticationAO authenticationApiObject)
     {
+        _id = UUID.randomUUID().toString();
         _username = authenticationApiObject.getUsername();
         _expiryType = authenticationApiObject.getExpiryType();
         _expirySeconds = authenticationApiObject.getExpirySeconds();
@@ -85,6 +89,19 @@ public class AuthenticationTokenAO
         GregorianCalendar cal = new GregorianCalendar();
         cal.add(Calendar.SECOND, _expirySeconds);
         _expiresOn = cal.getTime();
+    }
+
+    /**
+     * Unique id for this session
+     */
+    public String getId()
+    {
+        return _id;
+    }
+
+    public void setId(String id)
+    {
+        _id = id;
     }
 
     /**
@@ -191,8 +208,16 @@ public class AuthenticationTokenAO
 
         AppProperties appProperties = AppProperties.getInstance();
 
-        String plainTextToken = CryptoUtils.decryptTripleDES(encryptedToken,
-                appProperties.getWebApiAuthenticationEncryptionPassword());
+        String plainTextToken = null;
+        try
+        {
+            plainTextToken = CryptoUtils.decryptTripleDES(encryptedToken,
+                    appProperties.getWebApiAuthenticationEncryptionPassword());
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR);
+        }
 
         int separatorIndex = plainTextToken.indexOf("~~~");
         String json = plainTextToken.substring(0, separatorIndex);
@@ -204,7 +229,7 @@ public class AuthenticationTokenAO
         }
 
         AuthenticationTokenAO token = JsonTranslator.getInstance().fromJson(json, AuthenticationTokenAO.class);
-        if (token.getExpiresOn().getTime() > new Date().getTime())
+        if (token.getExpiresOn().getTime() < new Date().getTime())
         {
             throw new ChiliLogException(Strings.AUTHENTICAITON_TOKEN_EXPIRED_ERROR);
         }
