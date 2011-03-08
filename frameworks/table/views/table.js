@@ -29,10 +29,10 @@ SC.TableView = SC.View.extend({
   */
   rowHeight:30,
   
-  // selection:null,
-  // 
-  // target:null,
-  // action:null,
+  selection:null,
+  
+  target:null,
+  action:null,
   
   /**
     IF YES, a table header will be rendered. Note that if a table header is not rendered, 
@@ -41,7 +41,6 @@ SC.TableView = SC.View.extend({
     @property {Boolean}
   */
   useHeaders: YES,
-  // useHeaders: NO,
   
   /**
     The height of the header row
@@ -72,33 +71,7 @@ SC.TableView = SC.View.extend({
   */
   exampleScrollView: SC.ScrollView,
   
-  /**
-    An example ListView that will be used to paint the foldered list view of the tableView.
-    This is useful to add customization to your listview.
-    
-    @property {SC.ListView}
-  */
-  // exampleFolderedListView: null,
-  
-  /**
-    Use this method to swap out a column on the columns collection.
-    
-    @property {SC.TableColumn} column The column object that should be added to the collection.
-    @property {Number} idx The index of the column to be replaced.
-  */
-  // replaceColumn: function(column, idx){
-  //   var columns=this.get('columns').copy();
-  //       
-  //   if (idx>=columns.length){
-  //     return;
-  //   }
-  //   
-  //   columns[idx]=column;
-  //   this.set('columns',columns);
-  //   columns=null;
-  // },
-  
-  // isSelectable: YES,
+  isSelectable: YES,
   // isEditable: YES,
   // canEditContent: YES,
   
@@ -112,13 +85,12 @@ SC.TableView = SC.View.extend({
   
   createChildViews: function() {
     
-    var childViews = [], childView=null;
+    var header, data
     
-    this._tableHeaderView = childView = this.createChildView(SC.ScrollView.design({
-      
+    this._tableHeaderView = header = this.createChildView(SC.ScrollView.design({
       isVisibleBinding: SC.Binding.from('.useHeaders', this),
-      
       headerHeightBinding: SC.Binding.from('.headerHeight',this),
+
       headerHeightDidChange: function(){
         var height = this.get('headerHeight'),
             layout = this.get('layout');
@@ -150,100 +122,41 @@ SC.TableView = SC.View.extend({
        })
     }));
     
-    childViews.push(childView);
-    // 
-    // if (this.get('exampleFolderedListView'))
-    // {
-    //   
-    //   this._dataView = childView = this.createChildView(this.get('exampleScrollView').design({
-    //     autohidesVerticalScroller: NO,
-    //     layout: { left: 6, right: 0, top: this.get('headerHeight'), bottom: 0 },
-    //     verticalScrollOffset:0,
-    //     hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
-    //     contentView: this.get('exampleFolderedListView').design({
-    //       layout:{top:0,left:0,right:0,bottom:0},
-    //       // exampleView: this.get('exampleView'),
-    //       keys: [],
-    //       columnWidths: [],
-    //       rowHeight: this.get('rowHeight'),
-    //       table: this,
-    //       contentBinding: SC.Binding.from('.content.arrangedObjects',this),
-    //       selectionBinding: SC.Binding.from('.selection',this),
-    //       targetBinding: SC.Binding.from('.target',this),
-    //       actionBinding: SC.Binding.from('.action',this),
-    //       contentValueKey: 'name',
-    //       hasContentIcon: this.get('hasContentIcon'),
-    //       contentIconKey: 'icon',
-    //       newTargetBinding: SC.Binding.from('.delegate',this),
-    //       newActionBinding: SC.Binding.from('.newAction',this),
-    //       canReorderContent: this.get('canReorderContent'),
-    //       canEditContent: this.get('canEditContent'),
-    //       canDeleteContent: this.get('canDeleteContent'),
-    //       allowDeselectAll: this.get('allowDeselectAll'),
-    //       delegate: this.get('delegate'),
-    //       beginEditingSelectionBinding: this.get('beginEditingSelectionPath') || SC.binding('.beginEditingSelection',this.get('delegate')),
-    //       folderedListViewDelegate: this.get('delegate'),
-    //       isDropTarget: this.get('isDropTarget'),
-    //       isSelectable: this.get('isSelectable'),
-    //       allowActionOnFolder: this.get('allowActionOnFolder'),
-    //       needsContextMenuBinding: SC.Binding.from('.needsContextMenu',this)
-    //     })
-    //   }));
-    // }
-    // 
-    // else
-    // {
-      this._dataView = childView = this.createChildView(this.get('exampleScrollView').design({
-        isVisible: YES,
-        layout: {
-          left:   0,
-          right:  0,
-          bottom: 0,
-          top:    this.get('useHeaders')?this.get('headerHeight'):0
-        },
-        hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
-        borderStyle: SC.BORDER_NONE,
-        contentView: Endash.DataView.design({
+    this._dataView = data = this.createChildView(this.get('exampleScrollView').design({
+      isVisible: YES,
+      layout: {
+        left:   0,
+        right:  0,
+        bottom: 0,
+        top:    this.get('useHeaders')?this.get('headerHeight'):0
+      },
+      hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
+      borderStyle: SC.BORDER_NONE,
+      contentView: Endash.DataView.design({
+        classNames: ['sc-table-data-view'],
+        table: this,
+        rowHeight: this.get('rowHeight'),
+        isEditableBinding: SC.Binding.from('.isEditable',this),
+        canEditContentBinding: SC.Binding.from('.canEditContent',this),
+        targetBinding: SC.Binding.from('.target',this),
+        actionBinding: SC.Binding.from('.action',this),
+        canReorderContentBinding: SC.Binding.from('.canReorderContent',this),
+        selectionBinding: SC.Binding.from('.selection',this),
+        sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
+        columnsBinding: SC.Binding.from('.columns',this).oneWay(),
+        contentBinding: SC.Binding.from('.content',this),
+        delegate: this.get('delegate'),
+        // isDropTarget: this.get('isDropTarget'),
+        // isSelectable: this.get('isSelectable'),
+        
+        // exampleView: this.get('exampleView')
+      }),
 
-          classNames: ['sc-table-data-view'],
-
-          table: this,
-
-          rowHeight: this.get('rowHeight'),
-
-          isEditableBinding: SC.Binding.from('.isEditable',this),
-          canEditContentBinding: SC.Binding.from('.canEditContent',this),
-
-          targetBinding: SC.Binding.from('.target',this),
-          actionBinding: SC.Binding.from('.action',this),
-          
-          canReorderContentBinding: SC.Binding.from('.canReorderContent',this),
-
-          selectionBinding: SC.Binding.from('.selection',this),
-
-          sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
-          columnsBinding: SC.Binding.from('.columns',this).oneWay(),
-          contentBinding: SC.Binding.from('.content',this),
-          delegate: this.get('delegate'),
-          isDropTarget: this.get('isDropTarget'),
-          // isSelectable: this.get('isSelectable'),
-          
-          // exampleView: this.get('exampleView')
-        }),
-
-
-        autohidesVerticalScroller: NO,
-        horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this)
-      }));
-    // }
+      autohidesVerticalScroller: NO,
+      horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this)
+    }));
     
-    childViews.push(childView);
-    
-    this.set('childViews',childViews);
-    
-    // if (this.get('exampleFolderedListView')){
-      // this._sctv_updateFolderedListViewProperties();
-    // }
+    this.set('childViews', [header, data]);
     
     if(!this.columnsBinding)
     {
@@ -253,107 +166,60 @@ SC.TableView = SC.View.extend({
 
 
   
-    // /**
-    //   Changes the sort descriptor based on the column that is passed and the current sort state
-    // 
-    //   @param {SC.TableColumn} column The column to sort by
-    //   @param {String} sortState The desired sort state (ASC|DESC)
-    // */
-    sortByColumn: function(column, sortState) {
-      if(sortState !== "ASC")
-      {
-        sortState = "ASC";
-      }
-      else
-      {
-        sortState = "DESC";
-      }
-      
-      console.log('sortbycolumn')
-      
-      this.set('sortDescriptor', sortState + " " + column.get('key'));
-    },
-    // 
-    // // reordering
-    // 
-    // /**
-    //   Returns a ghost view for a given column 
-    //   
-    //   @param {SC.TableColumn} column The column to return the ghost view for.
-    // */
-    // ghostForColumn: function(column) {
-    //   var columns = this.get('columns'),
-    //     idx = columns.indexOf(column),
-    //     el = this._dataView.get('contentView').ghostForColumn(idx);
-    //     
-    //   this._ghostLeft = this._tableHeaderView.get('contentView').offsetForView(idx) + 1;
-    //   this._ghost = el;
-    //   el.style.left='%@px'.fmt(this._ghostLeft);
-    //   el.style.top='%@px'.fmt(this.get('headerHeight'));
-    //   this.get('layer').appendChild(el);
-    //   
-    // },
-    // 
-    /**
-      Called by the TableHeaderView when a column is being dragged
-      
-      @param {SC.TableColumn} column the column being dragged
-    */
-    draggingColumn: function(column) {
-      return
-      this.$().addClass('reordering-columns');
-      // this.ghostForColumn(column);
-      this._dragging = column;
-    },
+  // /**
+  //   Changes the sort descriptor based on the column that is passed and the current sort state
+  // 
+  //   @param {SC.TableColumn} column The column to sort by
+  //   @param {String} sortState The desired sort state (ASC|DESC)
+  // */
+  sortByColumn: function(column, sortState) {
+    if(sortState !== "ASC")
+    {
+      sortState = "ASC";
+    }
+    else
+    {
+      sortState = "DESC";
+    }
     
-    /** 
-      Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
-      
-      @param {Number} offset The offset by which the column has been dragged
-    */
-    columnDragged: function(offset) {
-      return
-      this._ghostLeft += offset;
-      // SC.$(this._ghost).css('left', this._ghostLeft + "px !important");
-    },
+    console.log('sortbycolumn')
     
-    /** 
-      Called by the TableHeaderView when a column has stopped dragging.
-     */
-    endColumnDrag: function() {
-      // return
-      this.$().removeClass('reordering-columns');
-      if (!SC.none(this._ghost))
-      {
-        this.get('layer').removeChild(this._ghost);
-      }
-      this._ghost = this._blocker = null;
-      this._ghostLeft = null;
-      // this._dataView._columnsNeedReloading(0);
-      // this._sctv_resetRules();
-      this.get('columns').notifyPropertyChange('[]');
-      
-      // if (this.get('exampleFolderedListView')){
-      //   this._sctv_updateFolderedListViewProperties();
-      // }
-      // this._dataView.get('contentView').reload(null);
-    },
-    // 
-    // /** @private */
-    // _sctv_updateFolderedListViewProperties: function () {
-    //  var dataView = this._dataView.get('contentView');
-    //  if (dataView && dataView.set){
-    //    var columns = this.get('columns'),
-    //        columnKeys = [], columnWidths = [];
-    //        
-    //    for (var i=0;i<columns.length;i++){
-    //      columnKeys.push(columns[i].get('key'));
-    //      columnWidths.push(columns[i].get('width'));
-    //    }
-    //    dataView.set('keys',columnKeys);
-    //    dataView.set('columnWidths',columnWidths);
-    //  }
-    // 
-    // }
+    this.set('sortDescriptor', sortState + " " + column.get('key'));
+  },
+
+  /**
+    Called by the TableHeaderView when a column is being dragged
+    
+    @param {SC.TableColumn} column the column being dragged
+  */
+  draggingColumn: function(column) {
+    return
+    this.$().addClass('reordering-columns');
+    this._dragging = column;
+  },
+  
+  /** 
+    Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
+    
+    @param {Number} offset The offset by which the column has been dragged
+  */
+  columnDragged: function(offset) {
+    return
+    this._ghostLeft += offset;
+  },
+  
+  /** 
+    Called by the TableHeaderView when a column has stopped dragging.
+   */
+  endColumnDrag: function() {
+    this.$().removeClass('reordering-columns');
+    if (!SC.none(this._ghost))
+    {
+      this.get('layer').removeChild(this._ghost);
+    }
+    this._ghost = this._blocker = null;
+    this._ghostLeft = null;
+    this.get('columns').notifyPropertyChange('[]');
+  },
   
 });
