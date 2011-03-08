@@ -32,6 +32,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.NullArgumentException;
 
 import com.chililog.server.common.ChiliLogException;
 
@@ -116,6 +117,15 @@ public class CryptoUtils
     {
         try
         {
+            if (plainTextValue == null)
+            {
+                throw new NullArgumentException("plainTextValue");
+            }
+            if (salt == null)
+            {
+                throw new NullArgumentException("salt");
+            }
+
             // Convert plain text into a byte array.
             byte[] plainTextBytes = plainTextValue.getBytes("UTF-8");
 
@@ -201,6 +211,11 @@ public class CryptoUtils
     {
         try
         {
+            if (plainTextValue == null)
+            {
+                throw new NullArgumentException("plainTextValue");
+            }
+
             // Convert base64-encoded hash value into a byte array.
             Base64 decoder = new Base64(1000, new byte[] {}, false);
             byte[] hashWithSaltBytes = decoder.decode(hashValue);
@@ -351,8 +366,39 @@ public class CryptoUtils
     {
         try
         {
+            return encryptTripleDES(plainText, password.getBytes("UTF-8"));
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
+        }
+    }
+
+    /**
+     * <p>
+     * Encrypt a plain text string using TripleDES. The output is an encrypted plain text string. See
+     * http://stackoverflow.com/questions/20227/how-do-i-use-3des-encryption-decryption-in-java
+     * </p>
+     * <p>
+     * The algorithm used is <code>base64(tripleDES(plainText))</code>
+     * </p>
+     * <p>
+     * TripleDES is a lot quicker than AES.
+     * </p>
+     * 
+     * @param plainText
+     *            text to encrypt
+     * @param password
+     *            password to use for encryption
+     * @return encrypted text
+     * @throws ChiliLogException
+     */
+    public static String encryptTripleDES(String plainText, byte[] password) throws ChiliLogException
+    {
+        try
+        {
             final MessageDigest md = MessageDigest.getInstance("md5");
-            final byte[] digestOfPassword = md.digest(password.getBytes("UTF-8"));
+            final byte[] digestOfPassword = md.digest(password);
             final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
             for (int j = 0, k = 16; j < 8;)
             {
@@ -393,8 +439,32 @@ public class CryptoUtils
     {
         try
         {
+            return decryptTripleDES(encryptedText, password.getBytes("UTF-8"));
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
+        }
+    }
+
+    /**
+     * <p>
+     * Decrypt an encrypted text string using TripleDES. The output is the plain text string.
+     * </p>
+     * 
+     * @param encryptedText
+     *            encrypted text returned by <code>encrypt</code>
+     * @param password
+     *            password used at the time of encryption
+     * @return decrypted plain text string
+     * @throws ChiliLogException
+     */
+    public static String decryptTripleDES(String encryptedText, byte[] password) throws ChiliLogException
+    {
+        try
+        {
             final MessageDigest md = MessageDigest.getInstance("md5");
-            final byte[] digestOfPassword = md.digest(password.getBytes("UTF-8"));
+            final byte[] digestOfPassword = md.digest(password);
             final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
             for (int j = 0, k = 16; j < 8;)
             {
@@ -417,5 +487,4 @@ public class CryptoUtils
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }
-
 }

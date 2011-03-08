@@ -37,6 +37,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -329,7 +330,7 @@ public class WebServerManagerTest
     }
 
     /**
-     * Check if our 304 Not Modified is working when getting a static file.
+     * Check for ApiNotFound error. 404 Not Found
      * 
      * @throws IOException
      * @throws ParseException
@@ -337,57 +338,29 @@ public class WebServerManagerTest
     @Test()
     public void testApiNotFound() throws IOException, ParseException
     {
-        // ******************************************************
-        // Cache Validation
-        // ******************************************************
         URL url = new URL("http://localhost:8989/api/notfound");
         URLConnection conn = url.openConnection();
 
-        StringBuffer sb = new StringBuffer();
+        String content = null;
         try
         {
             conn.getInputStream();
             fail();
         }
-        catch (IOException ex)
+        catch (Exception ex)
         {
-            HttpURLConnection httpConn = (HttpURLConnection)conn;
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
-            String str;
-            while ((str = in.readLine()) != null)
-            {
-                sb.append(str + "\n");
-            }
-            in.close();
+            content = WebServerManagerTest.getResponseErrorContent((HttpURLConnection) conn);
         }
 
-        HashMap<String, String> headers2 = new HashMap<String, String>();
-        String responseCode = "";
-        for (int i = 0;; i++)
-        {
-            String name = conn.getHeaderFieldKey(i);
-            String value = conn.getHeaderField(i);
-            if (name == null && value == null)
-            {
-                break;
-            }
-            if (name == null)
-            {
-                responseCode = value;
-                _logger.debug("*** Cache Call, Response code: %s", value);
-            }
-            else
-            {
-                headers2.put(name, value);
-                _logger.debug("%s = %s", name, value);
-            }
-        }
-        _logger.debug(sb.toString());
-        
-        // Should get back a 304
-        assertEquals("HTTP/1.1 500 Internal Server Error", responseCode);
-        assertTrue(!StringUtils.isBlank(headers2.get("Date")));
-        assertTrue(sb.toString().contains("\"Message\": \"Cannot find API class 'com.chililog.server.ui.api.Notfound' for URI: '/api/notfound.'\""));
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = WebServerManagerTest.getResponseHeaders(conn, headers);
+
+        //_logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
+
+        assertEquals("HTTP/1.1 404 Not Found", responseCode);
+        assertTrue(!StringUtils.isBlank(headers.get("Date")));
+        assertTrue(content
+                .contains("\"Message\": \"Cannot find API class 'com.chililog.server.ui.api.NotfoundWorker' in URI: '/api/notfound.'\""));
     }
 
     /**
@@ -429,7 +402,7 @@ public class WebServerManagerTest
     }
 
     /**
-     * Check
+     * Check for zip error
      * 
      * @param z
      * @param err
@@ -474,6 +447,115 @@ public class WebServerManagerTest
                 buf[idx] = symbols[random.nextInt(symbols.length)];
             return new String(buf);
         }
+    }
 
+    /**
+     * Get the response as a string
+     * 
+     * @param httpConn
+     * @return
+     * @throws IOException
+     */
+    public static String getResponseContent(HttpURLConnection httpConn) throws IOException
+    {
+        if (httpConn.getInputStream() == null)
+        {
+            return null;
+        }
+        else
+        {
+            StringBuilder sb = new StringBuilder();
+            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
+            String str;
+            while ((str = in.readLine()) != null)
+            {
+                sb.append(str + "\n");
+            }
+            in.close();
+
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Gets the error response as a string
+     * 
+     * @param httpConn
+     * @return
+     * @throws IOException
+     */
+    public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException
+    {
+        if (httpConn.getErrorStream() == null)
+        {
+            return null;
+        }
+        else
+        {
+            StringBuilder sb = new StringBuilder();
+            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
+            String str;
+            while ((str = in.readLine()) != null)
+            {
+                sb.append(str + "\n");
+            }
+            in.close();
+
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Gets the headers
+     * 
+     * @param conn
+     * @param headers
+     * @return 1st response line
+     */
+    public static String getResponseHeaders(URLConnection conn, HashMap<String, String> headers)
+    {
+        String responseCode = "";
+        for (int i = 0;; i++)
+        {
+            String name = conn.getHeaderFieldKey(i);
+            String value = conn.getHeaderField(i);
+            if (name == null && value == null)
+            {
+                break;
+            }
+            if (name == null)
+            {
+                responseCode = value;
+            }
+            else
+            {
+                headers.put(name, value);
+            }
+        }
+        return responseCode;
+    }
+
+    /**
+     * Format response for logging
+     * 
+     * @param responseCode
+     * @param headers
+     * @param content
+     * @return
+     */
+    public static String formatResponseForLogging(String responseCode, HashMap<String, String> headers, String content)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("HTTP Response: ");
+        sb.append(responseCode);
+        sb.append("\n");
+        for (Entry<String, String> e : headers.entrySet())
+        {
+            sb.append(String.format("Header %s = %s", e.getKey(), e.getValue()));
+        }
+        sb.append("\nCONTENT: ");
+        sb.append(content == null ? "{No Content}" : content);
+        sb.append("\n");
+        return sb.toString();
     }
 }

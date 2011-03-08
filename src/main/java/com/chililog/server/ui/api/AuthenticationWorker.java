@@ -18,8 +18,19 @@
 
 package com.chililog.server.ui.api;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+
+import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.common.JsonTranslator;
+import com.chililog.server.common.Log4JLogger;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
+import com.chililog.server.ui.Strings;
+import com.mongodb.DB;
 
 /**
  * <p>
@@ -31,6 +42,8 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
  */
 public class AuthenticationWorker extends Worker
 {
+    private static Log4JLogger _logger = Log4JLogger.getLogger(AuthenticationWorker.class);
+
     /**
      * Constructor
      */
@@ -63,11 +76,63 @@ public class AuthenticationWorker extends Worker
         return super.validateAuthenticationToken();
     }
 
+    /**
+     * Login. If error, 401 Unauthorized is returned to the caller.
+     * 
+     * @throws Exception
+     */
     @Override
-    public ApiResult process(Object requestContent)
+    public ApiResult processPost(Object requestContent) throws Exception
     {
-        // TODO Auto-generated method stub
-        return null;
+        AuthenticationAO requestApiObject = JsonTranslator.getInstance().fromJson(
+                bytesToString((byte[]) requestContent), AuthenticationAO.class);
+
+        // Check request data
+        if (StringUtils.isBlank(requestApiObject.getUsername()))
+        {
+            return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(Strings.REQUIRED_FIELD_ERROR,
+                    "Username"));
+        }
+        if (StringUtils.isBlank(requestApiObject.getPassword()))
+        {
+            return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(Strings.REQUIRED_FIELD_ERROR,
+                    "Password"));
+        }
+
+        // Check if user exists
+        DB db = MongoConnection.getInstance().getConnection();
+        UserBO user = UserController.getInstance().tryGet(db, requestApiObject.getUsername());
+        if (user == null)
+        {
+            _logger.error("Authentication failed. Cannot find username '%s'", requestApiObject.getUsername());
+            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                    Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+        }
+
+        // Check password
+        if (!user.validatePassword(requestApiObject.getPassword()))
+        {
+            // TODO lockout user
+
+            _logger.error("Authentication failed. Invalid password for user '%s'", requestApiObject.getUsername());
+            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                    Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+        }
+
+        // Generate token
+        AuthenticationTokenAO token = new AuthenticationTokenAO(requestApiObject);
+
+        // Return response
+        return new ApiResult(token, null);
+    }
+
+    /**
+     * Placeholder API for if we ever decide to keep server side sessions. DELETE will remove the session data.
+     */
+    @Override
+    public ApiResult processDelete() throws Exception
+    {
+        return new ApiResult();
     }
 
 }

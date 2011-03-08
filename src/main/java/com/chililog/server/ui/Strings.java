@@ -27,8 +27,13 @@ package com.chililog.server.ui;
 public class Strings
 {
     public static final String PREFIX = "UI.";
-    public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFound";
-    public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameter";
-    public static final String URI_QUERY_STRING_PARAMETER_ERROR = PREFIX + "UriQueryStringParameter";
+    public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFoundError";
+    public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameterError";
+    public static final String URI_QUERY_STRING_PARAMETER_ERROR = PREFIX + "UriQueryStringParameterError";
+    public static final String REQUIRED_FIELD_ERROR = PREFIX + "RequiredFieldError";
+
+    public static final String AUTHENTICAITON_TOKEN_EXPIRED_ERROR = PREFIX + "AuthenticationTokenExpiredError";
+    public static final String AUTHENTICAITON_TOKEN_INVALID_ERROR = PREFIX + "AuthenticationTokenInvalidError";
+    public static final String AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR = PREFIX + "AuthenticationBadUsernameOrPasswordError";
 
 }

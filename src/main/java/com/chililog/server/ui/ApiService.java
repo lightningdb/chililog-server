@@ -33,11 +33,13 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.reflect.ConstructorUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -51,6 +53,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpChunk;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -73,12 +76,20 @@ import com.chililog.server.ui.api.ApiResult;
  * API worker class to invoke.
  * </p>
  * <p>
- * For example, <code>/api/Session</code> will invoke the {@link AuthenticationWorker} worker.
+ * For example, <code>/api/Authentication</code> will invoke the {@link AuthenticationWorker} worker.
  * </p>
  * <p>
- * If there is an exception during processing, a <code>500 Internal Server Error</code> is returned. The content of the
- * response is the {@ ErrorAO} is returned. The content of the response is
- * the @ ErrorAO} is returned. The content of the response is the @ ErrorAO} in JSON format.
+ * If processing is successful, a response status of <code>200 OK</code> is returned.
+ * </p>
+ * <p>
+ * Common errors include:
+ * <ul>
+ * <li><code>404 Not Found</code> - if the requested authentication work is not found</li>
+ * <li><code>405 Method Not Allowed</code> - if the requested HTTP method is not supported</li>
+ * <li><code>500 Internal Server Error</code> - if there is an unexpected exception caught during processing</li>
+ * </p>
+ * <p>
+ * The following is an example of the error description in JSON format.
  * </p>
  * 
  * <pre>
@@ -91,11 +102,25 @@ import com.chililog.server.ui.api.ApiResult;
 public class ApiService extends Service
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(ApiService.class);
-    private HttpRequest _request;
-    private Worker _apiProcessor;
 
+    /**
+     * Http request
+     */
+    private HttpRequest _request;
+
+    /**
+     * API work to call to process request
+     */
+    private Worker _apiWorker;
+
+    /**
+     * Flag to indicate if we ware processing incoming HTTP chunks
+     */
     private boolean _readingChunks = false;
 
+    /**
+     * File used for storing chunked input
+     */
     private File _requestContentFile = null;
 
     /**
@@ -118,7 +143,7 @@ public class ApiService extends Service
             {
                 // Initialize
                 _request = (HttpRequest) e.getMessage();
-                result = instanceApiProcessor();
+                result = instanceApiWorker();
                 if (!result.isSuccess())
                 {
                     writeResponse(ctx, e, result);
@@ -138,19 +163,21 @@ public class ApiService extends Service
                     _readingChunks = true;
 
                     // Setup buffer to store chunk
-                    if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
+                    if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
                     {
+                        // Store in memory
                         _requestContentStream = new ByteArrayOutputStream();
                     }
-                    else if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
+                    else if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.File)
                     {
+                        // Store as file on the file system
                         File _requestContentFile = File.createTempFile("ApiService_", ".dat");
                         _requestContentStream = new BufferedOutputStream(new FileOutputStream(_requestContentFile));
                     }
                     else
                     {
-                        throw new NotImplementedException("ContentIOStyle "
-                                + _apiProcessor.getRequestContentIOStyle().toString());
+                        throw new UnsupportedOperationException("ContentIOStyle "
+                                + _apiWorker.getRequestContentIOStyle().toString());
                     }
 
                     return;
@@ -158,7 +185,7 @@ public class ApiService extends Service
                 else
                 {
                     // No chunks. Process it.
-                    writeResponse(ctx, e, invokeApiProcessorNoChunks());
+                    writeResponse(ctx, e, invokeApiWorker(false));
                     return;
                 }
             }
@@ -169,7 +196,7 @@ public class ApiService extends Service
                 {
                     // No more chunks. Process it.
                     _readingChunks = false;
-                    writeResponse(ctx, e, invokeApiProcessorWithChunks());
+                    writeResponse(ctx, e, invokeApiWorker(true));
                     return;
                 }
                 else
@@ -193,14 +220,14 @@ public class ApiService extends Service
 
     /**
      * <p>
-     * Instance our API class using the name passed in on the URI.
+     * Instance our API worker class using the name passed in on the URI.
      * </p>
      * <p>
-     * If <code>/api/session</code> is passed in, the class <code>com.chililog.server.ui.api.Session</code> will be
-     * instanced.
+     * If <code>/api/Authentication</code> is passed in, the class
+     * <code>com.chililog.server.ui.api.AuthenticationWorker</code> will be instanced.
      * </p>
      */
-    private ApiResult instanceApiProcessor() throws Exception
+    private ApiResult instanceApiWorker() throws Exception
     {
         String className = null;
         try
@@ -213,70 +240,107 @@ public class ApiService extends Service
             { '_' });
 
             className = "com.chililog.server.ui.api." + apiName + "Worker";
+            _logger.debug("Instancing ApiWorker: %s", className);
+
             Class<?> apiClass = ClassUtils.getClass(className);
-            _apiProcessor = (Worker) ConstructorUtils.invokeConstructor(apiClass, _request);
-            
-            return _apiProcessor.validate();
+            _apiWorker = (Worker) ConstructorUtils.invokeConstructor(apiClass, _request);
+
+            return _apiWorker.validate();
         }
         catch (ClassNotFoundException ex)
         {
-            throw new ChiliLogException(ex, Strings.API_NOT_FOUND_ERROR, className, _request.getUri());
+            return new ApiResult(HttpResponseStatus.NOT_FOUND, new ChiliLogException(ex, Strings.API_NOT_FOUND_ERROR,
+                    className, _request.getUri()));
         }
     }
 
     /**
+     * Invoke an API worker object to process the request
      * 
-     * @return
-     * @throws Exception
-     */
-    private ApiResult invokeApiProcessorNoChunks() throws Exception
-    {
-        byte[] requestContent = null;
-        ChannelBuffer content = _request.getContent();
-        if (content.readable())
-        {
-            requestContent = content.array();
-        }
-
-        if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
-        {
-            return _apiProcessor.process(requestContent);
-        }
-        else if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.File)
-        {
-            File _requestContentFile = File.createTempFile("ApiService_", ".dat");
-            _requestContentStream = new FileOutputStream(_requestContentFile);
-            _requestContentStream.write(requestContent);
-            _requestContentStream.close();
-
-            return _apiProcessor.process(_requestContentFile);
-        }
-        else
-        {
-            throw new NotImplementedException("ContentIOStyle " + _apiProcessor.getRequestContentIOStyle().toString());
-        }
-    }
-
-    /**
-     * 
-     * @return
+     * @param isChunked
+     *            Flag indicating if this HTTP request is chunked or not
+     * @return {@link ApiResult} indicating the success or failure of the operation
      * @throws IOException
      */
-    private ApiResult invokeApiProcessorWithChunks() throws IOException
+    private ApiResult invokeApiWorker(boolean isChunked) throws Exception
     {
-        if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
+        Object requestContent = null;
+        ContentIOStyle requestContentIOStyle = _apiWorker.getRequestContentIOStyle();
+
+        if (isChunked)
         {
-            byte[] requestContent = ((ByteArrayOutputStream) _requestContentStream).toByteArray();
-            return _apiProcessor.process(requestContent);
-        }
-        else if (_apiProcessor.getRequestContentIOStyle() == ContentIOStyle.File)
-        {
-            _requestContentStream.close();
-            return _apiProcessor.process(_requestContentFile);
+            // Chunked so requeste data is stored in streams
+            if (requestContentIOStyle == ContentIOStyle.ByteArray)
+            {
+                // byte[]
+                requestContent = ((ByteArrayOutputStream) _requestContentStream).toByteArray();
+            }
+            else if (requestContentIOStyle == ContentIOStyle.File)
+            {
+                // File
+                _requestContentStream.close();
+                requestContent = _requestContentFile;
+            }
+            else
+            {
+                throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
+            }
         }
         else
         {
-            throw new NotImplementedException("ContentIOStyle " + _apiProcessor.getRequestContentIOStyle().toString());
+            // Not chunked so our request data is stored in the request content
+            ChannelBuffer content = _request.getContent();
+            if (content.readable())
+            {
+                if (requestContentIOStyle == ContentIOStyle.ByteArray)
+                {
+                    // byte[]
+                    requestContent = content.array();
+                }
+                else if (requestContentIOStyle == ContentIOStyle.File)
+                {
+                    // File
+                    _requestContentFile = File.createTempFile("ApiService_", ".dat");
+                    _requestContentStream = new FileOutputStream(_requestContentFile);
+                    _requestContentStream.write(content.array());
+                    _requestContentStream.close();
+
+                    requestContent = _requestContentFile;
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
+                }
+            }
+        }
+
+        // If debugging, we want to output our request
+        if (_logger.isDebugEnabled())
+        {
+            logHttpRequest(requestContent);
+        }
+
+        // Dispatch
+        HttpMethod requestMethod = _request.getMethod();
+        if (requestMethod == HttpMethod.GET)
+        {
+            return _apiWorker.processGet();
+        }
+        else if (requestMethod == HttpMethod.DELETE)
+        {
+            return _apiWorker.processDelete();
+        }
+        else if (requestMethod == HttpMethod.POST)
+        {
+            return _apiWorker.processPost(requestContent);
+        }
+        else if (requestMethod == HttpMethod.PUT)
+        {
+            return _apiWorker.processPut(requestContent);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("HTTP method " + requestMethod.toString() + " not supproted.");
         }
     }
 
@@ -295,20 +359,22 @@ public class ApiService extends Service
 
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, result.getResponseStatus());
-        setDateHeader(response);
-        response.setHeader(CONTENT_TYPE, result.getResponseContentType());
 
+        // Headers
+        setDateHeader(response);
         for (Entry<String, String> header : result.getHeaders().entrySet())
         {
             response.setHeader(header.getKey(), header.getValue());
-        }        
-        
+        }
+
+        // Content
         if (result.getResponseContent() != null)
         {
+            response.setHeader(CONTENT_TYPE, result.getResponseContentType());
             if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray)
             {
                 byte[] content = (byte[]) result.getResponseContent();
-                toogleCompression(ctx, content.length > 4096);  // Compress if > 4K
+                toogleCompression(ctx, content.length > 4096); // Compress if > 4K
                 response.setContent(ChannelBuffers.copiedBuffer(content));
             }
             else
@@ -317,9 +383,15 @@ public class ApiService extends Service
             }
         }
 
+        // If debugging, we want to output our response
+        if (_logger.isDebugEnabled())
+        {
+            logHttpResponse(response, result.getResponseContent());
+        }
+
+        // Add 'Content-Length' header only for a keep-alive connection.
         if (keepAlive)
         {
-            // Add 'Content-Length' header only for a keep-alive connection.
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
         }
 
@@ -348,26 +420,32 @@ public class ApiService extends Service
 
         // No need to compress errors. Will be small in size
         toogleCompression(ctx, false);
-        
+
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
         setDateHeader(response);
-        response.setHeader(CONTENT_TYPE, "text/json; charset=UTF-8");
+        response.setHeader(CONTENT_TYPE, Worker.JSON_CONTENT_TYPE);
 
         ErrorAO errorAO = new ErrorAO(ex);
 
         ChannelBuffer buffer = ChannelBuffers.dynamicBuffer(4096);
         ChannelBufferOutputStream os = new ChannelBufferOutputStream(buffer);
-        PrintStream ps = new PrintStream(os, true, "UTF-8");
+        PrintStream ps = new PrintStream(os, true, Worker.JSON_CHARSET);
         JsonTranslator.getInstance().toJson(errorAO, ps);
         ps.close();
         os.close();
 
         response.setContent(buffer);
 
+        // If debugging, we want to output our response
+        if (_logger.isDebugEnabled())
+        {
+            logHttpResponse(response, response.getContent().array());
+        }
+
+        // Add 'Content-Length' header only for a keep-alive connection.
         if (keepAlive)
         {
-            // Add 'Content-Length' header only for a keep-alive connection.
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
         }
 
@@ -426,7 +504,7 @@ public class ApiService extends Service
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
     }
-    
+
     /**
      * Turn on/off compression
      * 
@@ -443,4 +521,91 @@ public class ApiService extends Service
             ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
         }
     }
+
+    /**
+     * Write a log entry about the request
+     * 
+     * @param requestContent
+     *            HTTP request body
+     */
+    private void logHttpRequest(Object requestContent)
+    {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("HTTP Request %s '%s'", _request.getMethod().toString(), _request.getUri()));
+
+            for (Map.Entry<String, String> h : _request.getHeaders())
+            {
+                sb.append("\r\nHEADER: " + h.getKey() + " = " + h.getValue());
+            }
+
+            if (requestContent != null)
+            {
+                if (requestContent instanceof byte[])
+                {
+                    sb.append("\r\nCONTENT: " + new String((byte[]) requestContent, "UTF-8"));
+                }
+                else if (requestContent instanceof File)
+                {
+                    sb.append("\r\nCONTENT: stored in file");
+                }
+            }
+
+            _logger.debug(sb.toString());
+        }
+        catch (Throwable ex)
+        {
+            // Ignore
+            ex.toString();
+        }
+    }
+
+    /**
+     * Log the HTTP response
+     * 
+     * @param response
+     *            HTTP response
+     * @param responseContent
+     *            HTTP response content
+     */
+    private void logHttpResponse(HttpResponse response, Object responseContent)
+    {
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("HTTP Response to %s '%s'. %s", _request.getMethod().toString(), _request.getUri(),
+                    response.getStatus().toString()));
+
+            String contentType = StringUtils.EMPTY;
+            for (Map.Entry<String, String> h : response.getHeaders())
+            {
+                sb.append("\r\nHEADER: " + h.getKey() + " = " + h.getValue());
+                if (h.getKey().equals(HttpHeaders.Names.CONTENT_TYPE))
+                {
+                    contentType = h.getValue();
+                }
+            }
+
+            if (responseContent != null)
+            {
+                if (responseContent instanceof byte[] && contentType.contains("UTF-8"))
+                {
+                    sb.append("\r\nCONTENT: " + new String((byte[]) responseContent, "UTF-8"));
+                }
+                else if (responseContent instanceof File)
+                {
+                    sb.append("\r\nCONTENT: stored in file");
+                }
+            }
+
+            _logger.debug(sb.toString());
+        }
+        catch (Throwable ex)
+        {
+            // Ignore
+            ex.toString();
+        }
+    }
+
 }

@@ -955,6 +955,54 @@ public class AppProperties
     }
 
     /**
+     * Returns the salt to use for hashing of the authentication token
+     */
+    public byte[] getWebApiAuthenticationHashSalt()
+    {
+        return _webApiAuthenticationHashSalt;
+    }
+
+    static final String WEB_API_AUTHENTICATION_HASH_SALT = "web.api.authentication.hash_salt";
+
+    private byte[] _webApiAuthenticationHashSalt = null;
+
+    static byte[] loadWebApiAuthenticationHashSalt(Properties properties)
+    {
+        try
+        {
+            return loadString(properties, WEB_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
+        }
+        catch (Exception ex)
+        {
+            return loadString(properties, WEB_API_AUTHENTICATION_HASH_SALT).getBytes();
+        }
+    }
+
+    /**
+     * Returns the password to use for authentication token encryption
+     */
+    public byte[] getWebApiAuthenticationEncryptionPassword()
+    {
+        return _webApiAuthenticationEncryptionPassword;
+    }
+
+    static final String WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "web.api.authentication.encyrption_password";
+
+    private byte[] _webApiAuthenticationEncryptionPassword = null;
+
+    static byte[] loadWebApiAuthenticationEncryptionPassword(Properties properties)
+    {
+        try
+        {
+            return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
+        }
+        catch (Exception ex)
+        {
+            return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
+        }
+    }
+
+    /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 
      * @param properties

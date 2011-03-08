@@ -26,6 +26,7 @@ import java.util.HashMap;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 import com.chililog.server.common.JsonTranslator;
+import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 import com.chililog.server.ui.api.Worker.ContentIOStyle;
 
 /**
@@ -43,13 +44,57 @@ public class ApiResult
 {
     private HttpResponseStatus _responseStatus = HttpResponseStatus.OK;
 
-    private String _responseContentType = "text/json; charset=UTF-8";
+    private String _responseContentType = Worker.JSON_CONTENT_TYPE;
 
     private ContentIOStyle _responseContentIOStyle = ContentIOStyle.ByteArray;
 
     private Object _responseContent = null;
 
     private HashMap<String, String> _headers = new HashMap<String, String>();
+
+    /**
+     * Basic constructor
+     */
+    public ApiResult()
+    {
+        return;
+    }
+
+    /**
+     * Builds an error result
+     * 
+     * @param status
+     *            HTTP Response status
+     * @param ex
+     *            Exception describing the error
+     */
+    public ApiResult(HttpResponseStatus status, Throwable ex)
+    {
+        _responseStatus = status;
+        setResponseContentToJson(new ErrorAO(ex));
+    }
+
+    /**
+     * Builds a successful result with authentication token and content
+     * 
+     * @param authenticationToken
+     *            token
+     * @param contentToJsonify
+     *            Object to convert into JSON format
+     */
+    public ApiResult(AuthenticationTokenAO authenticationToken, Object contentToJsonify)
+    {
+        _responseStatus = HttpResponseStatus.OK;
+
+        // For an sliding expiry token, we want to update the expiry time
+        if (authenticationToken.getExpiryType() == ExpiryType.Sliding)
+        {
+            authenticationToken.updateExpiresOn();
+        }
+        _headers.put(Worker.AUTHENTICATION_TOKEN_HEADER, authenticationToken.toString());
+
+        setResponseContentToJson(contentToJsonify);
+    }
 
     /**
      * Determines if the call is successful or not
@@ -128,23 +173,29 @@ public class ApiResult
     /**
      * Translates the specified object <code>o</code> into JSON and sets it as the content
      * 
-     * @param o
+     * @param contentToJsonify
      *            Object to translate into JSON and then return to the caller
      * @throws UnsupportedEncodingException
      */
-    public void setResponseContentToJson(Object o)
+    public void setResponseContentToJson(Object contentToJsonify)
     {
         try
         {
-            _responseContentType = "text/json; charset=UTF-8";
+            _responseContentType = Worker.JSON_CONTENT_TYPE;
             _responseContentIOStyle = ContentIOStyle.ByteArray;
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            PrintStream ps = new PrintStream(baos, true, "UTF-8");
-            JsonTranslator.getInstance().toJson(o, ps);
-            ps.close();
-
-            _responseContent = baos.toByteArray();
+            if (contentToJsonify == null)
+            {
+                _responseContent = null;
+            }
+            else
+            {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(baos, true, Worker.JSON_CHARSET);
+                JsonTranslator.getInstance().toJson(contentToJsonify, ps);
+                ps.close();
+                _responseContent = baos.toByteArray();
+            }
         }
         catch (Exception ex)
         {

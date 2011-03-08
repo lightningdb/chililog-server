@@ -89,7 +89,7 @@ public class CryptoUtilsTest
         _logger.info("Hashed password of 'rocksalt' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("rocksalt", salt, hashValue));
     }
-    
+        
     @Test
     public void testEncryptDecryptAES() throws ChiliLogException
     {

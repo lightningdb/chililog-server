@@ -18,6 +18,7 @@
 
 package com.chililog.server.ui.api;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +60,15 @@ public abstract class Worker
     private Map<String, List<String>> _uriQueryStringParameters;
     private String[] _uriPathParameters = null;
     private ContentIOStyle _requestContentIOStyle = ContentIOStyle.ByteArray;
+    private AuthenticationTokenAO _authenticationToken = null;
 
     public static final int URI_PATH_ID_PARAMETER_INDEX = 0;
 
+    public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
+
+    public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";
+    public static final String JSON_CHARSET = "UTF-8";
+    
     /**
      * Constructor
      * 
@@ -135,6 +142,24 @@ public abstract class Worker
     public Map<String, List<String>> getUriQueryStringParameters()
     {
         return _uriQueryStringParameters;
+    }
+
+    /**
+     * Returns the authentication token
+     */
+    protected AuthenticationTokenAO getAuthenticationToken()
+    {
+        return _authenticationToken;
+    }
+
+    /**
+     * Sets the authentication token
+     * 
+     * @param authenticationToken
+     */
+    protected void setAuthenticationToken(AuthenticationTokenAO authenticationToken)
+    {
+        _authenticationToken = authenticationToken;
     }
 
     /**
@@ -213,7 +238,7 @@ public abstract class Worker
             for (HttpMethod supportedMethod : supportedMethods)
             {
                 sb.append(supportedMethod.toString());
-                sb.append("', ");
+                sb.append(", ");
             }
             sb.setLength(sb.length() - 2); // remove last comma
             result.getHeaders().put(HttpHeaders.Names.ALLOW, sb.toString());
@@ -224,28 +249,34 @@ public abstract class Worker
 
     /**
      * <p>
-     * Validates if this request is authenticated. If not, a 403 Forbidden response is returned to the caller.
+     * Validates if this request is authenticated. If not, a "401 Unauthorized" response is returned to the caller.
      * </p>
      * 
      * @return {@link ApiResult}
+     * @throws ChiliLogException
      */
     protected ApiResult validateAuthenticationToken()
     {
-        ApiResult result = new ApiResult();
-
-        return result;
+        try
+        {
+            _authenticationToken = AuthenticationTokenAO.fromString(_request.getHeader(AUTHENTICATION_TOKEN_HEADER));
+        }
+        catch (Exception ex)
+        {
+            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
+        }
+        return new ApiResult();
     }
 
     /**
      * <p>
-     * Validates if the URI has all the supplied parts. If not, a 400 Bad Request response is returned to the caller.
+     * Validates if the URI has all the supplied parts. If not, a "400 Bad Request" response is returned to the caller.
      * </p>
      * 
      * @return {@link ApiResult}
      */
     protected ApiResult parseURI()
     {
-        ApiResult result = new ApiResult();
         try
         {
             // Get query string
@@ -267,10 +298,11 @@ public abstract class Worker
         }
         catch (Exception ex)
         {
-            result.setHttpResponseStatus(HttpResponseStatus.BAD_REQUEST);
-            result.setResponseContentToJson(new ErrorAO(ex));
+            return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
-        return result;
+
+        // Success
+        return new ApiResult();
     }
 
     /**
@@ -282,7 +314,6 @@ public abstract class Worker
      */
     protected ApiResult validateURI()
     {
-        ApiResult result = new ApiResult();
         try
         {
             // PUT and DELETE must have a key
@@ -297,20 +328,77 @@ public abstract class Worker
         }
         catch (Exception ex)
         {
-            result.setHttpResponseStatus(HttpResponseStatus.BAD_REQUEST);
-            result.setResponseContentToJson(new ErrorAO(ex));
+            return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
-        return result;
+
+        // Success
+        return new ApiResult();
     }
 
     /**
      * Process the incoming request.
      * 
      * @param requestContent
-     *            If {@link ContentIOStyle} is
-     * @return
+     *            If {@link ContentIOStyle} is Byte, then <code>byte[]</code> is passed in. If file, then a {@link File}
+     *            will be passed in.
+     * @return {@link ApiResult} to indicate the success/false of processing
      */
-    public abstract ApiResult process(Object requestContent);
+    public ApiResult processPost(Object requestContent) throws Exception
+    {
+        throw new UnsupportedOperationException("HTTP POST not supported for this API.");
+    }
+
+    /**
+     * Process the incoming request.
+     * 
+     * @return {@link ApiResult} to indicate the success/false of processing
+     */
+    public ApiResult processDelete() throws Exception
+    {
+        throw new UnsupportedOperationException("HTTP DELETE not supported for this API.");
+    }
+
+    /**
+     * Process the incoming request.
+     * 
+     * @return {@link ApiResult} to indicate the success/false of processing
+     */
+    public ApiResult processGet() throws Exception
+    {
+        throw new UnsupportedOperationException("HTTP GET not supported for this API.");
+    }
+
+    /**
+     * Override this to implement worker specific processing
+     * 
+     * @param requestContent
+     *            If {@link ContentIOStyle} is Byte, then <code>byte[]</code> is passed in. If file, then a {@link File}
+     *            will be passed in.
+     * @return {@link ApiResult} to indicate the success/false of processing
+     */
+    public ApiResult processPut(Object requestContent) throws Exception
+    {
+        throw new UnsupportedOperationException("HTTP PUT not supported for this API.");
+    }
+
+    /**
+     * Converts request bytes into a string using the default UTF-8 character set.
+     * 
+     * @param bytes
+     *            Bytes to convert
+     * @return String form the bytes. If bytes is null, null is returned.
+     * @throws UnsupportedEncodingException
+     */
+    protected String bytesToString(byte[] bytes) throws UnsupportedEncodingException
+    {
+        if (bytes == null)
+        {
+            return null;
+        }
+
+        // TODO parse charset
+        return new String(bytes, "UTF-8");
+    }
 
     /**
      * Specifies how request and response content is to be handled with respect to reading and writing.

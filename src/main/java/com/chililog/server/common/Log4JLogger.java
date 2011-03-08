@@ -86,6 +86,14 @@ public class Log4JLogger
     }
 
     /**
+     * Returns if trace is enabled
+     */
+    public boolean isTraceEnabled()
+    {
+        return _inner.isTraceEnabled();
+    }
+
+    /**
      * Write a message with a priority of TRACE
      * 
      * @param format
@@ -134,6 +142,14 @@ public class Log4JLogger
     }
 
     /**
+     * Returns if debug is enabled
+     */
+    public boolean isDebugEnabled()
+    {
+        return _inner.isDebugEnabled();
+    }
+    
+    /**
      * Write a message with a priority of DEBUG
      * 
      * @param format
@@ -181,6 +197,14 @@ public class Log4JLogger
         }
     }
 
+    /**
+     * Returns if info is enabled
+     */
+    public boolean isInfoEnabled()
+    {
+        return _inner.isInfoEnabled();
+    }
+    
     /**
      * Write a message with a priority of INFO
      * 
