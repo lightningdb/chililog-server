@@ -34,6 +34,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     if(firstTime) sc_super();
   },
  
+  /**
+    @private
+    Create the cell views when columns gets set
+  */
   _trv_columnsDidChange: function() {
     this.beginPropertyChanges();
     var cellViews = this._sc_cell_views || (this._sc_cell_views = {}),
@@ -62,6 +66,11 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     this._updateCells();
   }.observes('columns'),
   
+  /**
+    @private
+    Ovveride from simpleLayout to map the index to the right view
+  */
+  
   viewForIndex: function(i) {
     var columns = this.get('columns'),
       column = columns.objectAt(i),
@@ -69,20 +78,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     return views[SC.guidFor(column)];
   },
 
-  awakeFromPool: function() {
-    // striping
-    var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
-    this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
-    
-    if(this.get('isSelected')) {
-      this.$().addClass('sel');
-    } else {
-      this.$().removeClass('sel');
-    }
-
-    this._updateCells();
-  },
-  
+  /**
+    @private
+    Looping through the columns and calling update for each
+  */
   _updateCells: function() {
     var columns = this.get('columns'),
       column, cell, E;
@@ -93,6 +92,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     }
   },
   
+  /**
+    @private
+    Updating the cell for the given column with the new content
+  */
   _updateCell: function(idx, column) {
     // this is faster than using bindings
     
@@ -117,6 +120,11 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     return;
   },
   
+  /**
+    @private
+    For some reason not grabbing the layer from the
+    cell causes it to 'detach'
+  */
   sleepInDOMPool: function() {
     if(this._hasSlept) return
       
@@ -127,7 +135,30 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     
     this._hasSlept = YES;
   },
+  
+  /**
+    @private
+    Set our classnames
+  */
+  awakeFromPool: function() {
+    // striping
+    var eo = (this.get('contentIndex') % 2 === 0) ? 'even' : 'odd';
+    this.get('layer').className = this.get('classNames').join(" ") + " " + eo;
+    
+    if(this.get('isSelected')) {
+      this.$().addClass('sel');
+    } else {
+      this.$().removeClass('sel');
+    }
 
+    this._updateCells();
+  },
+  
+
+  /**
+    @private
+    Manual repositioning for speed
+  */
   repositionView: function(view, layout) {
     if(!view) return
     
@@ -149,6 +180,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     }
   },
   
+  /**
+    @private
+    Creates the cell views
+  */
   _createNewCellView: function(col) {
     var columns = this.get('columns'),
       column = columns.objectAt(col),
