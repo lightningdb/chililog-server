@@ -111,7 +111,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     cellView.set('layerId', this.get('layerId') + '-' + idx);
     contentView.set('contentIndex', this.get('contentIndex'));
     contentView.set('content', this.get('content'));
-    contentView.set('layerId', this.get('layerId') + '-' + idx + '-content');
+    contentView.set('layerId', this.get('layerId') + '-' + SC.guidFor(column) + '-content');
 
     contentView.endPropertyChanges();
     cellView.endPropertyChanges();

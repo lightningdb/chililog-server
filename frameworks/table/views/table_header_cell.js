@@ -68,7 +68,7 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
     layout: {
       top: 0, bottom: 0, right: 0, width: 15
     },
-    isVisibleBinding: '.parentView*column.isResizable'
+    isEnabledBinding: '.parentView*column.isResizable'
   }),
   
   

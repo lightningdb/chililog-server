@@ -59,6 +59,7 @@ Endash.ThumbView = SC.View.extend(
   },
   
   mouseDragged: function(evt) {
+    if (!this.get('isEnabled')) return NO ;
     var offset = this._offset;
     
     offset.x = evt.pageX - this._lastX;
@@ -72,6 +73,7 @@ Endash.ThumbView = SC.View.extend(
   },
   
   mouseUp: function(evt) {
+    if (!this.get('isEnabled')) return NO ;
     this._lastX = this._lastY = this._offset = this._mouseDownX = this.mouseDownY = null;
     this.invokeDelegateMethod(this.delegate, 'thumbViewDidEndDrag', this.parentView, evt);
     
