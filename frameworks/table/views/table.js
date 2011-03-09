@@ -29,8 +29,13 @@ SC.TableView = SC.View.extend({
   */
   rowHeight:30,
   
-  selection:null,
+  /**
+    Spacing between rows (for borders or such)
+    @property {Number}
+  */
+  rowSpacing: 1,
   
+  selection:null,
   target:null,
   action:null,
   
@@ -57,13 +62,6 @@ SC.TableView = SC.View.extend({
   hasHorizontalScroller:YES,
   
   /**
-    An example view that will be used to render cells in the table
-    
-    @property {SC.View}
-  */
-  // exampleView: SC.ListItemView,
-  
-  /**
     An example ScrollView that will be used to paint the scrollpane of the tableView. 
     This is useful if your app has custom scrollbars.
     
@@ -72,7 +70,7 @@ SC.TableView = SC.View.extend({
   exampleScrollView: SC.ScrollView,
   
   isSelectable: YES,
-  // isEditable: YES,
+  isEditable: YES,
   // canEditContent: YES,
   
   /**
@@ -136,6 +134,7 @@ SC.TableView = SC.View.extend({
         classNames: ['sc-table-data-view'],
         table: this,
         rowHeight: this.get('rowHeight'),
+        rowSpacing: this.get('rowSpacing'),
         isEditableBinding: SC.Binding.from('.isEditable',this),
         canEditContentBinding: SC.Binding.from('.canEditContent',this),
         targetBinding: SC.Binding.from('.target',this),

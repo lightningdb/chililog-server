@@ -8,11 +8,23 @@
 /*globals Endash */
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
-  backgroundColor: 'white',
-  rowHeight: 30,
-  rowSpacing: 1,
+  /**
+    TableRow
+    @property {SC.View}
+  */
   exampleView: SC.TableRowView,
+  
+  /**
+    The actual cell view
+    @property {SC.View}
+  */
   cellView: Endash.TableCellView,
+  
+  /**
+    The cell content view, which gets placed inside a cell
+    and actually displays the contents for the cell
+    @property {SC.View}
+  */
   cellContentView: SC.LabelView.extend({
     isPoolable: YES,
     layerIsCacheable: YES,
@@ -23,6 +35,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     }.observes('contentValueKey')
   }),
 
+  /**
+    @private
+    Gets the cell content class for a given column, defaults to our
+    cellContentView
+  */
   cellViewForColumn: function(col) {
     var columns = this.get('columns'),
       column = columns.objectAt(col),
@@ -33,6 +50,10 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     return this.get('cellContentView');
   },
 
+  /**
+    @private
+    We override this to call our own repositionView method
+  */
   wakePooledView: function(view, attrs) {
     // configure
     this.configureItemView(view, attrs);
@@ -45,6 +66,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     
   },
   
+  /**
+    @private
+    We handle repositioning the view specifically to avoid the overhead
+    of using set layout or adjust
+  */
   _repositionView: function(layer, layout) {
     if(SC.platform.touch) {
       var transform = 'translate3d(0px, ' + layout.top + 'px,0)';
@@ -74,6 +100,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     if (view.sleepInDOMPool) view.sleepInDOMPool();
   },
   
+  /**
+    @private
+    Updates a view that already exists
+    We need to override this b/c by default it doesn't update the position
+  */
   _updateItemView: function(current, object, index) {
     var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
 
@@ -82,7 +113,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     this._repositionView(current.get('layer'), attrs.layout);
   },
 
-  reset: function() {
+  /**
+    @private
+    This should completely reset the view, but we don't use it right now.
+  */
+  _reset: function() {
     this.reloadIfNeeded(SC.IndexSet.create(), true);
     delete this._viewMap;
     delete this._indexMap;
@@ -97,6 +132,11 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     this.reloadIfNeeded(null, true);
   },
   
+  /**
+    @private
+    We override this b/c the base implementation grabs the column instead
+    of the row from the layer ID
+  */
   contentIndexForLayerId: function(id) {
     if (!id || !(id = id.toString())) return null ; // nothing to do
     
