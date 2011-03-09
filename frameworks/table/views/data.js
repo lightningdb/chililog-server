@@ -4,7 +4,18 @@
 //            Portions ©2008-2009 Apple Inc. All rights reserved.
 // License:   Licened under MIT license (see license.js)
 // ==========================================================================
-// sc_require('views/table_row')
+/*globals SC Endash */
+
+/**
+  @class
+
+  DataView handles the display of tableRow views.
+  It extends CollectionFastPath to provide accelerated rendering.
+
+  @extends SC.View
+  @author Christopher Swasey
+*/
+/*sc_require('views/table_row')*/
 /*globals Endash */
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {

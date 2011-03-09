@@ -1,9 +1,19 @@
 // ==========================================================================
 // Project:   SproutCore - JavaScript Application Framework
-// Copyright: ©2006-2010 Sprout Systems, Inc. and contributors.
-//            Portions ©2008-2010 Apple, Inc. All rights reserved.
-// License:   Licensed under MIT license (see license.js)
+// Copyright: ©2006-2009 Sprout Systems, Inc. and contributors.
+//            Portions ©2008-2009 Apple Inc. All rights reserved.
+// License:   Licened under MIT license (see license.js)
 // ==========================================================================
+/*globals SC Endash */
+
+/**
+  @class
+
+  TableView
+
+  @extends SC.View
+  @author Christopher Swasey
+*/
 
 // sc_require('views/table_header');
 // sc_require('views/data');
@@ -17,11 +27,32 @@ SC.TableView = SC.View.extend({
   horizontalScrollOffset: 0,
 
   /**
-    The content object the table view will display. Usually an SC.ArrayController's content
+    An array of content objects
+    
+    This array should contain the content objects you want the collection view 
+    to display.  An item view (based on the exampleView view class) will be 
+    created for each content object, in the order the content objects appear 
+    in this array.
+    
+    If you make the collection editable, the collection view will also modify 
+    this array using the observable array methods of SC.Array.
+    
+    Usually you will want to bind this property to a controller property 
+    that actually contains the array of objects you to display.
+    
+    @type {SC.Array}
+  */
+  content: null,
+  
+  /** @private */
+  contentBindingDefault: SC.Binding.multiple(),
+  
+  /**
+    The columns array. Can be a regular array or can be bound to a controller.
+    Must be an array of SC.TableColumn
     
     @type SC.Array
   */
-  content: null,
   columns: null,
   
   /**
@@ -37,9 +68,6 @@ SC.TableView = SC.View.extend({
   */
   rowSpacing: 1,
   
-  selection:null,
-  target:null,
-  action:null,
   
   /**
     IF YES, a table header will be rendered. Note that if a table header is not rendered, 
@@ -71,10 +99,6 @@ SC.TableView = SC.View.extend({
   */
   exampleScrollView: SC.ScrollView,
   
-  isSelectable: YES,
-  isEditable: YES,
-  // canEditContent: YES,
-  
   /**
      Equivalent of the orderBy property of an SC.ArrayController. It is actually bound to the content orderBy property
 
@@ -82,6 +106,153 @@ SC.TableView = SC.View.extend({
    */
   sortDescriptor: null,
   sortDescriptorBinding: '*content.orderBy',
+  
+  /**
+    Indexes of selected content objects.  This SC.SelectionSet is modified 
+    automatically by the collection view when the user changes the selection 
+    on the collection.
+    
+    Any item views representing content objects in this set will have their 
+    isSelected property set to YES automatically.
+    
+    @type {SC.SelectionSet}
+  */
+  selection: null,
+  
+  /** 
+    Allow user to select content using the mouse and keyboard.
+    
+    Set this property to NO to disallow the user from selecting items. If you 
+    have items in your selectedIndexes property, they will still be reflected
+    visually.
+    
+    @type {Boolean}
+  */
+  isSelectable: YES,
+  
+  /** @private */
+  isSelectableBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Enable or disable the view.  
+    
+    The collection view will set the isEnabled property of its item views to
+    reflect the same view of this property.  Whenever isEnabled is false,
+    the collection view will also be not selectable or editable, regardless of 
+    the settings for isEditable & isSelectable.
+    
+    @type {Boolean}
+  */
+  isEnabled: YES,
+  
+  /** @private */
+  isEnabledBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Allow user to edit content views.
+    
+    The collection view will set the isEditable property on its item views to
+    reflect the same value of this property.  Whenever isEditable is false, 
+    the user will not be able to reorder, add, or delete items regardless of 
+    the canReorderContent and canDeleteContent and isDropTarget properties.
+    
+    @type {Boolean}
+  */
+  isEditable: YES,
+  
+  /** @private */
+  isEditableBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Allow user to reorder items using drag and drop.
+    
+    If true, the user will can use drag and drop to reorder items in the list.
+    If you also accept drops, this will allow the user to drop items into 
+    specific points in the list.  Otherwise items will be added to the end.
+    
+    @type {Boolean}
+  */
+  canReorderContent: NO,
+  
+  /** @private */
+  canReorderContentBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Allow the user to delete items using the delete key
+    
+    If true the user will be allowed to delete selected items using the delete
+    key.  Otherwise deletes will not be permitted.
+    
+    @type {Boolean}
+  */
+  canDeleteContent: NO,
+  
+  /** @private */
+  canDeleteContentBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Allow user to edit the content by double clicking on it or hitting return.
+    This will only work if isEditable is YES and the item view implements 
+    the beginEditing() method.
+    
+    @type {Boolean}
+  */
+  canEditContent: NO,
+  
+  /** @private */
+  canEditContentBindingDefault: SC.Binding.bool(),
+  
+  /**
+    Accept drops for data other than reordering.
+    
+    Setting this property to return true when the view is instantiated will 
+    cause it to be registered as a drop target, activating the other drop 
+    machinery.
+    
+    @type {Boolean}
+  */
+  isDropTarget: NO,
+  
+  /**
+    Use toggle selection instead of normal click behavior.
+    
+    If set to true, then selection will use a toggle instead of the normal
+    click behavior.  Command modifiers will be ignored and instead clicking
+    once will select an item and clicking on it again will deselect it.
+    
+    @type {Boolean}
+  */
+  useToggleSelection: NO,
+  
+  /**
+    Trigger the action method on a single click.
+    
+    Normally, clicking on an item view in a collection will select the content 
+    object and double clicking will trigger the action method on the 
+    collection view.
+    
+    If you set this property to YES, then clicking on a view will both select 
+    it (if isSelected is true) and trigger the action method.  
+    
+    Use this if you are using the collection view as a menu of items.
+    
+    @property {Boolean}
+  */  
+  actOnSelect: NO,
+  
+  
+  /**
+    Select an item immediately on mouse down
+    
+    Normally as soon as you begin a click the item will be selected.
+    
+    In some UI scenarios, you might want to prevent selection until
+    the mouse is released, so you can perform, for instance, a drag operation
+    without actually selecting the target item.  
+    
+    @property {Boolean}
+  */  
+  selectOnMouseDown: YES,
   
   createChildViews: function() {
     var header, data;
@@ -146,10 +317,8 @@ SC.TableView = SC.View.extend({
         columnsBinding: SC.Binding.from('.columns',this).oneWay(),
         contentBinding: SC.Binding.from('.content',this),
         delegate: this.get('delegate')
-        // isDropTarget: this.get('isDropTarget'),
-        // isSelectable: this.get('isSelectable'),
-        
-        // exampleView: this.get('exampleView')
+        isDropTarget: this.get('isDropTarget'),
+        isSelectable: this.get('isSelectable'),
       }),
 
       autohidesVerticalScroller: NO,
