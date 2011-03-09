@@ -8,6 +8,8 @@
 // sc_require('views/table_header');
 // sc_require('views/data');
 
+/*globals Endash */
+
 SC.TableView = SC.View.extend({
   
   classNames: ['sc-table-view'],
@@ -82,8 +84,7 @@ SC.TableView = SC.View.extend({
   sortDescriptorBinding: '*content.orderBy',
   
   createChildViews: function() {
-    
-    var header, data
+    var header, data;
     
     this._tableHeaderView = header = this.createChildView(SC.ScrollView.design({
       isVisibleBinding: SC.Binding.from('.useHeaders', this),
@@ -144,7 +145,7 @@ SC.TableView = SC.View.extend({
         sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
         columnsBinding: SC.Binding.from('.columns',this).oneWay(),
         contentBinding: SC.Binding.from('.content',this),
-        delegate: this.get('delegate'),
+        delegate: this.get('delegate')
         // isDropTarget: this.get('isDropTarget'),
         // isSelectable: this.get('isSelectable'),
         
@@ -165,12 +166,12 @@ SC.TableView = SC.View.extend({
 
 
   
-  // /**
-  //   Changes the sort descriptor based on the column that is passed and the current sort state
-  // 
-  //   @param {SC.TableColumn} column The column to sort by
-  //   @param {String} sortState The desired sort state (ASC|DESC)
-  // */
+  /**
+    Changes the sort descriptor based on the column that is passed and the current sort state
+  
+    @param {SC.TableColumn} column The column to sort by
+    @param {String} sortState The desired sort state (ASC|DESC)
+  */
   sortByColumn: function(column, sortState) {
     if(sortState !== "ASC")
     {
@@ -180,9 +181,7 @@ SC.TableView = SC.View.extend({
     {
       sortState = "DESC";
     }
-    
-    console.log('sortbycolumn')
-    
+
     this.set('sortDescriptor', sortState + " " + column.get('key'));
   },
 
@@ -192,9 +191,8 @@ SC.TableView = SC.View.extend({
     @param {SC.TableColumn} column the column being dragged
   */
   draggingColumn: function(column) {
-    return
-    this.$().addClass('reordering-columns');
-    this._dragging = column;
+    // this.$().addClass('reordering-columns');
+    // this._dragging = column;
   },
   
   /** 
@@ -203,8 +201,7 @@ SC.TableView = SC.View.extend({
     @param {Number} offset The offset by which the column has been dragged
   */
   columnDragged: function(offset) {
-    return
-    this._ghostLeft += offset;
+    // this._ghostLeft += offset;
   },
   
   /** 
@@ -219,6 +216,6 @@ SC.TableView = SC.View.extend({
     this._ghost = this._blocker = null;
     this._ghostLeft = null;
     this.get('columns').notifyPropertyChange('[]');
-  },
+  }
   
 });

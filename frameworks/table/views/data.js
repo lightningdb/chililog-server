@@ -145,9 +145,9 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     
     // no match
     if ((id.length <= base.length) || (id.indexOf(base) !== 0)) return null ; 
-    var ret = Number(id.split('-')[1])
+    var ret = Number(id.split('-')[1]);
     return isNaN(ret) ? null : ret ;
-  },
+  }
   
 
 });

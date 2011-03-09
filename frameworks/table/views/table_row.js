@@ -11,13 +11,12 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   classNames: ['sc-dataview-row', 'sc-list-item-view'],
   
   isSelectedDidChange: function() {
-    var isSelected = this.get('isSelected')
+    var isSelected = this.get('isSelected');
     if(isSelected) {
       this.$().addClass('sel');
     } else {
       this.$().removeClass('sel');
     }
-    console.log('isselectedidchange')
   }.observes('isSelected'),
   
   render: function(context, firstTime) {
