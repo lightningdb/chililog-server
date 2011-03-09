@@ -1,3 +1,5 @@
+sc_require('views/table_row')
+
 // ==========================================================================
 // Project:   SproutCore - JavaScript Application Framework
 // Copyright: ©2006-2009 Sprout Systems, Inc. and contributors.
@@ -15,7 +17,7 @@
   @extends SC.View
   @author Christopher Swasey
 */
-/*sc_require('views/table_row')*/
+
 /*globals Endash */
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {

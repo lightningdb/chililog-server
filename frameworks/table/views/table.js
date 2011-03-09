@@ -1,9 +1,14 @@
+sc_require('views/table_header');
+sc_require('views/data');
+
 // ==========================================================================
 // Project:   SproutCore - JavaScript Application Framework
 // Copyright: ©2006-2009 Sprout Systems, Inc. and contributors.
 //            Portions ©2008-2009 Apple Inc. All rights reserved.
 // License:   Licened under MIT license (see license.js)
 // ==========================================================================
+
+
 /*globals SC Endash */
 
 /**
@@ -14,9 +19,6 @@
   @extends SC.View
   @author Christopher Swasey
 */
-
-// sc_require('views/table_header');
-// sc_require('views/data');
 
 /*globals Endash */
 
@@ -316,7 +318,7 @@ SC.TableView = SC.View.extend({
         sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
         columnsBinding: SC.Binding.from('.columns',this).oneWay(),
         contentBinding: SC.Binding.from('.content',this),
-        delegate: this.get('delegate')
+        delegate: this.get('delegate'),
         isDropTarget: this.get('isDropTarget'),
         isSelectable: this.get('isSelectable'),
       }),

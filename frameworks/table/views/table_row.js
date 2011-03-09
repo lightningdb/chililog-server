@@ -1,4 +1,4 @@
-// sc_require('views/table_cell')
+sc_require('views/table_cell')
 
 SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   backgroundColor: 'white',
