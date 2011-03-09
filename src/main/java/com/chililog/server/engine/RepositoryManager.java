@@ -142,7 +142,7 @@ public class RepositoryManager
                 {
                     repoToDelete.add(repo);
                 }
-                else if (newRepoInfo.getRecordVersion() != currentRepoInfo.getRecordVersion())
+                else if (newRepoInfo.getDocumentVersion() != currentRepoInfo.getDocumentVersion())
                 {
                     repoToDelete.add(repo);
                     repoInfoToAdd.add(newRepoInfo);
@@ -196,7 +196,7 @@ public class RepositoryManager
     {
         for (RepositoryInfoBO repoInfo : list)
         {
-            if (repoInfo.getInternalID().equals(repoInfoToMatch.getInternalID()))
+            if (repoInfo.getDocumentID().equals(repoInfoToMatch.getDocumentID()))
             {
                 return repoInfo;
             }
@@ -219,7 +219,7 @@ public class RepositoryManager
         for (Repository repo : list)
         {
             RepositoryInfoBO repoInfo = repo.getRepoInfo();
-            if (repoInfo.getInternalID().equals(repoInfoToMatch.getInternalID()))
+            if (repoInfo.getDocumentID().equals(repoInfoToMatch.getDocumentID()))
             {
                 return repoInfo;
             }

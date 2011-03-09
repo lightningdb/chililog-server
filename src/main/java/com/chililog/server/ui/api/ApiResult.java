@@ -75,16 +75,18 @@ public class ApiResult
     }
 
     /**
-     * Builds a successful result with authentication token and content
+     * Builds a successful result with authentication token and content. <code>200 OK</code> is returned unless
+     * <code>contentToJsonify</code> is null, in which case <code>204 No Content</code> is returned
      * 
      * @param authenticationToken
-     *            token
+     *            The authentication token that was submitted in the request. It will be updated and returned in the
+     *            response header for sliding expiry. For absolute expiry, it will not be returned.
      * @param contentToJsonify
-     *            Object to convert into JSON format
+     *            Object to convert into JSON format.
      */
     public ApiResult(AuthenticationTokenAO authenticationToken, Object contentToJsonify)
     {
-        _responseStatus = HttpResponseStatus.OK;
+        _responseStatus = (contentToJsonify == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
 
         // For an sliding expiry token, we want to update the expiry time
         if (authenticationToken.getExpiryType() == ExpiryType.Sliding)

@@ -31,6 +31,7 @@ public class Strings
     public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameterError";
     public static final String URI_QUERY_STRING_PARAMETER_ERROR = PREFIX + "UriQueryStringParameterError";
     public static final String REQUIRED_FIELD_ERROR = PREFIX + "RequiredFieldError";
+    public static final String OPTIMISTIC_LOCKING_ERROR = PREFIX + "OptimisticLockingError";
 
     public static final String AUTHENTICAITON_TOKEN_EXPIRED_ERROR = PREFIX + "AuthenticationTokenExpiredError";
     public static final String AUTHENTICAITON_TOKEN_INVALID_ERROR = PREFIX + "AuthenticationTokenInvalidError";

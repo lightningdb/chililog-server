@@ -30,6 +30,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -82,13 +83,13 @@ public class RepositoryInfoTest
     @Test(expected = ChiliLogException.class)
     public void testGetNotFound() throws ChiliLogException
     {
-        RepositoryInfoController.getInstance().get(_db, "notfound");
+        RepositoryInfoController.getInstance().getByName(_db, "notfound");
     }
 
     @Test
     public void testTryGetNotFound() throws ChiliLogException
     {
-        RepositoryInfoBO repoInfo = RepositoryInfoController.getInstance().tryGet(_db, "notfound");
+        RepositoryInfoBO repoInfo = RepositoryInfoController.getInstance().tryGetByName(_db, "notfound");
         assertNull(repoInfo);
     }
 
@@ -133,16 +134,16 @@ public class RepositoryInfoTest
         repoInfo.getFields().add(repoFieldInfo);
 
         assertFalse(repoInfo.isExistingRecord());
-        assertNull(repoInfo.getInternalID());
-        assertEquals(-1, repoInfo.getRecordVersion());
+        assertNull(repoInfo.getDocumentID());
+        assertEquals(-1, repoInfo.getDocumentVersion());
 
         RepositoryInfoController.getInstance().save(_db, repoInfo);
         assertTrue(repoInfo.isExistingRecord());
-        assertNotNull(repoInfo.getInternalID());
-        assertEquals(1, repoInfo.getRecordVersion());
+        assertNotNull(repoInfo.getDocumentID());
+        assertEquals(1, repoInfo.getDocumentVersion());
 
         // Get
-        RepositoryInfoBO repoInfo2 = RepositoryInfoController.getInstance().get(_db, "repo_info_test1");
+        RepositoryInfoBO repoInfo2 = RepositoryInfoController.getInstance().getByName(_db, "repo_info_test1");
         assertEquals("repo_info_test1", repoInfo2.getName());
         assertEquals("Test 1", repoInfo2.getDisplayName());
         assertEquals("description", repoInfo2.getDescription());
@@ -155,7 +156,7 @@ public class RepositoryInfoTest
         assertEquals(QueueMaxMemoryPolicy.BLOCK, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, repoInfo2.getWriteQueuePageSize());
         assertEquals(ParseFieldErrorHandling.SkipEntry, repoInfo2.getParseFieldErrorHandling());
-        assertEquals(1, repoInfo2.getRecordVersion());
+        assertEquals(1, repoInfo2.getDocumentVersion());
 
         Hashtable<String, String> ht2 = repoInfo2.getProperties();
         assertEquals(3, ht2.keySet().size());
@@ -223,9 +224,9 @@ public class RepositoryInfoTest
         repoFieldInfo.getProperties().remove("key3");
 
         RepositoryInfoController.getInstance().save(_db, repoInfo);
-        assertEquals(2, repoInfo.getRecordVersion());
+        assertEquals(2, repoInfo.getDocumentVersion());
 
-        repoInfo2 = RepositoryInfoController.getInstance().get(_db, "repo_info_test1x");
+        repoInfo2 = RepositoryInfoController.getInstance().getByName(_db, "repo_info_test1x");
         assertEquals("repo_info_test1x", repoInfo2.getName());
         assertEquals("Test 1x", repoInfo2.getDisplayName());
         assertEquals("description x", repoInfo2.getDescription());
@@ -238,7 +239,7 @@ public class RepositoryInfoTest
         assertEquals(QueueMaxMemoryPolicy.DROP, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(22, repoInfo2.getWriteQueuePageSize());
         assertEquals(ParseFieldErrorHandling.SkipFieldIgnoreError, repoInfo2.getParseFieldErrorHandling());
-        assertEquals(2, repoInfo2.getRecordVersion());
+        assertEquals(2, repoInfo2.getDocumentVersion());
 
         ht2 = repoInfo2.getProperties();
         assertEquals(3, ht2.keySet().size());
@@ -266,13 +267,18 @@ public class RepositoryInfoTest
         assertTrue(ht2.containsKey("key4"));
         assertEquals("value14x", ht2.get("key4"));
 
+        // Get by id
+        String id = repoInfo2.getDocumentID().toString();
+        RepositoryInfoBO repoInfo3 = RepositoryInfoController.getInstance().get(_db, new ObjectId(id));
+        assertEquals("repo_info_test1x", repoInfo3.getName());
+        
         // Remove
         RepositoryInfoController.getInstance().remove(_db, repoInfo);
 
         // Get again
-        repoInfo2 = RepositoryInfoController.getInstance().tryGet(_db, "repo_info_test1");
+        repoInfo2 = RepositoryInfoController.getInstance().tryGetByName(_db, "repo_info_test1");
         assertNull(repoInfo2);
-        repoInfo2 = RepositoryInfoController.getInstance().tryGet(_db, "repo_info_test2");
+        repoInfo2 = RepositoryInfoController.getInstance().tryGetByName(_db, "repo_info_test2");
         assertNull(repoInfo2);
 
         // Remove again should not throw an error

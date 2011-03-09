@@ -24,7 +24,7 @@ package com.chililog.server.data;
  * @author vibul
  * 
  */
-public abstract class BaseListCriteria
+public abstract class ListCriteria
 {
     private int _recordsPerPage = Integer.MAX_VALUE;
     private int _startPage = 1;
@@ -34,7 +34,7 @@ public abstract class BaseListCriteria
     /**
      * Basic constructor
      */
-    public BaseListCriteria()
+    public ListCriteria()
     {
         return;
     }
@@ -50,9 +50,9 @@ public abstract class BaseListCriteria
     /**
      * Sets the number of records to return in this query
      */
-    public void setRecordsPerPage(int rowsPerPage)
+    public void setRecordsPerPage(int recordsPerPage)
     {
-        _recordsPerPage = rowsPerPage;
+        _recordsPerPage = recordsPerPage;
     }
 
     /**

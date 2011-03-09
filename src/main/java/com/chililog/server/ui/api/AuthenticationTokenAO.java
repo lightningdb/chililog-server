@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
+import com.chililog.server.data.UserBO;
 import com.chililog.server.security.CryptoUtils;
 import com.chililog.server.ui.Strings;
 import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
@@ -48,7 +49,7 @@ public class AuthenticationTokenAO
 {
     private String _id;
 
-    private String _username;
+    private String _userID;
 
     private ExpiryType _expiryType;
 
@@ -67,13 +68,15 @@ public class AuthenticationTokenAO
     /**
      * Constructor using the details of a validated user
      * 
+     * @param userBO
+     *            Authenticated user
      * @param authenticationApiObject
      *            authentication object with the user's details
      */
-    public AuthenticationTokenAO(AuthenticationAO authenticationApiObject)
+    public AuthenticationTokenAO(UserBO userBO, AuthenticationAO authenticationApiObject)
     {
         _id = UUID.randomUUID().toString();
-        _username = authenticationApiObject.getUsername();
+        _userID = userBO.getDocumentID().toString();
         _expiryType = authenticationApiObject.getExpiryType();
         _expirySeconds = authenticationApiObject.getExpirySeconds();
         updateExpiresOn();
@@ -105,16 +108,16 @@ public class AuthenticationTokenAO
     }
 
     /**
-     * The user's login name
+     * The user's mongoDB document id
      */
-    public String getUsername()
+    public String getUserID()
     {
-        return _username;
+        return _userID;
     }
 
-    public void setUsername(String username)
+    public void setUserID(String userID)
     {
-        _username = username;
+        _userID = userID;
     }
 
     /**

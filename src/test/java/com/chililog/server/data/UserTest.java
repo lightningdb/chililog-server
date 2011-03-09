@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.bson.types.ObjectId;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -80,13 +81,13 @@ public class UserTest
     @Test(expected = ChiliLogException.class)
     public void testGetNotFound() throws ChiliLogException
     {
-        UserController.getInstance().get(_db, "notfound");
+        UserController.getInstance().getByUsername(_db, "notfound");
     }
 
     @Test
     public void testTryGetNotFound() throws ChiliLogException
     {
-        UserBO user = UserController.getInstance().tryGet(_db, "notfound");
+        UserBO user = UserController.getInstance().tryGetByUsername(_db, "notfound");
         assertNull(user);
     }
 
@@ -102,47 +103,51 @@ public class UserTest
         user.setDisplayName("Lloyd Christmas");
 
         assertFalse(user.isExistingRecord());
-        assertNull(user.getInternalID());
-        assertEquals(-1, user.getRecordVersion());
+        assertNull(user.getDocumentID());
+        assertEquals(-1, user.getDocumentVersion());
 
         UserController.getInstance().save(_db, user);
         assertTrue(user.isExistingRecord());
-        assertNotNull(user.getInternalID());
-        assertEquals(1, user.getRecordVersion());
+        assertNotNull(user.getDocumentID());
+        assertEquals(1, user.getDocumentVersion());
 
         // Get
-        UserBO user2 = UserController.getInstance().get(_db, "UserTestUser1");
+        UserBO user2 = UserController.getInstance().getByUsername(_db, "UserTestUser1");
         assertEquals("UserTestUser1", user2.getUsername());
         assertTrue(user2.hasRole("junittestrole1"));
         assertTrue(user2.hasRole("junittestrole2"));
         assertEquals(UserBO.Status.Enabled, user2.getStatus());
         assertEquals("Lloyd Christmas", user2.getDisplayName());
-        assertEquals(1, user2.getRecordVersion());
+        assertEquals(1, user2.getDocumentVersion());
 
+        String id = user.getDocumentID().toString();
+        user2 = UserController.getInstance().get(_db, new ObjectId(id));
+        assertEquals("UserTestUser1", user2.getUsername());
+        
         // Update
         user.setUsername("UserTestUser2");
         user.addRole("junittestrole3");
         user.setStatus(UserBO.Status.Disabled);
         user.setDisplayName("Harry Dunne");
         UserController.getInstance().save(_db, user);
-        assertEquals(2, user.getRecordVersion());
+        assertEquals(2, user.getDocumentVersion());
 
-        user2 = UserController.getInstance().get(_db, "UserTestUser2");
+        user2 = UserController.getInstance().getByUsername(_db, "UserTestUser2");
         assertEquals("UserTestUser2", user2.getUsername());
         assertTrue(user2.hasRole("junittestrole1"));
         assertTrue(user2.hasRole("junittestrole2"));
         assertTrue(user2.hasRole("junittestrole3"));
         assertEquals(UserBO.Status.Disabled, user2.getStatus());
         assertEquals("Harry Dunne", user2.getDisplayName());
-        assertEquals(2, user2.getRecordVersion());
+        assertEquals(2, user2.getDocumentVersion());
 
         // Remove
         UserController.getInstance().remove(_db, user);
 
         // Get again
-        user2 = UserController.getInstance().tryGet(_db, "UserTestUser1");
+        user2 = UserController.getInstance().tryGetByUsername(_db, "UserTestUser1");
         assertNull(user2);
-        user2 = UserController.getInstance().tryGet(_db, "UserTestUser2");
+        user2 = UserController.getInstance().tryGetByUsername(_db, "UserTestUser2");
         assertNull(user2);
 
         // Remove again should not throw an error

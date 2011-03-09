@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -31,6 +32,10 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.data.ListCriteria;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
 import com.chililog.server.ui.HttpRequestHandler;
 import com.chililog.server.ui.Strings;
 
@@ -61,14 +66,20 @@ public abstract class Worker
     private String[] _uriPathParameters = null;
     private ContentIOStyle _requestContentIOStyle = ContentIOStyle.ByteArray;
     private AuthenticationTokenAO _authenticationToken = null;
+    private UserBO _authenticatedUser = null;
 
-    public static final int URI_PATH_ID_PARAMETER_INDEX = 0;
+    public static final int ID_URI_PATH_PARAMETER_INDEX = 0;
+
+    public static final String RECORDS_PER_PAGE_URI_QUERYSTRING_PARAMETER_NAME = "records_per_page";
+    public static final String START_PAGE_URI_QUERYSTRING_PARAMETER_NAME = "start_page";
+    public static final String DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME = "do_page_count";
 
     public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
+    public static final String PAGE_COUNT_HEADER = "X-ChiliLog-PageCount";
 
     public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";
     public static final String JSON_CHARSET = "UTF-8";
-    
+
     /**
      * Constructor
      * 
@@ -128,6 +139,25 @@ public abstract class Worker
     }
 
     /**
+     * Returns the specified parameter from the uri path
+     * 
+     * @param paramterName
+     *            Name of paramter to use in error message
+     * @param parameterIndex
+     *            Index of the parameter. 0 is the index of the parameter after the worker name in the uri.
+     * @return
+     * @throws ChiliLogException
+     */
+    public String getUriPathParameter(String paramterName, int parameterIndex) throws ChiliLogException
+    {
+        if (_uriPathParameters == null || parameterIndex < 0 || parameterIndex >= _uriPathParameters.length)
+        {
+            throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, paramterName, _request.getUri());
+        }
+        return _uriPathParameters[parameterIndex];
+    }
+
+    /**
      * <p>
      * Returns the Query String parameters
      * </p>
@@ -142,6 +172,69 @@ public abstract class Worker
     public Map<String, List<String>> getUriQueryStringParameters()
     {
         return _uriQueryStringParameters;
+    }
+
+    /**
+     * Returns the specified query string parameter
+     * 
+     * @param parameterName
+     *            Name of query string parameter
+     * @param isOptional
+     *            if True then exception will NOT be thrown if parameter does not exist
+     * @return Query string parameter value
+     * @throws ChiliLogException
+     */
+    public String getUriQueryStringParameter(String parameterName, boolean isOptional) throws ChiliLogException
+    {
+        String value = null;
+        if (_uriQueryStringParameters.containsKey(parameterName))
+        {
+            List<String> l = _uriQueryStringParameters.get(parameterName);
+            if (l != null && !l.isEmpty())
+            {
+                value = l.get(0);
+            }
+        }
+
+        if (StringUtils.isBlank(value))
+        {
+            if (isOptional)
+            {
+                return null;
+            }
+            throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_ERROR, parameterName);
+        }
+
+        return value;
+    }
+
+    /**
+     * Load base list criteria values, "records per page", "start page" and "do page count", from the query string
+     * parameters
+     * 
+     * @param listCritiera
+     *            list criteria to load query string values into
+     * @throws ChiliLogException
+     */
+    protected void loadBaseListCriteriaParameters(ListCriteria listCritiera) throws ChiliLogException
+    {
+        String recordsPerPage = this.getUriQueryStringParameter(RECORDS_PER_PAGE_URI_QUERYSTRING_PARAMETER_NAME, true);
+        if (!StringUtils.isBlank(recordsPerPage))
+        {
+            listCritiera.setRecordsPerPage(Integer.parseInt(recordsPerPage));
+        }
+
+        String startPage = this.getUriQueryStringParameter(START_PAGE_URI_QUERYSTRING_PARAMETER_NAME, true);
+        if (!StringUtils.isBlank(startPage))
+        {
+            listCritiera.setStartPage(Integer.parseInt(startPage));
+        }
+
+        String doPageCount = this.getUriQueryStringParameter(DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME, true);
+        if (!StringUtils.isBlank(doPageCount))
+        {
+            listCritiera.setDoPageCount(doPageCount.equalsIgnoreCase("true"));
+        }
     }
 
     /**
@@ -160,6 +253,19 @@ public abstract class Worker
     protected void setAuthenticationToken(AuthenticationTokenAO authenticationToken)
     {
         _authenticationToken = authenticationToken;
+    }
+
+    /**
+     * Returns the business object representing the authenticated user
+     */
+    protected UserBO getAuthenticatedUser()
+    {
+        return _authenticatedUser;
+    }
+
+    protected void setAuthenticatedUser(UserBO authenticatedUser)
+    {
+        _authenticatedUser = authenticatedUser;
     }
 
     /**
@@ -260,6 +366,11 @@ public abstract class Worker
         try
         {
             _authenticationToken = AuthenticationTokenAO.fromString(_request.getHeader(AUTHENTICATION_TOKEN_HEADER));
+
+            // TODO some caching!
+            _authenticatedUser = UserController.getInstance().get(MongoConnection.getInstance().getConnection(),
+                    new ObjectId(_authenticationToken.getUserID()));
+
         }
         catch (Exception ex)
         {
@@ -320,7 +431,7 @@ public abstract class Worker
             HttpMethod requestMethod = _request.getMethod();
             if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.GET)
             {
-                if (StringUtils.isBlank(_uriPathParameters[URI_PATH_ID_PARAMETER_INDEX]))
+                if (StringUtils.isBlank(_uriPathParameters[ID_URI_PATH_PARAMETER_INDEX]))
                 {
                     throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, "ID", _request.getUri());
                 }

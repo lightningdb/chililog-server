@@ -37,8 +37,8 @@ public abstract class BO
 {
     private DBObject _dbObject = null;
 
-    public static final String INTERNAL_ID_FIELD_NAME = "_id";
-    public static final String RECORD_VERSION_FIELD_NAME = "record_version";
+    public static final String DOCUMENT_ID_FIELD_NAME = "_id";
+    public static final String DOCUMENT_VERSION_FIELD_NAME = "document_version";
 
     /**
      * Basic constructor
@@ -87,17 +87,17 @@ public abstract class BO
      */
     public boolean isExistingRecord()
     {
-        return _dbObject != null && _dbObject.get("_id") != null;
+        return _dbObject != null && _dbObject.get(DOCUMENT_ID_FIELD_NAME) != null;
     }
 
     /**
      * Returns the internal mongoDB id
      */
-    public ObjectId getInternalID()
+    public ObjectId getDocumentID()
     {
         if (isExistingRecord())
         {
-            return (ObjectId) _dbObject.get(INTERNAL_ID_FIELD_NAME);
+            return (ObjectId) _dbObject.get(DOCUMENT_ID_FIELD_NAME);
         }
         else
         {
@@ -106,13 +106,14 @@ public abstract class BO
     }
 
     /**
-     * Returns the version of this record. The version number is used in optimistic locking
+     * Returns the version of this record. The version number is used in optimistic locking. If the record has not been
+     * saved, then -1 is returned.
      */
-    public long getRecordVersion()
+    public long getDocumentVersion()
     {
         if (isExistingRecord())
         {
-            return (Long) (_dbObject.get(RECORD_VERSION_FIELD_NAME));
+            return (Long) (_dbObject.get(DOCUMENT_VERSION_FIELD_NAME));
         }
         else
         {

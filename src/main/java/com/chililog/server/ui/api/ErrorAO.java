@@ -21,6 +21,8 @@ package com.chililog.server.ui.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import com.chililog.server.common.ChiliLogException;
+
 /**
  * <p>
  * Error API Object is returned to the caller in the event of an error or exception during processing.
@@ -29,8 +31,10 @@ import java.io.StringWriter;
  * @author vibul
  * 
  */
-public class ErrorAO
+public class ErrorAO extends AO
 {
+    private String _errorCode;
+
     private String _message;
 
     private String _stackTrace;
@@ -64,6 +68,15 @@ public class ErrorAO
     {
         _message = ex.getMessage();
 
+        if (ex instanceof ChiliLogException)
+        {
+            _errorCode = "ChiliLogException:" + ((ChiliLogException) ex).getErrorCode();
+        }
+        else
+        {
+            _errorCode = ex.getClass().getName();
+        }
+
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw, true);
         ex.printStackTrace(pw);
@@ -71,6 +84,19 @@ public class ErrorAO
         _stackTrace = sw.getBuffer().toString();
 
         return;
+    }
+
+    /**
+     * The error code if one exists
+     */
+    public String getErrorCode()
+    {
+        return _errorCode;
+    }
+
+    public void setErrorCode(String errorCode)
+    {
+        _errorCode = errorCode;
     }
 
     /**

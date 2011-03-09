@@ -197,7 +197,7 @@ public class ApiUtils
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         String authenticationCode = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
 
-        assertEquals("HTTP/1.1 200 OK", responseCode);
+        assertEquals("HTTP/1.1 204 No Content", responseCode);
         assertNotNull(authenticationCode);
         assertNotNull(headers.get("Date"));
 

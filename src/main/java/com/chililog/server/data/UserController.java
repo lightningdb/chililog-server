@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 
 import com.chililog.server.common.ChiliLogException;
 import com.mongodb.BasicDBObject;
@@ -80,7 +81,68 @@ public class UserController extends Controller
     }
 
     /**
-     * Retrieves the specified user
+     * Retrieves the specified user by the id
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return code>UserBO</code> representing the user
+     * @throws ChiliLogException
+     *             if not found or database error
+     */
+    public UserBO get(DB db, ObjectId id) throws ChiliLogException
+    {
+        UserBO o = tryGet(db, id);
+        if (o == null)
+        {
+            throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, id.toString());
+        }
+        return o;
+    }
+
+    /**
+     * Tries to retrieve the specified user by the id. If not found, null is returned.
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return <code>UserBO</code> representing the user or null if user is not found
+     * @throws ChiliLogException
+     *             if database or data error
+     */
+    public UserBO tryGet(DB db, ObjectId id) throws ChiliLogException
+    {
+        try
+        {
+            if (db == null)
+            {
+                throw new IllegalArgumentException("db cannot be null");
+            }
+            if (id == null)
+            {
+                throw new IllegalArgumentException("id cannot be null");
+            }
+
+            DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
+            BasicDBObject query = new BasicDBObject();
+            query.put(BO.DOCUMENT_ID_FIELD_NAME, id);
+            DBObject dbo = coll.findOne(query);
+            if (dbo == null)
+            {
+                return null;
+            }
+            return new UserBO(dbo);
+        }
+        catch (MongoException ex)
+        {
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
+        }
+    }
+
+    /**
+     * Retrieves the specified user by the username
      * 
      * @param db
      *            mongoDB connection
@@ -90,9 +152,9 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public UserBO get(DB db, String username) throws ChiliLogException
+    public UserBO getByUsername(DB db, String username) throws ChiliLogException
     {
-        UserBO o = tryGet(db, username);
+        UserBO o = tryGetByUsername(db, username);
         if (o == null)
         {
             throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, username);
@@ -101,7 +163,7 @@ public class UserController extends Controller
     }
 
     /**
-     * Tries to retrieve the specified user. If not found, null is returned.
+     * Tries to retrieve the specified user by the username. If not found, null is returned.
      * 
      * @param db
      *            mongoDB connection
@@ -111,7 +173,7 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public UserBO tryGet(DB db, String username) throws ChiliLogException
+    public UserBO tryGetByUsername(DB db, String username) throws ChiliLogException
     {
         try
         {
@@ -154,9 +216,9 @@ public class UserController extends Controller
     public ArrayList<UserBO> getList(DB db, UserListCriteria criteria) throws ChiliLogException
     {
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-        
+
         // Filter
-        BasicDBObject query = new BasicDBObject();        
+        BasicDBObject query = new BasicDBObject();
         if (!StringUtils.isBlank(criteria.getUsernamePattern()))
         {
             Pattern pattern = Pattern.compile(criteria.getUsernamePattern());
@@ -174,7 +236,7 @@ public class UserController extends Controller
         // Order
         DBObject orderBy = new BasicDBObject();
         orderBy.put(UserBO.USERNAME_FIELD_NAME, 1);
-        
+
         // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
         int startPage = (criteria.getStartPage() - 1) * recordsPerPage;
@@ -185,14 +247,14 @@ public class UserController extends Controller
             DBObject dbo = cur.next();
             list.add(new UserBO(dbo));
         }
-        
-        // Do page count by executing query again 
+
+        // Do page count by executing query again
         if (criteria.getDoPageCount())
         {
             int recordCount = coll.find(query).count();
             criteria.calculatePageCount(recordCount);
         }
-        
+
         return list;
     }
 
@@ -214,7 +276,7 @@ public class UserController extends Controller
         query.put(UserBO.USERNAME_FIELD_NAME, user.getUsername());
         if (user.isExistingRecord())
         {
-            query.put(BO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", user.getInternalID()));
+            query.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
         }
         long i = coll.getCount(query);
         if (i > 0)

@@ -24,7 +24,7 @@ package com.chililog.server.data;
  * @author vibul
  * 
  */
-public class UserListCriteria extends BaseListCriteria
+public class UserListCriteria extends ListCriteria
 {
     private String _usernamePattern = null;
     private String _role = null;

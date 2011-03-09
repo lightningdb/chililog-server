@@ -200,7 +200,7 @@ The data model is implemented within a mongoDB database.
 
 * A *repository*  is implemented as a collection within the @chililog@ database.  For example, if a repository is named @abc@ then its mongoDB collection is named @abc_repoistory@.
 
-* A *repository entry* is implemented as a document (or record) in the collection.
+* A *repository entry* is implemented as a document (AKA record) in the collection.
 
 * A *repository field* is implemented as a field within a document.
 

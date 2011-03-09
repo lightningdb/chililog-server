@@ -101,7 +101,7 @@ public class AuthenticationWorker extends Worker
 
         // Check if user exists
         DB db = MongoConnection.getInstance().getConnection();
-        UserBO user = UserController.getInstance().tryGet(db, requestApiObject.getUsername());
+        UserBO user = UserController.getInstance().tryGetByUsername(db, requestApiObject.getUsername());
         if (user == null)
         {
             _logger.error("Authentication failed. Cannot find username '%s'", requestApiObject.getUsername());
@@ -120,7 +120,7 @@ public class AuthenticationWorker extends Worker
         }
 
         // Generate token
-        AuthenticationTokenAO token = new AuthenticationTokenAO(requestApiObject);
+        AuthenticationTokenAO token = new AuthenticationTokenAO(user, requestApiObject);
 
         // Return response
         return new ApiResult(token, null);
@@ -132,7 +132,7 @@ public class AuthenticationWorker extends Worker
     @Override
     public ApiResult processDelete() throws Exception
     {
-        return new ApiResult();
+        return new ApiResult(this.getAuthenticationToken(), null);
     }
 
 }

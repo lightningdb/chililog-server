@@ -47,12 +47,14 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    // Properties stored in mongoDB
     private String _name;
     private String _displayName;
     private String _description;
     private DataType _dataType;
     private Hashtable<String, String> _properties = new Hashtable<String, String>();
 
+    // These properties are NOT store in mongoDB but used in parsing
     private String _dateFormat = null;
     private TimeZone _dateTimezone = null;
     private Object _defaultValue = null;
@@ -169,9 +171,9 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
         return _dataType;
     }
 
-    public void setDataType(DataType data_type)
+    public void setDataType(DataType dataType)
     {
-        _dataType = data_type;
+        _dataType = dataType;
     }
 
     /**

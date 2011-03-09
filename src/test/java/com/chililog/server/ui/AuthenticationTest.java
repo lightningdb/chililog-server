@@ -186,7 +186,7 @@ public class AuthenticationTest
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
-        assertEquals("HTTP/1.1 200 OK", responseCode);
+        assertEquals("HTTP/1.1 204 No Content", responseCode);
         assertNotNull(headers.get("Date"));
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertNull(headers.get("Content-Type"));
@@ -399,7 +399,7 @@ public class AuthenticationTest
         HashMap<String, String> logoutHeaders = new HashMap<String, String>();
         String logoutResponseCode = ApiUtils.getResponseHeaders(conn, logoutHeaders);
 
-        assertEquals("HTTP/1.1 200 OK", logoutResponseCode);
+        assertEquals("HTTP/1.1 204 No Content", logoutResponseCode);
         assertNotNull(logoutHeaders.get("Date"));
         assertEquals("", logoutResponseContent);
     }

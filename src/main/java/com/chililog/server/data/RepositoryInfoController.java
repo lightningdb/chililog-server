@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 
 import com.chililog.server.common.ChiliLogException;
 import com.mongodb.BasicDBObject;
@@ -80,7 +81,68 @@ public class RepositoryInfoController extends Controller
     }
 
     /**
-     * Retrieves the specified repository
+     * Retrieves the specified repository by its id
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return code>RepositoryInfoBO</code> representing the repository
+     * @throws ChiliLogException
+     *             if not found or database error
+     */
+    public RepositoryInfoBO get(DB db, ObjectId id) throws ChiliLogException
+    {
+        RepositoryInfoBO o = tryGet(db, id);
+        if (o == null)
+        {
+            throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, id.toString());
+        }
+        return o;
+    }
+
+    /**
+     * Tries to retrieve the specified repository by its id. If not found, null is returned.
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return <code>RepositoryInfoBO</code> representing the repository or null if repository is not found
+     * @throws ChiliLogException
+     *             if database or data error
+     */
+    public RepositoryInfoBO tryGet(DB db, ObjectId id) throws ChiliLogException
+    {
+        try
+        {
+            if (db == null)
+            {
+                throw new IllegalArgumentException("db cannot be null");
+            }
+            if (id == null)
+            {
+                throw new IllegalArgumentException("id cannot be null");
+            }
+
+            DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
+            BasicDBObject query = new BasicDBObject();
+            query.put(BO.DOCUMENT_ID_FIELD_NAME, id);
+            DBObject dbo = coll.findOne(query);
+            if (dbo == null)
+            {
+                return null;
+            }
+            return new RepositoryInfoBO(dbo);
+        }
+        catch (MongoException ex)
+        {
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
+        }
+    }
+    
+    /**
+     * Retrieves the specified repository by its name
      * 
      * @param db
      *            mongoDB connection
@@ -90,9 +152,9 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryInfoBO get(DB db, String name) throws ChiliLogException
+    public RepositoryInfoBO getByName(DB db, String name) throws ChiliLogException
     {
-        RepositoryInfoBO o = tryGet(db, name);
+        RepositoryInfoBO o = tryGetByName(db, name);
         if (o == null)
         {
             throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, name);
@@ -101,7 +163,7 @@ public class RepositoryInfoController extends Controller
     }
 
     /**
-     * Tries to retrieve the specified repository. If not found, null is returned.
+     * Tries to retrieve the specified repository by its name. If not found, null is returned.
      * 
      * @param db
      *            mongoDB connection
@@ -111,7 +173,7 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryInfoBO tryGet(DB db, String name) throws ChiliLogException
+    public RepositoryInfoBO tryGetByName(DB db, String name) throws ChiliLogException
     {
         try
         {
@@ -206,7 +268,7 @@ public class RepositoryInfoController extends Controller
         query.put(RepositoryInfoBO.NAME_FIELD_NAME, repository.getName());
         if (repository.isExistingRecord())
         {
-            query.put(BO.INTERNAL_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getInternalID()));
+            query.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getDocumentID()));
         }
         long i = coll.getCount(query);
         if (i > 0)

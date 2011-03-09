@@ -159,7 +159,7 @@ public class UserBO extends BO implements Serializable
     }
 
     /**
-     * Add this role to the user
+     * Add this user to the role
      * 
      * @param role
      *            name of role
@@ -173,7 +173,7 @@ public class UserBO extends BO implements Serializable
     }
 
     /**
-     * Removes the role form the user
+     * Removes the user from the role
      * 
      * @param role
      */
@@ -182,6 +182,16 @@ public class UserBO extends BO implements Serializable
         _roles.remove(role);
     }
 
+    /**
+     * Removes the user from all roles
+     * 
+     * @param role
+     */
+    public void removeAllRoles()
+    {
+        _roles.clear();
+    }
+    
     /**
      * Does the user have this role?
      * 
@@ -195,7 +205,8 @@ public class UserBO extends BO implements Serializable
     }
 
     /**
-     * Returns an array of roles to which the user belongs
+     * Returns an array of roles to which the user belongs. Modifying the array will NOT modify the user's role. Use
+     * <code>addRole</code> and <code>removeRole</code> instead.
      */
     public String[] getRoles()
     {

@@ -97,7 +97,7 @@ public class InternalLog4JAppenderTest
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
         assertEquals("", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
-        assertEquals((long) 1, dbObject.get(BO.RECORD_VERSION_FIELD_NAME));
+        assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertEquals(now, dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME));
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
@@ -134,7 +134,7 @@ public class InternalLog4JAppenderTest
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
         assertEquals("", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
-        assertEquals((long) 1, dbObject.get(BO.RECORD_VERSION_FIELD_NAME));
+        assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertTrue(((Date)dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
@@ -166,7 +166,7 @@ public class InternalLog4JAppenderTest
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
         assertEquals("", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
-        assertEquals((long) 1, dbObject.get(BO.RECORD_VERSION_FIELD_NAME));
+        assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertTrue(((Date)dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
         assertEquals(InternalLog4JAppenderTest.class.getName()+ "_TestNull", dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));

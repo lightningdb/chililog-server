@@ -86,18 +86,18 @@ public abstract class Controller
             DBCollection coll = db.getCollection(this.getDBCollectionName());
             if (businessObject.isExistingRecord())
             {
-                long recordVersion = businessObject.getRecordVersion();
-                obj.put(BO.RECORD_VERSION_FIELD_NAME, recordVersion + 1);
+                long recordVersion = businessObject.getDocumentVersion();
+                obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, recordVersion + 1);
 
                 BasicDBObject query = new BasicDBObject();
-                query.put(BO.INTERNAL_ID_FIELD_NAME, obj.get(BO.INTERNAL_ID_FIELD_NAME));
-                query.put(BO.RECORD_VERSION_FIELD_NAME, recordVersion);
+                query.put(BO.DOCUMENT_ID_FIELD_NAME, obj.get(BO.DOCUMENT_ID_FIELD_NAME));
+                query.put(BO.DOCUMENT_VERSION_FIELD_NAME, recordVersion);
 
                 coll.update(query, obj, false, false, this.getDBWriteConern());
             }
             else
             {
-                obj.put(BO.RECORD_VERSION_FIELD_NAME, (long)1);
+                obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, (long)1);
                 coll.insert(obj);
             }
         }
@@ -134,7 +134,7 @@ public abstract class Controller
             if (businessObject.isExistingRecord())
             {
                 DBObject obj = new BasicDBObject();
-                obj.put(BO.INTERNAL_ID_FIELD_NAME, businessObject.getInternalID());
+                obj.put(BO.DOCUMENT_ID_FIELD_NAME, businessObject.getDocumentID());
                 coll.remove(obj);
             }
         }

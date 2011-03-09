@@ -134,7 +134,7 @@ public class InternalLog4JAppender extends AppenderSkeleton
             MongoUtils.setDate(dbObject, RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new Date());
             MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME, "");
 
-            MongoUtils.setLong(dbObject, BO.RECORD_VERSION_FIELD_NAME, (long) 1);
+            MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
 
             _coll.insert(dbObject);
 

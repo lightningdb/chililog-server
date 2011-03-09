@@ -24,7 +24,7 @@ package com.chililog.server.data;
  * @author vibul
  * 
  */
-public class RepositoryInfoListCriteria extends BaseListCriteria
+public class RepositoryInfoListCriteria extends ListCriteria
 {
     private String _namePattern = null;
     

@@ -140,7 +140,7 @@ public class MongoDBJAASLoginModule implements LoginModule
             
             // Get the user from mongoDB
             DB db = MongoConnection.getInstance().getConnection();
-            UserBO user = UserController.getInstance().tryGet(db, username);
+            UserBO user = UserController.getInstance().tryGetByUsername(db, username);
             if (user == null)
             {
                 // User not found

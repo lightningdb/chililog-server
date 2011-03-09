@@ -73,10 +73,10 @@ print("\nCreating ChiliLog Admin User");
 var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
-	roles: [ "admin" ],
+	roles: [ "Administrator" ],
 	status: "Active",
 	display_name: "Adminstrator",
-	record_version: new NumberLong(1) 
+	document_version: new NumberLong(1) 
 };
 db.users.insert(adminUser);
 
@@ -106,7 +106,7 @@ var chiliLogRepo = {
 	         { name: "message", data_type: "String", properties: { position: "7"} } 
 	],
 	properties: { delimiter: "|"},
-	record_version: new NumberLong(1)
+	document_version: new NumberLong(1)
 };
 db.repositories_info.insert(chiliLogRepo);
 db.chililog_repository.ensureIndex({ entry_timestamp : 1 });
