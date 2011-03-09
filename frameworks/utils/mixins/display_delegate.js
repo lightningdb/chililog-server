@@ -8,4 +8,4 @@ SC.DisplayDelegate = {
   delegateForContentIndex: function(idx) {
     return null;
   }
-}
+};

@@ -62,8 +62,13 @@
 
 
 
+
 .sc-table-data-view .table-cell {
   border-right: 1px solid rgba(0, 0, 0, .05);
+}
+
+.sc-table-data-view .sc-dataview-row.sel .table-cell {
+  border-right: none !important;
 }
 
 .sc-table-data-view .table-cell .sc-label-view {
