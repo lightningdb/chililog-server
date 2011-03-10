@@ -246,6 +246,7 @@ public class ApiService extends Service
             // Merge _ to camel case
             apiName = WordUtils.capitalizeFully(apiName, new char[]
             { '_' });
+            apiName = apiName.replace("_", "");
 
             className = "com.chililog.server.ui.api." + apiName + "Worker";
             _logger.debug("Instancing ApiWorker: %s", className);

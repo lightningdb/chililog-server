@@ -18,6 +18,9 @@
 
 package com.chililog.server.ui.api;
 
+import java.util.ArrayList;
+import java.util.Map.Entry;
+
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryFieldInfoBO.DataType;
@@ -36,6 +39,7 @@ public class RepositoryFieldInfoAO extends AO
     private String _displayName;
     private String _description;
     private DataType _dataType;
+    private RepositoryPropertyInfoAO[] _properties = null;
 
     /**
      * Basic constructor
@@ -57,9 +61,24 @@ public class RepositoryFieldInfoAO extends AO
         _displayName = repoFieldInfo.getDisplayName();
         _description = repoFieldInfo.getDescription();
         _dataType = repoFieldInfo.getDataType();
+
+        if (repoFieldInfo.getProperties() == null || repoFieldInfo.getProperties().isEmpty())
+        {
+            _properties = null;
+        }
+        else
+        {
+            ArrayList<RepositoryPropertyInfoAO> propertyList = new ArrayList<RepositoryPropertyInfoAO>();
+            for (Entry<String, String> e : repoFieldInfo.getProperties().entrySet())
+            {
+                propertyList.add(new RepositoryPropertyInfoAO(e.getKey(), e.getValue()));
+            }
+            _properties = propertyList.toArray(new RepositoryPropertyInfoAO[] {});
+        }
+
         return;
     }
-    
+
     /**
      * Updates the supplied business object with info from this api object
      * 
@@ -69,14 +88,22 @@ public class RepositoryFieldInfoAO extends AO
      */
     public void toBO(RepositoryFieldInfoBO repoFieldInfo) throws ChiliLogException
     {
-        repoFieldInfo.setName(checkRequiredField("Name", _name));
-        repoFieldInfo.setDisplayName(checkRequiredField("DisplayName", _displayName));
+        repoFieldInfo.setName(checkRequiredField("Field Name", _name));
+        repoFieldInfo.setDisplayName(_displayName);
         repoFieldInfo.setDescription(_description);
         repoFieldInfo.setDataType(_dataType);
-        
+
+        repoFieldInfo.getProperties().clear();
+        if (_properties != null && _properties.length > 0)
+        {
+            for (RepositoryPropertyInfoAO property : _properties)
+            {
+                repoFieldInfo.getProperties().put(property.getKey(), property.getValue());
+            }
+        }
+
         return;
     }
-    
 
     public String getName()
     {
@@ -118,4 +145,13 @@ public class RepositoryFieldInfoAO extends AO
         _dataType = dataType;
     }
 
+    public RepositoryPropertyInfoAO[] getProperties()
+    {
+        return _properties;
+    }
+
+    public void setProperties(RepositoryPropertyInfoAO[] properties)
+    {
+        _properties = properties;
+    }
 }

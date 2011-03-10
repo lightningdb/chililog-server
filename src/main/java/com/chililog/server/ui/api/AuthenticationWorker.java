@@ -88,6 +88,17 @@ public class AuthenticationWorker extends Worker
     }
 
     /**
+     * There are no URI parameters so no need to check
+     * 
+     * @return {@link ApiResult}
+     */
+    @Override
+    protected ApiResult validateURI()
+    {
+        return new ApiResult();
+    }
+
+    /**
      * Login. If error, 401 Unauthorized is returned to the caller.
      * 
      * @throws Exception

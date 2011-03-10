@@ -20,7 +20,6 @@ package com.chililog.server.ui.api;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang.StringUtils;
 import org.bson.types.ObjectId;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -29,34 +28,31 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
-import com.chililog.server.data.UserBO;
-import com.chililog.server.data.UserBO.Status;
-import com.chililog.server.data.UserController;
-import com.chililog.server.data.UserListCriteria;
+import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.RepositoryInfoController;
+import com.chililog.server.data.RepositoryInfoListCriteria;
 import com.chililog.server.ui.Strings;
 import com.mongodb.DB;
 
 /**
  * <p>
- * Users worker provides the following services:
+ * Repository Information Worker provides the following API services:
  * <ul>
- * <li>create - HTTP POST /api/users</li>
- * <li>read all - HTTP GET /api/users</li>
- * <li>read one - HTTP GET /api/users/{id}</li>
- * <li>update - HTTP PUT /api/users/{id}</li>
- * <li>delete - HTTP DELETE /api/users/{id}</li>
+ * <li>create - HTTP POST /api/repository_info</li>
+ * <li>read all - HTTP GET /api/repository_info</li>
+ * <li>read one - HTTP GET /api/repository_info/{id}</li>
+ * <li>update - HTTP PUT /api/repository_info/{id}</li>
+ * <li>delete - HTTP DELETE /api/repository_info/{id}</li>
  * </p>
  */
-public class UsersWorker extends Worker
+public class RepositoryInfoWorker extends Worker
 {
-    public static final String USERNAME_URI_QUERYSTRING_PARAMETER_NAME = "username";
-    public static final String ROLE_URI_QUERYSTRING_PARAMETER_NAME = "role";
-    public static final String STATUS_URI_QUERYSTRING_PARAMETER_NAME = "status";
+    public static final String NAME_URI_QUERYSTRING_PARAMETER_NAME = "name";
 
     /**
      * Constructor
      */
-    public UsersWorker(HttpRequest request)
+    public RepositoryInfoWorker(HttpRequest request)
     {
         super(request);
         return;
@@ -87,16 +83,17 @@ public class UsersWorker extends Worker
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
-            UserAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent), UserAO.class);
+            RepositoryInfoAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+                    RepositoryInfoAO.class);
 
-            UserBO userBO = new UserBO();
+            RepositoryInfoBO userBO = new RepositoryInfoBO();
             userAO.toBO(userBO);
 
             DB db = MongoConnection.getInstance().getConnection();
-            UserController.getInstance().save(db, userBO);
+            RepositoryInfoController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new UserAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), new RepositoryInfoAO(userBO));
         }
         catch (Exception ex)
         {
@@ -117,10 +114,10 @@ public class UsersWorker extends Worker
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            UserBO userBO = UserController.getInstance().tryGet(db, new ObjectId(id));
+            RepositoryInfoBO userBO = RepositoryInfoController.getInstance().tryGet(db, new ObjectId(id));
             if (userBO != null)
             {
-                UserController.getInstance().remove(db, userBO);
+                RepositoryInfoController.getInstance().remove(db, userBO);
             }
 
             // Return response
@@ -146,19 +143,20 @@ public class UsersWorker extends Worker
             {
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
-            
+
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            UserBO userBO = UserController.getInstance().get(db, new ObjectId(id));
+            RepositoryInfoBO userBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-            UserAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent), UserAO.class);
+            RepositoryInfoAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+                    RepositoryInfoAO.class);
             userAO.toBO(userBO);
 
-            UserController.getInstance().save(db, userBO);
+            RepositoryInfoController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new UserAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), new RepositoryInfoAO(userBO));
         }
         catch (Exception ex)
         {
@@ -182,29 +180,20 @@ public class UsersWorker extends Worker
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
                 // Get list
-                UserListCriteria criteria = new UserListCriteria();
+                RepositoryInfoListCriteria criteria = new RepositoryInfoListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
 
-                criteria.setUsernamePattern(this.getUriQueryStringParameter(USERNAME_URI_QUERYSTRING_PARAMETER_NAME,
-                        true));
+                criteria.setNamePattern(this.getUriQueryStringParameter(NAME_URI_QUERYSTRING_PARAMETER_NAME, true));
 
-                criteria.setRole(this.getUriQueryStringParameter(ROLE_URI_QUERYSTRING_PARAMETER_NAME, true));
-
-                String status = this.getUriQueryStringParameter(STATUS_URI_QUERYSTRING_PARAMETER_NAME, true);
-                if (!StringUtils.isBlank(status))
-                {
-                    criteria.setStatus(Enum.valueOf(Status.class, status));
-                }
-
-                ArrayList<UserBO> boList = UserController.getInstance().getList(db, criteria);
+                ArrayList<RepositoryInfoBO> boList = RepositoryInfoController.getInstance().getList(db, criteria);
                 if (!boList.isEmpty())
                 {
-                    ArrayList<UserAO> aoList = new ArrayList<UserAO>();
-                    for (UserBO userBO : boList)
+                    ArrayList<RepositoryInfoAO> aoList = new ArrayList<RepositoryInfoAO>();
+                    for (RepositoryInfoBO userBO : boList)
                     {
-                        aoList.add(new UserAO(userBO));
+                        aoList.add(new RepositoryInfoAO(userBO));
                     }
-                    responseContent = aoList.toArray(new UserAO[] {});
+                    responseContent = aoList.toArray(new RepositoryInfoAO[] {});
                 }
             }
             else
@@ -212,7 +201,7 @@ public class UsersWorker extends Worker
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
-                responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
+                responseContent = new RepositoryInfoAO(RepositoryInfoController.getInstance().get(db, new ObjectId(id)));
             }
 
             // Return response

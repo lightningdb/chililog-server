@@ -118,7 +118,7 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud");
@@ -146,7 +146,7 @@ public class UsersTest
         ApiUtils.login("UsersTest_crud", "test");
 
         // Read one record
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -162,7 +162,7 @@ public class UsersTest
         assertEquals(Status.Enabled, readResponseAO.getStatus());
 
         // Update
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.PUT, _adminAuthToken);
 
         readResponseAO.setUsername("UsersTest_crud_after_update");
@@ -192,7 +192,7 @@ public class UsersTest
 
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -202,14 +202,14 @@ public class UsersTest
         assertEquals(3, getListResponseAO.length);
 
         // Delete
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.DELETE, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
 
         // Get record to check if it is gone
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -234,7 +234,7 @@ public class UsersTest
 
         // Get list - OK
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -244,7 +244,7 @@ public class UsersTest
         assertEquals(2, getListResponseAO.length);
 
         // Create - not authroized
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _analystAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _analystAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud_notauthorised");
@@ -264,7 +264,7 @@ public class UsersTest
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
                 _analystAuthToken);
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
@@ -279,7 +279,7 @@ public class UsersTest
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
+                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
                 _analystAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -304,7 +304,7 @@ public class UsersTest
 
         // Get list - OK
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -314,7 +314,7 @@ public class UsersTest
         assertEquals(2, getListResponseAO.length);
 
         // Update
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.PUT, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.PUT, _adminAuthToken);
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
@@ -327,7 +327,7 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
 
         // Delete
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.DELETE, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.DELETE, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -351,16 +351,16 @@ public class UsersTest
 
         // Get list - no records
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^xxxxxxxxx[\\w]*$", "UTF-8"),
+                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^xxxxxxxxx[\\w]*$", "UTF-8"),
                 HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
         assertEquals("", responseContent.toString());
 
-        // Get list - paging
+        // Get list - page 1
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?records_per_page=1&start_page=1&username="
+                "http://localhost:8989/api/users?records_per_page=1&start_page=1&username="
                         + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -369,8 +369,9 @@ public class UsersTest
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
         assertEquals(1, getListResponseAO.length);
 
+        // Get list - page 2
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?records_per_page=1&start_page=2&username="
+                "http://localhost:8989/api/users?records_per_page=1&start_page=2&username="
                         + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -394,7 +395,7 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_change_password");
@@ -416,7 +417,7 @@ public class UsersTest
         ApiUtils.login("UsersTest_change_password", "test");
 
         // Update
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.PUT, _adminAuthToken);
 
         createResponseAO.setPassword("newpassword");
@@ -446,7 +447,7 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create no content
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -455,7 +456,7 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
 
         // Create no username
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setPassword("test");
@@ -473,7 +474,7 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
 
         // Create no password
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
         createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_bad_content");
@@ -491,7 +492,7 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
 
         // Update no content
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/12341234", HttpMethod.PUT,
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/12341234", HttpMethod.PUT,
                 _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -502,7 +503,7 @@ public class UsersTest
 
         // Update no username
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users?records_per_page=1&start_page=1&username="
+                "http://localhost:8989/api/users?records_per_page=1&start_page=1&username="
                         + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -512,7 +513,7 @@ public class UsersTest
         assertEquals(1, getListResponseAO.length);
 
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
                 _adminAuthToken);
 
         getListResponseAO[0].setUsername(null);
@@ -529,7 +530,7 @@ public class UsersTest
 
         // Update no doc version
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
                 _adminAuthToken);
 
         getListResponseAO[0].setUsername("abc");

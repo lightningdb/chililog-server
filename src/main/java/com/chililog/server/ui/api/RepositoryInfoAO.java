@@ -311,4 +311,26 @@ public class RepositoryInfoAO extends AO
         _parseFieldErrorHandling = parseFieldErrorHandling;
     }
 
+    public RepositoryFieldInfoAO[] getFields()
+    {
+        return _fields;
+    }
+
+    public void setFields(RepositoryFieldInfoAO[] fields)
+    {
+        _fields = fields;
+    }
+
+    public RepositoryPropertyInfoAO[] getProperties()
+    {
+        return _properties;
+    }
+
+    public void setProperties(RepositoryPropertyInfoAO[] properties)
+    {
+        _properties = properties;
+    }
+
+    
+    
 }
