@@ -68,6 +68,30 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
     this._setMyView();
   }.observes('content'),
   
+  _setMyView: function() {
+    var delegate = this.get('blockDelegate'),
+     _class = delegate.viewClassForContentIndex(this.get('index')),
+     _guid = SC.guidFor(class);
+     
+    var myViews = this.get('myViews'),
+      myView = this.get('myView');
+      
+    if(!myViews) this.set('myViews', myViews = {})
+
+    if(myView) {
+      this.sleepView(myView)
+    }
+
+    if(!(myView = myViews[_guid])) {
+      myView = myViews[_guid] = _class.create();
+      this.appendChild(myView);
+    } else {
+      this.wakeView(myView);
+    }
+    
+    this.set('myView', myView);
+  },
+  
   height: function() {
     var delegate = this.get('blockDelegate'),
       ret = delegate.get('rowHeight'),
@@ -103,11 +127,11 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   },
   
   wakeView: function(view) {
-    
+    viw.adjust('left', 0)
   },
   
   sleepView: function(view) {
-    view.adjust('left', '-9999');
+    view.adjust('left', -9999);
   },
   
   
