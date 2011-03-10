@@ -5,7 +5,7 @@ SC.TreeItemObserver = SC.TreeItemObserver.extend({
         cache = this._objectAtCache,
         cur   = index,
         loc   = 0,
-        indexes, children;
+        indexes, children, observer;
      
     if (index >= len) return undefined;
     if (this.get('isHeaderVisible')) {
@@ -26,7 +26,7 @@ SC.TreeItemObserver = SC.TreeItemObserver.extend({
       indexes.forEach(function(i) {
         if (item || (i > cur)) return ; // past end - nothing to do
 
-        var observer = this.branchObserverAt(i), len;
+        observer = this.branchObserverAt(i);
         if (!observer) return ; // nothing to do
 
         // if cur lands inside of this observer's length, use objectAt to get
@@ -40,11 +40,15 @@ SC.TreeItemObserver = SC.TreeItemObserver.extend({
       },this);
     }
     
-    if (cur>=0) item = children.objectAt(cur); // get internal if needed
+    if (cur >= 0) {
+      item = children.objectAt(cur); // get internal if needed
+      item.set('parent', this);
+    } else {
+      item.set('parent', observer);
+    }
+    
     cache[index] = item ; // save in cache 
-    
-    item.set('parent', observer)
-    
+
     return item ;
   }
-})
+});
