@@ -36,5 +36,6 @@ public class Strings
     public static final String AUTHENTICAITON_TOKEN_EXPIRED_ERROR = PREFIX + "AuthenticationTokenExpiredError";
     public static final String AUTHENTICAITON_TOKEN_INVALID_ERROR = PREFIX + "AuthenticationTokenInvalidError";
     public static final String AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR = PREFIX + "AuthenticationBadUsernameOrPasswordError";
+    public static final String NOT_AUTHORIZED_ERROR = PREFIX + "NotAuthorizedError";
 
 }

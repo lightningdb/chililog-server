@@ -236,6 +236,14 @@ public class ApiService extends Service
             String[] segments = uri.split("/");
             String apiName = segments[2];
 
+            // Get rid of query string
+            int qs = apiName.indexOf("?");
+            if (qs > 0)
+            {
+                apiName = apiName.substring(0, qs);
+            }
+
+            // Merge _ to camel case
             apiName = WordUtils.capitalizeFully(apiName, new char[]
             { '_' });
 

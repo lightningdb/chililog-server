@@ -77,6 +77,17 @@ public class AuthenticationWorker extends Worker
     }
 
     /**
+     * Anyone can login/logout. No need check authorization.
+     * 
+     * @return {@link ApiResult}
+     */
+    @Override
+    protected ApiResult validateAuthenticatedUserRole()
+    {
+        return new ApiResult();
+    }
+
+    /**
      * Login. If error, 401 Unauthorized is returned to the caller.
      * 
      * @throws Exception

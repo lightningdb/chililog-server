@@ -30,6 +30,8 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.jboss.netty.handler.codec.http.HttpMethod;
+
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.ui.api.AuthenticationAO;
 import com.chililog.server.ui.api.Worker;
@@ -38,7 +40,61 @@ import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 public class ApiUtils
 {
     /**
-     * Get the response as a string
+     * Builds a HTTP connection ready for sending to server
+     * 
+     * @param urlString
+     *            URL to send to
+     * @param method
+     *            HTTP method
+     * @param authtoken
+     *            Authentication token
+     * @return HttpURLConnection
+     * @throws Exception
+     */
+    public static HttpURLConnection getHttpURLConnection(String urlString, HttpMethod method, String authtoken)
+            throws Exception
+    {
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        if (method == HttpMethod.DELETE)
+        {
+            conn.setRequestMethod(method.getName());
+        }
+        if (method == HttpMethod.POST || method == HttpMethod.PUT)
+        {
+            conn.setDoOutput(true);
+            conn.setRequestMethod(method.getName());
+            conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
+        }
+        conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authtoken);
+        return conn;
+    }
+
+    /**
+     * Get the response content and headers as string
+     * 
+     * @param httpConn
+     * @return
+     * @throws IOException
+     */
+    public static void getResponse(HttpURLConnection httpConn,
+                                   StringBuilder responseContent,
+                                   StringBuilder responseCode,
+                                   HashMap<String, String> headers) throws IOException
+    {
+        String s = getResponseContent(httpConn);
+        responseContent.setLength(0);
+        responseContent.append(s);
+
+        s = getResponseHeaders(httpConn, headers);
+        responseCode.setLength(0);
+        responseCode.append(s);
+
+        return;
+    }
+
+    /**
+     * Get the response (or error response) as a string
      * 
      * @param httpConn
      * @return
@@ -46,22 +102,29 @@ public class ApiUtils
      */
     public static String getResponseContent(HttpURLConnection httpConn) throws IOException
     {
-        if (httpConn.getInputStream() == null)
+        try
         {
-            return null;
-        }
-        else
-        {
-            StringBuilder sb = new StringBuilder();
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
-            String str;
-            while ((str = in.readLine()) != null)
+            if (httpConn.getInputStream() == null)
             {
-                sb.append(str + "\n");
+                return null;
             }
-            in.close();
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
+                String str;
+                while ((str = in.readLine()) != null)
+                {
+                    sb.append(str + "\n");
+                }
+                in.close();
 
-            return sb.toString();
+                return sb.toString();
+            }
+        }
+        catch (Exception ex)
+        {
+            return getResponseErrorContent(httpConn);
         }
     }
 
@@ -102,6 +165,7 @@ public class ApiUtils
      */
     public static String getResponseHeaders(URLConnection conn, HashMap<String, String> headers)
     {
+        headers.clear();
         String responseCode = "";
         for (int i = 0;; i++)
         {
@@ -161,7 +225,7 @@ public class ApiUtils
     {
         return login(username, password, ExpiryType.Sliding, 3600);
     }
-    
+
     /**
      * Perform a successful login and return the authentication token
      * 
@@ -176,7 +240,8 @@ public class ApiUtils
      * @return Authentication Token
      * @throws IOException
      */
-    public static String login(String username, String password, ExpiryType expiryType, int expirySeconds) throws IOException
+    public static String login(String username, String password, ExpiryType expiryType, int expirySeconds)
+            throws IOException
     {
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -184,8 +249,8 @@ public class ApiUtils
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
 
         AuthenticationAO requestContent = new AuthenticationAO();
-        requestContent.setUsername("AuthenticationTest");
-        requestContent.setPassword("hello there");
+        requestContent.setUsername(username);
+        requestContent.setPassword(password);
         requestContent.setExpiryType(expiryType);
         requestContent.setExpirySeconds(expirySeconds);
 
@@ -202,5 +267,61 @@ public class ApiUtils
         assertNotNull(headers.get("Date"));
 
         return authenticationCode;
+    }
+
+    /**
+     * Check for a 200 OK response
+     * 
+     * @param responseCode
+     * @param headers
+     */
+    public static void check200OKResponse(String responseCode, HashMap<String, String> headers)
+    {
+        assertEquals("HTTP/1.1 200 OK", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+    }
+
+    /**
+     * Check for a 204 No Content response
+     * 
+     * @param responseCode
+     * @param headers
+     */
+    public static void check204NoContentResponse(String responseCode, HashMap<String, String> headers)
+    {
+        assertEquals("HTTP/1.1 204 No Content", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get("Content-Type"));
+    }
+
+    /**
+     * Check for a 400 Bad Request response
+     * 
+     * @param responseCode
+     * @param headers
+     */
+    public static void check400BadRequestResponse(String responseCode, HashMap<String, String> headers)
+    {
+        assertEquals("HTTP/1.1 400 Bad Request", responseCode);
+        assertNotNull(headers.get("Date"));
+
+        // Should have ErrorAO to describe error
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+    }
+    
+    /**
+     * Check for a 401 Unauthorized response
+     * 
+     * @param responseCode
+     * @param headers
+     */
+    public static void check401UnauthorizedResponse(String responseCode, HashMap<String, String> headers)
+    {
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+
+        // Should have ErrorAO to describe error
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
     }
 }

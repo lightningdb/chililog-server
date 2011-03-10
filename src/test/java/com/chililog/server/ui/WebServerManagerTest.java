@@ -340,16 +340,7 @@ public class WebServerManagerTest
         URL url = new URL("http://localhost:8989/api/notfound");
         URLConnection conn = url.openConnection();
 
-        String content = null;
-        try
-        {
-            conn.getInputStream();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            content = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
-        }
+        String content = ApiUtils.getResponseContent((HttpURLConnection) conn);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);

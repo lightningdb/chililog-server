@@ -80,6 +80,10 @@ public abstract class Worker
     public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";
     public static final String JSON_CHARSET = "UTF-8";
 
+    public static final String WORKBENCH_ADMINISTRATOR_USER_ROLE = "workbench.administrator";
+    public static final String WORKBENCH_ANALYST_USER_ROLE = "workbench.analyst";
+    public static final String WORKBENCH_OPERATOR_USER_ROLE = "workbench.operator";
+
     /**
      * Constructor
      * 
@@ -301,6 +305,12 @@ public abstract class Worker
             return result;
         }
 
+        result = validateAuthenticatedUserRole();
+        if (!result.isSuccess())
+        {
+            return result;
+        }
+        
         // Return success
         return new ApiResult();
     }
@@ -359,7 +369,6 @@ public abstract class Worker
      * </p>
      * 
      * @return {@link ApiResult}
-     * @throws ChiliLogException
      */
     protected ApiResult validateAuthenticationToken()
     {
@@ -371,6 +380,45 @@ public abstract class Worker
             _authenticatedUser = UserController.getInstance().get(MongoConnection.getInstance().getConnection(),
                     new ObjectId(_authenticationToken.getUserID()));
 
+        }
+        catch (Exception ex)
+        {
+            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
+        }
+        return new ApiResult();
+    }
+
+    /**
+     * Generic user role validate. Assumes the user can read but not write.
+     * 
+     * @return {@link ApiResult}
+     */
+    protected ApiResult validateAuthenticatedUserRole()
+    {
+        HttpMethod requestMethod = _request.getMethod();
+        try
+        {
+            // Administrators can do it all
+            if (!_authenticatedUser.hasRole(WORKBENCH_ADMINISTRATOR_USER_ROLE))
+            {
+                // Analysts can only GET
+                if (_authenticatedUser.hasRole(WORKBENCH_ANALYST_USER_ROLE))
+                {
+                    if (requestMethod != HttpMethod.GET)
+                    {
+                        throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
+                    }
+                }
+
+                // Operators can only GET
+                if (_authenticatedUser.hasRole(WORKBENCH_OPERATOR_USER_ROLE))
+                {
+                    if (requestMethod != HttpMethod.GET)
+                    {
+                        return new ApiResult();
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -429,9 +477,9 @@ public abstract class Worker
         {
             // PUT and DELETE must have a key
             HttpMethod requestMethod = _request.getMethod();
-            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.GET)
+            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.DELETE)
             {
-                if (StringUtils.isBlank(_uriPathParameters[ID_URI_PATH_PARAMETER_INDEX]))
+                if (_uriPathParameters == null || StringUtils.isBlank(_uriPathParameters[ID_URI_PATH_PARAMETER_INDEX]))
                 {
                     throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, "ID", _request.getUri());
                 }

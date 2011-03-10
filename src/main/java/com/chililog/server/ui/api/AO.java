@@ -67,6 +67,6 @@ public abstract class AO
         {
             throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, fieldName);
         }
-        return fieldName;
+        return fieldValue;
     }
 }

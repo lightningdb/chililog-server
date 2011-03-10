@@ -73,7 +73,7 @@ print("\nCreating ChiliLog Admin User");
 var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
-	roles: [ "Administrator" ],
+	roles: [ "workbench.administrator" ],
 	status: "Active",
 	display_name: "Adminstrator",
 	document_version: new NumberLong(1) 

@@ -186,10 +186,8 @@ public class AuthenticationTest
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
-        assertEquals("HTTP/1.1 204 No Content", responseCode);
-        assertNotNull(headers.get("Date"));
+        ApiUtils.check204NoContentResponse(responseCode, headers);
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        assertNull(headers.get("Content-Type"));
         assertEquals("", responseContent);
     }
     
@@ -399,8 +397,7 @@ public class AuthenticationTest
         HashMap<String, String> logoutHeaders = new HashMap<String, String>();
         String logoutResponseCode = ApiUtils.getResponseHeaders(conn, logoutHeaders);
 
-        assertEquals("HTTP/1.1 204 No Content", logoutResponseCode);
-        assertNotNull(logoutHeaders.get("Date"));
+        ApiUtils.check204NoContentResponse(logoutResponseCode, logoutHeaders);
         assertEquals("", logoutResponseContent);
     }
     
@@ -494,16 +491,7 @@ public class AuthenticationTest
         conn.setRequestMethod("DELETE");
         conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authToken);
 
-        String responseContent = null;
-        try
-        {
-            conn.getInputStream();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
-        }
+        String responseContent = ApiUtils.getResponseContent((HttpURLConnection) conn);
         
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);

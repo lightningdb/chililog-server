@@ -23,11 +23,11 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,9 +35,10 @@ import org.junit.Test;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
-import com.chililog.server.ui.api.AuthenticationAO;
-import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
+import com.chililog.server.ui.api.ErrorAO;
+import com.chililog.server.ui.api.UserAO;
 import com.chililog.server.ui.api.Worker;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -53,26 +54,42 @@ import com.mongodb.DBObject;
 public class UsersTest
 {
     private static DB _db;
-    private static String _authToken;
-    
+    private static String _adminAuthToken;
+    private static String _analystAuthToken;
+
     @BeforeClass
     public static void classSetup() throws Exception
     {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
-        
-        // Create writer user
-        UserBO user = new UserBO();
-        user.setUsername("AuthenticationTest");
-        user.setPassword("hello there", true);
-        user.addRole("Admin");
-        UserController.getInstance().save(_db, user);
-        
-        WebServerManager.getInstance().start();
-        
-        // Login
-        _authToken = ApiUtils.login("AuthenticationTest", "hello there", ExpiryType.Absolute, -1);
 
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^UsersTest[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+
+        // Create admin user
+        UserBO user = new UserBO();
+        user.setUsername("UsersTest_Admin");
+        user.setPassword("hello", true);
+        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        UserController.getInstance().save(_db, user);
+
+        // Create analyst user
+        user = new UserBO();
+        user.setUsername("UsersTest_Analyst");
+        user.setPassword("hello", true);
+        user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
+        UserController.getInstance().save(_db, user);
+
+        // Start web server
+        WebServerManager.getInstance().start();
+
+        // Login
+        _adminAuthToken = ApiUtils.login("UsersTest_Admin", "hello");
+        _analystAuthToken = ApiUtils.login("UsersTest_Analyst", "hello");
     }
 
     @AfterClass
@@ -80,53 +97,190 @@ public class UsersTest
     {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^AuthenticationTest[\\w]*$");
+        Pattern pattern = Pattern.compile("^UsersTest[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
-        
+
         WebServerManager.getInstance().stop();
     }
 
-    
     /**
      * Create, Get, Update, Delete
      * 
      * @throws IOException
      */
     @Test
-    public void testCRUD() throws IOException
+    public void testCRUD() throws Exception
     {
-        // Login
-        
-        // Insert
-        URL url = new URL("http://localhost:8989/api/Users");
-        URLConnection conn = url.openConnection();
-
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-
-        
-        String content = null;
-        try
-        {
-            conn.getInputStream();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
-        }
-
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
-        //_logger.debug(ApiUtils.formatResponseForLogging(responseCode, headers, content));
 
-        assertEquals("HTTP/1.1 405 Method Not Allowed", responseCode);
-        assertNotNull(headers.get("Date"));
-        assertEquals("POST, DELETE", headers.get("Allow"));
-        assertNull(headers.get("Content-Type"));
-        assertNull(content);
+        // Create
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _adminAuthToken);
+
+        UserAO createRequestAO = new UserAO();
+        createRequestAO.setUsername("UsersTest_crud");
+        createRequestAO.setPassword("test");
+        createRequestAO.setRoles(new String[]
+        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+
+        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRequestAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        UserAO createResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("UsersTest_crud", createResponseAO.getUsername());
+        assertNull(createResponseAO.getPassword());
+        assertEquals(1, createResponseAO.getRoles().length);
+        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, createResponseAO.getRoles()[0]);
+        assertNotNull(createResponseAO.getDocumentID());
+        assertEquals(new Long(1), createResponseAO.getDocumentVersion());
+        assertEquals(Status.Enabled, createResponseAO.getStatus());
+
+        // Read one record
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+                HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        UserAO readResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("UsersTest_crud", readResponseAO.getUsername());
+        assertNull(readResponseAO.getPassword());
+        assertEquals(1, readResponseAO.getRoles().length);
+        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, readResponseAO.getRoles()[0]);
+        assertNotNull(readResponseAO.getDocumentID());
+        assertEquals(new Long(1), readResponseAO.getDocumentVersion());
+        assertEquals(Status.Enabled, readResponseAO.getStatus());
+
+        // Update
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+                HttpMethod.PUT, _adminAuthToken);
+
+        readResponseAO.setUsername("UsersTest_crud_after_update");
+        readResponseAO.setRoles(new String[]
+        { Worker.WORKBENCH_ANALYST_USER_ROLE, Worker.WORKBENCH_OPERATOR_USER_ROLE });
+        readResponseAO.setStatus(Status.Disabled);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(readResponseAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        UserAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("UsersTest_crud_after_update", updateResponseAO.getUsername());
+        assertNull(updateResponseAO.getPassword());
+        assertEquals(2, updateResponseAO.getRoles().length);
+        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, updateResponseAO.getRoles()[0]);
+        assertEquals(Worker.WORKBENCH_OPERATOR_USER_ROLE, updateResponseAO.getRoles()[1]);
+        assertNotNull(updateResponseAO.getDocumentID());
+        assertEquals(new Long(2), updateResponseAO.getDocumentVersion());
+        assertEquals(Status.Disabled, updateResponseAO.getStatus());
+
+        // Get list
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
+        assertEquals(3, getListResponseAO.length);
+
+        // Delete
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+                HttpMethod.DELETE, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+
+        // Get record to check if it is gone
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users/" + createResponseAO.getDocumentID(),
+                HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.User.NotFoundError", errorAO.getErrorCode());
+    }
+
+    /**
+     * Analyst can only GET
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testAnalystReadOnly() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Get list - OK
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/Users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
+        assertEquals(2, getListResponseAO.length);
+
+        // Create - not authroized
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/Users", HttpMethod.POST, _analystAuthToken);
+
+        UserAO createRequestAO = new UserAO();
+        createRequestAO.setUsername("UsersTest_crud_notauthorised");
+        createRequestAO.setPassword("test");
+        createRequestAO.setRoles(new String[]
+        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+
+        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRequestAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                _analystAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRequestAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Delete
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/Users/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
+                _analystAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
     }
 }

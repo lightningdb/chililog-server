@@ -146,7 +146,7 @@ public class UsersWorker extends Worker
             UserController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), null);
+            return new ApiResult(this.getAuthenticationToken(), new UserAO(userBO));
         }
         catch (Exception ex)
         {
@@ -167,7 +167,7 @@ public class UsersWorker extends Worker
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
 
-            if (this.getUriPathParameters().length == 0)
+            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
                 // Get list
                 UserListCriteria criteria = new UserListCriteria();
@@ -200,7 +200,7 @@ public class UsersWorker extends Worker
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
-                responseContent = UserController.getInstance().get(db, new ObjectId(id));
+                responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
             }
 
             // Return response
