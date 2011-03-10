@@ -26,12 +26,14 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
+import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
 import com.chililog.server.data.UserListCriteria;
+import com.chililog.server.ui.Strings;
 import com.mongodb.DB;
 
 /**
@@ -80,6 +82,11 @@ public class UsersWorker extends Worker
     {
         try
         {
+            if (requestContent == null)
+            {
+                throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
+            }
+
             UserAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent), UserAO.class);
 
             UserBO userBO = new UserBO();
@@ -135,6 +142,11 @@ public class UsersWorker extends Worker
     {
         try
         {
+            if (requestContent == null)
+            {
+                throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
+            }
+            
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();

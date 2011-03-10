@@ -44,9 +44,16 @@ public abstract class AO
      */
     protected void checkOptimisticLocking(Long documentVersion, BO businessObject) throws ChiliLogException
     {
-        if (businessObject.isExistingRecord() && documentVersion != businessObject.getDocumentVersion())
+        if (businessObject.isExistingRecord())
         {
-            throw new ChiliLogException(Strings.OPTIMISTIC_LOCKING_ERROR);
+            if (documentVersion == null)
+            {
+                throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, "DocumentVersion");
+            }
+            if (documentVersion != businessObject.getDocumentVersion())
+            {
+                throw new ChiliLogException(Strings.OPTIMISTIC_LOCKING_ERROR);
+            }
         }
     }
 
@@ -56,12 +63,12 @@ public abstract class AO
      * @param fieldName
      *            Name of field to display if error
      * @param fieldValue
-     *            Value of the field to check
+     *            Value of type {@link String} to check
      * @return fieldValue
      * @throws ChiliLogException
      *             if fieldValue is blank
      */
-    protected String checkRequiredString(String fieldName, String fieldValue) throws ChiliLogException
+    protected String checkRequiredField(String fieldName, String fieldValue) throws ChiliLogException
     {
         if (StringUtils.isBlank(fieldValue))
         {
@@ -69,4 +76,25 @@ public abstract class AO
         }
         return fieldValue;
     }
+
+    /**
+     * Checks if a required field is present
+     * 
+     * @param fieldName
+     *            Name of field to display if error
+     * @param fieldValue
+     *            Value of type {@link Long} to check
+     * @return fieldValue
+     * @throws ChiliLogException
+     *             if fieldValue is blank
+     */
+    protected Long checkRequiredField(String fieldName, Long fieldValue) throws ChiliLogException
+    {
+        if (fieldValue == null)
+        {
+            throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, fieldName);
+        }
+        return fieldValue;
+    }
+
 }

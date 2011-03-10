@@ -132,10 +132,10 @@ public class RepositoryInfoAO extends AO
     {
         checkOptimisticLocking(_documentVersion, repoInfo);
 
-        repoInfo.setName(checkRequiredString("Name", _name));
-        repoInfo.setDisplayName(checkRequiredString("DisplayName", _displayName));
+        repoInfo.setName(checkRequiredField("Name", _name));
+        repoInfo.setDisplayName(checkRequiredField("DisplayName", _displayName));
         repoInfo.setDescription(_description);
-        repoInfo.setControllerClassName(checkRequiredString("ControllerClassName", _controllerClassName));
+        repoInfo.setControllerClassName(checkRequiredField("ControllerClassName", _controllerClassName));
         repoInfo.setStartupStatus(_startupStatus);
 
         repoInfo.setReadQueueDurable(_readQueueDurable);

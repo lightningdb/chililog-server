@@ -58,7 +58,7 @@ public class UserAO extends AO
      */
     public UserAO(UserBO userBO)
     {
-        // Note: password is NEVER supplied
+        // Note: password hash is NEVER supplied for security reasons 
         _documentID = userBO.getDocumentID().toString();
         _documentVersion = userBO.getDocumentVersion();
         _username = userBO.getUsername();
@@ -79,12 +79,19 @@ public class UserAO extends AO
         // Optimistic locking check
         checkOptimisticLocking(_documentVersion,  userBO);
 
-        userBO.setUsername(checkRequiredString("Username", _username));
+        userBO.setUsername(checkRequiredField("Username", _username));
 
-        // Update the password only if supplied
-        if (!StringUtils.isBlank(_password))
+        // Password required on create. On update, change the password only if supplied
+        if (userBO.isExistingRecord())
         {
-            userBO.setPassword(_password, true);
+            if (!StringUtils.isBlank(_password))
+            {
+                userBO.setPassword(_password, true);
+            }
+        }
+        else
+        {
+            userBO.setPassword(checkRequiredField("Password", _password), true);
         }
 
         userBO.removeAllRoles();

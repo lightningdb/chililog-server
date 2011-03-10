@@ -69,8 +69,8 @@ public class RepositoryFieldInfoAO extends AO
      */
     public void toBO(RepositoryFieldInfoBO repoFieldInfo) throws ChiliLogException
     {
-        repoFieldInfo.setName(checkRequiredString("Name", _name));
-        repoFieldInfo.setDisplayName(checkRequiredString("DisplayName", _displayName));
+        repoFieldInfo.setName(checkRequiredField("Name", _name));
+        repoFieldInfo.setDisplayName(checkRequiredField("DisplayName", _displayName));
         repoFieldInfo.setDescription(_description);
         repoFieldInfo.setDataType(_dataType);
         
