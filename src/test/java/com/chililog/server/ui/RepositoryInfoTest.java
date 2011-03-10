@@ -518,6 +518,40 @@ public class RepositoryInfoTest
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
 
+        // Create no display name
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
+                _adminAuthToken);
+
+        createRepoInfoAO.setName("RepositoryInfoTest_1");
+        createRepoInfoAO.setDisplayName(null);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRepoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        
+        // Create no controller class
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
+                _adminAuthToken);
+
+        createRepoInfoAO.setDisplayName("Repository Test 1");
+        createRepoInfoAO.setControllerClassName("");
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRepoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+
         // Update no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info/12341234", HttpMethod.PUT,
                 _adminAuthToken);
