@@ -1,4 +1,10 @@
 /** 
+  
+  NOTE: this was *not* written by Endash.
+  
+  It was written yb Alexiskander. I've copied it into my namespace
+  so that I might modify it without having to do it in the core repo
+  
   An experimental CollectionView mixin that makes it extremely fast under
   certain circumstances, including for mobile devices.
 */
@@ -52,7 +58,7 @@ Endash.CollectionFastPath = {
     itemView.setIfChanged('isEnabled', attrs.isEnabled);
     itemView.setIfChanged('isSelected', attrs.isSelected);
     itemView.setIfChanged('outlineLevel', attrs.outlineLevel);
-    // itemView.setIfChanged('layout', attrs.layout);
+    itemView.setIfChanged('layout', attrs.layout);
     itemView.setIfChanged('disclosureState', attrs.disclosureState);
     itemView.setIfChanged('isVisibleInWindow', attrs.isVisibleInWindow);
     itemView.setIfChanged('isGroupView', attrs.isGroupView);
