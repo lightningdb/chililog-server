@@ -11,8 +11,10 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   // because they might be if the content for this view is changed
   blockViews: null,
     
-  // the content item for this block. either null (if root) or a treeitemobserver
+  // the content item for this block
   content: null,
+  
+  contentIndex: null,
   
   indexBinding: '*content.index',
 
@@ -26,6 +28,8 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   
   // depending on how many states the view for this item can have we want to cache them all
   myViews: null,
+  
+  delegate: null,
   
   blockDelegate: function() {
     var del = this.get('delegate');
@@ -51,17 +55,19 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
     indexes.forEach(function(i) {
       child = children.objectAt(i);
 
-      blockView = blockViews.objectAt(blockIdx++);
+      blockView = blockViews.objectAt(blockIdx);
       if(!blockView) blockView = this._allocateBlockView();
       
-      blockView.set('content', child);
-      blockView.set('layout', this.layoutForBlockView(i));
+      blockView.set('contentIndex', i);
+      blockView.set('layout', this.layoutForBlockView(blockIdx));
       this.wakeView(blockView);
+      
+      blockIdx++;
     }, this);
     
     //put any child views not being used to sleep
     for(var i = indexes.get('length'); i < blockViews.get('length'); i++) {
-      this.sleepView(blockViews.objectAt(i))
+      this.sleepView(blockViews.objectAt(i));
     }
     
     
@@ -92,33 +98,32 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
     this.set('myView', myView);
   },
   
-  height: function() {
-    var delegate = this.get('blockDelegate'),
-      ret = delegate.get('rowHeight'),
-      children = this.get('children');
-    
-    if(!children) return ret;
-    
-    var numChildren = children.get('length'),
-      blockViews = this.get('blockViews'),
-      view, i;
-    
-    for(i = 0; i < numChildren; i++) {
-      view = blockViews.objectAt(i);
-      ret += view.get('height');
-    }
-    
-    return ret;
-  }.property('content', 'length').cacheable(),
+  // height: function() {
+  //   var delegate = this.get('blockDelegate'),
+  //     ret = delegate.get('rowHeight'),
+  //     indexes = this.get('indexes');
+  //   
+  //   if(!indexes) return ret;
+  //   
+  //   var blockViews = this.get('blockViews'),
+  //     view, i;
+  //   
+  //   indexes.forEach(function(i) {
+  //     view = blockViews.objectAt(i);
+  //     ret += view.get('height');
+  //   }, this);
+  //   
+  //   return ret;
+  // }.property('content', 'length').cacheable(),
   
-  layoutForBlockView: function(i) {
-    return {
-      top: this.get('rowHeight') * (i + ),
-      left: 0,
-      right: 0,
-      height: 30
-    };
-  },
+  // layoutForBlockView: function(i) {
+  //   return {
+  //     top: this.get('rowHeight') * (i + ),
+  //     left: 0,
+  //     right: 0,
+  //     height: 30
+  //   };
+  // },
   
   _allocateBlockView: function() {
     var ret = Endash.CollectionBlockView.create({});
