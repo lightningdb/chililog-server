@@ -14,12 +14,12 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   // the content item for this block
   content: null,
   
-  contentIndex: null,
-  
-  indexBinding: '*content.index',
+  // contentIndex: null,
 
   childrenBinding: '*content.children',
   
+  indexBinding: '*content.index',
+    
   lengthBinding: '*content.length',
 
   // the view for this item. This is so we can reuse a blockview for both a group view
@@ -37,8 +37,8 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   }.property('delegate').cacheable(),
     
   indexes: function() {
-    return SC.IndexSet.create(0, this.getPath('.content.children.length'));
-  }.property('content').cacheable(),
+    return SC.IndexSet.create(this.get('index'), this.get('length'));
+  }.property('index', 'length').cacheable(),
   
   transform: function() {
     var children = this.get('children');
