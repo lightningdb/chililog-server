@@ -4,12 +4,11 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   backgroundColor: 'white',
   isPoolable: YES,
   layerIsCacheable: YES,
-  wantsAcceleratedLayer: YES,
   thicknessKey: 'width',
 
   columnsBinding: '.parentView.columns',
 
-  classNames: ['sc-dataview-row'],
+  classNames: ['sc-dataview-row', 'sc-list-item-view'],
   
   isSelectedDidChange: function() {
     var isSelected = this.get('isSelected');
@@ -28,6 +27,11 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       context.addClass(classArray);
     }
     sc_super();
+  },
+  
+  // we'll handle layout from here-on-out thank you
+  renderLayout: function(context, firstTime) {
+    if(firstTime) sc_super();
   },
  
   /**
@@ -150,6 +154,32 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     this._updateCells();
   },
   
+
+  /**
+    @private
+    Manual repositioning for speed
+  */
+  repositionView: function(view, layout) {
+    if(!view) return
+    
+    var layer = view.get('layer'),
+      transform;
+
+    if (layer) {
+      if(SC.isTouch) {
+        transform = 'translate3d(' + layout.left + 'px, 0px,0) ';
+        layer.style.left = '';
+        layer.style.webkitTransform = transform;
+        layer.style.webkitTransformOrigin = "top left";
+      } else {
+        layer.style.left = layout.left + "px";
+      }
+      layer.style.width = layout.width + "px";
+    } else {
+      view.adjust(layout);
+    }
+  },
+  
   /**
     @private
     Creates the cell views
@@ -168,7 +198,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     attrs.content = this.get('content');
     attrs.contentIndex = this.get('contentIndex');
     attrs.contentValueKey = column.get('key');
-    (attrs.classNames || (attrs.classNames = [])).push('column-' + col, 'column-' + column.get('key'));
+    (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
 
     return wrapper.create(attrs, {
       layoutDelegate: this,
