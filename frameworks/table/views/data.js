@@ -20,7 +20,7 @@ sc_require('views/table_row')
 
 /*globals Endash */
 
-Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
+Endash.DataView = SC.ListView.extend(SC.CollectionFastPath, {
   /**
     TableRow
     @property {SC.View}
