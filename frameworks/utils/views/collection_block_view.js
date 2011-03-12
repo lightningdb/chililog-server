@@ -1,11 +1,4 @@
-Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, {
-  
-  rowHeight: function() {
-    var delegate = this.get('blockDelegate'),
-      ret = delegate.get('rowHeight');
-
-    return ret;
-  }.propert('delegate').cacheable();
+Endash.CollectionBlockView = SC.View.extend(/*Endash.CollectionBlockViewDelegate, */{
   
   // an array of child block views. these are kept even if they are no longer needed
   // because they might be if the content for this view is changed
@@ -15,10 +8,16 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   content: null,
   
   // contentIndex: null,
+  
+  children: null,
 
   childrenBinding: '*content.children',
   
+  index: null,
+  
   indexBinding: '*content.index',
+    
+  length: null,
     
   lengthBinding: '*content.length',
 
@@ -29,6 +28,7 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
   // depending on how many states the view for this item can have we want to cache them all
   myViews: null,
   
+  // most probably the collectionview
   delegate: null,
   
   blockDelegate: function() {
@@ -40,13 +40,21 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
     return SC.IndexSet.create(this.get('index'), this.get('length'));
   }.property('index', 'length').cacheable(),
   
+  // rowHeight: function() {
+  //   var delegate = this.get('blockDelegate'),
+  //     ret = delegate.get('rowHeight');
+  // 
+  //   return ret;
+  // }.property('delegate').cacheable(),
+  
   transform: function() {
     var children = this.get('children');
     if(!children) return;
     
     var indexes = this.get('indexes'),
       blockViews = this.get('blockViews'),
-      children = this.get('children')
+      children = this.get('children'),
+      branchIndexes = this.get('delegate').get('_contentBranchIndexes'),
       blockView, child, i;
       
     if(!blockViews) this.set('blockViews', (blockViews = []));
@@ -55,14 +63,18 @@ Endash.CollectionBlockView = SC.View.extend(Endash.CollectionBlockViewDelegate, 
     indexes.forEach(function(i) {
       child = children.objectAt(i);
 
-      blockView = blockViews.objectAt(blockIdx);
-      if(!blockView) blockView = this._allocateBlockView();
+      if(branchIndex.contains(i)) { 
+        blockView = blockViews.objectAt(blockIdx);
+        if(!blockView) blockView = this._allocateBlockView();
       
-      blockView.set('contentIndex', i);
-      blockView.set('layout', this.layoutForBlockView(blockIdx));
-      this.wakeView(blockView);
+        blockView.set('contentIndex', i);
+        blockView.set('layout', this.layoutForBlockView(blockIdx));
+        blockView.set('indexes', SC.IndexSet.create(i, child.get('length')));
+        blockView.set('content', this.get('content'))
+        this.wakeView(blockView);
       
-      blockIdx++;
+        blockIdx++;
+      }
     }, this);
     
     //put any child views not being used to sleep

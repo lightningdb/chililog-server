@@ -32,7 +32,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
     layout.left = this.layoutForView(col).left;
     layout.width = this.layoutForView(col).width;
 
-    return this.createChildView(E.extend({
+    return this.createChildView(E, {
       column: column,
       columnIndex: col,
       layoutDelegate: this,
@@ -40,7 +40,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       delegate: this,
       first: col === 0,
       layout: layout
-    }));
+    });
   },
   
   shouldLayoutView: function(view, i) {
