@@ -20,6 +20,8 @@ package com.chililog.server.data;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
@@ -34,13 +36,7 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * Controller to read/write into a repository with a delimited log format. For example,
- * </p>
- * <code>
- * field1|field2|field3
- * </code>
- * <p>
- * The fields are delimited by the pipe character (|).
+ * Controller to read/write into a repository using regular expression to parse logs.
  * </p>
  * <p>
  * Unlike other data controllers, this controller is NOT a singleton. This is because many repositories may need to use
@@ -50,24 +46,31 @@ import com.mongodb.DB;
  * @author vibul
  * 
  */
-public class DelimitedRepositoryController extends RepositoryController
+public class RegexRepositoryController extends RepositoryController
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(App.class);
     private String _mongoDBCollectionName;
-    private String _delimiter;
+    private Pattern _pattern;
     private RepositoryInfoBO _repoInfo;
-    private ArrayList<DelimitedFieldInfo> _fields = new ArrayList<DelimitedFieldInfo>();
+    private ArrayList<RegexFieldInfo> _fields = new ArrayList<RegexFieldInfo>();
     private Exception _lastParseError = null;
 
     /**
-     * Delimiter repository property denotes the field delimiter character
+     * Pattern to apply to each log entry. If not specified, then a pattern for each field must be specified
      */
-    public static final String DELIMITER_REPO_PROPERTY_NAME = "delimiter";
+    public static final String PATTERN_REPO_PROPERTY_NAME = "pattern";
 
     /**
-     * Position field property denotes the position of this field. Position 1 is the 1st field.
+     * Optional override pattern to search for a specific field
      */
-    public static final String POSITION_REPO_FIELD_PROPERTY_NAME = "position";
+    public static final String PATTERN_REPO_FIELD_PROPERTY_NAME = "pattern";
+
+    /**
+     * Denotes the regular expression group number in which to find the contents of the field. For a pattern,
+     * <code>([0-9]{4}) ([0-9]{2})</code> and text <code>1111 22</code>, group 1 is <code>1111</code> and group 2 is
+     * <code>22</code>.
+     */
+    public static final String GROUP_REPO_FIELD_PROPERTY_NAME = "group";
 
     /**
      * <p>
@@ -78,7 +81,7 @@ public class DelimitedRepositoryController extends RepositoryController
      *            information on the repository we are going to read/write
      * @throws ChiliLogException
      */
-    public DelimitedRepositoryController(RepositoryInfoBO repoInfo) throws ChiliLogException
+    public RegexRepositoryController(RepositoryInfoBO repoInfo) throws ChiliLogException
     {
         _repoInfo = repoInfo;
 
@@ -89,18 +92,19 @@ public class DelimitedRepositoryController extends RepositoryController
         }
 
         Hashtable<String, String> properties = repoInfo.getProperties();
-        _delimiter = properties.get(DELIMITER_REPO_PROPERTY_NAME);
-        if (StringUtils.isBlank(_delimiter))
+        String patternString = properties.get(PATTERN_REPO_PROPERTY_NAME);
+        if (!StringUtils.isBlank(patternString))
         {
-            throw new ChiliLogException(Strings.REPO_DELIMITER_NOT_SET_ERROR, repoInfo.getName());
+            _pattern = Pattern.compile(patternString);
         }
 
         // Parse our field value so that we don't have to keep on doing it
         for (RepositoryFieldInfoBO f : _repoInfo.getFields())
         {
-            String s = f.getProperties().get(POSITION_REPO_FIELD_PROPERTY_NAME);
-            Integer i = Integer.parseInt(s) - 1;
-            _fields.add(new DelimitedFieldInfo(i, f));
+            String fieldPatternString = f.getProperties().get(PATTERN_REPO_FIELD_PROPERTY_NAME);
+            String groupString = f.getProperties().get(GROUP_REPO_FIELD_PROPERTY_NAME);
+            Integer group = Integer.parseInt(groupString);
+            _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
         }
 
         _repoInfo.loadFieldDataTypeProperties();
@@ -137,17 +141,36 @@ public class DelimitedRepositoryController extends RepositoryController
             }
 
             BasicDBObject dbObject = new BasicDBObject();
-
-            String[] ss = StringUtils.split(textEntry, _delimiter);
-            for (DelimitedFieldInfo delimitedField : _fields)
+            Matcher entryMatcher = null;
+            boolean entryMatches = false;
+            if (_pattern != null)
             {
-                String key = delimitedField.getField().getName();
+                entryMatcher = _pattern.matcher(textEntry);
+                entryMatches = entryMatcher.matches();
+            }
+
+            for (RegexFieldInfo regexField : _fields)
+            {
+                String key = regexField.getField().getName();
                 String textValue = null;
                 Object value = null;
                 try
                 {
-                    textValue = ss[delimitedField.getArrayIndex()];
-                    value = delimitedField.getField().parse(textValue);
+                    Matcher fieldMatcher = null;
+                    if (regexField.getPattern() != null)
+                    {
+                        fieldMatcher = regexField.getPattern().matcher(textEntry);
+                        if (fieldMatcher.matches())
+                        {
+                            textValue = fieldMatcher.group(regexField.getGroup());
+                        }
+                    }
+                    else if (entryMatches)
+                    {
+                        textValue = entryMatcher.group(regexField.getGroup());
+                    }
+
+                    value = regexField.getField().parse(textValue);
                     dbObject.put(key, value);
                 }
                 catch (Exception ex)
@@ -223,23 +246,46 @@ public class DelimitedRepositoryController extends RepositoryController
     /**
      * Context info to assist with processing
      */
-    private static class DelimitedFieldInfo
+    private static class RegexFieldInfo
     {
-        public int _arrayIndex;
+        public Pattern _pattern;
+        public int _group;
         public RepositoryFieldInfoBO _field;
 
-        public DelimitedFieldInfo(int arrayIndex, RepositoryFieldInfoBO field)
+        /**
+         * Basic constructor
+         * 
+         * @param pattern
+         *            optional field specific pattern
+         * @param group
+         *            group number within the matching pattern containing the string value of this field
+         * @param field
+         *            meta data
+         */
+        public RegexFieldInfo(String pattern, int group, RepositoryFieldInfoBO field)
         {
-            _arrayIndex = arrayIndex;
+            if (!StringUtils.isBlank(pattern))
+            {
+                _pattern = Pattern.compile(pattern);
+            }
+            _group = group;
             _field = field;
         }
 
         /**
-         * Returns the index position of this field relative to other field. E.g. 0 is the 1st field.
+         * Returns the optional field specific pattern. If null, then use the repository entry pattern
          */
-        public int getArrayIndex()
+        public Pattern getPattern()
         {
-            return _arrayIndex;
+            return _pattern;
+        }
+
+        /**
+         * Returns the group number within the matching pattern containing the string value of this field
+         */
+        public int getGroup()
+        {
+            return _group;
         }
 
         /**
