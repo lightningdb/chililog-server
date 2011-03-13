@@ -195,6 +195,14 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
+     * Returns the name of the collection in mongoDB where repository entries will be stored.
+     */
+    public String getMongoDBCollectionName()
+    {
+        return String.format("%s_repository", _name);
+    }
+
+    /**
      * Returns user friendly display name for this repository
      */
     public String getDisplayName()

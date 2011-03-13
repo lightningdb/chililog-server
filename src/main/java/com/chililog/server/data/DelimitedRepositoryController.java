@@ -40,7 +40,7 @@ import com.mongodb.DB;
  * field1|field2|field3
  * </code>
  * <p>
- * The fields are delimited by the pipe character (|). 
+ * The fields are delimited by the pipe character (|).
  * </p>
  * <p>
  * Unlike other data controllers, this controller is NOT a singleton. This is because many repositories may need to use
@@ -59,8 +59,14 @@ public class DelimitedRepositoryController extends RepositoryController
     private ArrayList<DelimitedFieldInfo> _fields = new ArrayList<DelimitedFieldInfo>();
     private Exception _lastParseError = null;
 
+    /**
+     * Delimiter repository property denotes the field delimiter character
+     */
     public static final String DELIMITER_REPO_PROPERTY_NAME = "delimiter";
 
+    /**
+     * Position field property denotes the position of this field. Position 1 is the 1st field.
+     */
     public static final String POSITION_REPO_FIELD_PROPERTY_NAME = "position";
 
     /**
@@ -76,7 +82,7 @@ public class DelimitedRepositoryController extends RepositoryController
     {
         _repoInfo = repoInfo;
 
-        _mongoDBCollectionName = String.format("%s_repository", repoInfo.getName());
+        _mongoDBCollectionName = repoInfo.getMongoDBCollectionName();
         if (StringUtils.isBlank(repoInfo.getName()))
         {
             throw new ChiliLogException(Strings.REPO_NAME_NOT_SET_ERROR);
