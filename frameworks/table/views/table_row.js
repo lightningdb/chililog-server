@@ -30,9 +30,9 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   },
   
   // we'll handle layout from here-on-out thank you
-  // renderLayout: function(context, firstTime) {
-  //   if(firstTime) sc_super();
-  // },
+  renderLayout: function(context, firstTime) {
+    if(firstTime) sc_super();
+  },
  
   /**
     @private
@@ -158,9 +158,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   /**
     @private
     Manual repositioning for speed
-    
-    We're not doing this anymore for rows but
-    we will for cells to speed up resizing
   */
   repositionView: function(view, layout) {
     if(!view) return

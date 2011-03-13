@@ -324,7 +324,26 @@ SC.TableView = SC.View.extend({
       }),
 
       autohidesVerticalScroller: NO,
-      horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this)
+      horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this),
+      
+      scrollToVisible: function(view) {
+
+        // if no view is passed, do default
+        if (arguments.length === 0) return sc_super(); 
+
+        var contentView = this.get('contentView') ;
+        if (!contentView) return NO; // nothing to do if no contentView.
+
+        var layout = contentView.layoutForContentIndex(view.get('contentIndex'))
+        var vf = {x: layout.left, y: layout.top, height: layout.height, width: layout.width}
+        if (!vf) return NO; // nothing to do
+
+        // convert view's frame to an offset from the contentView origin.  This
+        // will become the new scroll offset after some adjustment.
+        // vf = contentView.convertFrameFromView(vf, view.get('parentView')) ;
+
+        return this.scrollToRect(vf);
+      },
     }));
     
     this.set('childViews', [header, data]);
