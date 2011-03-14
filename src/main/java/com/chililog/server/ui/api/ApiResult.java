@@ -19,6 +19,7 @@
 package com.chililog.server.ui.api;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -81,12 +82,15 @@ public class ApiResult
      * @param authenticationToken
      *            The authentication token that was submitted in the request. It will be updated and returned in the
      *            response header for sliding expiry. For absolute expiry, it will not be returned.
-     * @param contentToJsonify
+     * @param contentType
+     *            response content MIME type
+     * @param content
      *            Object to convert into JSON format.
      */
-    public ApiResult(AuthenticationTokenAO authenticationToken, Object contentToJsonify)
+    public ApiResult(AuthenticationTokenAO authenticationToken, String contentType, Object content)
     {
-        _responseStatus = (contentToJsonify == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
+        _responseStatus = (content == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
+        _responseContentType = contentType;
 
         // For an sliding expiry token, we want to update the expiry time
         if (authenticationToken.getExpiryType() == ExpiryType.Sliding)
@@ -95,7 +99,29 @@ public class ApiResult
         }
         _headers.put(Worker.AUTHENTICATION_TOKEN_HEADER, authenticationToken.toString());
 
-        setResponseContentToJson(contentToJsonify);
+        if (content != null)
+        {
+            if (content instanceof byte[])
+            {
+                _responseContent = content;
+                _responseContentIOStyle = ContentIOStyle.ByteArray;
+            }
+            else if (content instanceof File)
+            {
+                _responseContent = content;
+                _responseContentIOStyle = ContentIOStyle.File;
+            }
+            else if (contentType != null && contentType.equals(Worker.JSON_CONTENT_TYPE))
+            {
+                // Try to turn it into JSON
+                setResponseContentToJson(content);
+            }
+            else
+            {
+                throw new UnsupportedOperationException("Cannot handled content of type "
+                        + content.getClass().getName());
+            }
+        }
     }
 
     /**

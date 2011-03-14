@@ -96,7 +96,7 @@ public class UsersWorker extends Worker
             UserController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new UserAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
         }
         catch (Exception ex)
         {
@@ -124,7 +124,7 @@ public class UsersWorker extends Worker
             }
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), null);
+            return new ApiResult(this.getAuthenticationToken(), null, null);
         }
         catch (Exception ex)
         {
@@ -146,7 +146,7 @@ public class UsersWorker extends Worker
             {
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
-            
+
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
@@ -158,7 +158,7 @@ public class UsersWorker extends Worker
             UserController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new UserAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
         }
         catch (Exception ex)
         {
@@ -205,6 +205,13 @@ public class UsersWorker extends Worker
                         aoList.add(new UserAO(userBO));
                     }
                     responseContent = aoList.toArray(new UserAO[] {});
+                    
+                    ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
+                    if (criteria.getDoPageCount())
+                    {
+                        result.getHeaders().put(PAGE_COUNT_HEADER, new Integer(criteria.getPageCount()).toString());
+                    }
+                    return result;
                 }
             }
             else
@@ -214,9 +221,7 @@ public class UsersWorker extends Worker
 
                 responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
             }
-
-            // Return response
-            return new ApiResult(this.getAuthenticationToken(), responseContent);
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
         catch (Exception ex)
         {

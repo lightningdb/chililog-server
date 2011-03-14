@@ -74,7 +74,7 @@ public class JsonRepositoryControllerTest
         repoInfo.setControllerClassName("com.chililog.server.data.JsonRepositoryController");
         repoInfo.getProperties().put(JsonRepositoryController.DATE_PATTERN_REPO_PROPERTY_NAME, "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
         repoInfo.getProperties().put(JsonRepositoryController.DATE_FORMAT_REPO_PROPERTY_NAME, "yyyy-MM-dd'T'HH:mm:ssZ");
-        repoInfo.getProperties().put(JsonRepositoryController.LONG_NUMBER_PATTERN_REPO_PROPERTY_NAME, "^([0-9]+)L$");
+        repoInfo.getProperties().put(JsonRepositoryController.LONG_NUMBER_PATTERN_REPO_PROPERTY_NAME, "^NumberLong\\(([0-9]+)\\)$");
 
         JsonRepositoryController c = new JsonRepositoryController(repoInfo);
 
@@ -84,7 +84,7 @@ public class JsonRepositoryControllerTest
         sb.append("\"field2\": \"abc\","); // String
         sb.append("\"field3\": true,"); // Boolean
         sb.append("\"field4\": 8888888888,"); // Long. 10 - digit numbers converts to long
-        sb.append("\"field5\": \"888L\","); // Long. strings of digits suffixed with Long converts to long
+        sb.append("\"field5\": \"NumberLong(888)\","); // Long. strings of digits suffixed with Long converts to long
         sb.append("\"field6\": 5.5,"); // Double
         sb.append("\"field7\": \"2010-11-29T19:41:46Z\","); // Date - string of iso format with UTC timezone
         sb.append("}");

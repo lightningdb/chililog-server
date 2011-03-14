@@ -93,7 +93,7 @@ public class RepositoryInfoWorker extends Worker
             RepositoryInfoController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new RepositoryInfoAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(userBO));
         }
         catch (Exception ex)
         {
@@ -121,7 +121,7 @@ public class RepositoryInfoWorker extends Worker
             }
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), null);
+            return new ApiResult(this.getAuthenticationToken(), null, null);
         }
         catch (Exception ex)
         {
@@ -156,7 +156,7 @@ public class RepositoryInfoWorker extends Worker
             RepositoryInfoController.getInstance().save(db, userBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), new RepositoryInfoAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(userBO));
         }
         catch (Exception ex)
         {
@@ -194,6 +194,12 @@ public class RepositoryInfoWorker extends Worker
                         aoList.add(new RepositoryInfoAO(userBO));
                     }
                     responseContent = aoList.toArray(new RepositoryInfoAO[] {});
+                    ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
+                    if (criteria.getDoPageCount())
+                    {
+                        result.getHeaders().put(PAGE_COUNT_HEADER, new Integer(criteria.getPageCount()).toString());
+                    }
+                    return result;
                 }
             }
             else
@@ -205,7 +211,7 @@ public class RepositoryInfoWorker extends Worker
             }
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), responseContent);
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
         catch (Exception ex)
         {

@@ -31,7 +31,7 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * The repository manager is responsible managing for start/stop/reload all our repositories (as represented by the 
+ * The repository manager is responsible managing for start/stop/reload all our repositories (as represented by the
  * {@link Repository} class).
  * </p>
  * 
@@ -243,21 +243,29 @@ public class RepositoryManager
     }
 
     /**
-     * Gets the named repository
+     * Returns the latest runtime information for the specified repository info id.
      * 
-     * @param name
-     *            name of repository as defined in the repository information
+     * @param id
+     *            Repository information id
      * @return Matching repository. Null if not found.
      */
-    public synchronized Repository getRepository(String name)
+    public synchronized Repository getRepository(String id)
     {
         for (Repository repo : _repositories)
         {
-            if (repo.getRepoInfo().getName().equals(name))
+            if (repo.getRepoInfo().getDocumentID().toString().equals(id))
             {
                 return repo;
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a list of repositories currently being managed
+     */
+    public synchronized Repository[] getRepositories()
+    {
+        return _repositories.toArray(new Repository[] {});
     }
 }

@@ -445,10 +445,11 @@ public class RepositoryInfoTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
         assertEquals("", responseContent.toString());
+        assertFalse(headers.containsKey(Worker.PAGE_COUNT_HEADER));
 
         // Get list - page 1
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_info?records_per_page=1&start_page=1&name="
+                "http://localhost:8989/api/repository_info?records_per_page=1&start_page=1&do_page_count=true&name="
                         + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -457,6 +458,9 @@ public class RepositoryInfoTest
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
         assertEquals(1, getListResponseAO.length);
 
+        String pageCountHeader = headers.get(Worker.PAGE_COUNT_HEADER);
+        assertEquals("1", pageCountHeader);
+        
         // Get list - page 2 (no more records)
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?records_per_page=1&start_page=2&name="

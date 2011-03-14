@@ -145,7 +145,7 @@ public class AuthenticationWorker extends Worker
         AuthenticationTokenAO token = new AuthenticationTokenAO(user, requestApiObject);
 
         // Return response
-        return new ApiResult(token, null);
+        return new ApiResult(token, null, null);
     }
 
     /**
@@ -154,7 +154,7 @@ public class AuthenticationWorker extends Worker
     @Override
     public ApiResult processDelete() throws Exception
     {
-        return new ApiResult(this.getAuthenticationToken(), null);
+        return new ApiResult(this.getAuthenticationToken(), null, null);
     }
 
 }
