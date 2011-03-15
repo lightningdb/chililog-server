@@ -14,6 +14,10 @@ SC.SimpleLayout = {
   
   thicknessKey: null,
   
+  initMixin: function() {
+    this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
+  },
+  
   childViewsDidChange: function() {
     this._sl_layoutChildViews();
   }.observes('childViews'),
@@ -68,40 +72,16 @@ SC.SimpleLayout = {
     return this._offsetCache[idx] + (this.offsetDelta || 0);
   },
 
-  thicknessesDidChange: function() {
-    var thicknesses = this.get('thicknesses');
-    if (SC.none(thicknesses) || thicknesses === this._thicknesses) return this; // nothing to do
-  
-    var observer   = this._dv_thicknessesRangeObserver;
-    var func = this.thicknessesRangeDidChange;
-  
-      // cleanup old content
-    if(this._thicknesses) {
-      this._thicknesses.removeRangeObserver(observer);
-    }
-  
-    observer = thicknesses.addRangeObserver(null, this, func, null, YES);      
-    this._dv_thicknessesRangeObserver = observer ;
-  
-    this._thicknesses = thicknesses;
-
-    this.expireLayoutFrom(0);
-    this._sl_layoutChildViews(0);
-  }.observes('thicknesses'),
-
-  thicknessesRangeDidChange: function(content, object, key, indexes) {
-    if (!object && (key === '[]')) {
-      this.layoutViewsFrom(0);
-      this._updateCells();
+  thicknessesDidChange: function(object, key, value) {
+    var thicknesses = this.get('thicknesses')
+    if(key == '[]') {
+      idx = 0;
     } else {
-      if(this.contentPropertyDidChange) this.contentPropertyDidChange(object, key, indexes);
+      idx = thicknesses.objectAt(object);
     }
-  },
-  
-  contentPropertyDidChange: function(object, key, indexes) {
-    if(key == this.get('thicknessKey')) {
-      this.layoutViewsFrom(indexes ? indexes.get('min') : 0);
-    }
+    
+    this.expireLayoutFrom(idx);
+    this._sl_layoutChildViews(idx);
   },
   
   expireLayoutFrom: function(index) {
