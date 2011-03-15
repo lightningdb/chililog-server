@@ -58,7 +58,7 @@ Endash.CollectionFastPath = {
     itemView.setIfChanged('isEnabled', attrs.isEnabled);
     itemView.setIfChanged('isSelected', attrs.isSelected);
     itemView.setIfChanged('outlineLevel', attrs.outlineLevel);
-    itemView.setIfChanged('layout', attrs.layout);
+    // itemView.setIfChanged('layout', attrs.layout);
     itemView.setIfChanged('disclosureState', attrs.disclosureState);
     itemView.setIfChanged('isVisibleInWindow', attrs.isVisibleInWindow);
     itemView.setIfChanged('isGroupView', attrs.isGroupView);
