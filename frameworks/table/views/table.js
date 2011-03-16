@@ -320,7 +320,7 @@ SC.TableView = SC.View.extend({
         contentBinding: SC.Binding.from('.content',this),
         delegate: this.get('delegate'),
         isDropTarget: this.get('isDropTarget'),
-        isSelectable: this.get('isSelectable'),
+        isSelectable: this.get('isSelectable')
       }),
 
       autohidesVerticalScroller: NO,
@@ -343,7 +343,7 @@ SC.TableView = SC.View.extend({
         // vf = contentView.convertFrameFromView(vf, view.get('parentView')) ;
 
         return this.scrollToRect(vf);
-      },
+      }
     }));
     
     this.set('childViews', [header, data]);
