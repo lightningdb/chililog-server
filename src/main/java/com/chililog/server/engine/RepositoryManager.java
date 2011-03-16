@@ -101,7 +101,7 @@ public class RepositoryManager
         loadRepositories();
         for (Repository repo : _repositories)
         {
-            if (repo.getRepoInfo().getStartupStatus() == Status.ONLINE)
+            if (repo.getRepoInfo().getStartupStatus() == Status.ONLINE && repo.getStatus() != Status.ONLINE)
             {
                 repo.start();
             }
@@ -167,9 +167,9 @@ public class RepositoryManager
             }
 
             // Start new/changed repositories
-            for (RepositoryInfoBO newRepoInfo : newRepoInfoList)
+            for (RepositoryInfoBO repoInfo : repoInfoToAdd)
             {
-                Repository repo = new Repository(newRepoInfo);
+                Repository repo = new Repository(repoInfo);
                 _repositories.add(repo);
             }
 

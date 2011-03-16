@@ -121,13 +121,6 @@ public class Repository
             throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoInfo.getName());
         }
 
-        // Bit of a hack but we don't need to start writers for ChiliLog internal log
-        // Our internal log4j appender writers directly to mongoDB
-        if (_repoInfo.getName().equals(InternalLog4JAppender.REPOSITORY_NAME))
-        {
-            return;
-        }
-
         startQueue();
         startWriters();
         _status = Status.ONLINE;

@@ -150,7 +150,6 @@ public class MongoJsonParser
                 {
                     if (_longNumberPattern != null)
                     {
-                        // If "8888888888L", then remove L and parse long
                         Matcher m = _longNumberPattern.matcher(stringValue);
                         if (m.matches())
                         {
@@ -166,7 +165,6 @@ public class MongoJsonParser
                     }
                     if (_dateFormat != null && _datePattern != null)
                     {
-                        // If "2010-01-01T01:01:01Z", then parse
                         Matcher m = _datePattern.matcher(stringValue);
                         if (m.matches())
                         {

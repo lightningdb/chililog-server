@@ -308,7 +308,6 @@ public class RepositoryTest
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
-        
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
                 "RepositoryTestUser_Writer", "222");
@@ -346,10 +345,10 @@ public class RepositoryTest
         assertEquals(0, qc.getMessageCount());
 
         // Make sure that the bad entry ends up in the dead letter queue
-        qc = MqManager.getInstance().getQueueControl(_repoInfo.getDeadLetterAddress(),
-                _repoInfo.getDeadLetterAddress());
-        assertEquals((long)1, qc.getMessageCount());
-        
+        qc = MqManager.getInstance()
+                .getQueueControl(_repoInfo.getDeadLetterAddress(), _repoInfo.getDeadLetterAddress());
+        assertEquals((long) 1, qc.getMessageCount());
+
         // Make sure that only good entries have been saved to the DB
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(99, coll.find().count());
@@ -359,5 +358,64 @@ public class RepositoryTest
         assertEquals(Status.OFFLINE, repo.getStatus());
         MqManager.getInstance().stop();
 
+    }
+
+    @Test
+    public void testRepositoryManager() throws Exception
+    {
+        // Start queues
+        MqManager.getInstance().start();
+        
+        // Start
+        RepositoryManager.getInstance().start();
+        Repository[] repos = RepositoryManager.getInstance().getRepositories();
+        for (Repository r : repos)
+        {
+            if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
+            {
+                assertEquals(Status.ONLINE, r.getStatus());
+            }
+            else
+            {
+                assertEquals(Status.OFFLINE, r.getStatus());
+            }
+        }
+
+        // Start again - should not error
+        RepositoryManager.getInstance().start();
+        Repository[] repos2 = RepositoryManager.getInstance().getRepositories();
+        for (Repository r : repos2)
+        {
+            if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
+            {
+                assertEquals(Status.ONLINE, r.getStatus());
+            }
+            else
+            {
+                assertEquals(Status.OFFLINE, r.getStatus());
+            }
+        }
+        assertEquals(repos.length, repos2.length);
+
+        // Stop
+        RepositoryManager.getInstance().stop();
+        repos2 = RepositoryManager.getInstance().getRepositories();
+        for (Repository r : repos2)
+        {
+            assertEquals(Status.OFFLINE, r.getStatus());
+        }
+        assertEquals(repos.length, repos2.length);
+
+        // Stop again
+        RepositoryManager.getInstance().stop();
+        repos2 = RepositoryManager.getInstance().getRepositories();
+        for (Repository r : repos2)
+        {
+            assertEquals(Status.OFFLINE, r.getStatus());
+        }
+        assertEquals(repos.length, repos2.length);
+        
+        // Stop queues
+        MqManager.getInstance().stop();
     }
 }

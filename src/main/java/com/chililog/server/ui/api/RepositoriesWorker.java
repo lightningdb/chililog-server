@@ -24,15 +24,17 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
+import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.MongoJsonSerializer;
 import com.chililog.server.data.RepositoryController;
 import com.chililog.server.data.RepositoryControllerFactory;
 import com.chililog.server.data.RepositoryListCriteria;
 import com.chililog.server.engine.Repository;
 import com.chililog.server.engine.RepositoryManager;
+import com.chililog.server.ui.Strings;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 
 /**
  * <p>
@@ -54,7 +56,7 @@ public class RepositoriesWorker extends Worker
     public static final String START_OPERATION = "start";
     public static final String STOP_OPERATION = "stop";
     public static final String RELOAD_OPERATION = "reload";
-    
+
     /**
      * Constructor
      */
@@ -108,7 +110,7 @@ public class RepositoriesWorker extends Worker
             {
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
-                
+
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
                     repo.start();
@@ -153,9 +155,17 @@ public class RepositoriesWorker extends Worker
                     ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
                     for (Repository repo : list)
                     {
-                        aoList.add(new RepositoryAO(repo));
+                        if (isAuthenticatedUserAdministrator()
+                                || this.getAuthenticatedUser().hasRole(repo.getRepoInfo().getReadQueueRole()))
+                        {
+                            aoList.add(new RepositoryAO(repo));
+                        }
                     }
-                    responseContent = aoList.toArray(new RepositoryAO[] {});
+
+                    if (!aoList.isEmpty())
+                    {
+                        responseContent = aoList.toArray(new RepositoryAO[] {});
+                    }
                 }
             }
             else if (this.getUriPathParameters().length == 1)
@@ -163,13 +173,31 @@ public class RepositoriesWorker extends Worker
                 // Get specified repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
-                responseContent = new RepositoryAO(repo);
+                if (repo != null
+                        && (isAuthenticatedUserAdministrator() || this.getAuthenticatedUser().hasRole(
+                                repo.getRepoInfo().getReadQueueRole())))
+                {
+                    responseContent = new RepositoryAO(repo);
+                }
+                else
+                {
+                    // Assume not found
+                    throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
+                }
             }
             else if (this.getUriPathParameters().length == 2)
             {
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
+
+                if (repo == null
+                        || (!isAuthenticatedUserAdministrator() && !this.getAuthenticatedUser().hasRole(
+                                repo.getRepoInfo().getReadQueueRole())))
+                {
+                    // Assume not found
+                    throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
+                }
 
                 RepositoryListCriteria criteria = new RepositoryListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
@@ -183,7 +211,7 @@ public class RepositoriesWorker extends Worker
                     sb.append("[");
                     for (DBObject e : list)
                     {
-                        JSON.serialize(e, sb);
+                        MongoJsonSerializer.serialize(e, sb);
                         sb.append(", ");
                     }
                     sb.setLength(sb.length() - 2);

@@ -310,7 +310,7 @@ public abstract class Worker
         {
             return result;
         }
-        
+
         // Return success
         return new ApiResult();
     }
@@ -399,10 +399,10 @@ public abstract class Worker
         try
         {
             // Administrators can do it all
-            if (!_authenticatedUser.hasRole(WORKBENCH_ADMINISTRATOR_USER_ROLE))
+            if (!isAuthenticatedUserAdministrator())
             {
                 // Analysts can only GET
-                if (_authenticatedUser.hasRole(WORKBENCH_ANALYST_USER_ROLE))
+                if (isAuthenticatedUserAnalyst())
                 {
                     if (requestMethod != HttpMethod.GET)
                     {
@@ -411,7 +411,7 @@ public abstract class Worker
                 }
 
                 // Operators can only GET
-                if (_authenticatedUser.hasRole(WORKBENCH_OPERATOR_USER_ROLE))
+                if (isAuthenticatedUserOperator())
                 {
                     if (requestMethod != HttpMethod.GET)
                     {
@@ -425,6 +425,30 @@ public abstract class Worker
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
         return new ApiResult();
+    }
+
+    /**
+     * Returns if the authenticated user is in the administrator role 
+     */
+    protected boolean isAuthenticatedUserAdministrator()
+    {
+        return _authenticatedUser.hasRole(WORKBENCH_ADMINISTRATOR_USER_ROLE);
+    }
+
+    /**
+     * Returns if the authenticated user is in the analyst role 
+     */
+    protected boolean isAuthenticatedUserAnalyst()
+    {
+        return _authenticatedUser.hasRole(WORKBENCH_ANALYST_USER_ROLE);
+    }
+
+    /**
+     * Returns if the authenticated user is in the operator role 
+     */
+    protected boolean isAuthenticatedUserOperator()
+    {
+        return _authenticatedUser.hasRole(WORKBENCH_OPERATOR_USER_ROLE);
     }
 
     /**
