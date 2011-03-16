@@ -23,7 +23,7 @@ sc_require('views/data');
 /*globals Endash */
 
 SC.TableView = SC.View.extend({
-  
+  // backgroundColor: 'white',
   classNames: ['sc-table-view'],
   
   horizontalScrollOffset: 0,
@@ -62,7 +62,7 @@ SC.TableView = SC.View.extend({
     
     @property {Number}
   */
-  rowHeight:30,
+  rowHeight:28,
   
   /**
     Spacing between rows (for borders or such)
@@ -84,7 +84,7 @@ SC.TableView = SC.View.extend({
     
     @property {Number}
   */
-  headerHeight:30,
+  headerHeight:26,
   
   /**
     If set to NO the horizontal scroller will be suppressed.

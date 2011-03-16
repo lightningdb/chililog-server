@@ -1,14 +1,13 @@
 sc_require('views/table_cell')
 
 SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
-  backgroundColor: 'white',
   isPoolable: YES,
   layerIsCacheable: YES,
   thicknessKey: 'width',
 
   columnsBinding: '.parentView.columns',
 
-  classNames: ['sc-dataview-row', 'sc-list-item-view'],
+  classNames: ['sc-dataview-row'],
   
   isSelectedDidChange: function() {
     var isSelected = this.get('isSelected');

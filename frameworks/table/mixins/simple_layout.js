@@ -15,7 +15,27 @@ SC.SimpleLayout = {
   thicknessKey: null,
   
   initMixin: function() {
-    this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
+    this._thicknesses_observer = this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
+  },
+  
+  thicknessesDidChange: function(object, key, value) {
+    if(this._doLayout === NO) return;
+    var thicknesses = this.get('thicknesses');
+    var thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height";
+
+    if(key == '[]') {
+      idx = 0;
+    } else {
+      idx = thicknesses.objectAt(object);
+    }
+    
+    this.expireLayoutFrom(idx);
+    this._sl_layoutChildViews(idx);
+    
+    var total = this.offsetForView(thicknesses.get('length'))
+    this.set('totalThickness', total);
+    this.adjust('min' + thicknessProperty, total);
+    this.set('calculated' + thicknessProperty, this.get('totalThickness'), total);
   },
   
   childViewsDidChange: function() {
@@ -33,6 +53,24 @@ SC.SimpleLayout = {
     }, this);
     
     this.layoutViewsFrom(0);
+  },
+  
+  expireLayoutFrom: function(index) {
+    this._offsetCache = this._offsetCache ? this._offsetCache.slice(0, index) : null;
+  },
+  
+  layoutViewsFrom: function(index) {
+    if(!index) index = 0;
+    this.expireLayoutFrom(index);
+  
+    var thicknesses = this.get('thicknesses'), view;
+    
+    for(var i = index, len = thicknesses.get('length'); i < len; i++) {
+      view = this.viewForIndex(i);
+      if(!this.shouldLayoutView || this.shouldLayoutView(view, i)) {
+        this.repositionView(view, this.layoutForView(i, view));
+      }
+    }
   },
 
   layoutForView: function(idx, view) {
@@ -71,40 +109,10 @@ SC.SimpleLayout = {
   
     return this._offsetCache[idx] + (this.offsetDelta || 0);
   },
-
-  thicknessesDidChange: function(object, key, value) {
-    var thicknesses = this.get('thicknesses')
-    if(key == '[]') {
-      idx = 0;
-    } else {
-      idx = thicknesses.objectAt(object);
-    }
-    
-    this.expireLayoutFrom(idx);
-    this._sl_layoutChildViews(idx);
-  },
   
-  expireLayoutFrom: function(index) {
-    this._offsetCache = this._offsetCache ? this._offsetCache.slice(0, index) : null;
-  },
-  
-  layoutViewsFrom: function(index) {
-    if(!index) index = 0;
-    this.expireLayoutFrom(index);
-  
-    var thicknesses = this.get('thicknesses'), view;
-    
-    for(var i = index, len = thicknesses.get('length'); i < len; i++) {
-      view = this.viewForIndex(i);
-      if(!this.shouldLayoutView || this.shouldLayoutView(view, i)) {
-        this.repositionView(view, this.layoutForView(i, view));
-      }
-    }
-    
-    this.set('totalThickness', this.offsetForView(len));
-    this.adjust('minWidth', this.get('totalThickness'));
-    this.set('calculatedWidth', this.get('totalThickness'));
-  },
+  // these methods are for overriding index-to-view and view repositioning
+  // behaviour in your class, for instance it's used in tableview to map
+  // the index of a column to the index of the cellview for that column
   
   viewForIndex: function(i) {
     var views = this._layoutViews;

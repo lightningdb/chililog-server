@@ -1,5 +1,6 @@
 .sc-table-header {
-  background: static_url('resources/table_header_background_3.png') !important;
+  background: static_url('resources/table_header_background_3.png') center left !important;
+  border-bottom: 1px solid #CACACA;
 }
 
 .sc-table-header .sc-table-cell {
@@ -9,9 +10,9 @@
 .sc-table-header label {
   display: block;
   font-family: Helvetica !important;
-  line-height: 30px !important;
+  line-height: 26px !important;
   font-weight: normal;
-  color: #363636;
+  color: #363636 !important;
   overflow: hidden;
   text-overflow: ellipsis;
   height: auto !important;
@@ -43,19 +44,26 @@
     }
     
 .sc-table-data-view .sc-dataview-row.odd {
-  background-color: rgb(243, 245, 247) !important;
+/*  background-color: #f6fafe !important;*/
+  background-color: #f9fafb !important;
 }
 
 
 .sc-table-data-view .sc-dataview-row.sel {
-  background-color: #38a0f0 !important;
-  border-bottom: 1px solid #38a0f0 !important;
+
+
+/*  background-color: #38a0f0 !important;*/
+  background-color: #72bdf7 !important;
+/*  background-color: #84c1f0 !important;*/
+  border-bottom: 1px solid #5ab5fb !important;
+  border-bottom: 1px solid white !important;
   color: white !important;
 }
 
 .sc-table-data-view .sc-dataview-row.sel .sc-label-view {
 /*  background-color: #6aabe3 !important;*/
   color: white !important;
+  font-weight: bold !important;
 }
 
 
@@ -63,8 +71,13 @@
 
 
 
-.sc-table-data-view .table-cell {
-  border-right: 1px solid rgba(0, 0, 0, .05);
+/*.sc-table-data-view .table-cell {*/
+/*  border-right: 1px solid rgba(0, 0, 0, .05);*/
+/*background-color: white;*/
+/*}*/
+
+.sc-table-data-view .sc-dataview-row {
+  background-color: white;
 }
 
 .sc-table-data-view .sc-dataview-row.sel .table-cell {
@@ -75,17 +88,18 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   font-family: Helvetica;
+  font-size: 12px !important;
   line-height: 30px !important;
   
-  color: #333;
+  color: #404040;
 }
 
-.sc-table-data-view .sc-label-view.column-title {
+.sc-table-data-view .sc-label-view.column-1 {
   font-weight: bold !important;
 }
 
 .sc-table-data-view .sc-dataview-row {
-  border-bottom: 1px solid rgba(0, 0, 0, .09);
+  border-bottom: 1px solid rgba(0, 0, 0, .07);
 }
 
 .sc-table-data-view .odd.sc-dataview-row {
@@ -94,5 +108,5 @@
 
 
 .sc-table-data-view .odd {
-  background-color: #f3f5f7;
+/*  background-color: #f9fafb !important;*/
 }
