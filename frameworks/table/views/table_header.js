@@ -154,8 +154,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
 
     childViews.replace(index1, 1, view2);
     childViews.replace(index2, 1, view1);
-    columns.replace(index1, 1, column2);
-    columns.replace(index2, 1, column1);
+    columns.replace(index1, 1, [ column2 ]);
+    columns.replace(index2, 1, [ column1 ]);
 
     childViews.endPropertyChanges();
     columns.endPropertyChanges();
