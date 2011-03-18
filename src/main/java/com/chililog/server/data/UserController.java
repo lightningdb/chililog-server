@@ -126,9 +126,9 @@ public class UserController extends Controller
             }
 
             DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-            BasicDBObject query = new BasicDBObject();
-            query.put(BO.DOCUMENT_ID_FIELD_NAME, id);
-            DBObject dbo = coll.findOne(query);
+            BasicDBObject condition = new BasicDBObject();
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
+            DBObject dbo = coll.findOne(condition);
             if (dbo == null)
             {
                 return null;
@@ -218,19 +218,19 @@ public class UserController extends Controller
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
 
         // Filter
-        BasicDBObject query = new BasicDBObject();
+        BasicDBObject condition = new BasicDBObject();
         if (!StringUtils.isBlank(criteria.getUsernamePattern()))
         {
             Pattern pattern = Pattern.compile(criteria.getUsernamePattern());
-            query.put(UserBO.USERNAME_FIELD_NAME, pattern);
+            condition.put(UserBO.USERNAME_FIELD_NAME, pattern);
         }
         if (!StringUtils.isBlank(criteria.getRole()))
         {
-            query.put(UserBO.ROLES_FIELD_NAME, criteria.getRole());
+            condition.put(UserBO.ROLES_FIELD_NAME, criteria.getRole());
         }
         if (criteria.getStatus() != null)
         {
-            query.put(UserBO.STATUS_FIELD_NAME, criteria.getStatus().toString());
+            condition.put(UserBO.STATUS_FIELD_NAME, criteria.getStatus().toString());
         }
 
         // Order
@@ -239,8 +239,8 @@ public class UserController extends Controller
 
         // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
-        int startPage = (criteria.getStartPage() - 1) * recordsPerPage;
-        DBCursor cur = coll.find(query).skip(startPage).limit(recordsPerPage).sort(orderBy);
+        int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
+        DBCursor cur = coll.find(condition).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
         ArrayList<UserBO> list = new ArrayList<UserBO>();
         while (cur.hasNext())
         {
@@ -251,8 +251,8 @@ public class UserController extends Controller
         // Do page count by executing query again
         if (criteria.getDoPageCount())
         {
-            int recordCount = coll.find(query).count();
-            criteria.calculatePageCount(recordCount);
+            int documentCount = coll.find(condition).count();
+            criteria.calculatePageCount(documentCount);
         }
 
         return list;
@@ -272,13 +272,13 @@ public class UserController extends Controller
     {
         // Validate unique username
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-        BasicDBObject query = new BasicDBObject();
-        query.put(UserBO.USERNAME_FIELD_NAME, user.getUsername());
+        BasicDBObject condition = new BasicDBObject();
+        condition.put(UserBO.USERNAME_FIELD_NAME, user.getUsername());
         if (user.isExistingRecord())
         {
-            query.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
         }
-        long i = coll.getCount(query);
+        long i = coll.getCount(condition);
         if (i > 0)
         {
             throw new ChiliLogException(Strings.USER_DUPLICATE_USERNAME_ERROR, user.getUsername());

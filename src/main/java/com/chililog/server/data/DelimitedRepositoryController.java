@@ -120,12 +120,16 @@ public class DelimitedRepositoryController extends RepositoryController
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
+     * @param inputName
+     *            Name of the input device or application that created this text entry
+     * @param inputIpAddress
+     *            IP address of the input device or application that created this text entry
      * @param textEntry
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry cannot be parsed, then null is
      *         returned
      */
-    public RepositoryEntryBO parse(String textEntry)
+    public RepositoryEntryBO parse(String inputName, String inputIpAddress, String textEntry)
     {
         try
         {
@@ -172,7 +176,7 @@ public class DelimitedRepositoryController extends RepositoryController
                 }
             }
 
-            return new RepositoryEntryBO(dbObject, textEntry);
+            return new RepositoryEntryBO(dbObject, inputName, inputIpAddress, textEntry);
         }
         catch (Exception ex)
         {

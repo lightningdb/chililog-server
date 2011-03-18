@@ -206,7 +206,7 @@ public abstract class Worker
             {
                 return null;
             }
-            throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_ERROR, parameterName);
+            throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_ERROR, parameterName, _request.getUri());
         }
 
         return value;
@@ -428,7 +428,7 @@ public abstract class Worker
     }
 
     /**
-     * Returns if the authenticated user is in the administrator role 
+     * Returns if the authenticated user is in the administrator role
      */
     protected boolean isAuthenticatedUserAdministrator()
     {
@@ -436,7 +436,7 @@ public abstract class Worker
     }
 
     /**
-     * Returns if the authenticated user is in the analyst role 
+     * Returns if the authenticated user is in the analyst role
      */
     protected boolean isAuthenticatedUserAnalyst()
     {
@@ -444,7 +444,7 @@ public abstract class Worker
     }
 
     /**
-     * Returns if the authenticated user is in the operator role 
+     * Returns if the authenticated user is in the operator role
      */
     protected boolean isAuthenticatedUserOperator()
     {

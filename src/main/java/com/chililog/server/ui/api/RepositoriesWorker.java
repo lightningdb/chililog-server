@@ -19,7 +19,11 @@
 package com.chililog.server.ui.api;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.naming.OperationNotSupportedException;
+
+import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
@@ -30,9 +34,11 @@ import com.chililog.server.data.MongoJsonSerializer;
 import com.chililog.server.data.RepositoryController;
 import com.chililog.server.data.RepositoryControllerFactory;
 import com.chililog.server.data.RepositoryListCriteria;
+import com.chililog.server.data.RepositoryListCriteria.QueryType;
 import com.chililog.server.engine.Repository;
 import com.chililog.server.engine.RepositoryManager;
 import com.chililog.server.ui.Strings;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 
@@ -47,7 +53,7 @@ import com.mongodb.DBObject;
  * <li>reload all - HTTP POST /api/repositories?action=reload</li>
  * <li>read all - HTTP GET /api/repositories</li>
  * <li>read one - HTTP GET /api/repositories/{id}</li>
- * <li>read entry - HTTP GET /api/repositories/{id}/entries</li>
+ * <li>read entry - HTTP GET /api/repositories/{id}/entries?query_type=find</li>
  * </p>
  */
 public class RepositoriesWorker extends Worker
@@ -56,6 +62,22 @@ public class RepositoriesWorker extends Worker
     public static final String START_OPERATION = "start";
     public static final String STOP_OPERATION = "stop";
     public static final String RELOAD_OPERATION = "reload";
+
+    public static final String ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME = "query_type";
+    public static final String ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME = "fields";
+    public static final String ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME = "conditions";
+    public static final String ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME = "orderBy";
+    public static final String ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME = "initial";
+    public static final String ENTRY_QUERY_REDUCE_URI_QUERYSTRING_PARAMETER_NAME = "reduce";
+    public static final String ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME = "finalize";
+
+    public static final String ENTRY_QUERY_TYPE_HEADER_NAME = "X-ChiliLog-QueryType";
+    public static final String ENTRY_QUERY_FIELDS_HEADER_NAME = "X-ChiliLog-Fields";
+    public static final String ENTRY_QUERY_CONDITIONS_HEADER_NAME = "X-ChiliLog-Conditions";
+    public static final String ENTRY_QUERY_ORDER_BY_HEADER_NAME = "X-ChiliLog-OrderBy";
+    public static final String ENTRY_QUERY_INITIAL_HEADER_NAME = "X-ChiliLog-Initial";
+    public static final String ENTRY_QUERY_REDUCE_HEADER_NAME = "X-ChiliLog-Reduce";
+    public static final String ENTRY_QUERY_FINALIZE_HEADER_NAME = "X-ChiliLog-Finalize";
 
     /**
      * Constructor
@@ -139,6 +161,7 @@ public class RepositoriesWorker extends Worker
      * 
      * @throws Exception
      */
+    @SuppressWarnings("rawtypes")
     @Override
     public ApiResult processGet() throws Exception
     {
@@ -199,26 +222,53 @@ public class RepositoriesWorker extends Worker
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
                 }
 
-                RepositoryListCriteria criteria = new RepositoryListCriteria();
-                this.loadBaseListCriteriaParameters(criteria);
+                // Load criteria
+                QueryType queryType = Enum.valueOf(QueryType.class,
+                        this.getUriQueryStringParameter(ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME, false)
+                                .toUpperCase());
+                RepositoryListCriteria criteria = loadCriteria();
 
+                // Convert to JSON ourselves because this is not a simple AO object.
+                // mongoDB object JSON serialization required
+                StringBuilder json = new StringBuilder();
+
+                // Get controller and execute query
                 RepositoryController controller = RepositoryControllerFactory.make(repo.getRepoInfo());
-                ArrayList<DBObject> list = controller.getDBObjectList(db, criteria);
-                if (list != null && !list.isEmpty())
+                if (queryType == QueryType.FIND)
                 {
-                    // Convert to JSON ourselves because this is not a simple AO object
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("[");
-                    for (DBObject e : list)
-                    {
-                        MongoJsonSerializer.serialize(e, sb);
-                        sb.append(", ");
-                    }
-                    sb.setLength(sb.length() - 2);
-                    sb.append("]");
+                    ArrayList<DBObject> list = controller.executeFindQuery(db, criteria);
 
-                    responseContent = sb.toString().getBytes(Worker.JSON_CHARSET);
+                    if (list != null && !list.isEmpty())
+                    {
+                        MongoJsonSerializer.serialize(new BasicDBObject("find", list), json);
+                    }
+                }
+                else if (queryType == QueryType.COUNT)
+                {
+                    int count = controller.executeCountQuery(db, criteria);
+                    MongoJsonSerializer.serialize(new BasicDBObject("count", count), json);
+                }
+                else if (queryType == QueryType.DISTINCT)
+                {
+                    List l = controller.executeDistinctQuery(db, criteria);
+                    MongoJsonSerializer.serialize(new BasicDBObject("distinct", l), json);
+                }
+                else if (queryType == QueryType.GROUP)
+                {
+                    DBObject groupObject = controller.executeGroupQuery(db, criteria);
+                    MongoJsonSerializer.serialize(new BasicDBObject("group", groupObject), json);
+                }
+                else
+                {
+                    throw new OperationNotSupportedException("Unsupported query type: " + queryType.toString());
+                }
+
+                // If there is no json, skip this and a 204 No Content will be returned
+                if (json.length() > 0)
+                {
+                    responseContent = json.toString().getBytes(Worker.JSON_CHARSET);
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
+
                     if (criteria.getDoPageCount())
                     {
                         result.getHeaders().put(PAGE_COUNT_HEADER, new Integer(criteria.getPageCount()).toString());
@@ -234,5 +284,67 @@ public class RepositoriesWorker extends Worker
         {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
+    }
+
+    /**
+     * Load our criteria from query string and headers (in case it is too big for query string)
+     * 
+     * @returns query criteria
+     * @throws ChiliLogException
+     */
+    private RepositoryListCriteria loadCriteria() throws ChiliLogException
+    {
+        HttpRequest request = this.getRequest();
+        String s;
+
+        RepositoryListCriteria criteria = new RepositoryListCriteria();
+        this.loadBaseListCriteriaParameters(criteria);
+
+        criteria.setFields(this.getUriQueryStringParameter(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME, true));
+        s = request.getHeader(ENTRY_QUERY_FIELDS_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setFields(s);
+        }
+
+        criteria.setConditions(this.getUriQueryStringParameter(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
+                true));
+        s = request.getHeader(ENTRY_QUERY_CONDITIONS_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setConditions(s);
+        }
+
+        criteria.setOrderBy(this.getUriQueryStringParameter(ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME, true));
+        s = request.getHeader(ENTRY_QUERY_ORDER_BY_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setOrderBy(s);
+        }
+
+        criteria.setInitial(this.getUriQueryStringParameter(ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME, true));
+        s = request.getHeader(ENTRY_QUERY_INITIAL_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setInitial(s);
+        }
+
+        criteria.setReduceFunction(this.getUriQueryStringParameter(ENTRY_QUERY_REDUCE_URI_QUERYSTRING_PARAMETER_NAME,
+                true));
+        s = request.getHeader(ENTRY_QUERY_REDUCE_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setReduceFunction(s);
+        }
+
+        criteria.setFinalizeFunction(this.getUriQueryStringParameter(
+                ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME, true));
+        s = request.getHeader(ENTRY_QUERY_FINALIZE_HEADER_NAME);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setFinalizeFunction(s);
+        }
+
+        return criteria;
     }
 }

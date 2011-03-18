@@ -48,7 +48,11 @@ public class RepositoryWriter extends Thread
     private boolean _stopRunning = false;
     private boolean _isRunning = false;
 
+    public static final String INPUT_NAME_PROPERTY_NAME = "InputName";
+    public static final String INPUT_IP_ADDRESS_PROPERTY_NAME = "InputIpAddress";
+    
     /**
+     * 
      * Basic constructor
      * 
      * @param name
@@ -107,10 +111,12 @@ public class RepositoryWriter extends Thread
                 {
                     try
                     {
+                        String inputName = messageReceived.getStringProperty(INPUT_NAME_PROPERTY_NAME);
+                        String inputIpAddress = messageReceived.getStringProperty(INPUT_IP_ADDRESS_PROPERTY_NAME);
                         String textEntry = messageReceived.getBodyBuffer().readString();
 
                         // Process message
-                        RepositoryEntryBO repoEntry = controller.parse(textEntry);
+                        RepositoryEntryBO repoEntry = controller.parse(inputName, inputIpAddress, textEntry);
                         if (repoEntry != null)
                         {
                             controller.save(db, repoEntry);

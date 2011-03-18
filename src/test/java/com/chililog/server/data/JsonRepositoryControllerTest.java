@@ -72,9 +72,11 @@ public class JsonRepositoryControllerTest
         repoInfo.setName("json_test");
         repoInfo.setDisplayName("Json Test 1");
         repoInfo.setControllerClassName("com.chililog.server.data.JsonRepositoryController");
-        repoInfo.getProperties().put(JsonRepositoryController.DATE_PATTERN_REPO_PROPERTY_NAME, "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
+        repoInfo.getProperties().put(JsonRepositoryController.DATE_PATTERN_REPO_PROPERTY_NAME,
+                "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
         repoInfo.getProperties().put(JsonRepositoryController.DATE_FORMAT_REPO_PROPERTY_NAME, "yyyy-MM-dd'T'HH:mm:ssZ");
-        repoInfo.getProperties().put(JsonRepositoryController.LONG_NUMBER_PATTERN_REPO_PROPERTY_NAME, "^NumberLong\\(([0-9]+)\\)$");
+        repoInfo.getProperties().put(JsonRepositoryController.LONG_NUMBER_PATTERN_REPO_PROPERTY_NAME,
+                "^NumberLong\\(([0-9]+)\\)$");
 
         JsonRepositoryController c = new JsonRepositoryController(repoInfo);
 
@@ -92,7 +94,7 @@ public class JsonRepositoryControllerTest
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Save OK
-        RepositoryEntryBO entry = c.parse(sb.toString());
+        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         assertEquals(1, dbObject.get("field1"));
@@ -102,6 +104,8 @@ public class JsonRepositoryControllerTest
         assertEquals(888L, dbObject.get("field5"));
         assertEquals(5.5d, dbObject.get("field6"));
         assertEquals(sf.parse("2010-11-29T19:41:46UTC"), dbObject.get("field7"));
+        assertEquals("log1", entry.getEntryInputName());
+        assertEquals("127.0.0.1", entry.getEntryInputIpAddress());
 
         c.save(_db, entry);
 
@@ -136,7 +140,7 @@ public class JsonRepositoryControllerTest
         JsonRepositoryController c = new JsonRepositoryController(repoInfo);
 
         // Save OK
-        RepositoryEntryBO entry = c.parse("xxx");
+        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "xxx");
         assertNull(entry);
     }
 

@@ -48,26 +48,37 @@ import com.mongodb.util.JSONCallback;
 public class MongoJsonParser
 {
 
-    private Pattern _datePattern;
-    private Pattern _longNumberPattern;
-    private SimpleDateFormat _dateFormat;
+    private Pattern _datePattern = null;
+    private Pattern _longNumberPattern = null;
+    private SimpleDateFormat _dateFormat = null;
 
     String s;
     int pos = 0;
     BSONCallback _callback;
 
     /**
-     * Create a new parser.
+     * Create a new parser without parsing strings for dates and time.
+     * 
+     * @param s
+     *            String to parse
+     */
+    public MongoJsonParser(String s)
+    {
+        this(s, null);
+    }
+
+    /**
+     * Create a new parser and parse string values for dates and times as per the specified formats.
      * 
      * @param s
      *            String to parse
      * @param datePattern
-     *            Regular expression to use to check if a string is a date. Group #1 in the pattern is used. If null, no
+     *            Regular expression to use to test if a string is a date. Group #1 in the pattern is used. If null, no
      *            date checking is performed.
      * @param dateFormat
      *            {@link SimpleDateFormat} pattern to use to parse the date. If null, no date parsing is performed.
      * @param longNumberPattern
-     *            Regular expression to use to check if a string is a long number. Group #1 in the pattern is used. If
+     *            Regular expression to use to test if a string is a long number. Group #1 in the pattern is used. If
      *            null, no long number matching is performed.
      */
     public MongoJsonParser(String s, Pattern datePattern, String dateFormat, Pattern longNumberPattern)

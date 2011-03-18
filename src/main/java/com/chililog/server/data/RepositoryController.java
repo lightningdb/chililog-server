@@ -19,12 +19,11 @@
 package com.chililog.server.data;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
+import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.NullArgumentException;
 
 import com.chililog.server.common.ChiliLogException;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -40,21 +39,21 @@ import com.mongodb.DBObject;
  */
 public abstract class RepositoryController extends Controller
 {
-    public static final Pattern DATE_PATTERN = Pattern
-            .compile("^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
-    public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
-    public static final Pattern LONG_NUMBER_PATTERN = Pattern.compile("^NumberLong\\(([0-9]+)\\)$");
 
     /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
+     * @param inputName
+     *            Name of the input device or application that created this text entry
+     * @param inputIpAddress
+     *            IP address of the input device or application that created this text entry
      * @param textEntry
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written
      *         to mongoDB, then null is returned
      */
-    public abstract RepositoryEntryBO parse(String textEntry);
+    public abstract RepositoryEntryBO parse(String inputName, String inputIpAddress, String textEntry);
 
     /**
      * Returns the last error processed by <code>parse</code>.
@@ -73,63 +72,49 @@ public abstract class RepositoryController extends Controller
      */
     public ArrayList<RepositoryEntryBO> getList(DB db, RepositoryListCriteria criteria) throws ChiliLogException
     {
-        DBCollection coll = db.getCollection(this.getDBCollectionName());
-
-        // Filter
-        BasicDBObject query = parseCriteria(criteria);
-
-        // Order
-        DBObject orderBy = new BasicDBObject();
-        orderBy.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, 1);
-
-        // Get matching records
-        int recordsPerPage = criteria.getRecordsPerPage();
-        int startPage = (criteria.getStartPage() - 1) * recordsPerPage;
-        DBCursor cur = coll.find(query).skip(startPage).limit(recordsPerPage).sort(orderBy);
-        ArrayList<RepositoryEntryBO> list = new ArrayList<RepositoryEntryBO>();
-        while (cur.hasNext())
+        ArrayList<DBObject> list = executeFindQuery(db, criteria);
+        ArrayList<RepositoryEntryBO> boList = new ArrayList<RepositoryEntryBO>();
+        if (list != null && !list.isEmpty())
         {
-            DBObject dbo = cur.next();
-            list.add(new RepositoryEntryBO(dbo));
+            for (DBObject o : list)
+            {
+                boList.add(new RepositoryEntryBO(o));
+            }
         }
-
-        // Do page count by executing query again
-        if (criteria.getDoPageCount())
-        {
-            int recordCount = coll.find(query).count();
-            criteria.calculatePageCount(recordCount);
-        }
-
-        return list;
+        return boList;
     }
 
     /**
-     * Returns a list of matching entries as raw mongoDB DBObjects. This should be used where serializing to DBObject is
-     * required. It is faster to serialize straight from DBObject rather than convert DBObject to BO and then back
-     * again.
+     * Find matching entries
      * 
      * @param db
      *            Database connection
      * @param criteria
-     *            Criteria to filter resultset
+     *            Criteria to filter resultset. Fields, conditions and orderby are used.
+     * @param queryParameters
+     *            query parameters
      * @return List of matching entries
-     * @throws ChiliLogException
      */
-    public ArrayList<DBObject> getDBObjectList(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryListCriteria criteria)
     {
+        if (db == null)
+        {
+            throw new NullArgumentException("db");
+        }
+        if (criteria == null)
+        {
+            throw new NullArgumentException("criteria");
+        }
+
         DBCollection coll = db.getCollection(this.getDBCollectionName());
-
-        // Filter
-        BasicDBObject query = parseCriteria(criteria);
-
-        // Order
-        DBObject orderBy = new BasicDBObject();
-        orderBy.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, 1);
-
-        // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
-        int startPage = (criteria.getStartPage() - 1) * recordsPerPage;
-        DBCursor cur = coll.find(query).skip(startPage).limit(recordsPerPage).sort(orderBy);
+        int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
+
+        DBObject fields = criteria.getFieldsDbObject();
+        DBObject conditions = criteria.getConditionsDbObject();
+        DBObject orderBy = criteria.getOrderByDbObject();
+
+        DBCursor cur = coll.find(conditions, fields).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
         ArrayList<DBObject> list = new ArrayList<DBObject>();
         while (cur.hasNext())
         {
@@ -140,43 +125,111 @@ public abstract class RepositoryController extends Controller
         // Do page count by executing query again
         if (criteria.getDoPageCount())
         {
-            int recordCount = coll.find(query).count();
-            criteria.calculatePageCount(recordCount);
+            int documentCount = coll.find(conditions).count();
+            criteria.calculatePageCount(documentCount);
         }
 
         return list;
     }
 
     /**
-     * Load criteria as a mongoDB dbObject
+     * Count of number of entries that matches the condition
      * 
+     * @param db
+     *            Database connection
      * @param criteria
-     *            Criteria to filter
-     * @return BasicDBObject
+     *            Criteria to filter resultset. Condition is used.
+     * @param queryParameters
+     *            query parameters
+     * @return Number of matching entries
      */
-    private BasicDBObject parseCriteria(RepositoryListCriteria criteria)
+    public int executeCountQuery(DB db, RepositoryListCriteria criteria)
     {
-        BasicDBObject query = null;
-        if (!StringUtils.isBlank(criteria.getJsonCriteria()))
+        if (db == null)
         {
-            MongoJsonParser parser = new MongoJsonParser(criteria.getJsonCriteria(), DATE_PATTERN, DATE_FORMAT,
-                    LONG_NUMBER_PATTERN);
-            query = (BasicDBObject) parser.parse();
+            throw new NullArgumentException("db");
         }
-        else
+        if (criteria == null)
         {
-            query = new BasicDBObject();
+            throw new NullArgumentException("criteria");
         }
 
-        if (criteria.getFrom() != null)
-        {
-            query.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new BasicDBObject("$gte", criteria.getFrom()));
-        }
-        if (criteria.getTo() != null)
-        {
-            query.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", criteria.getTo()));
-        }
+        DBCollection coll = db.getCollection(this.getDBCollectionName());
 
-        return query;
+        DBObject conditions = criteria.getConditionsDbObject();
+
+        return coll.find(conditions).count();
     }
+
+    /**
+     * Count of number of entries that matches the condition
+     * 
+     * @param db
+     *            Database connection
+     * @param criteria
+     *            Criteria to filter resultset. Fields and Conditions is used.
+     * @return List of distinct values for the nominated field.
+     */
+    @SuppressWarnings("rawtypes")
+    public List executeDistinctQuery(DB db, RepositoryListCriteria criteria)
+    {
+        if (db == null)
+        {
+            throw new NullArgumentException("db");
+        }
+        if (criteria == null)
+        {
+            throw new NullArgumentException("criteria");
+        }
+
+        DBCollection coll = db.getCollection(this.getDBCollectionName());
+
+        DBObject fields = criteria.getFieldsDbObject();
+        if (fields == null || fields.keySet().isEmpty())
+        {
+            throw new IllegalArgumentException("Field is required for a 'distinct' query.");
+        }
+
+        String fieldName = null;
+        for (String n : fields.keySet())
+        {
+            fieldName = n;
+            break;
+        }
+
+        DBObject conditions = criteria.getConditionsDbObject();
+
+        return coll.distinct(fieldName, conditions);
+    }
+
+    /**
+     * Count of number of entries that matches the condition
+     * 
+     * @param db
+     *            Database connection
+     * @param criteria
+     *            Criteria to filter resultset. Fields, Conditions, Initial, ReduceFunction and FinalizeFunction are
+     *            used.
+     * @return Specified fields and aggregation counter.
+     */
+    public DBObject executeGroupQuery(DB db, RepositoryListCriteria criteria)
+    {
+        if (db == null)
+        {
+            throw new NullArgumentException("db");
+        }
+        if (criteria == null)
+        {
+            throw new NullArgumentException("criteria");
+        }
+
+        DBCollection coll = db.getCollection(this.getDBCollectionName());
+
+        DBObject fields = criteria.getFieldsDbObject();
+        DBObject conditions = criteria.getConditionsDbObject();
+        DBObject initial = criteria.getIntialDbObject();
+
+        return coll.group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
+    }
+
 }

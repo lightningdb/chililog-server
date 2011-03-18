@@ -73,9 +73,10 @@ public class RegexRepositoryControllerTest
         repoInfo.setDisplayName("JUnit Test 1");
         repoInfo.setControllerClassName("com.chililog.server.data.RegexRepositoryController");
         repoInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoInfo.getProperties().put(RegexRepositoryController.PATTERN_REPO_PROPERTY_NAME,
-                "^([0-9a-z]+)~([0-9\\.]+)~([0-9\\.]+)~([0-9\\.]+)~([0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})~([0-9a-zA-Z]+)$");
-        
+        repoInfo.getProperties()
+                .put(RegexRepositoryController.PATTERN_REPO_PROPERTY_NAME,
+                        "^([0-9a-z]+)~([0-9\\.]+)~([0-9\\.]+)~([0-9\\.]+)~([0-9]{4}-[0-9]{1,2}-[0-9]{1,2} [0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2})~([0-9a-zA-Z]+)$");
+
         RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
@@ -115,7 +116,7 @@ public class RegexRepositoryControllerTest
         RegexRepositoryController c = new RegexRepositoryController(repoInfo);
 
         // Save Line 1 OK
-        RepositoryEntryBO entry = c.parse("line1~2~3~4.4~2001-5-5 5:5:5~True");
+        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "line1~2~3~4.4~2001-5-5 5:5:5~True");
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         assertEquals("line1", dbObject.get("field1"));
@@ -144,7 +145,7 @@ public class RegexRepositoryControllerTest
         assertEquals("line1~2~3~4.4~2001-5-5 5:5:5~True", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
 
         // Save Line 2 OK
-        entry = c.parse("line2~22~23~24.4~2021-5-5 5:5:5~xxx");
+        entry = c.parse("log1", "127.0.0.1", "line2~22~23~24.4~2021-5-5 5:5:5~xxx");
         assertNotNull(entry);
         dbObject = entry.toDBObject();
         assertEquals("line2", dbObject.get("field1"));
@@ -153,6 +154,8 @@ public class RegexRepositoryControllerTest
         assertEquals(24.4d, dbObject.get("field4"));
         assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
         assertEquals(false, dbObject.get("field6"));
+        assertEquals("log1", entry.getEntryInputName());
+        assertEquals("127.0.0.1", entry.getEntryInputIpAddress());
 
         c.save(_db, entry);
 
@@ -174,12 +177,12 @@ public class RegexRepositoryControllerTest
         assertEquals(2, coll.find().count());
 
         // Empty string is ignored
-        entry = c.parse("");
+        entry = c.parse("log1", "127.0.0.1", "");
         assertNull(entry);
         assertNotNull(c.getLastParseError());
 
         // Missing field
-        entry = c.parse("line3");
+        entry = c.parse("log1", "127.0.0.1", "line3");
         assertNull(entry);
         assertNotNull(c.getLastParseError());
     }

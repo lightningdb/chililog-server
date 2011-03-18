@@ -38,9 +38,13 @@ public class RepositoryEntryBO extends BO implements Serializable
     private static final long serialVersionUID = 1L;
 
     private Date _entryTimestamp;
+    private String _entryInputName;
+    private String _entryInputIpAddress;
     private String _entryText;
 
     public static final String ENTRY_TIMESTAMP_FIELD_NAME = "entry_timestamp";
+    public static final String ENTRY_INPUT_NAME_FIELD_NAME = "entry_input_name";
+    public static final String ENTRY_INPUT_IP_ADDRESS_FIELD_NAME = "entry_input_ip_address";
     public static final String ENTRY_TEXT_FIELD_NAME = "entry_text";
 
     /**
@@ -62,6 +66,8 @@ public class RepositoryEntryBO extends BO implements Serializable
     {
         super(dbObject);
         _entryTimestamp = MongoUtils.getDate(dbObject, ENTRY_TIMESTAMP_FIELD_NAME, true);
+        _entryInputName = MongoUtils.getString(dbObject, ENTRY_INPUT_NAME_FIELD_NAME, true);
+        _entryInputIpAddress = MongoUtils.getString(dbObject, ENTRY_INPUT_IP_ADDRESS_FIELD_NAME, true);
         _entryText = MongoUtils.getString(dbObject, ENTRY_TEXT_FIELD_NAME, true);
         return;
     }
@@ -71,15 +77,21 @@ public class RepositoryEntryBO extends BO implements Serializable
      * 
      * @param dbObject
      *            database object as parsed by a repository controller
+     * @param inputName
+     *            Name of the input (device or application) that created this log entry
+     * @param inputIpAddress
+     *            IP address of the input (device or application) that created this entry
      * @param text
      *            the text or string version of this entry that was parsed
      * 
      * @throws ChiliLogException
      */
-    RepositoryEntryBO(DBObject dbObject, String text) throws ChiliLogException
+    RepositoryEntryBO(DBObject dbObject, String inputName, String inputIpAddress, String text) throws ChiliLogException
     {
         super(dbObject);
         _entryTimestamp = new Date();
+        _entryInputName = inputName;
+        _entryInputIpAddress = inputIpAddress;
         _entryText = text;
         return;
     }
@@ -94,6 +106,8 @@ public class RepositoryEntryBO extends BO implements Serializable
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
         MongoUtils.setDate(dbObject, ENTRY_TIMESTAMP_FIELD_NAME, _entryTimestamp);
+        MongoUtils.setString(dbObject, ENTRY_INPUT_NAME_FIELD_NAME, _entryInputName);
+        MongoUtils.setString(dbObject, ENTRY_INPUT_IP_ADDRESS_FIELD_NAME, _entryInputIpAddress);
         MongoUtils.setString(dbObject, ENTRY_TEXT_FIELD_NAME, _entryText);
         return;
     }
@@ -109,6 +123,32 @@ public class RepositoryEntryBO extends BO implements Serializable
     public void setEntryTimestamp(Date chililoggedOn)
     {
         _entryTimestamp = chililoggedOn;
+    }
+
+    /**
+     * Returns the name of the device or application that created the entry      
+     */
+    public String getEntryInputName()
+    {
+        return _entryInputName;
+    }
+
+    public void setEntryInputName(String entryInputName)
+    {
+        _entryInputName = entryInputName;
+    }
+
+    /**
+     * Returns the IP address of the device or application that created the entry 
+     */
+    public String getEntryInputIpAddress()
+    {
+        return _entryInputIpAddress;
+    }
+
+    public void setEntryInputIpAddress(String entryInputIpAddress)
+    {
+        _entryInputIpAddress = entryInputIpAddress;
     }
 
     /**

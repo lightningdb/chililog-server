@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -122,6 +123,12 @@ public class RepositoriesTest
         RepositoryInfoController.getInstance().save(_db, repoInfo);
         _repoId = repoInfo.getDocumentID().toString();
 
+        coll = _db.getCollection(repoInfo.getMongoDBCollectionName());
+        if (coll != null)
+        {
+            coll.drop();
+        }
+
         // Create analyst user
         user = new UserBO();
         user.setUsername("RepositoriesTest_Analyst_WithAccess");
@@ -132,13 +139,13 @@ public class RepositoriesTest
 
         // Add 3 lines
         DelimitedRepositoryController c = new DelimitedRepositoryController(repoInfo);
-        RepositoryEntryBO entry = c.parse("line1|1");
+        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "line1|1");
         c.save(_db, entry);
 
-        entry = c.parse("line2|2");
+        entry = c.parse("log1", "127.0.0.1", "line2|2");
         c.save(_db, entry);
 
-        entry = c.parse("line3|3");
+        entry = c.parse("log1", "127.0.0.1", "line3|3");
         c.save(_db, entry);
 
         // Start server
@@ -171,7 +178,7 @@ public class RepositoriesTest
     }
 
     /**
-     * Analyst can only GET
+     * Test queryies
      * 
      * @throws Exception
      */
@@ -235,8 +242,8 @@ public class RepositoriesTest
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Get entries - admin
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + myRepoDocId + "/entries",
-                HttpMethod.GET, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + myRepoDocId
+                + "/entries?query_type=find", HttpMethod.GET, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -247,8 +254,8 @@ public class RepositoriesTest
         assertTrue(json.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
 
         // Get entries - by analyst with access
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + myRepoDocId + "/entries",
-                HttpMethod.GET, _analystWithAccessAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + myRepoDocId
+                + "/entries?query_type=find", HttpMethod.GET, _analystWithAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -258,6 +265,56 @@ public class RepositoriesTest
         assertTrue(json2.contains("\"field1\" : \"line1\" , \"field2\" : 1"));
         assertTrue(json2.contains("\"field1\" : \"line2\" , \"field2\" : 2"));
         assertTrue(json2.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
+    }
+
+    /**
+     * Get entries
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetEntriesWithCriteria() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Find
+        String conditions = URLEncoder.encode("{ \"field1\" : \"line1\" }", "UTF-8");
+
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoId
+                + "/entries?query_type=find&conditions=" + conditions, HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        String json = responseContent.toString();
+        assertTrue(json.contains("\"field1\" : \"line1\" , \"field2\" : 1"));
+        assertFalse(json.contains("\"field1\" : \"line2\" , \"field2\" : 2"));
+        assertFalse(json.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
+
+        // Count
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoId
+                + "/entries?query_type=count&conditions=" + conditions, HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        json = responseContent.toString();
+        assertTrue(json.contains("{ \"count\" : 1}"));
+
+        // Distinct
+        String fields = URLEncoder.encode("{ \"field1\" : 1 }", "UTF-8");
+
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoId
+                + "/entries?query_type=distinct&fields=" + fields, HttpMethod.GET, _adminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        json = responseContent.toString();
+        assertTrue(json.contains("{ \"distinct\" : [ \"line1\" , \"line2\" , \"line3\"]}"));
     }
 
     /**
@@ -335,8 +392,8 @@ public class RepositoriesTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Start all where repositories have already started - should not error
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start", HttpMethod.POST,
-                _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
+                HttpMethod.POST, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -370,8 +427,8 @@ public class RepositoriesTest
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
 
         // Start all
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start", HttpMethod.POST,
-                _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
+                HttpMethod.POST, _adminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -435,7 +492,7 @@ public class RepositoriesTest
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
-        
+
         // Reload
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload",
                 HttpMethod.POST, _adminAuthToken);
@@ -456,29 +513,29 @@ public class RepositoriesTest
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
-        
+
         // Start - Non admin
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start", HttpMethod.POST,
-                _analystAuthToken);
-    
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
+                HttpMethod.POST, _analystAuthToken);
+
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-        
+
         // Start - Non admin
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=stop", HttpMethod.POST,
                 _analystAuthToken);
-    
+
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         // Reload - Non admin
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload", HttpMethod.POST,
-                _analystAuthToken);
-    
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload",
+                HttpMethod.POST, _analystAuthToken);
+
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-}
-    
+    }
+
     /**
      * GET = 405 Method Not Allowed
      * 
@@ -491,7 +548,7 @@ public class RepositoriesTest
         URL url = new URL("http://localhost:8989/api/repositories");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
-        
+
         String content = null;
         try
         {

@@ -126,9 +126,9 @@ public class RepositoryInfoController extends Controller
             }
 
             DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-            BasicDBObject query = new BasicDBObject();
-            query.put(BO.DOCUMENT_ID_FIELD_NAME, id);
-            DBObject dbo = coll.findOne(query);
+            BasicDBObject condition = new BasicDBObject();
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
+            DBObject dbo = coll.findOne(condition);
             if (dbo == null)
             {
                 return null;
@@ -187,9 +187,9 @@ public class RepositoryInfoController extends Controller
             }
 
             DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-            BasicDBObject query = new BasicDBObject();
-            query.put(RepositoryInfoBO.NAME_FIELD_NAME, name);
-            DBObject dbo = coll.findOne(query);
+            BasicDBObject condition = new BasicDBObject();
+            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, name);
+            DBObject dbo = coll.findOne(condition);
             if (dbo == null)
             {
                 return null;
@@ -218,11 +218,11 @@ public class RepositoryInfoController extends Controller
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
         
         // Filter
-        BasicDBObject query = new BasicDBObject();        
+        BasicDBObject condition = new BasicDBObject();        
         if (!StringUtils.isBlank(criteria.getNamePattern()))
         {
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
-            query.put(RepositoryInfoBO.NAME_FIELD_NAME, pattern);
+            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, pattern);
         }
 
         // Order
@@ -231,8 +231,8 @@ public class RepositoryInfoController extends Controller
         
         // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
-        int startPage = (criteria.getStartPage() - 1) * recordsPerPage;
-        DBCursor cur = coll.find(query).skip(startPage).limit(recordsPerPage).sort(orderBy);
+        int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
+        DBCursor cur = coll.find(condition).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
         ArrayList<RepositoryInfoBO> list = new ArrayList<RepositoryInfoBO>();
         while (cur.hasNext())
         {
@@ -243,8 +243,8 @@ public class RepositoryInfoController extends Controller
         // Do page count by executing query again 
         if (criteria.getDoPageCount())
         {
-            int recordCount = coll.find(query).count();
-            criteria.calculatePageCount(recordCount);
+            int documentCount = coll.find(condition).count();
+            criteria.calculatePageCount(documentCount);
         }
         
         return list;
@@ -264,13 +264,13 @@ public class RepositoryInfoController extends Controller
     {
         // Validate unique name
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-        BasicDBObject query = new BasicDBObject();
-        query.put(RepositoryInfoBO.NAME_FIELD_NAME, repository.getName());
+        BasicDBObject condition = new BasicDBObject();
+        condition.put(RepositoryInfoBO.NAME_FIELD_NAME, repository.getName());
         if (repository.isExistingRecord())
         {
-            query.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getDocumentID()));
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getDocumentID()));
         }
-        long i = coll.getCount(query);
+        long i = coll.getCount(condition);
         if (i > 0)
         {
             throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repository.getName());
