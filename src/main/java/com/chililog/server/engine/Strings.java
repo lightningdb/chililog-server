@@ -38,4 +38,11 @@ public class Strings
     public static final String LOAD_REPOSITORIES_ERROR = PREFIX + "LoadRepositoriesError";
     public static final String CLOSE_MQ_SESSION_ERROR = PREFIX + "CloseMqSessionError";
     
+    public static final String PARSER_FACTORY_ERROR = PREFIX + "Parser.FactoryError";
+    public static final String PARSER_INITIALIZATION_ERROR = PREFIX + "Parser.IntializationError";
+    public static final String PARSER_DELIMITER_NOT_SET_ERROR = PREFIX + "Parser.DelimiterNotSetError";
+    public static final String PARSER_FIELD_ERROR_SKIP_FIELD = PREFIX + "Parser.FieldErrorSkipField";
+    public static final String PARSER_FIELD_ERROR_SKIP_ENTRY = PREFIX + "Parser.FieldErrorSkipEntry";
+    public static final String PARSER_JSON_ERROR_SKIP_ENTRY = PREFIX + "Parser.JsonErrorSkipEntry";
+    public static final String PARSER_BLANK_ERROR = PREFIX + "Parser.BlankError";
 }

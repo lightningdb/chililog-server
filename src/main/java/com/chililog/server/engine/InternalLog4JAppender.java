@@ -21,8 +21,10 @@ package com.chililog.server.engine;
 import java.net.InetAddress;
 import java.util.Date;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.chililog.server.common.ChiliLogException;
@@ -30,6 +32,7 @@ import com.chililog.server.data.BO;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.MongoUtils;
 import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -48,20 +51,15 @@ import com.mongodb.DBObject;
  */
 public class InternalLog4JAppender extends AppenderSkeleton
 {
-    private String _machineName;
-    private String _machineIpAddress;
+    private String _host;
     private DB _db;
     private DBCollection _coll;
 
     static final String REPOSITORY_NAME = "chililog";
     static final String MONGODB_COLLECTION_NAME = "chililog_repository";
-    static final String EVENT_TIMESTAMP_FIELD_NAME = "event_timestamp";
 
-    static final String SERVER_NAME_FIELD_NAME = "server_name";
-    static final String SERVER_IP_ADDRESS_FIELD_NAME = "server_ip_address";
+    static final String EVENT_TIMESTAMP_FIELD_NAME = "timestamp";
     static final String THREAD_FIELD_NAME = "thread";
-
-    static final String LEVEL_FIELD_NAME = "level";
     static final String CATEGORY_FIELD_NAME = "category";
     static final String MESSAGE_FIELD_NAME = "message";
 
@@ -78,13 +76,15 @@ public class InternalLog4JAppender extends AppenderSkeleton
         try
         {
             InetAddress addr = InetAddress.getLocalHost();
-            _machineIpAddress = addr.getHostAddress();
-            _machineName = addr.getHostName();
+            _host = addr.getHostName();
+            if (StringUtils.isBlank(_host))
+            {
+                _host = addr.getHostAddress();
+            }
         }
         catch (Exception e)
         {
-            _machineIpAddress = "unknown";
-            _machineName = "unknown";
+            _host = "unknown";
         }
 
         return;
@@ -101,21 +101,15 @@ public class InternalLog4JAppender extends AppenderSkeleton
         try
         {
             DBObject dbObject = new BasicDBObject();
+
+            // Fields
             MongoUtils.setDate(dbObject, EVENT_TIMESTAMP_FIELD_NAME, new Date(event.getTimeStamp()));
-
-            MongoUtils.setString(dbObject, SERVER_NAME_FIELD_NAME, _machineName);
-            MongoUtils.setString(dbObject, SERVER_IP_ADDRESS_FIELD_NAME, _machineIpAddress);
             MongoUtils.setString(dbObject, THREAD_FIELD_NAME, event.getThreadName());
-
-            MongoUtils.setString(dbObject, LEVEL_FIELD_NAME, event.getLevel().toString());
             MongoUtils.setString(dbObject, CATEGORY_FIELD_NAME, event.getLoggerName());
 
+            // Message Field
             StringBuilder msg = new StringBuilder();
-            if (event.getMessage() == null)
-            {
-                MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, null);
-            }
-            else
+            if (event.getMessage() != null)
             {
                 msg.append(event.getMessage().toString());
             }
@@ -131,8 +125,34 @@ public class InternalLog4JAppender extends AppenderSkeleton
             }
             MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, msg.toString());
 
+            // Severity
+            Severity severity = Severity.Information;
+            Level level = event.getLevel();
+            if (level == Level.DEBUG || level == Level.TRACE)
+            {
+                severity = Severity.Debug;
+            }
+            else if (level == Level.WARN)
+            {
+                severity = Severity.Warning;
+            }
+            else if (level == Level.ERROR)
+            {
+                severity = Severity.Error;
+            }
+            else if (level == Level.FATAL)
+            {
+                severity = Severity.Emergency;
+            }
+
             MongoUtils.setDate(dbObject, RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new Date());
-            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME, "");
+            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME, "ChiliLogServer");
+            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_HOST_FIELD_NAME, _host);
+            MongoUtils.setLong(dbObject, RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME, severity.toCode());
+            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_KEYWORDS_FIELD_NAME, "");
+
+            // Don't store message because it will just be a duplicate
+            // MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME, "");
 
             MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
 
@@ -146,7 +166,6 @@ public class InternalLog4JAppender extends AppenderSkeleton
             ex.printStackTrace();
         }
     }
-
 
     public void close()
     {

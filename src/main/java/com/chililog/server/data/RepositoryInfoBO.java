@@ -20,7 +20,6 @@ package com.chililog.server.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import com.chililog.server.common.ChiliLogException;
 import com.mongodb.BasicDBList;
@@ -50,9 +49,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
     private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
     private long _writeQueuePageSize = 1024 * 1024 * 4; // MB
-    private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
-    private ArrayList<RepositoryFieldInfoBO> _fields = new ArrayList<RepositoryFieldInfoBO>();
-    private Hashtable<String, String> _properties = new Hashtable<String, String>();
+    private ArrayList<RepositoryParserInfoBO> _parsers = new ArrayList<RepositoryParserInfoBO>();
 
     static final String NAME_FIELD_NAME = "name";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
@@ -65,9 +62,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     static final String WRITE_QUEUE_MAX_MEMORY_FIELD_NAME = "write_queue_max_memory";
     static final String WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME = "write_queue_max_memory_policy";
     static final String WRITE_QUEUE_PAGE_SIZE_FIELD_NAME = "write_queue_page_size";
-    static final String FIELDS_FIELD_NAME = "fields";
-    static final String PROPERTIES_FIELD_NAME = "properties";
-    static final String PARSE_FIELD_ERROR_HANDLING_FIELD_NAME = "parse_field_error_handling";
+    static final String PARSERS_FIELD_NAME = "parsers";
 
     /**
      * Basic constructor
@@ -102,23 +97,17 @@ public class RepositoryInfoBO extends BO implements Serializable
                 WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, true));
         _writeQueuePageSize = MongoUtils.getLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, true);
 
-        _parseFieldErrorHandling = ParseFieldErrorHandling.valueOf(MongoUtils.getString(dbObject,
-                PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, true));
-
-        _properties = MongoUtils.getKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, false);
-
-        BasicDBList list = (BasicDBList) dbObject.get(FIELDS_FIELD_NAME);
-        ArrayList<RepositoryFieldInfoBO> fieldList = new ArrayList<RepositoryFieldInfoBO>();
+        BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
+        ArrayList<RepositoryParserInfoBO> parserList = new ArrayList<RepositoryParserInfoBO>();
         if (list != null && list.size() > 0)
         {
             for (Object item : list)
             {
-                RepositoryFieldInfoBO field = new RepositoryFieldInfoBO((DBObject) item);
-                fieldList.add(field);
+                RepositoryParserInfoBO field = new RepositoryParserInfoBO((DBObject) item);
+                parserList.add(field);
             }
         }
-        _fields = fieldList;
-        loadFieldDataTypeProperties();
+        _parsers = parserList;
 
         return;
     }
@@ -133,8 +122,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        loadFieldDataTypeProperties();
-
         MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name);
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName);
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description);
@@ -149,31 +136,16 @@ public class RepositoryInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, _writeQueueMaxMemoryPolicy.toString());
         MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, _writeQueuePageSize);
 
-        MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString());
-        MongoUtils.setKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, _properties);
-
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
-        for (RepositoryFieldInfoBO field : _fields)
+        for (RepositoryParserInfoBO parser : _parsers)
         {
             BasicDBObject obj = new BasicDBObject();
-            field.savePropertiesToDBObject(obj);
+            parser.savePropertiesToDBObject(obj);
             fieldList.add(obj);
         }
-        dbObject.put(FIELDS_FIELD_NAME, fieldList);
+        dbObject.put(PARSERS_FIELD_NAME, fieldList);
     }
 
-    /**
-     * Load properties for our fields before parsing
-     * 
-     * @throws ChiliLogException
-     */
-    public void loadFieldDataTypeProperties() throws ChiliLogException
-    {
-        for (RepositoryFieldInfoBO f : _fields)
-        {
-            f.loadDataTypeProperties();
-        }
-    }
 
     /**
      * <p>
@@ -257,30 +229,9 @@ public class RepositoryInfoBO extends BO implements Serializable
     /**
      * Returns a list fields that is to be parsed and stored in this repository
      */
-    public ArrayList<RepositoryFieldInfoBO> getFields()
+    public ArrayList<RepositoryParserInfoBO> getParsers()
     {
-        return _fields;
-    }
-
-    /**
-     * Returns a list of parser specific properties for this repository
-     */
-    public Hashtable<String, String> getProperties()
-    {
-        return _properties;
-    }
-
-    /**
-     * Returns the error handling technique to use when parsing a field
-     */
-    public ParseFieldErrorHandling getParseFieldErrorHandling()
-    {
-        return _parseFieldErrorHandling;
-    }
-
-    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling)
-    {
-        _parseFieldErrorHandling = parseFieldErrorHandling;
+        return _parsers;
     }
 
     /**
@@ -404,30 +355,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     public void setWriteQueuePageSize(long writeQueuePageSize)
     {
         _writeQueuePageSize = writeQueuePageSize;
-    }
-
-    /**
-     * Technique to use if there is an error during parsing a field in a repository entry
-     */
-    public enum ParseFieldErrorHandling
-    {
-        /**
-         * The field will not be written as part of the log entry in the repository and n log entry will be written to
-         * ChiliLog
-         */
-        SkipFieldIgnoreError,
-
-        /**
-         * The field will not be written as part of the log entry in the repository and a log entry will be written to
-         * ChiliLog
-         */
-        SkipField,
-
-        /**
-         * The entire log entry will not be written to the repository and a log entry will be written to ChiliLog
-         */
-        SkipEntry,
-
     }
 
     /**

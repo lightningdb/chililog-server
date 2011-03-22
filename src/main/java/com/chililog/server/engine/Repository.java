@@ -25,7 +25,7 @@ import org.apache.commons.lang.NullArgumentException;
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.RepositoryController;
+import com.chililog.server.data.RepositoryEntryController;
 import com.chililog.server.data.RepositoryEntryBO;
 import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
@@ -45,7 +45,7 @@ import com.chililog.server.data.RepositoryInfoBO.Status;
  * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
  * processing.</li>
  * <li>The worker threads, {@link RepositoryWriter}, reads the queued log entries and writes them to mongoDB using
- * {@link RepositoryController} classes. The exact type of controller is specified as part of the repository definition
+ * {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository definition
  * in {@link RepositoryInfoBO}.</li>
  * </ul>
  * 

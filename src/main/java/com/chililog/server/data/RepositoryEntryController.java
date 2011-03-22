@@ -31,34 +31,58 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * Base controller for all repository controllers
+ * Controller to read and write repository entries
  * </p>
  * 
  * @author vibul
  * 
  */
-public abstract class RepositoryController extends Controller
+public class RepositoryEntryController extends Controller
 {
+    private RepositoryInfoBO _repoInfo = null;
+    private String _mongoDBCollectionName = null;
 
     /**
-     * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
-     * that the entry should be skipped.
+     * Returns an instance of the repository entry controller to use.
      * 
-     * @param inputName
-     *            Name of the input device or application that created this text entry
-     * @param inputIpAddress
-     *            IP address of the input device or application that created this text entry
-     * @param textEntry
-     *            The text for this entry to parse
-     * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written
-     *         to mongoDB, then null is returned
+     * @param repoInfo
+     *            Meta data for the respository to which we will be reading and writing
+     * @return RepositoryEntryController
      */
-    public abstract RepositoryEntryBO parse(String inputName, String inputIpAddress, String textEntry);
+    public static RepositoryEntryController getInstance(RepositoryInfoBO repoInfo)
+    {
+        // TODO cache entry controllers
+        return new RepositoryEntryController(repoInfo);
+    }
 
     /**
-     * Returns the last error processed by <code>parse</code>.
+     * Basic constructor
+     * 
+     * @param repoInfo
+     *            Repository info
      */
-    public abstract Exception getLastParseError();
+    RepositoryEntryController(RepositoryInfoBO repoInfo)
+    {
+        _repoInfo = repoInfo;
+        _mongoDBCollectionName = repoInfo.getMongoDBCollectionName();
+    }
+
+    /**
+     * Returns the mongoDB collection name
+     */
+    @Override
+    protected String getDBCollectionName()
+    {
+        return _mongoDBCollectionName;
+    }
+
+    /**
+     * Returns the meta data of the repository to which we will be reading and writing
+     */
+    public RepositoryInfoBO getRepoInfo()
+    {
+        return _repoInfo;
+    }
 
     /**
      * Returns a list of matching entries
@@ -232,4 +256,34 @@ public abstract class RepositoryController extends Controller
         return coll.group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
     }
 
+    /**
+     * Saves the repository entry into mongoDB
+     * 
+     * @param db
+     *            MongoDb connection
+     * @param entry
+     *            Entry to save
+     * @throws ChiliLogException
+     *             if there are errors
+     */
+    public void save(DB db, RepositoryEntryBO entry) throws ChiliLogException
+    {
+        // Save it
+        super.save(db, entry);
+    }
+
+    /**
+     * Removes the specified repository entry from mongoDB
+     * 
+     * @param db
+     *            MongoDb connection
+     * @param entry
+     *            Entry to remove
+     * @throws ChiliLogException
+     *             if there are errors
+     */
+    public void remove(DB db, RepositoryEntryBO entry) throws ChiliLogException
+    {
+        super.remove(db, entry);
+    }
 }

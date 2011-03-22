@@ -20,17 +20,8 @@ package com.chililog.server.data;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Hashtable;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.lang.StringUtils;
 
 import com.chililog.server.common.ChiliLogException;
 import com.mongodb.DBObject;
@@ -54,27 +45,52 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
     private DataType _dataType;
     private Hashtable<String, String> _properties = new Hashtable<String, String>();
 
-    // These properties are NOT store in mongoDB but used in parsing
-    private String _dateFormat = null;
-    private TimeZone _dateTimezone = null;
-    private Object _defaultValue = null;
-    private NumberFormat _numberFormatter = null;
-    private Pattern _truePattern = null;
-    private Pattern _preparsePattern = null;
-    private int _preparsePatternGroup = 1;;
-
     static final String NAME_FIELD_NAME = "name";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
     static final String DESCRIPTION_FIELD_NAME = "description";
     static final String DATA_TYPE_FIELD_NAME = "data_type";
     static final String PROPERTIES_FIELD_NAME = "properties";
 
-    public static final String DATE_FORMAT_PROPERTY_NAME = "date_format";
-    public static final String DATE_TIMEZONE_PROPERTY_NAME = "date_timezone";
+    /**
+     * Value to use if field cannot be parsed. Applies to all fields.
+     */
     public static final String DEFAULT_VALUE_PROPERTY_NAME = "default_value";
+
+    /**
+     * Format of date as specified in {@link SimpleDateFormat}. If not supplied, defaults to "yyyy-MM-dd'T'HH:mm:ssZ".
+     * For example, "2011-01-01T09:12:34GMT". Applies to Date fields.
+     */
+    public static final String DATE_FORMAT_PROPERTY_NAME = "date_format";
+
+    /**
+     * Timezone of date as specified in {@link SimpleDateFormat}. If not supplied, then the local timezone is assumed
+     * (unless the timezone is supplied in the date format. Applies to Date fields.
+     */
+    public static final String DATE_TIMEZONE_PROPERTY_NAME = "date_timezone";
+
+    /**
+     * Format of the number as specified by {@link DecimalFormat}. If not set, standard number parsing will be used and
+     * only digits are allowed. Applies to Integer and Long fields.
+     */
     public static final String NUMBER_FORMAT_PROPERTY_NAME = "number_format";
+
+    /**
+     * For boolean fields, if there is a match with this regular expression pattern, True will be returned. Defaults to
+     * case insensitive "true", Applies to Boolean fields.
+     */
     public static final String TRUE_PATTERN_PROPERTY_NAME = "true_pattern";
+
+    /**
+     * Optional regular expression that can be used to extract a part of the string to parse. For example, if
+     * <code>[1]</code> is the string value, then a pattern <code>^\[([0-9])\]$</code> will extract <code>1</code> for
+     * parsing. Applies to all fields.
+     */
     public static final String PREPARSE_PATTERN_PROPERTY_NAME = "preparse_pattern";
+
+    /**
+     * The group number of the text to extract from the preparse pattern. If not supplied, group 1 is assumed. Applies
+     * to all fields.
+     */
     public static final String PREPARSE_PATTERN_GROUP_PROPERTY_NAME = "preparse_pattern_group";
 
     /**
@@ -102,8 +118,6 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
         _description = MongoUtils.getString(dbObject, DESCRIPTION_FIELD_NAME, false);
         _dataType = DataType.valueOf(MongoUtils.getString(dbObject, DATA_TYPE_FIELD_NAME, true));
         _properties = MongoUtils.getKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, false);
-
-        loadDataTypeProperties();
 
         return;
     }
@@ -182,494 +196,6 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
     public Hashtable<String, String> getProperties()
     {
         return _properties;
-    }
-
-    /**
-     * Load properties required for parsing
-     * 
-     * @throws ChiliLogException
-     *             if error loading properties for this data type
-     */
-    public void loadDataTypeProperties() throws ChiliLogException
-    {
-        try
-        {
-            String s = _properties.get(PREPARSE_PATTERN_PROPERTY_NAME);
-            if (!StringUtils.isBlank(s))
-            {
-                _preparsePattern = Pattern.compile(s);
-            }
-            String g = _properties.get(PREPARSE_PATTERN_GROUP_PROPERTY_NAME);
-            if (!StringUtils.isBlank(g))
-            {
-                _preparsePatternGroup = Integer.parseInt(g);
-            }
-
-            switch (_dataType)
-            {
-                case String:
-                    loadStringProperties();
-                case Integer:
-                    loadIntegerProperties();
-                    break;
-                case Long:
-                    loadLongProperties();
-                    break;
-                case Date:
-                    loadDateProperties();
-                    break;
-                case Boolean:
-                    loadBooleanProperties();
-                    break;
-                case Double:
-                    loadDoubleProperties();
-                    break;
-                default:
-                    throw new NotImplementedException("Data type " + _dataType.toString());
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new ChiliLogException(ex, Strings.REPO_INFO_FIELD_PROPERTIES_ERROR, _name);
-        }
-    }
-
-    /**
-     * <p>
-     * Parse some text and return the strongly typed value.
-     * </p>
-     * <p>
-     * Please call <code>loadProperties</code> before parsing to setup properties.
-     * </p>
-     * 
-     * @param textValue
-     *            text string to parse
-     * @return Strongly typed value as defined by this field's data type
-     * @throws Exception
-     *             if there is an error during parsing
-     */
-    public Object parse(String textValue) throws Exception
-    {
-
-        if (_preparsePattern != null)
-        {
-            // Get the 1st matching group
-            Matcher m = _preparsePattern.matcher(textValue);
-            if (m.find())
-            {
-                textValue = m.group(_preparsePatternGroup);
-            }
-        }
-
-        switch (_dataType)
-        {
-            case String:
-                return parseString(textValue);
-            case Integer:
-                return parseInteger(textValue);
-            case Long:
-                return parseLong(textValue);
-            case Date:
-                return parseDate(textValue);
-            case Boolean:
-                return parseBoolean(textValue);
-            case Double:
-                return parseDouble(textValue);
-            default:
-                throw new NotImplementedException("Data type " + _dataType.toString());
-        }
-    }
-
-    /**
-     * Load string properties
-     * 
-     * @throws ParseException
-     */
-    private void loadStringProperties() throws ParseException
-    {
-        _defaultValue = _properties.get(DEFAULT_VALUE_PROPERTY_NAME);
-    }
-
-    /**
-     * Parse our string
-     * 
-     * @param value
-     *            value to parse
-     * @return parsed string
-     */
-    private String parseString(String value)
-    {
-        if (StringUtils.isBlank(value) && _defaultValue != null)
-        {
-            return (String) _defaultValue;
-        }
-        return value;
-    }
-
-    /**
-     * Load integer properties
-     * 
-     * @throws ParseException
-     */
-    private void loadIntegerProperties() throws ParseException
-    {
-        String d = _properties.get(DEFAULT_VALUE_PROPERTY_NAME);
-        String s = _properties.get(NUMBER_FORMAT_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
-            _numberFormatter = new DecimalFormat(s);
-        }
-
-        if (!StringUtils.isBlank(d))
-        {
-            if (_numberFormatter == null)
-            {
-                _defaultValue = Integer.parseInt(d);
-            }
-            else
-            {
-                _defaultValue = _numberFormatter.parse(d).intValue();
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parse an integer.
-     * </p>
-     * <p>
-     * If a number patter is set, the the number pattern is used for parsing. Otherwise, standard integer parsing is
-     * performed where only digits are allowed.
-     * </p>
-     * <p>
-     * If parsing fails and a default value is set, the default value is returned.
-     * </p>
-     * 
-     * @param value
-     *            string value to parse into an integer
-     * @return integer value.
-     * @throws ParseException
-     */
-    private Integer parseInteger(String value) throws ParseException
-    {
-        try
-        {
-            if (!StringUtils.isBlank(value))
-            {
-                value = value.trim();
-            }
-            if (_numberFormatter == null)
-            {
-                return Integer.parseInt(value);
-            }
-            else
-            {
-                return _numberFormatter.parse(value).intValue();
-            }
-        }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
-                return (Integer) _defaultValue;
-            }
-            throw ex;
-        }
-        catch (NumberFormatException ex2)
-        {
-            if (_defaultValue != null)
-            {
-                return (Integer) _defaultValue;
-            }
-            throw ex2;
-        }
-        catch (NullPointerException ex3)
-        {
-            if (_defaultValue != null)
-            {
-                return (Integer) _defaultValue;
-            }
-            throw ex3;
-        }
-    }
-
-    /**
-     * Load long integer properties
-     * 
-     * @throws ParseException
-     */
-    private void loadLongProperties() throws ParseException
-    {
-        String d = _properties.get(DEFAULT_VALUE_PROPERTY_NAME);
-        String s = _properties.get(NUMBER_FORMAT_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
-            _numberFormatter = new DecimalFormat(s);
-        }
-
-        if (!StringUtils.isBlank(d))
-        {
-            if (_numberFormatter == null)
-            {
-                _defaultValue = Long.parseLong(d);
-            }
-            else
-            {
-                _defaultValue = _numberFormatter.parse(d).longValue();
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parse a long integer.
-     * </p>
-     * <p>
-     * If a number patter is set, the the number pattern is used for parsing. Otherwise, standard integer parsing is
-     * performed where only digits are allowed.
-     * </p>
-     * <p>
-     * If parsing fails and a default value is set, the default value is returned.
-     * </p>
-     * 
-     * @param value
-     *            string value to parse into an integer
-     * @return integer value.
-     * @throws ParseException
-     */
-    private Long parseLong(String value) throws ParseException
-    {
-        try
-        {
-            if (!StringUtils.isBlank(value))
-            {
-                value = value.trim();
-            }
-            if (_numberFormatter == null)
-            {
-                return Long.parseLong(value);
-            }
-            else
-            {
-                return _numberFormatter.parse(value).longValue();
-            }
-        }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
-                return (Long) _defaultValue;
-            }
-            throw ex;
-        }
-        catch (NumberFormatException ex2)
-        {
-            if (_defaultValue != null)
-            {
-                return (Long) _defaultValue;
-            }
-            throw ex2;
-        }
-        catch (NullPointerException ex3)
-        {
-            if (_defaultValue != null)
-            {
-                return (Long) _defaultValue;
-            }
-            throw ex3;
-        }
-    }
-
-    /**
-     * Load date properties
-     * 
-     * @throws ParseException
-     */
-    private void loadDateProperties() throws ParseException
-    {
-        String defaultValue = _properties.get(DEFAULT_VALUE_PROPERTY_NAME);
-        _dateFormat = _properties.get(DATE_FORMAT_PROPERTY_NAME);
-        if (StringUtils.isBlank(_dateFormat))
-        {
-            _dateFormat = "yyyy-MM-dd HH:mm:ss";
-        }
-
-        SimpleDateFormat dateFormatter = new SimpleDateFormat(_dateFormat);
-        String t = _properties.get(DATE_TIMEZONE_PROPERTY_NAME);
-        if (!StringUtils.isBlank(t))
-        {
-            _dateTimezone = TimeZone.getTimeZone(t);
-            dateFormatter.setTimeZone(_dateTimezone);
-        }
-
-        if (!StringUtils.isBlank(defaultValue))
-        {
-            _defaultValue = dateFormatter.parse(defaultValue);
-        }
-    }
-
-    /**
-     * <p>
-     * Parse a date.
-     * </p>
-     * <p>
-     * If parsing fails and a default value is set, the default value is returned.
-     * </p>
-     * 
-     * @param value
-     *            string value to parse into an integer
-     * @return integer value.
-     * @throws ParseException
-     */
-    private Date parseDate(String value) throws ParseException
-    {
-        try
-        {
-            // SimpleDateFormat is not thread safe so we have instance it everytime
-            SimpleDateFormat dateFormatter = new SimpleDateFormat(_dateFormat);
-            if (_dateTimezone != null)
-            {
-                dateFormatter.setTimeZone(_dateTimezone);
-            }
-
-            if (!StringUtils.isBlank(value))
-            {
-                value = value.trim();
-            }
-            return dateFormatter.parse(value);
-        }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
-                return (Date) _defaultValue;
-            }
-            throw ex;
-        }
-    }
-
-    /**
-     * Load boolean properties
-     * 
-     * @throws ParseException
-     */
-    private void loadBooleanProperties() throws ParseException
-    {
-        String s = _properties.get(TRUE_PATTERN_PROPERTY_NAME);
-        if (StringUtils.isBlank(s))
-        {
-            s = "[Tt][Rr][Uu][Ee]";
-        }
-        _truePattern = Pattern.compile(s);
-    }
-
-    /**
-     * <p>
-     * Parse a boolean.
-     * </p>
-     * <p>
-     * If parsing fails and a default value is set, the default value is returned.
-     * </p>
-     * 
-     * @param value
-     *            string value to parse into an integer
-     * @return integer value.
-     * @throws ParseException
-     */
-    private Boolean parseBoolean(String value) throws ParseException
-    {
-        if (!StringUtils.isBlank(value))
-        {
-            value = value.trim();
-        }
-        return _truePattern.matcher(value).matches();
-    }
-
-    /**
-     * Load double properties
-     * 
-     * @throws ParseException
-     */
-    private void loadDoubleProperties() throws ParseException
-    {
-        String d = _properties.get(DEFAULT_VALUE_PROPERTY_NAME);
-        String s = _properties.get(NUMBER_FORMAT_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
-            _numberFormatter = new DecimalFormat(s);
-        }
-
-        if (!StringUtils.isBlank(d))
-        {
-            if (_numberFormatter == null)
-            {
-                _defaultValue = Double.parseDouble(d);
-            }
-            else
-            {
-                _defaultValue = _numberFormatter.parse(d).doubleValue();
-            }
-        }
-    }
-
-    /**
-     * <p>
-     * Parse a double.
-     * </p>
-     * <p>
-     * If a number patter is set, the the number pattern is used for parsing. Otherwise, standard integer parsing is
-     * performed where only digits are allowed.
-     * </p>
-     * <p>
-     * If parsing fails and a default value is set, the default value is returned.
-     * </p>
-     * 
-     * @param value
-     *            string value to parse into an integer
-     * @return integer value.
-     * @throws ParseException
-     */
-    private Double parseDouble(String value) throws ParseException
-    {
-        try
-        {
-            if (!StringUtils.isBlank(value))
-            {
-                value = value.trim();
-            }
-            if (_numberFormatter == null)
-            {
-                return Double.parseDouble(value);
-            }
-            else
-            {
-                return _numberFormatter.parse(value).doubleValue();
-            }
-        }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
-                return (Double) _defaultValue;
-            }
-            throw ex;
-        }
-        catch (NumberFormatException ex2)
-        {
-            if (_defaultValue != null)
-            {
-                return (Double) _defaultValue;
-            }
-            throw ex2;
-        }
-        catch (NullPointerException ex3)
-        {
-            if (_defaultValue != null)
-            {
-                return (Double) _defaultValue;
-            }
-            throw ex3;
-        }
     }
 
     /**

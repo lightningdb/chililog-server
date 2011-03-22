@@ -178,9 +178,14 @@ public class MongoUtils
         }
         dbObject.put(fieldName, fieldValue);
     }
-    
+
     /**
-     * Loads a Long Integer field from the mongoDB object
+     * <p>
+     * Loads a Long Integer field from the mongoDB object.
+     * </p>
+     * <p>
+     * We extensively use long integers because as of version 1.8, 32 bit integers are not supported in the mongo shell.
+     * </p>
      * 
      * @param dbObject
      *            mongoDB DBObject from which data is to be loaded

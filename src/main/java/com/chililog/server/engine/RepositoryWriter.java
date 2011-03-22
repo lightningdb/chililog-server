@@ -18,6 +18,8 @@
 
 package com.chililog.server.engine;
 
+import java.util.ArrayList;
+
 import org.apache.commons.lang.NullArgumentException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -27,9 +29,13 @@ import org.hornetq.api.core.client.ClientSession;
 
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.MongoConnection;
-import com.chililog.server.data.RepositoryController;
-import com.chililog.server.data.RepositoryControllerFactory;
+import com.chililog.server.data.RepositoryEntryController;
 import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.engine.parsers.EntryParser;
+import com.chililog.server.engine.parsers.EntryParserFactory;
 import com.mongodb.DB;
 
 /**
@@ -48,9 +54,25 @@ public class RepositoryWriter extends Thread
     private boolean _stopRunning = false;
     private boolean _isRunning = false;
 
-    public static final String INPUT_NAME_PROPERTY_NAME = "InputName";
-    public static final String INPUT_IP_ADDRESS_PROPERTY_NAME = "InputIpAddress";
-    
+    private ArrayList<EntryParser> _filteredParsers = new ArrayList<EntryParser>();
+    private EntryParser _catchAllParser = null;
+
+    /**
+     * HornetQ property identifying the application or service that created the log entry
+     */
+    public static final String SOURCE_PROPERTY_NAME = "Source";
+
+    /**
+     * HornetQ property identifying the computer name or IP address on which the source created the log entry
+     */
+    public static final String HOST_PROPERTY_NAME = "Host";
+
+    /**
+     * HornetQ property identifying the severity of the message. The severity code as a long integer is exteced. See
+     * {@link Severity}.
+     */
+    public static final String SEVERITY_PROPERTY_NAME = "Severity";
+
     /**
      * 
      * Basic constructor
@@ -59,10 +81,10 @@ public class RepositoryWriter extends Thread
      *            name to give this thread
      * @param repo
      *            Repository that we are writing
-     * @throws NullArgumentException
-     *             if repo is null
+     * @throws Exception
+     *             if error
      */
-    public RepositoryWriter(String name, Repository repo) throws NullArgumentException
+    public RepositoryWriter(String name, Repository repo) throws Exception
     {
         super(name);
 
@@ -71,6 +93,27 @@ public class RepositoryWriter extends Thread
             throw new NullArgumentException("repo");
         }
         _repo = repo;
+
+        // Load parsers
+        for (RepositoryParserInfoBO repoParserInfo : repo.getRepoInfo().getParsers())
+        {
+            if (repoParserInfo.getAppliesTo() == AppliesTo.All)
+            {
+                _catchAllParser = EntryParserFactory.getParser(repo.getRepoInfo().getName(), repoParserInfo);
+            }
+            else if (repoParserInfo.getAppliesTo() != AppliesTo.None)
+            {
+                _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoInfo().getName(), repoParserInfo));
+            }
+        }
+
+        // If there is no catch all, then set it to the default one (that does no parsing)
+        if (_catchAllParser == null)
+        {
+            _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoInfo().getName());
+        }
+
+        return;
     }
 
     /**
@@ -89,13 +132,11 @@ public class RepositoryWriter extends Thread
         _isRunning = true;
         DB db = null;
         ClientSession session = null;
-        RepositoryController controller = null;
+        RepositoryEntryController controller = RepositoryEntryController.getInstance(_repo.getRepoInfo());
 
         try
         {
             db = MongoConnection.getInstance().getConnection();
-
-            controller = RepositoryControllerFactory.make(_repo.getRepoInfo());
 
             session = MqManager.getInstance().getTransactionalSystemClientSession();
             ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoInfo().getWriteQueueAddress());
@@ -111,22 +152,28 @@ public class RepositoryWriter extends Thread
                 {
                     try
                     {
-                        String inputName = messageReceived.getStringProperty(INPUT_NAME_PROPERTY_NAME);
-                        String inputIpAddress = messageReceived.getStringProperty(INPUT_IP_ADDRESS_PROPERTY_NAME);
-                        String textEntry = messageReceived.getBodyBuffer().readString();
+                        String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
+                        String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
+                        long severity = messageReceived.getLongProperty(SEVERITY_PROPERTY_NAME);
+                        String message = messageReceived.getBodyBuffer().readString();
 
-                        // Process message
-                        RepositoryEntryBO repoEntry = controller.parse(inputName, inputIpAddress, textEntry);
+                        // Parse message
+                        EntryParser entryParser = getParser(source, host);
+                        RepositoryEntryBO repoEntry = entryParser.parse(source, host, severity, message);
+
+                        // Save message
                         if (repoEntry != null)
                         {
                             controller.save(db, repoEntry);
                             _logger.debug("RepositoryWriter '%s' processed message id %s: %s", this.getName(),
-                                    messageReceived.getMessageID(), textEntry);
+                                    messageReceived.getMessageID(), message);
                         }
+
+                        // Commit message so that we remove it form the queue
                         messageReceived.acknowledge();
                         session.commit();
 
-                        // Text could not be parsed so add to dead letter queue
+                        // Message could not be parsed so add to dead letter queue
                         // Do it after session.commit() because adding to DLA requires another commit
                         // and we want to flag the original message as having been processed so it is not re-processed
                         if (repoEntry == null)
@@ -134,9 +181,9 @@ public class RepositoryWriter extends Thread
                             // Cannot parse. Commit and add to Dead Letter Queue with the error
                             _logger.debug("RepositoryWriter '%s' parse error processing message id %s: '%s'. "
                                     + "Moved message to dead letter queue.", this.getName(),
-                                    messageReceived.getMessageID(), textEntry);
+                                    messageReceived.getMessageID(), message);
 
-                            addToDeadLetterQueue(session, dlqProducer, textEntry, controller.getLastParseError());
+                            addToDeadLetterQueue(session, dlqProducer, message, entryParser.getLastParseError());
                         }
                     }
                     catch (Exception ex)
@@ -181,6 +228,28 @@ public class RepositoryWriter extends Thread
             _isRunning = false;
             MqManager.getInstance().closeClientSession(session);
         }
+    }
+
+    /**
+     * Figure out which parser to use
+     * 
+     * @param source
+     *            Application or service that created the log entry
+     * @param host
+     *            Device or machine name or ip address that the source is running on
+     * @return Entry parser to use. Null if no parser found.
+     */
+    private EntryParser getParser(String source, String host)
+    {
+        for (EntryParser p : _filteredParsers)
+        {
+            if (p.isApplicable(source, host))
+            {
+                return p;
+            }
+        }
+
+        return _catchAllParser;
     }
 
     /**

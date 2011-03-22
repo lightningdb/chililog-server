@@ -19,14 +19,12 @@
 package com.chililog.server.ui.api;
 
 import java.util.ArrayList;
-import java.util.Map.Entry;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryInfoBO;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.RepositoryInfoBO.QueueMaxMemoryPolicy;
 import com.chililog.server.data.RepositoryInfoBO.Status;
+import com.chililog.server.data.RepositoryParserInfoBO;
 
 /**
  * <p>
@@ -51,9 +49,8 @@ public class RepositoryInfoAO extends AO
     private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
     private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
     private long _writeQueuePageSize = 1024 * 1024 * 4; // MB
-    private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
-    private RepositoryFieldInfoAO[] _fields = null;
-    private RepositoryPropertyInfoAO[] _properties = null;
+
+    private RepositoryParserInfoAO[] _parsers = null;
 
     /**
      * Basic constructor
@@ -88,34 +85,18 @@ public class RepositoryInfoAO extends AO
         _writeQueueMaxMemoryPolicy = repoInfo.getWriteQueueMaxMemoryPolicy();
         _writeQueuePageSize = repoInfo.getWriteQueuePageSize();
 
-        _parseFieldErrorHandling = repoInfo.getParseFieldErrorHandling();
-
-        if (repoInfo.getFields() == null || repoInfo.getFields().isEmpty())
+        if (repoInfo.getParsers() == null || repoInfo.getParsers().isEmpty())
         {
-            _fields = null;
+            _parsers = null;
         }
         else
         {
-            ArrayList<RepositoryFieldInfoAO> fieldList = new ArrayList<RepositoryFieldInfoAO>();
-            for (RepositoryFieldInfoBO fieldInfo : repoInfo.getFields())
+            ArrayList<RepositoryParserInfoAO> parserList = new ArrayList<RepositoryParserInfoAO>();
+            for (RepositoryParserInfoBO parserInfo : repoInfo.getParsers())
             {
-                fieldList.add(new RepositoryFieldInfoAO(fieldInfo));
+                parserList.add(new RepositoryParserInfoAO(parserInfo));
             }
-            _fields = fieldList.toArray(new RepositoryFieldInfoAO[] {});
-        }
-
-        if (repoInfo.getProperties() == null || repoInfo.getProperties().isEmpty())
-        {
-            _properties = null;
-        }
-        else
-        {
-            ArrayList<RepositoryPropertyInfoAO> propertyList = new ArrayList<RepositoryPropertyInfoAO>();
-            for (Entry<String, String> e : repoInfo.getProperties().entrySet())
-            {
-                propertyList.add(new RepositoryPropertyInfoAO(e.getKey(), e.getValue()));
-            }
-            _properties = propertyList.toArray(new RepositoryPropertyInfoAO[] {});
+            _parsers = parserList.toArray(new RepositoryParserInfoAO[] {});
         }
 
         return;
@@ -146,25 +127,14 @@ public class RepositoryInfoAO extends AO
         repoInfo.setWriteQueueMaxMemoryPolicy(_writeQueueMaxMemoryPolicy);
         repoInfo.setWriteQueuePageSize(_writeQueuePageSize);
 
-        repoInfo.setParseFieldErrorHandling(_parseFieldErrorHandling);
-
-        repoInfo.getFields().clear();
-        if (_fields != null && _fields.length > 0)
+        repoInfo.getParsers().clear();
+        if (_parsers != null && _parsers.length > 0)
         {
-            for (RepositoryFieldInfoAO fieldInfo : _fields)
+            for (RepositoryParserInfoAO parserInfo : _parsers)
             {
-                RepositoryFieldInfoBO bo = new RepositoryFieldInfoBO();
-                fieldInfo.toBO(bo);
-                repoInfo.getFields().add(bo);
-            }
-        }
-
-        repoInfo.getProperties().clear();
-        if (_properties != null && _properties.length > 0)
-        {
-            for (RepositoryPropertyInfoAO property : _properties)
-            {
-                repoInfo.getProperties().put(property.getKey(), property.getValue());
+                RepositoryParserInfoBO bo = new RepositoryParserInfoBO();
+                parserInfo.toBO(bo);
+                repoInfo.getParsers().add(bo);
             }
         }
 
@@ -301,36 +271,14 @@ public class RepositoryInfoAO extends AO
         _writeQueuePageSize = writeQueuePageSize;
     }
 
-    public ParseFieldErrorHandling getParseFieldErrorHandling()
+    public RepositoryParserInfoAO[] getParsers()
     {
-        return _parseFieldErrorHandling;
+        return _parsers;
     }
 
-    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling)
+    public void setParsers(RepositoryParserInfoAO[] parsers)
     {
-        _parseFieldErrorHandling = parseFieldErrorHandling;
+        _parsers = parsers;
     }
 
-    public RepositoryFieldInfoAO[] getFields()
-    {
-        return _fields;
-    }
-
-    public void setFields(RepositoryFieldInfoAO[] fields)
-    {
-        _fields = fields;
-    }
-
-    public RepositoryPropertyInfoAO[] getProperties()
-    {
-        return _properties;
-    }
-
-    public void setProperties(RepositoryPropertyInfoAO[] properties)
-    {
-        _properties = properties;
-    }
-
-    
-    
 }

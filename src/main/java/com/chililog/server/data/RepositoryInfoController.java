@@ -33,7 +33,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
 /**
- * Singleton to manage our access to the repository collection in our mongoDB
+ * Singleton to manage our access to the repository information collection in our mongoDB
  * 
  * @author vibul
  * 
@@ -275,25 +275,7 @@ public class RepositoryInfoController extends Controller
         {
             throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repository.getName());
         }
-
-        // Validate unique field names
-        for (RepositoryFieldInfoBO f : repository.getFields())
-        {
-            String fieldName = f.getName();
-            int count = 0;
-            for (RepositoryFieldInfoBO f2 : repository.getFields())
-            {
-                if (f2.getName() == fieldName)
-                {
-                    count++;
-                }
-            }
-            if (count != 1)
-            {
-                throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, fieldName, repository.getName());
-            }
-        }
-        
+       
         // Save it
         super.save(db, repository);
     }

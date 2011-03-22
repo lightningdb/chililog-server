@@ -16,8 +16,9 @@
 // limitations under the License.
 //
 
-package com.chililog.server.data;
+package com.chililog.server.engine.parsers;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
@@ -26,34 +27,29 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 
-import com.chililog.server.App;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.common.StringsProperties;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
+import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryFieldInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.engine.Strings;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 
 /**
  * <p>
- * Controller to read/write into a repository using regular expression to parse logs.
- * </p>
- * <p>
- * Unlike other data controllers, this controller is NOT a singleton. This is because many repositories may need to use
- * this class
+ * Parser to extract field values from free format log entries using regular expression. For example,
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RegexRepositoryController extends RepositoryController
+public class RegexEntryParser extends EntryParser
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(App.class);
-    private String _mongoDBCollectionName;
+    private static Log4JLogger _logger = Log4JLogger.getLogger(RegexEntryParser.class);
     private Pattern _pattern;
-    private RepositoryInfoBO _repoInfo;
     private ArrayList<RegexFieldInfo> _fields = new ArrayList<RegexFieldInfo>();
-    private Exception _lastParseError = null;
 
     /**
      * Pattern to apply to each log entry. If not specified, then a pattern for each field must be specified
@@ -77,184 +73,156 @@ public class RegexRepositoryController extends RepositoryController
      * Basic constructor
      * </p>
      * 
-     * @param repoInfo
-     *            information on the repository we are going to read/write
+     * @param repoName
+     *            Name of repository (for reporting errors)
+     * @param repoParserInfo
+     *            Parser information that we need
      * @throws ChiliLogException
      */
-    public RegexRepositoryController(RepositoryInfoBO repoInfo) throws ChiliLogException
+    public RegexEntryParser(String repoName, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
     {
-        _repoInfo = repoInfo;
+        super(repoName, repoParserInfo);
 
-        _mongoDBCollectionName = repoInfo.getMongoDBCollectionName();
-        if (StringUtils.isBlank(repoInfo.getName()))
+        try
         {
-            throw new ChiliLogException(Strings.REPO_NAME_NOT_SET_ERROR);
+            Hashtable<String, String> properties = repoParserInfo.getProperties();
+            String patternString = properties.get(PATTERN_REPO_PROPERTY_NAME);
+            if (!StringUtils.isBlank(patternString))
+            {
+                _pattern = Pattern.compile(patternString);
+            }
+
+            // Parse our field value so that we don't have to keep on doing it
+            for (RepositoryFieldInfoBO f : repoParserInfo.getFields())
+            {
+                String fieldPatternString = f.getProperties().get(PATTERN_REPO_FIELD_PROPERTY_NAME);
+                String groupString = f.getProperties().get(GROUP_REPO_FIELD_PROPERTY_NAME);
+                Integer group = Integer.parseInt(groupString);
+                _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
+            }
+        }
+        catch (Exception ex)
+        {
+            if (ex instanceof ChiliLogException)
+            {
+                throw (ChiliLogException) ex;
+            }
+            else
+            {
+                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(), repoName,
+                        ex.getMessage());
+            }
         }
 
-        Hashtable<String, String> properties = repoInfo.getProperties();
-        String patternString = properties.get(PATTERN_REPO_PROPERTY_NAME);
-        if (!StringUtils.isBlank(patternString))
-        {
-            _pattern = Pattern.compile(patternString);
-        }
-
-        // Parse our field value so that we don't have to keep on doing it
-        for (RepositoryFieldInfoBO f : _repoInfo.getFields())
-        {
-            String fieldPatternString = f.getProperties().get(PATTERN_REPO_FIELD_PROPERTY_NAME);
-            String groupString = f.getProperties().get(GROUP_REPO_FIELD_PROPERTY_NAME);
-            Integer group = Integer.parseInt(groupString);
-            _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
-        }
-
-        _repoInfo.loadFieldDataTypeProperties();
         return;
-    }
-
-    /**
-     * Returns the name of the mongoDB collection for this business object
-     */
-    @Override
-    protected String getDBCollectionName()
-    {
-        return _mongoDBCollectionName;
     }
 
     /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
-     * @param inputName
+     * @param source
      *            Name of the input device or application that created this text entry
-     * @param inputIpAddress
+     * @param host
      *            IP address of the input device or application that created this text entry
-     * @param textEntry
+     * @param serverityCode
+     *            Severity code from 0-7.
+     * @param message
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry cannot be parsed, then null is
      *         returned
      */
-    public RepositoryEntryBO parse(String inputName, String inputIpAddress, String textEntry)
+    @Override
+    public RepositoryEntryBO parse(String source, String host, long serverityCode, String message)
     {
         try
         {
-            _lastParseError = null;
+            this.setLastParseError(null);
 
-            if (StringUtils.isBlank(textEntry))
+            if (StringUtils.isBlank(message))
             {
-                throw new ChiliLogException(Strings.REPO_PARSE_BLANK_ERROR, _repoInfo.getName());
+                return null;
             }
+
+            Severity severity = Severity.fromCode(serverityCode);
+
+            BasicDBObject fieldsDBObject = new BasicDBObject();
 
             BasicDBObject dbObject = new BasicDBObject();
             Matcher entryMatcher = null;
             boolean entryMatches = false;
             if (_pattern != null)
             {
-                entryMatcher = _pattern.matcher(textEntry);
+                entryMatcher = _pattern.matcher(message);
                 entryMatches = entryMatcher.matches();
             }
 
             for (RegexFieldInfo regexField : _fields)
             {
-                String key = regexField.getField().getName();
-                String textValue = null;
-                Object value = null;
+                String fieldName = regexField.getRepoFieldInfo().getName();
+                String fieldStringValue = null;
+                Object fieldValue = null;
                 try
                 {
                     Matcher fieldMatcher = null;
                     if (regexField.getPattern() != null)
                     {
-                        fieldMatcher = regexField.getPattern().matcher(textEntry);
+                        fieldMatcher = regexField.getPattern().matcher(message);
                         if (fieldMatcher.matches())
                         {
-                            textValue = fieldMatcher.group(regexField.getGroup());
+                            fieldStringValue = fieldMatcher.group(regexField.getGroup());
                         }
                     }
                     else if (entryMatches)
                     {
-                        textValue = entryMatcher.group(regexField.getGroup());
+                        fieldStringValue = entryMatcher.group(regexField.getGroup());
                     }
 
-                    value = regexField.getField().parse(textValue);
-                    dbObject.put(key, value);
+                    fieldValue = regexField.getParser().parse(fieldStringValue);
+                    dbObject.put(fieldName, fieldValue);
                 }
                 catch (Exception ex)
                 {
-                    ParseFieldErrorHandling technique = _repoInfo.getParseFieldErrorHandling();
-                    switch (technique)
+                    switch (this.getRepoParserInfo().getParseFieldErrorHandling())
                     {
                         case SkipField:
                             String msg = StringsProperties.getInstance().getString(
-                                    Strings.REPO_PARSE_FIELD_ERROR_SKIP_FIELD);
-                            _logger.error(ex, msg, textValue, key, _repoInfo.getName(), textEntry);
+                                    Strings.PARSER_FIELD_ERROR_SKIP_FIELD);
+                            _logger.error(ex, msg, fieldStringValue, fieldName, this.getRepoName(), ex.getMessage(),
+                                    message);
                             break;
                         case SkipEntry:
-                            throw new ChiliLogException(ex, Strings.REPO_PARSE_FIELD_ERROR_SKIP_ENTRY, textValue, key,
-                                    _repoInfo.getName(), textEntry);
+                            throw new ChiliLogException(ex, Strings.PARSER_FIELD_ERROR_SKIP_ENTRY, fieldStringValue,
+                                    fieldName, this.getRepoName(), ex.getMessage(), message);
                         case SkipFieldIgnoreError:
                             break;// Do nothing
                         default:
-                            throw new NotImplementedException("ParseFieldErrorHandling type " + technique.toString());
+                            throw new NotImplementedException("ParseFieldErrorHandling type "
+                                    + this.getRepoParserInfo().getParseFieldErrorHandling().toString());
 
                     }
                 }
             }
 
-            return new RepositoryEntryBO(dbObject, inputName, inputIpAddress, textEntry);
+            return new RepositoryEntryBO(source, host, severity, message, fieldsDBObject);
         }
         catch (Exception ex)
         {
-            _lastParseError = ex;
-            _logger.error(ex, "Error parsing text entry: " + textEntry);
+            this.setLastParseError(ex);
+            _logger.error(ex, "Error parsing text entry: " + message);
             return null;
         }
     }
 
     /**
-     * Saves the repository into mongoDB
-     * 
-     * @param db
-     *            MongoDb connection
-     * @param repositoryEntry
-     *            Repository entry to save
-     * @throws ChiliLogException
-     *             if there are errors
-     */
-    public void save(DB db, RepositoryEntryBO repositoryEntry) throws ChiliLogException
-    {
-        super.save(db, repositoryEntry);
-    }
-
-    /**
-     * Removes the specified user from mongoDB
-     * 
-     * @param db
-     *            MongoDb connection
-     * @param repositoryEntry
-     *            Repository entry to remove
-     * @throws ChiliLogException
-     *             if there are errors
-     */
-    public void remove(DB db, RepositoryEntryBO repositoryEntry) throws ChiliLogException
-    {
-        super.remove(db, repositoryEntry);
-    }
-
-    /**
-     * Returns the last error processed by <code>parse</code>.
-     */
-    public Exception getLastParseError()
-    {
-        return _lastParseError;
-    }
-
-    /**
-     * Context info to assist with processing
+     * Encapsulates a regular expression field
      */
     private static class RegexFieldInfo
     {
         public Pattern _pattern;
         public int _group;
-        public RepositoryFieldInfoBO _field;
+        private RepositoryFieldInfoBO _repoFieldInfo;
+        private FieldParser _parser;
 
         /**
          * Basic constructor
@@ -263,17 +231,19 @@ public class RegexRepositoryController extends RepositoryController
          *            optional field specific pattern
          * @param group
          *            group number within the matching pattern containing the string value of this field
-         * @param field
+         * @param repoFieldInfo
          *            meta data
+         * @throws ParseException
          */
-        public RegexFieldInfo(String pattern, int group, RepositoryFieldInfoBO field)
+        public RegexFieldInfo(String pattern, int group, RepositoryFieldInfoBO repoFieldInfo) throws ParseException
         {
             if (!StringUtils.isBlank(pattern))
             {
                 _pattern = Pattern.compile(pattern);
             }
             _group = group;
-            _field = field;
+            _repoFieldInfo = repoFieldInfo;
+            _parser = FieldParserFactory.getParser(repoFieldInfo);
         }
 
         /**
@@ -295,9 +265,19 @@ public class RegexRepositoryController extends RepositoryController
         /**
          * Returns the field meta data
          */
-        public RepositoryFieldInfoBO getField()
+        public RepositoryFieldInfoBO getRepoFieldInfo()
         {
-            return _field;
+            return _repoFieldInfo;
         }
+
+        /**
+         * Returns the field value parser
+         */
+        public FieldParser getParser()
+        {
+            return _parser;
+        }
+
     }
+
 }

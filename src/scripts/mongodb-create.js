@@ -76,7 +76,7 @@ var adminUser = {
 	roles: [ "workbench.administrator" ],
 	status: "Active",
 	display_name: "Adminstrator",
-	document_version: new NumberLong(1) 
+	doc_version: new NumberLong(1) 
 };
 db.users.insert(adminUser);
 
@@ -88,7 +88,6 @@ var chiliLogRepo = {
 	name: "chililog",
 	display_name: "ChiliLog Log",
 	description: "Log repository for ChiliLog events",
-	controller_class_name: "com.chililog.server.data.DelimitedRepositoryController",
 	startup_status: 'ONLINE',
 	is_read_queue_durable: false,
 	is_write_queue_durable: false,
@@ -96,21 +95,29 @@ var chiliLogRepo = {
 	write_queue_max_memory: new NumberLong(1024 * 1024 * 20),
 	write_queue_max_memory_policy: "PAGE",
 	write_queue_page_size: new NumberLong(1024 * 1024 * 4),
-	parse_field_error_handling: "SkipField",
-	fields: [ { name: "event_timestamp", data_type: "Date", properties: { position: "1"} }, 
-	         { name: "thread", data_type: "String", properties: { position: "2"}}, 
-	         { name: "level", data_type: "String", properties: { position: "3"} }, 
-	         { name: "category", data_type: "String", properties: { position: "4"} }, 
-	         { name: "server_name", data_type: "String", properties: { position: "5"} }, 
-	         { name: "server_ip_address", data_type: "String", properties: { position: "6"} },
-	         { name: "message", data_type: "String", properties: { position: "7"} } 
+	parsers: [
+	    {
+	    	name: "Default",
+	    	applies_to_source: "All",
+	    	applies_to_source_filter: "",
+	    	applies_to_host: "None",
+	    	applies_to_host_filter: "",
+	    	class_name: "com.chililog.server.data.DelimitedEntryParser",
+	    	parse_field_error_handling: "SkipField",
+	    	fields: [ 
+	    	          { name: "timestamp", data_type: "Date", properties: { position: 1 } },
+	    	          { name: "thread", data_type: "String", properties: { position: 2 } },
+	    	          { name: "category", data_type: "String", properties: { position: 3 } },
+	    	          { name: "message", data_type: "String", properties: { position: 4 } }
+	    	],
+	    	properties: { delimiter: "|" }
+	    }
 	],
-	properties: { delimiter: "|"},
-	document_version: new NumberLong(1)
+	doc_version: new NumberLong(1)
 };
 db.repositories_info.insert(chiliLogRepo);
-db.chililog_repository.ensureIndex({ entry_timestamp : 1 });
-db.chililog_repository.ensureIndex({ event_timestamp : 1 });
+
+db.chililog_repository.ensureIndex({ doc_timestamp : 1, doc_keywords : 1 });
 
 
 // *************************************************************

@@ -31,8 +31,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.MongoJsonSerializer;
-import com.chililog.server.data.RepositoryController;
-import com.chililog.server.data.RepositoryControllerFactory;
+import com.chililog.server.data.RepositoryEntryController;
 import com.chililog.server.data.RepositoryListCriteria;
 import com.chililog.server.data.RepositoryListCriteria.QueryType;
 import com.chililog.server.engine.Repository;
@@ -233,7 +232,7 @@ public class RepositoriesWorker extends Worker
                 StringBuilder json = new StringBuilder();
 
                 // Get controller and execute query
-                RepositoryController controller = RepositoryControllerFactory.make(repo.getRepoInfo());
+                RepositoryEntryController controller = RepositoryEntryController.getInstance(repo.getRepoInfo());
                 if (queryType == QueryType.FIND)
                 {
                     ArrayList<DBObject> list = controller.executeFindQuery(db, criteria);

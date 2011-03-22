@@ -43,9 +43,6 @@ public class Strings
     public static final String REPO_INFO_FIELD_PROPERTIES_ERROR = PREFIX + "RepoInfo.FieldPropertiesError";
     
     public static final String REPO_NAME_NOT_SET_ERROR = PREFIX + "Repo.NameNotSetError";
-    public static final String REPO_DELIMITER_NOT_SET_ERROR = PREFIX + "Repo.DelimiterNotSetError";
-    public static final String REPO_PARSE_FIELD_ERROR_SKIP_FIELD = PREFIX + "Repo.ParseFieldErrorSkipField";
-    public static final String REPO_PARSE_FIELD_ERROR_SKIP_ENTRY = PREFIX + "Repo.ParseFieldErrorSkipEntry";
-    public static final String REPO_PARSE_BLANK_ERROR = PREFIX + "Repo.ParseBlankError";
+
     
 }

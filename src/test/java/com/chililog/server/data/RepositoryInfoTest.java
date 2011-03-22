@@ -214,7 +214,7 @@ public class RepositoryInfoTest
 
         repoInfo.getFields().remove(1);
 
-        repoFieldInfo = repoInfo.getFields().get(0);
+        repoFieldInfo = repoInfo.getFields().fromCode(0);
         repoFieldInfo.setName("field1x");
         repoFieldInfo.setDisplayName("Field Number 1x");
         repoFieldInfo.setDescription("description x");

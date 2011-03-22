@@ -140,7 +140,7 @@ public class DelimitedRepositoryControllerTest
         assertEquals(4.4d, dbObject.get("field4"));
         assertEquals(new GregorianCalendar(2001, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
         assertEquals(true, dbObject.get("field6"));
-        assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True ", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True ", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
 
         // Save Line 2 OK
         entry = c.parse("log1", "127.0.0.1", "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
@@ -170,7 +170,7 @@ public class DelimitedRepositoryControllerTest
         assertEquals(24.4d, dbObject.get("field4"));
         assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
         assertEquals(false, dbObject.get("field6"));
-        assertEquals("line2|22|23|24.4|2021-5-5 5:5:5|xxx", dbObject.get(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("line2|22|23|24.4|2021-5-5 5:5:5|xxx", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
 
         // Should only be 2 entries
         assertEquals(2, coll.find().count());
