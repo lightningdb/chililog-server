@@ -109,30 +109,12 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     contentView.set('columnIndex', idx);
     
     cellView.set('contentIndex', this.get('contentIndex'));
-    cellView.set('layerId', this.get('layerId') + '-' + idx);
     contentView.set('contentIndex', this.get('contentIndex'));
     contentView.set('content', this.get('content'));
-    contentView.set('layerId', this.get('layerId') + '-' + SC.guidFor(column) + '-content');
 
     contentView.endPropertyChanges();
     cellView.endPropertyChanges();
     return;
-  },
-  
-  /**
-    @private
-    For some reason not grabbing the layer from the
-    cell causes it to 'detach'
-  */
-  sleepInDOMPool: function() {
-    if(this._hasSlept) return
-      
-    // why is the layer getting detached and why does this stop it?
-    this._layoutViews.forEach(function(c) {
-      c.get('contentView').get('layer');
-    }, this);
-    
-    this._hasSlept = YES;
   },
   
   /**
@@ -149,11 +131,8 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     } else {
       this.$().removeClass('sel');
     }
-
-    this._updateCells();
   },
   
-
   /**
     @private
     Manual repositioning for speed
@@ -191,7 +170,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       attrs = {};
       
     attrs.parentView = this;
-    attrs.layerId = this.get('layerId') + '-' + col;
     attrs.column = column;
     attrs.columnIndex = col;
     attrs.content = this.get('content');
@@ -205,7 +183,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       childViews: ['contentView'],
       contentView: E.extend(attrs, {
         parentView: null, 
-        layerId: attrs.layerId + '-content', 
         layout: {left: 10, right: 10}
       })
     });

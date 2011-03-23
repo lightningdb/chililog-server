@@ -66,18 +66,18 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   /**
     @private
     We override this to call our own repositionView method
-  */
-  wakePooledView: function(view, attrs) {
-    // configure
-    this.configureItemView(view, attrs);
-
-    var layer = view.get('layer');
-    this._repositionView(layer, attrs.layout);
-    
-    // awake from the pool, etc.
-    if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
-    
-  },
+  // */
+  // wakePooledView: function(view, attrs) {
+  //   // configure
+  //   this.configureItemView(view, attrs);
+  // 
+  //   var layer = view.get('layer');
+  //   this._repositionView(layer, attrs.layout);
+  //   
+  //   // awake from the pool, etc.
+  //   if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
+  //   
+  // },
   
   /**
     @private
@@ -108,24 +108,10 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     
     this._repositionView(view.get('layer'), {top: -(f.height + 2)});
     
-    // view.adjust({ top: -f.height });
     view.set("layerId", SC.guidFor(view));
     if (view.sleepInDOMPool) view.sleepInDOMPool();
   },
   
-  /**
-    @private
-    Updates a view that already exists
-    We need to override this b/c by default it doesn't update the position
-  */
-  _updateItemView: function(current, object, index) {
-    var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
-
-    this.setAttributesForItem(object, index, attrs);
-    this.configureItemView(current, attrs);
-    this._repositionView(current.get('layer'), attrs.layout);
-  },
-
   /**
     @private
     This should completely reset the view, but we don't use it right now.
@@ -145,21 +131,23 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     this.reloadIfNeeded(null, true);
   },
   
-  /**
-    @private
-    We override this b/c the base implementation grabs the column instead
-    of the row from the layer ID
-  */
-  contentIndexForLayerId: function(id) {
-    if (!id || !(id = id.toString())) return null ; // nothing to do
+  configureItemView: function(itemView, attrs) {
+    itemView.beginPropertyChanges();
+    itemView.setIfChanged('content', attrs.content);
+    itemView.setIfChanged('contentIndex', attrs.contentIndex);
+    itemView.setIfChanged('parentView', attrs.parentView);
+    itemView.setIfChanged('layerId', attrs.layerId);
+    itemView.setIfChanged('isEnabled', attrs.isEnabled);
+    itemView.setIfChanged('isSelected', attrs.isSelected);
+    itemView.setIfChanged('outlineLevel', attrs.outlineLevel);
+    itemView.setIfChanged('disclosureState', attrs.disclosureState);
+    itemView.setIfChanged('isVisibleInWindow', attrs.isVisibleInWindow);
+    itemView.setIfChanged('isGroupView', attrs.isGroupView);
+    itemView.setIfChanged('page', this.page);
+    itemView.endPropertyChanges();
     
-    var base = this._baseLayerId;
-    if (!base) base = this._baseLayerId = SC.guidFor(this)+"-";
-    
-    // no match
-    if ((id.length <= base.length) || (id.indexOf(base) !== 0)) return null ; 
-    var ret = Number(id.split('-')[1]);
-    return isNaN(ret) ? null : ret ;
+    this._repositionView(itemView.get('layer'), attrs.layout);
+    itemView._updateCells();
   }
   
 
