@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.data;
+package com.chililog.server.engine.parsers;
 
 import static org.junit.Assert.*;
 
@@ -29,6 +29,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryEntryController;
+import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -40,7 +48,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonRepositoryControllerTest
+public class JsonEntryParserTest
 {
     private static DB _db;
 
@@ -71,14 +79,22 @@ public class JsonRepositoryControllerTest
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
         repoInfo.setName("json_test");
         repoInfo.setDisplayName("Json Test 1");
-        repoInfo.setControllerClassName("com.chililog.server.data.JsonRepositoryController");
-        repoInfo.getProperties().put(JsonRepositoryController.DATE_PATTERN_REPO_PROPERTY_NAME,
-                "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
-        repoInfo.getProperties().put(JsonRepositoryController.DATE_FORMAT_REPO_PROPERTY_NAME, "yyyy-MM-dd'T'HH:mm:ssZ");
-        repoInfo.getProperties().put(JsonRepositoryController.LONG_NUMBER_PATTERN_REPO_PROPERTY_NAME,
-                "^NumberLong\\(([0-9]+)\\)$");
 
-        JsonRepositoryController c = new JsonRepositoryController(repoInfo);
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(JsonEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_PATTERN_PROPERTY_NAME,
+                "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME,
+                "yyyy-MM-dd'T'HH:mm:ssZ");
+        repoParserInfo.getProperties().put(JsonEntryParser.LONG_NUMBER_PATTERN_PROPERTY_NAME,
+                "^NumberLong\\(([0-9]+)\\)$");
+        repoInfo.getParsers().add(repoParserInfo);
+
+        RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
+        JsonEntryParser p = new JsonEntryParser(repoInfo.getName(), repoParserInfo);
 
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -94,19 +110,9 @@ public class JsonRepositoryControllerTest
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Save OK
-        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", sb.toString());
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Critical.toCode(), sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
-        assertEquals(1, dbObject.get("field1"));
-        assertEquals("abc", dbObject.get("field2"));
-        assertEquals(true, dbObject.get("field3"));
-        assertEquals(8888888888L, dbObject.get("field4"));
-        assertEquals(888L, dbObject.get("field5"));
-        assertEquals(5.5d, dbObject.get("field6"));
-        assertEquals(sf.parse("2010-11-29T19:41:46UTC"), dbObject.get("field7"));
-        assertEquals("log1", entry.getEntryInputName());
-        assertEquals("127.0.0.1", entry.getEntryInputIpAddress());
-
         c.save(_db, entry);
 
         // Get
@@ -124,6 +130,10 @@ public class JsonRepositoryControllerTest
         assertEquals(888L, dbObject.get("field5"));
         assertEquals(5.5d, dbObject.get("field6"));
         assertEquals(sf.parse("2010-11-29T19:41:46GMT"), dbObject.get("field7"));
+        assertEquals("log1", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
+        assertEquals(sb.toString(), dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
 
         // Should only be 1 entry
         assertEquals(1, coll.find().count());
@@ -135,13 +145,26 @@ public class JsonRepositoryControllerTest
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
         repoInfo.setName("json_test");
         repoInfo.setDisplayName("Json Test 2");
-        repoInfo.setControllerClassName("com.chililog.server.data.JsonRepositoryController");
 
-        JsonRepositoryController c = new JsonRepositoryController(repoInfo);
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(JsonEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_PATTERN_PROPERTY_NAME,
+                "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME,
+                "yyyy-MM-dd'T'HH:mm:ssZ");
+        repoParserInfo.getProperties().put(JsonEntryParser.LONG_NUMBER_PATTERN_PROPERTY_NAME,
+                "^NumberLong\\(([0-9]+)\\)$");
+        repoInfo.getParsers().add(repoParserInfo);
 
-        // Save OK
-        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "xxx");
+        JsonEntryParser p = new JsonEntryParser(repoInfo.getName(), repoParserInfo);
+
+        // Error because xxx is not json format
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toCode(), "xxx");
         assertNull(entry);
+        assertNotNull(p.getLastParseError());
     }
 
 }

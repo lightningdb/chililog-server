@@ -105,7 +105,7 @@ public class DelimitedEntryParser extends EntryParser
             }
             else
             {
-                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(), repoName,
+                throw new ChiliLogException(ex, Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(), repoName,
                         ex.getMessage());
             }
         }
@@ -150,7 +150,7 @@ public class DelimitedEntryParser extends EntryParser
 
             Severity severity = Severity.fromCode(serverityCode);
 
-            BasicDBObject fieldsDBObject = new BasicDBObject();
+            BasicDBObject parsedFields = new BasicDBObject();
 
             String[] ss = StringUtils.split(message, _delimiter);
             for (DelimitedFieldInfo delimitedField : _fields)
@@ -162,7 +162,7 @@ public class DelimitedEntryParser extends EntryParser
                 {
                     fieldStringValue = ss[delimitedField.getArrayIndex()];
                     fieldValue = delimitedField.getParser().parse(fieldStringValue);
-                    fieldsDBObject.put(fieldName, fieldValue);
+                    parsedFields.put(fieldName, fieldValue);
                 }
                 catch (Exception ex)
                 {
@@ -187,7 +187,7 @@ public class DelimitedEntryParser extends EntryParser
                 }
             }
 
-            return new RepositoryEntryBO(source, host, severity, message, fieldsDBObject);
+            return new RepositoryEntryBO(source, host, severity, message, parsedFields);
         }
         catch (Exception ex)
         {

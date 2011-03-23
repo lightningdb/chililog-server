@@ -41,7 +41,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     private String _name;
     private String _displayName;
     private String _description;
-    private String _controllerClassName;
     private Status _startupStatus = Status.ONLINE;
     private boolean _readQueueDurable = false;
     private boolean _writeQueueDurable = false;
@@ -54,7 +53,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     static final String NAME_FIELD_NAME = "name";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
     static final String DESCRIPTION_FIELD_NAME = "description";
-    static final String CONTROLLER_CLASS_NAME_FIELD_NAME = "controller_class_name";
     static final String STARTUP_STATUS_FIELD_NAME = "startup_status";
     static final String DURABLE_READ_QUEUE_FIELD_NAME = "is_read_queue_durable";
     static final String WRITE_QUEUE_DURABLE_FIELD_NAME = "is_write_queue_durable";
@@ -85,7 +83,6 @@ public class RepositoryInfoBO extends BO implements Serializable
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
         _displayName = MongoUtils.getString(dbObject, DISPLAY_NAME_FIELD_NAME, false);
         _description = MongoUtils.getString(dbObject, DESCRIPTION_FIELD_NAME, false);
-        _controllerClassName = MongoUtils.getString(dbObject, CONTROLLER_CLASS_NAME_FIELD_NAME, false);
         _startupStatus = Status.valueOf(MongoUtils.getString(dbObject, STARTUP_STATUS_FIELD_NAME, true));
 
         _readQueueDurable = MongoUtils.getBoolean(dbObject, DURABLE_READ_QUEUE_FIELD_NAME, true);
@@ -125,7 +122,6 @@ public class RepositoryInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name);
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName);
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description);
-        MongoUtils.setString(dbObject, CONTROLLER_CLASS_NAME_FIELD_NAME, _controllerClassName);
         MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString());
 
         MongoUtils.setBoolean(dbObject, DURABLE_READ_QUEUE_FIELD_NAME, _readQueueDurable);
@@ -198,19 +194,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     public void setDescription(String description)
     {
         _description = description;
-    }
-
-    /**
-     * Returns the full class name of the class that reads and writes log entries for this repository
-     */
-    public String getControllerClassName()
-    {
-        return _controllerClassName;
-    }
-
-    public void setControllerClassName(String writeClassName)
-    {
-        _controllerClassName = writeClassName;
     }
 
     /**

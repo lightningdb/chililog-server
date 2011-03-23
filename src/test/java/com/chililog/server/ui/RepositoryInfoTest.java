@@ -35,15 +35,19 @@ import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryInfoController;
 import com.chililog.server.data.UserBO;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.RepositoryInfoBO.QueueMaxMemoryPolicy;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserController;
+import com.chililog.server.engine.parsers.DelimitedEntryParser;
 import com.chililog.server.ui.api.ErrorAO;
 import com.chililog.server.ui.api.RepositoryFieldInfoAO;
 import com.chililog.server.ui.api.RepositoryInfoAO;
+import com.chililog.server.ui.api.RepositoryParserInfoAO;
 import com.chililog.server.ui.api.RepositoryPropertyInfoAO;
 import com.chililog.server.ui.api.UserAO;
 import com.chililog.server.ui.api.Worker;
@@ -103,17 +107,27 @@ public class RepositoryInfoTest
         repoInfo.setName("RepositoryInfoTest_common");
         repoInfo.setDisplayName("Test 1");
         repoInfo.setDescription("description");
-        repoInfo.setControllerClassName("com.chililog.server.data.com.chililog.server.data.DelimitedRepositoryController");
         repoInfo.setReadQueueDurable(true);
         repoInfo.setWriteQueueDurable(true);
         repoInfo.setWriteQueueWorkerCount(10);
         repoInfo.setWriteQueueMaxMemory(1);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         repoInfo.setWriteQueuePageSize(2);
-        repoInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoInfo.getProperties().put("key1", "value11");
-        repoInfo.getProperties().put("key2", "value12");
-        repoInfo.getProperties().put("key3", "value13");
+
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        repoInfo.getParsers().add(repoParserInfo);
+
+        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        repoFieldInfo.setName("field1");
+        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserInfo.getFields().add(repoFieldInfo);
+
         RepositoryInfoController.getInstance().save(_db, repoInfo);
 
         // Start web server
@@ -177,7 +191,6 @@ public class RepositoryInfoTest
         createRepoInfoAO.setName("RepositoryInfoTest_1");
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
-        createRepoInfoAO.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
         createRepoInfoAO.setReadQueueDurable(true);
         createRepoInfoAO.setWriteQueueDurable(true);
@@ -185,10 +198,20 @@ public class RepositoryInfoTest
         createRepoInfoAO.setWriteQueueMaxMemory(10);
         createRepoInfoAO.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         createRepoInfoAO.setWriteQueuePageSize(2);
-        createRepoInfoAO.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        createRepoInfoAO.setFields(new RepositoryFieldInfoAO[]
+
+        RepositoryParserInfoAO createRepoParserInfo = new RepositoryParserInfoAO();
+        createRepoParserInfo.setName("parser1");
+        createRepoParserInfo.setAppliesTo(AppliesTo.All);
+        createRepoParserInfo.setAppliesToSourceFilter("sss");
+        createRepoParserInfo.setAppliesToHostFilter("hhh");
+        createRepoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        createRepoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        createRepoInfoAO.setParsers(new RepositoryParserInfoAO[]
+        { createRepoParserInfo });
+
+        createRepoParserInfo.setFields(new RepositoryFieldInfoAO[]
         { f1, f2 });
-        createRepoInfoAO.setProperties(new RepositoryPropertyInfoAO[]
+        createRepoParserInfo.setProperties(new RepositoryPropertyInfoAO[]
         { new RepositoryPropertyInfoAO("1", "2"), new RepositoryPropertyInfoAO("3", "4") });
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
@@ -203,8 +226,6 @@ public class RepositoryInfoTest
         assertEquals("RepositoryInfoTest_1", createResponseAO.getName());
         assertEquals("Repository Test 1", createResponseAO.getDisplayName());
         assertEquals("description", createResponseAO.getDescription());
-        assertEquals("com.chililog.server.data.DelimitedRepositoryController",
-                createResponseAO.getControllerClassName());
         assertEquals(Status.ONLINE, createResponseAO.getStartupStatus());
         assertEquals(true, createResponseAO.isReadQueueDurable());
         assertEquals(true, createResponseAO.isWriteQueueDurable());
@@ -212,18 +233,26 @@ public class RepositoryInfoTest
         assertEquals(10, createResponseAO.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, createResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, createResponseAO.getWriteQueuePageSize());
-        assertEquals(ParseFieldErrorHandling.SkipEntry, createResponseAO.getParseFieldErrorHandling());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
-        assertEquals(2, createResponseAO.getProperties().length);
-        assertEquals(2, createResponseAO.getFields().length);
 
-        assertEquals("field1", createResponseAO.getFields()[0].getName());
-        assertEquals(RepositoryFieldInfoBO.DataType.String, createResponseAO.getFields()[0].getDataType());
-        assertEquals(2, createResponseAO.getFields()[0].getProperties().length);
+        RepositoryParserInfoAO createParserResponseAO = createResponseAO.getParsers()[0];
+        assertEquals("parser1", createParserResponseAO.getName());
+        assertEquals(AppliesTo.All, createParserResponseAO.getAppliesTo());
+        assertEquals("sss", createParserResponseAO.getAppliesToSourceFilter());
+        assertEquals("hhh", createParserResponseAO.getAppliesToHostFilter());
+        assertEquals(DelimitedEntryParser.class.getName(), createParserResponseAO.getClassName());
+        assertEquals(2, createParserResponseAO.getProperties().length);
+        assertEquals(ParseFieldErrorHandling.SkipEntry, createParserResponseAO.getParseFieldErrorHandling());
+        assertEquals(2, createParserResponseAO.getProperties().length);
+        assertEquals(2, createParserResponseAO.getFields().length);
 
-        assertEquals("field2", createResponseAO.getFields()[1].getName());
-        assertEquals(RepositoryFieldInfoBO.DataType.Integer, createResponseAO.getFields()[1].getDataType());
-        assertEquals(2, createResponseAO.getFields()[1].getProperties().length);
+        assertEquals("field1", createParserResponseAO.getFields()[0].getName());
+        assertEquals(RepositoryFieldInfoBO.DataType.String, createParserResponseAO.getFields()[0].getDataType());
+        assertEquals(2, createParserResponseAO.getFields()[0].getProperties().length);
+
+        assertEquals("field2", createParserResponseAO.getFields()[1].getName());
+        assertEquals(RepositoryFieldInfoBO.DataType.Integer, createParserResponseAO.getFields()[1].getDataType());
+        assertEquals(2, createParserResponseAO.getFields()[1].getProperties().length);
 
         // Read one record
         httpConn = ApiUtils.getHttpURLConnection(
@@ -238,8 +267,6 @@ public class RepositoryInfoTest
         assertEquals("RepositoryInfoTest_1", readResponseAO.getName());
         assertEquals("Repository Test 1", readResponseAO.getDisplayName());
         assertEquals("description", readResponseAO.getDescription());
-        assertEquals("com.chililog.server.data.DelimitedRepositoryController",
-                readResponseAO.getControllerClassName());
         assertEquals(Status.ONLINE, readResponseAO.getStartupStatus());
         assertEquals(true, readResponseAO.isReadQueueDurable());
         assertEquals(true, readResponseAO.isWriteQueueDurable());
@@ -247,10 +274,25 @@ public class RepositoryInfoTest
         assertEquals(10, readResponseAO.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, readResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, readResponseAO.getWriteQueuePageSize());
-        assertEquals(ParseFieldErrorHandling.SkipEntry, readResponseAO.getParseFieldErrorHandling());
-        assertEquals(new Long(1), readResponseAO.getDocumentVersion());
-        assertEquals(2, readResponseAO.getProperties().length);
-        assertEquals(2, readResponseAO.getFields().length);
+
+        createParserResponseAO = createResponseAO.getParsers()[0];
+        assertEquals("parser1", createParserResponseAO.getName());
+        assertEquals(AppliesTo.All, createParserResponseAO.getAppliesTo());
+        assertEquals("sss", createParserResponseAO.getAppliesToSourceFilter());
+        assertEquals("hhh", createParserResponseAO.getAppliesToHostFilter());
+        assertEquals(DelimitedEntryParser.class.getName(), createParserResponseAO.getClassName());
+        assertEquals(2, createParserResponseAO.getProperties().length);
+        assertEquals(ParseFieldErrorHandling.SkipEntry, createParserResponseAO.getParseFieldErrorHandling());
+        assertEquals(2, createParserResponseAO.getProperties().length);
+        assertEquals(2, createParserResponseAO.getFields().length);
+
+        assertEquals("field1", createParserResponseAO.getFields()[0].getName());
+        assertEquals(RepositoryFieldInfoBO.DataType.String, createParserResponseAO.getFields()[0].getDataType());
+        assertEquals(2, createParserResponseAO.getFields()[0].getProperties().length);
+
+        assertEquals("field2", createParserResponseAO.getFields()[1].getName());
+        assertEquals(RepositoryFieldInfoBO.DataType.Integer, createParserResponseAO.getFields()[1].getDataType());
+        assertEquals(2, createParserResponseAO.getFields()[1].getProperties().length);
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection(
@@ -258,9 +300,9 @@ public class RepositoryInfoTest
                 _adminAuthToken);
 
         readResponseAO.setName("RepositoryInfoTest_1_update");
-        readResponseAO.setFields(new RepositoryFieldInfoAO[]
+        readResponseAO.getParsers()[0].setFields(new RepositoryFieldInfoAO[]
         { f1 });
-        readResponseAO.setProperties(new RepositoryPropertyInfoAO[]
+        readResponseAO.getParsers()[0].setProperties(new RepositoryPropertyInfoAO[]
         { new RepositoryPropertyInfoAO("1", "2") });
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
@@ -273,8 +315,8 @@ public class RepositoryInfoTest
         RepositoryInfoAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO.class);
         assertEquals("RepositoryInfoTest_1_update", updateResponseAO.getName());
-        assertEquals(1, readResponseAO.getProperties().length);
-        assertEquals(1, readResponseAO.getFields().length);
+        assertEquals(1, readResponseAO.getParsers()[0].getProperties().length);
+        assertEquals(1, readResponseAO.getParsers()[0].getFields().length);
 
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
@@ -341,7 +383,6 @@ public class RepositoryInfoTest
         repoInfoAO.setName("RepositoryInfoTest_1");
         repoInfoAO.setDisplayName("Repository Test 1");
         repoInfoAO.setDescription("description");
-        repoInfoAO.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(repoInfoAO, out);
@@ -401,7 +442,6 @@ public class RepositoryInfoTest
         repoInfoAO.setName("RepositoryInfoTest_3");
         repoInfoAO.setDisplayName("Repository Test 3");
         repoInfoAO.setDescription("description");
-        repoInfoAO.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(repoInfoAO, out);
@@ -460,7 +500,7 @@ public class RepositoryInfoTest
 
         String pageCountHeader = headers.get(Worker.PAGE_COUNT_HEADER);
         assertEquals("1", pageCountHeader);
-        
+
         // Get list - page 2 (no more records)
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?records_per_page=1&start_page=2&name="
@@ -502,7 +542,6 @@ public class RepositoryInfoTest
         // createRepoInfoAO.setName("RepositoryInfoTest_1");
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
-        createRepoInfoAO.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
         createRepoInfoAO.setReadQueueDurable(true);
         createRepoInfoAO.setWriteQueueDurable(true);
@@ -510,7 +549,6 @@ public class RepositoryInfoTest
         createRepoInfoAO.setWriteQueueMaxMemory(10);
         createRepoInfoAO.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         createRepoInfoAO.setWriteQueuePageSize(2);
-        createRepoInfoAO.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRepoInfoAO, out);
@@ -538,13 +576,19 @@ public class RepositoryInfoTest
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
-        
-        // Create no controller class
+
+        // Create no class name
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
                 _adminAuthToken);
 
+        RepositoryParserInfoAO createRepoParserInfo = new RepositoryParserInfoAO();
+        createRepoParserInfo.setName("parser1");
+        createRepoParserInfo.setAppliesTo(AppliesTo.All);
+        createRepoParserInfo.setClassName("");
+
         createRepoInfoAO.setDisplayName("Repository Test 1");
-        createRepoInfoAO.setControllerClassName("");
+        createRepoInfoAO.setParsers(new RepositoryParserInfoAO[]
+        { createRepoParserInfo });
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRepoInfoAO, out);

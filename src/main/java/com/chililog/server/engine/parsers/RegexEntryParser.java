@@ -54,19 +54,19 @@ public class RegexEntryParser extends EntryParser
     /**
      * Pattern to apply to each log entry. If not specified, then a pattern for each field must be specified
      */
-    public static final String PATTERN_REPO_PROPERTY_NAME = "pattern";
+    public static final String PATTERN_PROPERTY_NAME = "pattern";
 
     /**
      * Optional override pattern to search for a specific field
      */
-    public static final String PATTERN_REPO_FIELD_PROPERTY_NAME = "pattern";
+    public static final String PATTERN_FIELD_PROPERTY_NAME = "pattern";
 
     /**
      * Denotes the regular expression group number in which to find the contents of the field. For a pattern,
      * <code>([0-9]{4}) ([0-9]{2})</code> and text <code>1111 22</code>, group 1 is <code>1111</code> and group 2 is
      * <code>22</code>.
      */
-    public static final String GROUP_REPO_FIELD_PROPERTY_NAME = "group";
+    public static final String GROUP_FIELD_PROPERTY_NAME = "group";
 
     /**
      * <p>
@@ -86,7 +86,7 @@ public class RegexEntryParser extends EntryParser
         try
         {
             Hashtable<String, String> properties = repoParserInfo.getProperties();
-            String patternString = properties.get(PATTERN_REPO_PROPERTY_NAME);
+            String patternString = properties.get(PATTERN_PROPERTY_NAME);
             if (!StringUtils.isBlank(patternString))
             {
                 _pattern = Pattern.compile(patternString);
@@ -95,8 +95,8 @@ public class RegexEntryParser extends EntryParser
             // Parse our field value so that we don't have to keep on doing it
             for (RepositoryFieldInfoBO f : repoParserInfo.getFields())
             {
-                String fieldPatternString = f.getProperties().get(PATTERN_REPO_FIELD_PROPERTY_NAME);
-                String groupString = f.getProperties().get(GROUP_REPO_FIELD_PROPERTY_NAME);
+                String fieldPatternString = f.getProperties().get(PATTERN_FIELD_PROPERTY_NAME);
+                String groupString = f.getProperties().get(GROUP_FIELD_PROPERTY_NAME);
                 Integer group = Integer.parseInt(groupString);
                 _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
             }
@@ -139,16 +139,22 @@ public class RegexEntryParser extends EntryParser
         {
             this.setLastParseError(null);
 
+            if (StringUtils.isBlank(source))
+            {
+                throw new IllegalArgumentException("Entry source is blank");
+            }
+            if (StringUtils.isBlank(host))
+            {
+                throw new IllegalArgumentException("Entry host is blank");
+            }
             if (StringUtils.isBlank(message))
             {
-                return null;
+                throw new IllegalArgumentException("Entry message is blank");
             }
 
             Severity severity = Severity.fromCode(serverityCode);
 
-            BasicDBObject fieldsDBObject = new BasicDBObject();
-
-            BasicDBObject dbObject = new BasicDBObject();
+            BasicDBObject parsedFields = new BasicDBObject();
             Matcher entryMatcher = null;
             boolean entryMatches = false;
             if (_pattern != null)
@@ -179,7 +185,7 @@ public class RegexEntryParser extends EntryParser
                     }
 
                     fieldValue = regexField.getParser().parse(fieldStringValue);
-                    dbObject.put(fieldName, fieldValue);
+                    parsedFields.put(fieldName, fieldValue);
                 }
                 catch (Exception ex)
                 {
@@ -204,7 +210,7 @@ public class RegexEntryParser extends EntryParser
                 }
             }
 
-            return new RepositoryEntryBO(source, host, severity, message, fieldsDBObject);
+            return new RepositoryEntryBO(source, host, severity, message, parsedFields);
         }
         catch (Exception ex)
         {

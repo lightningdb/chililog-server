@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import java.net.InetAddress;
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
@@ -35,6 +34,7 @@ import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.BO;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -49,7 +49,6 @@ public class InternalLog4JAppenderTest
 {
     private DB _db;
     private String _machineName;
-    private String _machineIpAddress;
 
     @Before
     public void testSetup() throws Exception
@@ -68,8 +67,6 @@ public class InternalLog4JAppenderTest
 
         InetAddress addr = InetAddress.getLocalHost();
         _machineName = addr.getHostName();
-        _machineIpAddress = addr.getHostAddress();
-        
     }
 
     /**
@@ -96,14 +93,13 @@ public class InternalLog4JAppenderTest
         DBObject dbObject = coll.findOne();
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertEquals(now, dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME));
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
-        assertEquals("DEBUG", dbObject.get(InternalLog4JAppender.LEVEL_FIELD_NAME));
-        assertEquals(_machineIpAddress, dbObject.get(InternalLog4JAppender.SERVER_IP_ADDRESS_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(InternalLog4JAppender.SERVER_NAME_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
         assertEquals(msg, dbObject.get(InternalLog4JAppender.MESSAGE_FIELD_NAME));
 
@@ -133,20 +129,19 @@ public class InternalLog4JAppenderTest
         DBObject dbObject = coll.findOne();
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
-        assertTrue(((Date)dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
+        assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
-        assertEquals("DEBUG", dbObject.get(InternalLog4JAppender.LEVEL_FIELD_NAME));
-        assertEquals(_machineIpAddress, dbObject.get(InternalLog4JAppender.SERVER_IP_ADDRESS_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(InternalLog4JAppender.SERVER_NAME_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
         assertEquals(msg, dbObject.get(InternalLog4JAppender.MESSAGE_FIELD_NAME));
 
         return;
     }
-    
+
     @Test
     public void testNull() throws ChiliLogException, InterruptedException
     {
@@ -157,7 +152,7 @@ public class InternalLog4JAppenderTest
         logger.addAppender(new InternalLog4JAppender());
         logger.setLevel(Level.DEBUG);
         logger.debug(null);
-        
+
         // Check if entry is there
         DBCollection coll = _db.getCollection(InternalLog4JAppender.MONGODB_COLLECTION_NAME);
         assertEquals(1, coll.find().count());
@@ -165,18 +160,18 @@ public class InternalLog4JAppenderTest
         DBObject dbObject = coll.findOne();
 
         assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
-        assertTrue(((Date)dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
-        assertEquals(InternalLog4JAppenderTest.class.getName()+ "_TestNull", dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
-        assertEquals("DEBUG", dbObject.get(InternalLog4JAppender.LEVEL_FIELD_NAME));
-        assertEquals(_machineIpAddress, dbObject.get(InternalLog4JAppender.SERVER_IP_ADDRESS_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(InternalLog4JAppender.SERVER_NAME_FIELD_NAME));
+        assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
+        assertEquals(InternalLog4JAppenderTest.class.getName() + "_TestNull",
+                dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
-        assertTrue(StringUtils.isEmpty(dbObject.get(InternalLog4JAppender.MESSAGE_FIELD_NAME).toString()));
+        assertEquals("", dbObject.get(InternalLog4JAppender.MESSAGE_FIELD_NAME));
 
         return;
-        
+
     }
 }

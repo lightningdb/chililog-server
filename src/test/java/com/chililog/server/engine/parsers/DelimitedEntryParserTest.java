@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.data;
+package com.chililog.server.engine.parsers;
 
 import static org.junit.Assert.*;
 
@@ -28,7 +28,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryEntryController;
+import com.chililog.server.data.RepositoryFieldInfoBO;
+import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -40,7 +48,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class DelimitedRepositoryControllerTest
+public class DelimitedEntryParserTest
 {
     private static DB _db;
 
@@ -71,59 +79,59 @@ public class DelimitedRepositoryControllerTest
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
         repoInfo.setName("junit_test");
         repoInfo.setDisplayName("JUnit Test 1");
-        repoInfo.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
-        repoInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoInfo.getProperties().put(DelimitedRepositoryController.DELIMITER_REPO_PROPERTY_NAME, "|");
 
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        repoInfo.getParsers().add(repoParserInfo);
+        
         RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "1");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field2");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "2");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field3");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Long);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "3");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "3");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field4");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Double);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "4");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "4");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field5");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "5");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "5");
+        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field6");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Boolean);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "6");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "6");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
-        DelimitedRepositoryController c = new DelimitedRepositoryController(repoInfo);
+        RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
+        DelimitedEntryParser p = new DelimitedEntryParser(repoInfo.getName(), repoParserInfo);
 
         // Save Line 1 OK
-        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "line1|2|3|4.4|2001-5-5 5:5:5|True ");
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Critical.toCode(), "line1|2|3|4.4|2001-5-5 5:5:5|True");
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
-        assertEquals("line1", dbObject.get("field1"));
-        assertEquals(2, dbObject.get("field2"));
-        assertEquals(3L, dbObject.get("field3"));
-        assertEquals(4.4d, dbObject.get("field4"));
-        assertEquals(new GregorianCalendar(2001, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
-        assertEquals(true, dbObject.get("field6"));
-
         c.save(_db, entry);
 
         // Get Line 1
@@ -140,22 +148,15 @@ public class DelimitedRepositoryControllerTest
         assertEquals(4.4d, dbObject.get("field4"));
         assertEquals(new GregorianCalendar(2001, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
         assertEquals(true, dbObject.get("field6"));
-        assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True ", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("log1", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
+        assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True", dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
 
         // Save Line 2 OK
-        entry = c.parse("log1", "127.0.0.1", "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
+        entry = p.parse("log1", "127.0.0.1", Severity.Debug.toCode(), "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
         assertNotNull(entry);
         dbObject = entry.toDBObject();
-        assertEquals("line2", dbObject.get("field1"));
-        assertEquals(22, dbObject.get("field2"));
-        assertEquals(23L, dbObject.get("field3"));
-        assertEquals(24.4d, dbObject.get("field4"));
-        assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
-        assertEquals(false, dbObject.get("field6"));
-        assertEquals(false, dbObject.get("field6"));
-        assertEquals("log1", entry.getEntryInputName());
-        assertEquals("127.0.0.1", entry.getEntryInputIpAddress());
-
         c.save(_db, entry);
 
         // Get Line 2
@@ -165,25 +166,37 @@ public class DelimitedRepositoryControllerTest
 
         assertNotNull(dbObject);
         assertTrue(dbObject.containsField(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
+        assertEquals("line2", dbObject.get("field1"));
         assertEquals(22, dbObject.get("field2"));
         assertEquals(23L, dbObject.get("field3"));
         assertEquals(24.4d, dbObject.get("field4"));
         assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
         assertEquals(false, dbObject.get("field6"));
-        assertEquals("line2|22|23|24.4|2021-5-5 5:5:5|xxx", dbObject.fromCode(RepositoryEntryBO.ENTRY_TEXT_FIELD_NAME));
+        assertEquals("log1", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
+        assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
+        assertEquals("line2|22|23|24.4|2021-5-5 5:5:5|xxx", dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
 
         // Should only be 2 entries
         assertEquals(2, coll.find().count());
 
-        // Empty string is ignored
-        entry = c.parse("log1", "127.0.0.1", "");
+        // Empty source, host and message is ignored
+        entry = p.parse("", "127.0.0.1", Severity.Warning.toCode(), "aaa");
         assertNull(entry);
-        assertNotNull(c.getLastParseError());
+        assertNotNull(p.getLastParseError());
+
+        entry = p.parse("log1", null, Severity.Warning.toCode(), "aaa");
+        assertNull(entry);
+        assertNotNull(p.getLastParseError());
+
+        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toCode(), "");
+        assertNull(entry);
+        assertNotNull(p.getLastParseError());
 
         // Missing field
-        entry = c.parse("log1", "127.0.0.1", "line3");
+        entry = p.parse("log1", "127.0.0.1", Severity.Debug.toCode(), "line3");
         assertNull(entry);
-        assertNotNull(c.getLastParseError());
+        assertNotNull(p.getLastParseError());
     }
 
 }

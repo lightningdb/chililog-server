@@ -83,17 +83,17 @@ public class RepositoryInfoWorker extends Worker
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
-            RepositoryInfoAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+            RepositoryInfoAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
                     RepositoryInfoAO.class);
 
-            RepositoryInfoBO userBO = new RepositoryInfoBO();
-            userAO.toBO(userBO);
+            RepositoryInfoBO repoInfoBO = new RepositoryInfoBO();
+            repoInfoAO.toBO(repoInfoBO);
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoController.getInstance().save(db, userBO);
+            RepositoryInfoController.getInstance().save(db, repoInfoBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(repoInfoBO));
         }
         catch (Exception ex)
         {
@@ -114,10 +114,10 @@ public class RepositoryInfoWorker extends Worker
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoBO userBO = RepositoryInfoController.getInstance().tryGet(db, new ObjectId(id));
-            if (userBO != null)
+            RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().tryGet(db, new ObjectId(id));
+            if (repoInfoBO != null)
             {
-                RepositoryInfoController.getInstance().remove(db, userBO);
+                RepositoryInfoController.getInstance().remove(db, repoInfoBO);
             }
 
             // Return response
@@ -147,16 +147,16 @@ public class RepositoryInfoWorker extends Worker
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoBO userBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
+            RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-            RepositoryInfoAO userAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+            RepositoryInfoAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
                     RepositoryInfoAO.class);
-            userAO.toBO(userBO);
+            repoInfoAO.toBO(repoInfoBO);
 
-            RepositoryInfoController.getInstance().save(db, userBO);
+            RepositoryInfoController.getInstance().save(db, repoInfoBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(userBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(repoInfoBO));
         }
         catch (Exception ex)
         {
@@ -189,9 +189,9 @@ public class RepositoryInfoWorker extends Worker
                 if (!boList.isEmpty())
                 {
                     ArrayList<RepositoryInfoAO> aoList = new ArrayList<RepositoryInfoAO>();
-                    for (RepositoryInfoBO userBO : boList)
+                    for (RepositoryInfoBO repoInfoBO : boList)
                     {
-                        aoList.add(new RepositoryInfoAO(userBO));
+                        aoList.add(new RepositoryInfoAO(repoInfoBO));
                     }
                     responseContent = aoList.toArray(new RepositoryInfoAO[] {});
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);

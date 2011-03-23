@@ -102,13 +102,13 @@ var chiliLogRepo = {
 	    	applies_to_source_filter: "",
 	    	applies_to_host: "None",
 	    	applies_to_host_filter: "",
-	    	class_name: "com.chililog.server.data.DelimitedEntryParser",
+	    	class_name: "com.chililog.server.engine.parsers.DelimitedEntryParser",
 	    	parse_field_error_handling: "SkipField",
 	    	fields: [ 
-	    	          { name: "timestamp", data_type: "Date", properties: { position: 1 } },
-	    	          { name: "thread", data_type: "String", properties: { position: 2 } },
-	    	          { name: "category", data_type: "String", properties: { position: 3 } },
-	    	          { name: "message", data_type: "String", properties: { position: 4 } }
+	    	          { name: "timestamp", data_type: "Date", properties: { position: "1" } },
+	    	          { name: "thread", data_type: "String", properties: { position: "2" } },
+	    	          { name: "category", data_type: "String", properties: { position: "3" } },
+	    	          { name: "message", data_type: "String", properties: { position: "4" } }
 	    	],
 	    	properties: { delimiter: "|" }
 	    }
@@ -117,7 +117,7 @@ var chiliLogRepo = {
 };
 db.repositories_info.insert(chiliLogRepo);
 
-db.chililog_repository.ensureIndex({ doc_timestamp : 1, doc_keywords : 1 });
+db.chililog_repository.ensureIndex({ entry_timestamp : 1, entry_keywords : 1 });
 
 
 // *************************************************************

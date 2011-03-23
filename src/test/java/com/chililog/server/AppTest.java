@@ -31,15 +31,18 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.chililog.server.data.DelimitedRepositoryController;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryInfoController;
+import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.engine.MqManager;
+import com.chililog.server.engine.RepositoryWriter;
+import com.chililog.server.engine.parsers.DelimitedEntryParser;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -65,48 +68,54 @@ public class AppTest
         _repoInfo = new RepositoryInfoBO();
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Repository Test 1");
-        _repoInfo.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
         _repoInfo.setReadQueueDurable(false);
         _repoInfo.setWriteQueueDurable(false);
         _repoInfo.setWriteQueueWorkerCount(2);
-        _repoInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        _repoInfo.getProperties().put(DelimitedRepositoryController.DELIMITER_REPO_PROPERTY_NAME, "|");
-
+        
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        _repoInfo.getParsers().add(repoParserInfo);
+        
         RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "1");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field2");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "2");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field3");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Long);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "3");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "3");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field4");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Double);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "4");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "4");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field5");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "5");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "5");
+        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field6");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Boolean);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "6");
-        _repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "6");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         // Database
         _db = MongoConnection.getInstance().getConnection();
@@ -194,6 +203,9 @@ public class AppTest
         for (int i = 0; i < 10000; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "AppTest");
+            message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
+            message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 3L);
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeString(entry1);
             producer.send(message);

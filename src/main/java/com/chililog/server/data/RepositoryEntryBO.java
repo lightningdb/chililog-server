@@ -275,17 +275,25 @@ public class RepositoryEntryBO extends BO implements Serializable
 
         public static Severity fromString(String s)
         {
-            return Enum.valueOf(Severity.class, s); 
+            return Enum.valueOf(Severity.class, s);
         }
 
         public static Severity fromCode(String code)
         {
             return lookup[Integer.parseInt(code)];
         }
-        
+
         public static Severity fromCode(long code)
         {
-            return lookup[(int) code];
+            try
+            {
+                return lookup[(int) code];
+            }
+            catch (Exception ex)
+            {
+                // Just return info and ignore the error
+                return Severity.Information;
+            }
         }
     }
 }

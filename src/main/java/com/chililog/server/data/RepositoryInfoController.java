@@ -140,7 +140,7 @@ public class RepositoryInfoController extends Controller
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
-    
+
     /**
      * Retrieves the specified repository by its name
      * 
@@ -216,9 +216,9 @@ public class RepositoryInfoController extends Controller
     public ArrayList<RepositoryInfoBO> getList(DB db, RepositoryInfoListCriteria criteria) throws ChiliLogException
     {
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
-        
+
         // Filter
-        BasicDBObject condition = new BasicDBObject();        
+        BasicDBObject condition = new BasicDBObject();
         if (!StringUtils.isBlank(criteria.getNamePattern()))
         {
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
@@ -228,7 +228,7 @@ public class RepositoryInfoController extends Controller
         // Order
         DBObject orderBy = new BasicDBObject();
         orderBy.put(RepositoryInfoBO.NAME_FIELD_NAME, 1);
-        
+
         // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
         int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
@@ -239,14 +239,14 @@ public class RepositoryInfoController extends Controller
             DBObject dbo = cur.next();
             list.add(new RepositoryInfoBO(dbo));
         }
-        
-        // Do page count by executing query again 
+
+        // Do page count by executing query again
         if (criteria.getDoPageCount())
         {
             int documentCount = coll.find(condition).count();
             criteria.calculatePageCount(documentCount);
         }
-        
+
         return list;
     }
 
@@ -275,7 +275,45 @@ public class RepositoryInfoController extends Controller
         {
             throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repository.getName());
         }
-       
+
+        // Validate unique parser names
+        for (RepositoryParserInfoBO p : repository.getParsers())
+        {
+            String parserName = p.getName();
+            int pCount = 0;
+            for (RepositoryParserInfoBO p2 : repository.getParsers())
+            {
+                if (p2.getName().equals(parserName))
+                {
+                    pCount++;
+                }
+            }
+            if (pCount != 1)
+            {
+                throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, parserName,
+                        repository.getName());
+            }
+            
+            // Validate unique field names per parser
+            for (RepositoryFieldInfoBO f : p.getFields())
+            {
+                String fieldName = f.getName();
+                int count = 0;
+                for (RepositoryFieldInfoBO f2 : p.getFields())
+                {
+                    if (f2.getName().equals(fieldName))
+                    {
+                        count++;
+                    }
+                }
+                if (count != 1)
+                {
+                    throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, fieldName, parserName,
+                            repository.getName());
+                }
+            }
+        }
+
         // Save it
         super.save(db, repository);
     }

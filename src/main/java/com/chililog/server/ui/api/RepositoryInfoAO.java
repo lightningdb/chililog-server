@@ -41,7 +41,6 @@ public class RepositoryInfoAO extends AO
     private String _name;
     private String _displayName;
     private String _description;
-    private String _controllerClassName;
     private Status _startupStatus = Status.ONLINE;
     private boolean _readQueueDurable = false;
     private boolean _writeQueueDurable = false;
@@ -74,7 +73,6 @@ public class RepositoryInfoAO extends AO
         _displayName = repoInfo.getDisplayName();
         _description = repoInfo.getDescription();
 
-        _controllerClassName = repoInfo.getControllerClassName();
         _startupStatus = repoInfo.getStartupStatus();
 
         _readQueueDurable = repoInfo.isReadQueueDurable();
@@ -116,7 +114,6 @@ public class RepositoryInfoAO extends AO
         repoInfo.setName(checkRequiredField("Name", _name));
         repoInfo.setDisplayName(checkRequiredField("DisplayName", _displayName));
         repoInfo.setDescription(_description);
-        repoInfo.setControllerClassName(checkRequiredField("ControllerClassName", _controllerClassName));
         repoInfo.setStartupStatus(_startupStatus);
 
         repoInfo.setReadQueueDurable(_readQueueDurable);
@@ -189,16 +186,6 @@ public class RepositoryInfoAO extends AO
     public void setDescription(String description)
     {
         _description = description;
-    }
-
-    public String getControllerClassName()
-    {
-        return _controllerClassName;
-    }
-
-    public void setControllerClassName(String controllerClassName)
-    {
-        _controllerClassName = controllerClassName;
     }
 
     public Status getStartupStatus()

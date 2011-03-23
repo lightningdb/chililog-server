@@ -34,16 +34,22 @@ import org.junit.Test;
 
 import com.chililog.server.App;
 import com.chililog.server.common.JsonTranslator;
-import com.chililog.server.data.DelimitedRepositoryController;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryEntryController;
 import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryInfoController;
+import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
-import com.chililog.server.data.RepositoryInfoBO.ParseFieldErrorHandling;
+import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import com.chililog.server.engine.parsers.DelimitedEntryParser;
+import com.chililog.server.engine.parsers.EntryParser;
+import com.chililog.server.engine.parsers.EntryParserFactory;
 import com.chililog.server.ui.api.ErrorAO;
 import com.chililog.server.ui.api.RepositoryAO;
 import com.chililog.server.ui.api.Worker;
@@ -104,21 +110,26 @@ public class RepositoriesTest
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
         repoInfo.setName("RepositoriesTest_test");
         repoInfo.setDisplayName("RepositoriesTest 1");
-        repoInfo.setControllerClassName("com.chililog.server.data.DelimitedRepositoryController");
-        repoInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoInfo.getProperties().put(DelimitedRepositoryController.DELIMITER_REPO_PROPERTY_NAME, "|");
+        
+        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        repoParserInfo.setName("parser1");
+        repoParserInfo.setAppliesTo(AppliesTo.All);
+        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        repoInfo.getParsers().add(repoParserInfo);
 
         RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "1");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         repoFieldInfo = new RepositoryFieldInfoBO();
         repoFieldInfo.setName("field2");
         repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(DelimitedRepositoryController.POSITION_REPO_FIELD_PROPERTY_NAME, "2");
-        repoInfo.getFields().add(repoFieldInfo);
+        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
+        repoParserInfo.getFields().add(repoFieldInfo);
 
         RepositoryInfoController.getInstance().save(_db, repoInfo);
         _repoId = repoInfo.getDocumentID().toString();
@@ -138,14 +149,15 @@ public class RepositoriesTest
         UserController.getInstance().save(_db, user);
 
         // Add 3 lines
-        DelimitedRepositoryController c = new DelimitedRepositoryController(repoInfo);
-        RepositoryEntryBO entry = c.parse("log1", "127.0.0.1", "line1|1");
+        RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
+        EntryParser p = EntryParserFactory.getParser(repoInfo.getName(), repoInfo.getParsers().get(0));
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Information.toCode(), "line1|1");
         c.save(_db, entry);
 
-        entry = c.parse("log1", "127.0.0.1", "line2|2");
+        entry = p.parse("log1", "127.0.0.2", Severity.Error.toCode(), "line2|2");
         c.save(_db, entry);
 
-        entry = c.parse("log1", "127.0.0.1", "line3|3");
+        entry = p.parse("log1", "127.0.0.3", Severity.Emergency.toCode(), "line3|3");
         c.save(_db, entry);
 
         // Start server
