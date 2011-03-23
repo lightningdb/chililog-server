@@ -110,7 +110,7 @@ public class JsonEntryParserTest
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Save OK
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Critical.toCode(), sb.toString());
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Critical.toString(), sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -162,7 +162,7 @@ public class JsonEntryParserTest
         JsonEntryParser p = new JsonEntryParser(repoInfo.getName(), repoParserInfo);
 
         // Error because xxx is not json format
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toCode(), "xxx");
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toString(), "xxx");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

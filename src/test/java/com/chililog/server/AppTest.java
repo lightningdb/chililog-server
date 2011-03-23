@@ -205,7 +205,7 @@ public class AppTest
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "AppTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 3L);
+            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeString(entry1);
             producer.send(message);

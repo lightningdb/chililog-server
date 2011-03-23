@@ -149,26 +149,22 @@ public class JsonEntryParser extends EntryParser
      *            Name of the input device or application that created this text entry
      * @param host
      *            IP address of the input device or application that created this text entry
-     * @param serverityCode
-     *            Severity code from 0-7.
+     * @param severity
+     *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
      * @param message
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry cannot be parsed, then null is
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String source, String host, long serverityCode, String message)
+    public RepositoryEntryBO parse(String source, String host, String serverity, String message)
     {
         try
         {
             this.setLastParseError(null);
+            checkParseArguments(source, host, serverity, message);
+            Severity severity = Severity.parse(serverity);
 
-            if (StringUtils.isBlank(message))
-            {
-                return null;
-            }
-
-            Severity severity = Severity.fromCode(serverityCode);
             MongoJsonParser parser = new MongoJsonParser(message, _datePattern, _dateFormat, _longNumberPattern);
             DBObject fieldsDBObject = new BasicDBObject();
             try

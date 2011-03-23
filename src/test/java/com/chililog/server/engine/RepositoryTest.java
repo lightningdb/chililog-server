@@ -190,7 +190,7 @@ public class RepositoryTest
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 1L);
+        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "1");
         String entry1 = "line1|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry1);
         producer.send(message);
@@ -198,7 +198,7 @@ public class RepositoryTest
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 2L);
+        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "2");
         String entry2 = "line2|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry2);
         producer.send(message);
@@ -206,7 +206,7 @@ public class RepositoryTest
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 3L);
+        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
         String entry3 = "line3|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry3);
         producer.send(message);
@@ -284,7 +284,7 @@ public class RepositoryTest
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 3L);
+            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeString(entry1);
             producer.send(message);
@@ -341,7 +341,7 @@ public class RepositoryTest
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putLongProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, 3L);
+            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "Debug");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             if (i == 33)
             {

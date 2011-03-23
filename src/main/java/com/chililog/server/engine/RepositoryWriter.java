@@ -154,7 +154,7 @@ public class RepositoryWriter extends Thread
                     {
                         String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
                         String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
-                        long severity = messageReceived.getLongProperty(SEVERITY_PROPERTY_NAME);
+                        String severity = messageReceived.getStringProperty(SEVERITY_PROPERTY_NAME);
                         String message = messageReceived.getBodyBuffer().readString();
 
                         // Parse message

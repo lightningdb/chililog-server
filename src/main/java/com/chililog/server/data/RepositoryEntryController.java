@@ -22,12 +22,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.NullArgumentException;
+import org.bson.types.ObjectId;
 
 import com.chililog.server.common.ChiliLogException;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.MongoException;
 
 /**
  * <p>
@@ -84,6 +87,67 @@ public class RepositoryEntryController extends Controller
         return _repoInfo;
     }
 
+    /**
+     * Retrieves the specified entry by the id
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return code>RepositoryEntryBO</code> representing the user
+     * @throws ChiliLogException
+     *             if not found or database error
+     */
+    public RepositoryEntryBO get(DB db, ObjectId id) throws ChiliLogException
+    {
+        RepositoryEntryBO o = tryGet(db, id);
+        if (o == null)
+        {
+            throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, id.toString());
+        }
+        return o;
+    }
+
+    /**
+     * Tries to retrieve the specified entry by the id. If not found, null is returned.
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param id
+     *            unique id for the document stored in mongoDB
+     * @return <code>RepositoryEntryBO</code> representing the user or null if user is not found
+     * @throws ChiliLogException
+     *             if database or data error
+     */
+    public RepositoryEntryBO tryGet(DB db, ObjectId id) throws ChiliLogException
+    {
+        try
+        {
+            if (db == null)
+            {
+                throw new IllegalArgumentException("db cannot be null");
+            }
+            if (id == null)
+            {
+                throw new IllegalArgumentException("id cannot be null");
+            }
+
+            DBCollection coll = db.getCollection(this.getDBCollectionName());
+            BasicDBObject condition = new BasicDBObject();
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
+            DBObject dbo = coll.findOne(condition);
+            if (dbo == null)
+            {
+                return null;
+            }
+            return new RepositoryEntryBO(dbo);
+        }
+        catch (MongoException ex)
+        {
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
+        }
+    }
+    
     /**
      * Returns a list of matching entries
      * 

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumSet;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.engine.parsers.EntryParser;
 import com.mongodb.DBObject;
@@ -106,9 +108,6 @@ public class RepositoryEntryBO extends BO implements Serializable
         _entryHost = host;
         _entrySeverity = severity;
         _entryMessage = message;
-
-        // TODO - get keywords
-
         return;
     }
 
@@ -138,9 +137,9 @@ public class RepositoryEntryBO extends BO implements Serializable
         return _entryTimestamp;
     }
 
-    public void setEntryTimestamp(Date chililoggedOn)
+    public void setEntryTimestamp(Date entryTimestamp)
     {
-        _entryTimestamp = chililoggedOn;
+        _entryTimestamp = entryTimestamp;
     }
 
     /**
@@ -278,9 +277,68 @@ public class RepositoryEntryBO extends BO implements Serializable
             return Enum.valueOf(Severity.class, s);
         }
 
-        public static Severity fromCode(String code)
+        /**
+         * Parses a code or description into a severity. If any errors, default to Information.
+         * 
+         * @param codeOrDescription
+         *            String of code "0-7" or description "Error".
+         * @return Severity
+         */
+        public static Severity parse(String codeOrDescription)
         {
-            return lookup[Integer.parseInt(code)];
+            if (StringUtils.isBlank(codeOrDescription))
+            {
+                return Severity.Information;
+            }
+
+            try
+            {
+                // It should be quicker if we don't parse
+                if (codeOrDescription.equals("0"))
+                {
+                    return lookup[0];
+                }
+                if (codeOrDescription.equals("1"))
+                {
+                    return lookup[1];
+                }
+                if (codeOrDescription.equals("2"))
+                {
+                    return lookup[2];
+                }
+                if (codeOrDescription.equals("3"))
+                {
+                    return lookup[3];
+                }
+                if (codeOrDescription.equals("4"))
+                {
+                    return lookup[4];
+                }
+                if (codeOrDescription.equals("5"))
+                {
+                    return lookup[5];
+                }
+                if (codeOrDescription.equals("6"))
+                {
+                    return lookup[6];
+                }
+                if (codeOrDescription.equals("7"))
+                {
+                    return lookup[7];
+                }
+
+                if (codeOrDescription.length() == 1)
+                {
+                    return lookup[Integer.parseInt(codeOrDescription)];
+                }
+
+                return Enum.valueOf(Severity.class, codeOrDescription);
+            }
+            catch (Exception ex)
+            {
+                // Just return info and ignore the error
+                return Severity.Information;
+            }
         }
 
         public static Severity fromCode(long code)

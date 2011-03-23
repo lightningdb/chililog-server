@@ -132,7 +132,7 @@ public class RegexEntryParserTest
         RegexEntryParser p = new RegexEntryParser(repoInfo.getName(), repoParserInfo);
 
         // Save Line 1 OK
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toCode(),
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toString(),
                 "line1~2~3~4.4~2001-5-5 5:5:5~True");
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
@@ -158,7 +158,7 @@ public class RegexEntryParserTest
         assertEquals("line1~2~3~4.4~2001-5-5 5:5:5~True", dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
 
         // Save Line 2 OK
-        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toCode(), "line2~22~23~24.4~2021-5-5 5:5:5~xxx");
+        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toString(), "line2~22~23~24.4~2021-5-5 5:5:5~xxx");
         assertNotNull(entry);
         dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -184,20 +184,20 @@ public class RegexEntryParserTest
         assertEquals(2, coll.find().count());
 
         // Empty source, host and message is ignored
-        entry = p.parse("", "127.0.0.1", Severity.Warning.toCode(), "aaa");
+        entry = p.parse("", "127.0.0.1", Severity.Warning.toString(), "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("log1", null, Severity.Warning.toCode(), "aaa");
+        entry = p.parse("log1", null, Severity.Warning.toString(), "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toCode(), "");
+        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toString(), "");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
         // Missing field
-        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toCode(), "line3");
+        entry = p.parse("log1", "127.0.0.1", Severity.Warning.toString(), "line3");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

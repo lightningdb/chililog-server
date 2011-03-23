@@ -151,13 +151,13 @@ public class RepositoriesTest
         // Add 3 lines
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
         EntryParser p = EntryParserFactory.getParser(repoInfo.getName(), repoInfo.getParsers().get(0));
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Information.toCode(), "line1|1");
+        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Information.toString(), "line1|1");
         c.save(_db, entry);
 
-        entry = p.parse("log1", "127.0.0.2", Severity.Error.toCode(), "line2|2");
+        entry = p.parse("log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
         c.save(_db, entry);
 
-        entry = p.parse("log1", "127.0.0.3", Severity.Emergency.toCode(), "line3|3");
+        entry = p.parse("log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
         c.save(_db, entry);
 
         // Start server

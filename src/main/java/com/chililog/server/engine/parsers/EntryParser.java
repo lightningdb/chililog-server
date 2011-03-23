@@ -192,6 +192,34 @@ public abstract class EntryParser
     }
 
     /**
+     * Checks the validity of our arguments before parsing
+     * 
+     * @param source
+     * @param host
+     * @param serverity
+     * @param message
+     */
+    protected void checkParseArguments(String source, String host, String serverity, String message)
+    {
+        if (StringUtils.isBlank(source))
+        {
+            throw new IllegalArgumentException("Entry source is blank");
+        }
+        if (StringUtils.isBlank(host))
+        {
+            throw new IllegalArgumentException("Entry host is blank");
+        }
+        if (StringUtils.isBlank(serverity))
+        {
+            throw new IllegalArgumentException("Entry serverity is blank");
+        }
+        if (StringUtils.isBlank(message))
+        {
+            throw new IllegalArgumentException("Entry message is blank");
+        }
+    }
+
+    /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
@@ -201,7 +229,7 @@ public abstract class EntryParser
      *            Identifies the device on which the source application or service is running. Should be full qualified
      *            domain name, static IP address, host name or dynamic IP address.
      * @param severity
-     *            Classifies the importance of the entry
+     *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
      * @param parsedFields
      *            Fields as parsed by an {@link EntryParser}.
      * @param message
@@ -209,6 +237,6 @@ public abstract class EntryParser
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written
      *         to mongoDB, then null is returned
      */
-    public abstract RepositoryEntryBO parse(String source, String host, long serverity, String message);
+    public abstract RepositoryEntryBO parse(String source, String host, String serverity, String message);
 
 }

@@ -61,7 +61,6 @@ public class InternalLog4JAppender extends AppenderSkeleton
     static final String EVENT_TIMESTAMP_FIELD_NAME = "timestamp";
     static final String THREAD_FIELD_NAME = "thread";
     static final String CATEGORY_FIELD_NAME = "category";
-    static final String MESSAGE_FIELD_NAME = "message";
 
     /**
      * Basic Constructor
@@ -123,7 +122,6 @@ public class InternalLog4JAppender extends AppenderSkeleton
                     msg.append(Layout.LINE_SEP);
                 }
             }
-            MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, msg.toString());
 
             // Severity
             Severity severity = Severity.Information;
@@ -150,9 +148,7 @@ public class InternalLog4JAppender extends AppenderSkeleton
             MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_HOST_FIELD_NAME, _host);
             MongoUtils.setLong(dbObject, RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME, severity.toCode());
             MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_KEYWORDS_FIELD_NAME, "");
-
-            // Don't store message because it will just be a duplicate
-            // MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME, "");
+            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME, msg.toString());
 
             MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
 

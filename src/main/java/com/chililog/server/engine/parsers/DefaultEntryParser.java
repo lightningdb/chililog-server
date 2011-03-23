@@ -20,8 +20,6 @@ package com.chililog.server.engine.parsers;
 
 import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.RepositoryEntryBO;
@@ -65,34 +63,21 @@ public class DefaultEntryParser extends EntryParser
      *            Name of the input device or application that created this text entry
      * @param host
      *            IP address of the input device or application that created this text entry
-     * @param serverityCode
-     *            Severity code from 0-7.
+     * @param severity
+     *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
      * @param message
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry cannot be parsed, then null is
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String source, String host, long serverityCode, String message)
+    public RepositoryEntryBO parse(String source, String host, String serverity, String message)
     {
         try
         {
             this.setLastParseError(null);
-
-            if (StringUtils.isBlank(source))
-            {
-                throw new IllegalArgumentException("Entry source is blank");
-            }
-            if (StringUtils.isBlank(host))
-            {
-                throw new IllegalArgumentException("Entry host is blank");
-            }
-            if (StringUtils.isBlank(message))
-            {
-                throw new IllegalArgumentException("Entry message is blank");
-            }
-
-            Severity severity = Severity.fromCode(serverityCode);
+            checkParseArguments(source, host, serverity, message);
+            Severity severity = Severity.parse(serverity);
 
             RepositoryEntryBO entry = new RepositoryEntryBO();
             entry.setEntryTimestamp(new Date());
