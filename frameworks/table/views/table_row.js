@@ -101,6 +101,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     var cellView = this._sc_cell_views[SC.guidFor(column)];
     var contentView = cellView.get('contentView');
     
+    var content = this.get('content')
+    // var key = column.get('key')
+    // if(key) content = content.get(column.get('key')) || content
+    
     cellView.beginPropertyChanges();
     contentView.beginPropertyChanges();
 
@@ -110,7 +114,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     
     cellView.set('contentIndex', this.get('contentIndex'));
     contentView.set('contentIndex', this.get('contentIndex'));
-    contentView.set('content', this.get('content'));
+    contentView.set('content', content);
 
     contentView.endPropertyChanges();
     cellView.endPropertyChanges();
@@ -169,10 +173,15 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
       
+    var content = this.get('content')
+    // var key = column.get('key')
+    // if(key) content = content.get(column.get('key')) || content
+
+      
     attrs.parentView = this;
     attrs.column = column;
     attrs.columnIndex = col;
-    attrs.content = this.get('content');
+    attrs.content = content;
     attrs.contentIndex = this.get('contentIndex');
     attrs.contentValueKey = column.get('key');
     (attrs.classNames || (attrs.classNames = [])).push('column-' + col);
