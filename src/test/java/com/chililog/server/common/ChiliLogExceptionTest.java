@@ -64,6 +64,8 @@ public class ChiliLogExceptionTest
         }
         catch (Exception innerEx)
         {
+            _logger.error(innerEx.toString());
+
             ChiliLogException ex = new ChiliLogException(innerEx, "Test"); 
             assertEquals("Test12", ex.getMessage());
             assertEquals("Test", ex.getErrorCode());

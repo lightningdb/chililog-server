@@ -210,11 +210,18 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers</artifactId>
+      <version>3.0.3</version>
+      <scope>compile</scope>
+    </dependency>
+    
+    <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>1.6</version>
       <scope>compile</scope>
-    </dependency>
+    </dependency>    
   </dependencies>
 
   <profiles>

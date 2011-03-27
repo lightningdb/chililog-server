@@ -1001,7 +1001,7 @@ public class AppProperties
             return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
-
+    
     /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 
