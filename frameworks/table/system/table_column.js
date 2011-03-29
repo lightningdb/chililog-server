@@ -103,7 +103,7 @@ SC.TableColumn = SC.Object.extend({
     @type SC.View
   */
   
-  exampleView: SC.TableCellView,
+  // exampleView: Endash.TableCellView,
   
   /**
     Reference to the URL for this column's icon. If `null`, there is no

@@ -173,6 +173,8 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
       
+      console.log(col, E)
+      
     var content = this.get('content')
     // var key = column.get('key')
     // if(key) content = content.get(column.get('key')) || content

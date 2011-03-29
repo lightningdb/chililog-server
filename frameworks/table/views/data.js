@@ -57,7 +57,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     var columns = this.get('columns'),
       column = columns.objectAt(col),
       ret;
-
+      
     if(ret = column.get('exampleView')) return ret;
 
     return this.get('cellContentView');
