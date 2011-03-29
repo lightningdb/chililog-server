@@ -48,6 +48,7 @@ public class RepositoryInfoAO extends AO
     private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
     private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
     private long _writeQueuePageSize = 1024 * 1024 * 4; // MB
+    private long _maxKeywords = -1;
 
     private RepositoryParserInfoAO[] _parsers = null;
 
@@ -83,6 +84,8 @@ public class RepositoryInfoAO extends AO
         _writeQueueMaxMemoryPolicy = repoInfo.getWriteQueueMaxMemoryPolicy();
         _writeQueuePageSize = repoInfo.getWriteQueuePageSize();
 
+        _maxKeywords = repoInfo.getMaxKeywords();
+        
         if (repoInfo.getParsers() == null || repoInfo.getParsers().isEmpty())
         {
             _parsers = null;
@@ -124,6 +127,8 @@ public class RepositoryInfoAO extends AO
         repoInfo.setWriteQueueMaxMemoryPolicy(_writeQueueMaxMemoryPolicy);
         repoInfo.setWriteQueuePageSize(_writeQueuePageSize);
 
+        repoInfo.setMaxKeywords(_maxKeywords);
+        
         repoInfo.getParsers().clear();
         if (_parsers != null && _parsers.length > 0)
         {
@@ -256,6 +261,16 @@ public class RepositoryInfoAO extends AO
     public void setWriteQueuePageSize(long writeQueuePageSize)
     {
         _writeQueuePageSize = writeQueuePageSize;
+    }
+    
+    public long getMaxKeywords()
+    {
+        return _maxKeywords;
+    }
+
+    public void setMaxKeywords(long maxKeywords)
+    {
+        _maxKeywords = maxKeywords;
     }
 
     public RepositoryParserInfoAO[] getParsers()

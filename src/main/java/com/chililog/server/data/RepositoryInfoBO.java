@@ -48,6 +48,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
     private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
     private long _writeQueuePageSize = 1024 * 1024 * 4; // MB
+    private long _maxKeywords = -1;
     private ArrayList<RepositoryParserInfoBO> _parsers = new ArrayList<RepositoryParserInfoBO>();
 
     static final String NAME_FIELD_NAME = "name";
@@ -60,7 +61,10 @@ public class RepositoryInfoBO extends BO implements Serializable
     static final String WRITE_QUEUE_MAX_MEMORY_FIELD_NAME = "write_queue_max_memory";
     static final String WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME = "write_queue_max_memory_policy";
     static final String WRITE_QUEUE_PAGE_SIZE_FIELD_NAME = "write_queue_page_size";
+    static final String MAX_KEYWORDS = "max_keywords";
     static final String PARSERS_FIELD_NAME = "parsers";
+
+    public static final long MAX_KEYWORDS_UNLIMITED = -1;
 
     /**
      * Basic constructor
@@ -93,6 +97,8 @@ public class RepositoryInfoBO extends BO implements Serializable
         _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject,
                 WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, true));
         _writeQueuePageSize = MongoUtils.getLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, true);
+
+        _maxKeywords = MongoUtils.getLong(dbObject, MAX_KEYWORDS, true);
 
         BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
         ArrayList<RepositoryParserInfoBO> parserList = new ArrayList<RepositoryParserInfoBO>();
@@ -132,6 +138,8 @@ public class RepositoryInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, _writeQueueMaxMemoryPolicy.toString());
         MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, _writeQueuePageSize);
 
+        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords);
+
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
         for (RepositoryParserInfoBO parser : _parsers)
         {
@@ -141,7 +149,6 @@ public class RepositoryInfoBO extends BO implements Serializable
         }
         dbObject.put(PARSERS_FIELD_NAME, fieldList);
     }
-
 
     /**
      * <p>
@@ -338,6 +345,19 @@ public class RepositoryInfoBO extends BO implements Serializable
     public void setWriteQueuePageSize(long writeQueuePageSize)
     {
         _writeQueuePageSize = writeQueuePageSize;
+    }
+
+    /**
+     * Maximum number of keywords to be stored per entry
+     */
+    public long getMaxKeywords()
+    {
+        return _maxKeywords;
+    }
+
+    public void setMaxKeywords(long maxKeywords)
+    {
+        _maxKeywords = maxKeywords;
     }
 
     /**

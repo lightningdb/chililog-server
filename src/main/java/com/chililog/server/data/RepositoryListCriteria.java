@@ -166,11 +166,11 @@ public class RepositoryListCriteria extends ListCriteria
 
         if (_from != null)
         {
-            o.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new BasicDBObject("$gte", _from));
+            o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$gte", _from));
         }
         if (_to != null)
         {
-            o.put(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
+            o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
         }
 
         return o;

@@ -42,19 +42,21 @@ public class RepositoryEntryBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    private Date _entryTimestamp;
-    private String _entrySource;
-    private String _entryHost;
-    private Severity _entrySeverity;
-    private String _entryMessage;
-    private ArrayList<String> _entryKeywords = new ArrayList<String>();
+    private Date _timestamp;
+    private Date _savedTimestamp;
+    private String _source;
+    private String _host;
+    private Severity _severity;
+    private String _message;
+    private ArrayList<String> _keywords = new ArrayList<String>();
 
-    public static final String ENTRY_TIMESTAMP_FIELD_NAME = "entry_timestamp";
-    public static final String ENTRY_SOURCE_FIELD_NAME = "entry_source";
-    public static final String ENTRY_HOST_FIELD_NAME = "entry_host";
-    public static final String ENTRY_SEVERITY_FIELD_NAME = "entry_severity";
-    public static final String ENTRY_MESSAGE_FIELD_NAME = "entry_message";
-    public static final String ENTRY_KEYWORDS_FIELD_NAME = "entry_keywords";
+    public static final String TIMESTAMP_FIELD_NAME = "c_ts";
+    public static final String SAVED_TIMESTAMP_FIELD_NAME = "c_saved_ts";
+    public static final String SOURCE_FIELD_NAME = "c_source";
+    public static final String HOST_FIELD_NAME = "c_host";
+    public static final String SEVERITY_FIELD_NAME = "c_severity";
+    public static final String MESSAGE_FIELD_NAME = "c_message";
+    public static final String KEYWORDS_FIELD_NAME = "c_keywords";
 
     /**
      * Basic constructor
@@ -74,18 +76,21 @@ public class RepositoryEntryBO extends BO implements Serializable
     public RepositoryEntryBO(DBObject dbObject) throws ChiliLogException
     {
         super(dbObject);
-        _entryTimestamp = MongoUtils.getDate(dbObject, ENTRY_TIMESTAMP_FIELD_NAME, true);
-        _entrySource = MongoUtils.getString(dbObject, ENTRY_SOURCE_FIELD_NAME, true);
-        _entryHost = MongoUtils.getString(dbObject, ENTRY_HOST_FIELD_NAME, true);
-        _entrySeverity = Severity.fromCode(MongoUtils.getLong(dbObject, ENTRY_SEVERITY_FIELD_NAME, true));
-        _entryMessage = MongoUtils.getString(dbObject, ENTRY_MESSAGE_FIELD_NAME, true);
-        _entryKeywords = MongoUtils.getStringArrayList(dbObject, ENTRY_KEYWORDS_FIELD_NAME, false);
+        _timestamp = MongoUtils.getDate(dbObject, TIMESTAMP_FIELD_NAME, true);
+        _savedTimestamp = MongoUtils.getDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, true);
+        _source = MongoUtils.getString(dbObject, SOURCE_FIELD_NAME, true);
+        _host = MongoUtils.getString(dbObject, HOST_FIELD_NAME, true);
+        _severity = Severity.fromCode(MongoUtils.getLong(dbObject, SEVERITY_FIELD_NAME, true));
+        _keywords = MongoUtils.getStringArrayList(dbObject, KEYWORDS_FIELD_NAME, false);
+        _message = MongoUtils.getString(dbObject, MESSAGE_FIELD_NAME, true);
         return;
     }
 
     /**
      * Constructor for a new entry.
      * 
+     * @param timestamp
+     *            Timestamp for the logged event
      * @param source
      *            Name of the application or service that created this log entry
      * @param host
@@ -93,21 +98,30 @@ public class RepositoryEntryBO extends BO implements Serializable
      *            domain name, static IP address, host name or dynamic IP address.
      * @param severity
      *            Classifies the importance of the entry
+     * @param keywords
+     *            List of keywords associated with this entry
      * @param parsedFields
      *            Fields as parsed by an {@link EntryParser}.
      * @param message
      *            Free-form message that provides information about the event
      * @throws ChiliLogException
      */
-    public RepositoryEntryBO(String source, String host, Severity severity, String message, DBObject parsedFields)
-            throws ChiliLogException
+    public RepositoryEntryBO(Date timestamp,
+                             String source,
+                             String host,
+                             Severity severity,
+                             ArrayList<String> keywords,
+                             String message,
+                             DBObject parsedFields) throws ChiliLogException
     {
         super(parsedFields);
-        _entryTimestamp = new Date();
-        _entrySource = source;
-        _entryHost = host;
-        _entrySeverity = severity;
-        _entryMessage = message;
+        _timestamp = timestamp;
+        _savedTimestamp = new Date();
+        _source = source;
+        _host = host;
+        _severity = severity;
+        _keywords = keywords;
+        _message = message;
         return;
     }
 
@@ -120,87 +134,107 @@ public class RepositoryEntryBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setDate(dbObject, ENTRY_TIMESTAMP_FIELD_NAME, _entryTimestamp);
-        MongoUtils.setString(dbObject, ENTRY_SOURCE_FIELD_NAME, _entrySource);
-        MongoUtils.setString(dbObject, ENTRY_HOST_FIELD_NAME, _entryHost);
-        MongoUtils.setLong(dbObject, ENTRY_SEVERITY_FIELD_NAME, _entrySeverity.toCode());
-        MongoUtils.setString(dbObject, ENTRY_MESSAGE_FIELD_NAME, _entryMessage);
-        MongoUtils.setStringArrayList(dbObject, ENTRY_KEYWORDS_FIELD_NAME, _entryKeywords);
+        MongoUtils.setDate(dbObject, TIMESTAMP_FIELD_NAME, _timestamp);
+        MongoUtils.setDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, _savedTimestamp);
+        MongoUtils.setString(dbObject, SOURCE_FIELD_NAME, _source);
+        MongoUtils.setString(dbObject, HOST_FIELD_NAME, _host);
+        MongoUtils.setLong(dbObject, SEVERITY_FIELD_NAME, _severity.toCode());
+        MongoUtils.setStringArrayList(dbObject, KEYWORDS_FIELD_NAME, _keywords);
+        MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, _message);
         return;
+    }
+
+    /**
+     * Returns the date on which the log entry was created at the source; i.e. timestamp for the event that generated
+     * the log entry
+     */
+    public Date getTimestamp()
+    {
+        return _timestamp;
+    }
+
+    public void setTimestamp(Date timestamp)
+    {
+        _timestamp = timestamp;
     }
 
     /**
      * Returns the date on which the entry was save into the ChiliLog repository
      */
-    public Date getEntryTimestamp()
+    public Date getSavedTimestamp()
     {
-        return _entryTimestamp;
+        return _savedTimestamp;
     }
 
-    public void setEntryTimestamp(Date entryTimestamp)
+    public void setSavedTimestamp(Date timestamp)
     {
-        _entryTimestamp = entryTimestamp;
+        _savedTimestamp = timestamp;
     }
 
     /**
      * Returns the name of the application or service that created this log entry
      */
-    public String getEntrySource()
+    public String getSource()
     {
-        return _entrySource;
+        return _source;
     }
 
-    public void setEntrySource(String entrySource)
+    public void setSource(String source)
     {
-        _entrySource = entrySource;
+        _source = source;
     }
 
     /**
      * Identifies the device on which the source application or service is running. Should be full qualified domain
      * name, static IP address, host name or dynamic IP address (in this order of preference).
      */
-    public String getEntryHost()
+    public String getHost()
     {
-        return _entryHost;
+        return _host;
     }
 
-    public void setEntryHost(String entryHost)
+    public void setHost(String host)
     {
-        _entryHost = entryHost;
+        _host = host;
     }
 
     /**
      * Returns the classification of the importance of the entry
      */
-    public Severity getEntrySeverity()
+    public Severity getSeverity()
     {
-        return _entrySeverity;
+        return _severity;
     }
 
-    public void setEntrySeverity(Severity entrySeverity)
+    public void setSeverity(Severity severity)
     {
-        _entrySeverity = entrySeverity;
+        _severity = severity;
     }
 
     /**
      * Free-form message that provides information about the event that triggered this entry
      */
-    public String getEntryMessage()
+    public String getMessage()
     {
-        return _entryMessage;
+        return _message;
     }
 
-    public void setEntryMessage(String entryMessage)
+    public void setMessage(String message)
     {
-        _entryMessage = entryMessage;
+        _message = message;
     }
 
     /**
      * Returns the list of keywords for this message
      */
-    public ArrayList<String> getEntryKeywords()
+    public ArrayList<String> getKeywords()
     {
-        return _entryKeywords;
+        return _keywords;
+    }
+
+    public void setKeywords(ArrayList<String> keywords)
+    {
+        _keywords = keywords;
     }
 
     /**

@@ -113,11 +113,13 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueMaxMemory(1);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         repoInfo.setWriteQueuePageSize(2);
+        repoInfo.setMaxKeywords(100);
 
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
         repoParserInfo.setName("parser1");
         repoParserInfo.setAppliesTo(AppliesTo.All);
         repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setMaxKeywords(101);
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
         repoInfo.getParsers().add(repoParserInfo);
@@ -198,6 +200,7 @@ public class RepositoryInfoTest
         createRepoInfoAO.setWriteQueueMaxMemory(10);
         createRepoInfoAO.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         createRepoInfoAO.setWriteQueuePageSize(2);
+        createRepoInfoAO.setMaxKeywords(100);
 
         RepositoryParserInfoAO createRepoParserInfo = new RepositoryParserInfoAO();
         createRepoParserInfo.setName("parser1");
@@ -205,6 +208,7 @@ public class RepositoryInfoTest
         createRepoParserInfo.setAppliesToSourceFilter("sss");
         createRepoParserInfo.setAppliesToHostFilter("hhh");
         createRepoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        createRepoParserInfo.setMaxKeywords(101);
         createRepoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         createRepoInfoAO.setParsers(new RepositoryParserInfoAO[]
         { createRepoParserInfo });
@@ -233,6 +237,7 @@ public class RepositoryInfoTest
         assertEquals(10, createResponseAO.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, createResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, createResponseAO.getWriteQueuePageSize());
+        assertEquals(100L, createResponseAO.getMaxKeywords());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
 
         RepositoryParserInfoAO createParserResponseAO = createResponseAO.getParsers()[0];
@@ -241,6 +246,7 @@ public class RepositoryInfoTest
         assertEquals("sss", createParserResponseAO.getAppliesToSourceFilter());
         assertEquals("hhh", createParserResponseAO.getAppliesToHostFilter());
         assertEquals(DelimitedEntryParser.class.getName(), createParserResponseAO.getClassName());
+        assertEquals(101L, createParserResponseAO.getMaxKeywords());
         assertEquals(2, createParserResponseAO.getProperties().length);
         assertEquals(ParseFieldErrorHandling.SkipEntry, createParserResponseAO.getParseFieldErrorHandling());
         assertEquals(2, createParserResponseAO.getProperties().length);
@@ -274,6 +280,7 @@ public class RepositoryInfoTest
         assertEquals(10, readResponseAO.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, readResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, readResponseAO.getWriteQueuePageSize());
+        assertEquals(100L, createResponseAO.getMaxKeywords());
 
         createParserResponseAO = createResponseAO.getParsers()[0];
         assertEquals("parser1", createParserResponseAO.getName());
@@ -281,6 +288,7 @@ public class RepositoryInfoTest
         assertEquals("sss", createParserResponseAO.getAppliesToSourceFilter());
         assertEquals("hhh", createParserResponseAO.getAppliesToHostFilter());
         assertEquals(DelimitedEntryParser.class.getName(), createParserResponseAO.getClassName());
+        assertEquals(101L, createParserResponseAO.getMaxKeywords());
         assertEquals(2, createParserResponseAO.getProperties().length);
         assertEquals(ParseFieldErrorHandling.SkipEntry, createParserResponseAO.getParseFieldErrorHandling());
         assertEquals(2, createParserResponseAO.getProperties().length);
@@ -300,6 +308,8 @@ public class RepositoryInfoTest
                 _adminAuthToken);
 
         readResponseAO.setName("RepositoryInfoTest_1_update");
+        readResponseAO.setMaxKeywords(200);
+        readResponseAO.getParsers()[0].setMaxKeywords(201);
         readResponseAO.getParsers()[0].setFields(new RepositoryFieldInfoAO[]
         { f1 });
         readResponseAO.getParsers()[0].setProperties(new RepositoryPropertyInfoAO[]
@@ -315,6 +325,8 @@ public class RepositoryInfoTest
         RepositoryInfoAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO.class);
         assertEquals("RepositoryInfoTest_1_update", updateResponseAO.getName());
+        assertEquals(200, updateResponseAO.getMaxKeywords());
+        assertEquals(201, readResponseAO.getParsers()[0].getMaxKeywords());
         assertEquals(1, readResponseAO.getParsers()[0].getProperties().length);
         assertEquals(1, readResponseAO.getParsers()[0].getFields().length);
 

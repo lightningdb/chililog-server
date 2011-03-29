@@ -19,6 +19,7 @@
 package com.chililog.server.engine.parsers;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.regex.Pattern;
 
@@ -30,6 +31,7 @@ import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.RepositoryEntryBO;
 import com.chililog.server.data.RepositoryEntryBO.Severity;
 import com.chililog.server.data.MongoJsonParser;
+import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.engine.Strings;
 import com.mongodb.BasicDBObject;
@@ -97,15 +99,15 @@ public class JsonEntryParser extends EntryParser
      * Basic constructor
      * </p>
      * 
-     * @param repoName
-     *            Name of repository (for reporting errors)
+     * @param repoInfo
+     *            Repository meta data
      * @param repoParserInfo
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public JsonEntryParser(String repoName, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public JsonEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
     {
-        super(repoName, repoParserInfo);
+        super(repoInfo, repoParserInfo);
 
         try
         {
@@ -133,8 +135,8 @@ public class JsonEntryParser extends EntryParser
             }
             else
             {
-                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(), repoName,
-                        ex.getMessage());
+                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
+                        repoInfo.getName(), ex.getMessage());
             }
         }
 
@@ -145,6 +147,8 @@ public class JsonEntryParser extends EntryParser
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
+     * @param timetstamp
+     *            Time when this log entry was created at the source on the host.
      * @param source
      *            Name of the input device or application that created this text entry
      * @param host
@@ -157,13 +161,12 @@ public class JsonEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String source, String host, String serverity, String message)
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
     {
         try
         {
             this.setLastParseError(null);
-            checkParseArguments(source, host, serverity, message);
-            Severity severity = Severity.parse(serverity);
+            checkParseArguments(timestamp, source, host, severity, message);
 
             MongoJsonParser parser = new MongoJsonParser(message, _datePattern, _dateFormat, _longNumberPattern);
             DBObject fieldsDBObject = new BasicDBObject();
@@ -188,7 +191,11 @@ public class JsonEntryParser extends EntryParser
                 }
             }
 
-            return new RepositoryEntryBO(source, host, severity, message, fieldsDBObject);
+            Severity sev = Severity.parse(severity);
+            ArrayList<String> keywords = parseKeywords(source, host, sev, message);
+
+            return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message,
+                    fieldsDBObject);
         }
         catch (Exception ex)
         {

@@ -169,6 +169,8 @@ public class RepositoriesWorker extends Worker
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
 
+            // Get info on all repositories
+            // HTTP GET /api/repositories
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
                 Repository[] list = RepositoryManager.getInstance().getRepositories();
@@ -192,7 +194,8 @@ public class RepositoriesWorker extends Worker
             }
             else if (this.getUriPathParameters().length == 1)
             {
-                // Get specified repository
+                // Get info on specified repository
+                // HTTP GET /api/repositories/{id}
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
                 if (repo != null
@@ -209,6 +212,7 @@ public class RepositoriesWorker extends Worker
             }
             else if (this.getUriPathParameters().length == 2)
             {
+                // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);

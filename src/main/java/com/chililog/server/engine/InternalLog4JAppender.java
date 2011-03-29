@@ -28,6 +28,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.common.TextTokenizer;
 import com.chililog.server.data.BO;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.MongoUtils;
@@ -51,6 +52,7 @@ import com.mongodb.DBObject;
  */
 public class InternalLog4JAppender extends AppenderSkeleton
 {
+    private TextTokenizer _tokenizer;
     private String _host;
     private DB _db;
     private DBCollection _coll;
@@ -69,6 +71,7 @@ public class InternalLog4JAppender extends AppenderSkeleton
      */
     public InternalLog4JAppender() throws ChiliLogException
     {
+        _tokenizer = TextTokenizer.getInstance();
         _db = MongoConnection.getInstance().getConnection();
         _coll = _db.getCollection(MONGODB_COLLECTION_NAME);
 
@@ -101,16 +104,15 @@ public class InternalLog4JAppender extends AppenderSkeleton
         {
             DBObject dbObject = new BasicDBObject();
 
-            // Fields
-            MongoUtils.setDate(dbObject, EVENT_TIMESTAMP_FIELD_NAME, new Date(event.getTimeStamp()));
+            // Custom Fields
             MongoUtils.setString(dbObject, THREAD_FIELD_NAME, event.getThreadName());
             MongoUtils.setString(dbObject, CATEGORY_FIELD_NAME, event.getLoggerName());
 
             // Message Field
-            StringBuilder msg = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
             if (event.getMessage() != null)
             {
-                msg.append(event.getMessage().toString());
+                sb.append(event.getMessage().toString());
             }
             String[] s = event.getThrowableStrRep();
             if (s != null)
@@ -118,8 +120,8 @@ public class InternalLog4JAppender extends AppenderSkeleton
                 int len = s.length;
                 for (int i = 0; i < len; i++)
                 {
-                    msg.append(s[i]);
-                    msg.append(Layout.LINE_SEP);
+                    sb.append(s[i]);
+                    sb.append(Layout.LINE_SEP);
                 }
             }
 
@@ -143,12 +145,15 @@ public class InternalLog4JAppender extends AppenderSkeleton
                 severity = Severity.Emergency;
             }
 
-            MongoUtils.setDate(dbObject, RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME, new Date());
-            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME, "ChiliLogServer");
-            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_HOST_FIELD_NAME, _host);
-            MongoUtils.setLong(dbObject, RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME, severity.toCode());
-            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_KEYWORDS_FIELD_NAME, "");
-            MongoUtils.setString(dbObject, RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME, msg.toString());
+            MongoUtils.setDate(dbObject, RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new Date(event.getTimeStamp()));
+            MongoUtils.setDate(dbObject, RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME, new Date());
+            MongoUtils.setString(dbObject, RepositoryEntryBO.SOURCE_FIELD_NAME, "ChiliLogServer");
+            MongoUtils.setString(dbObject, RepositoryEntryBO.HOST_FIELD_NAME, _host);
+            MongoUtils.setLong(dbObject, RepositoryEntryBO.SEVERITY_FIELD_NAME, severity.toCode());
+            
+            String msg = sb.toString();
+            MongoUtils.setStringArrayList(dbObject, RepositoryEntryBO.KEYWORDS_FIELD_NAME, _tokenizer.tokenize(msg, 20));
+            MongoUtils.setString(dbObject, RepositoryEntryBO.MESSAGE_FIELD_NAME, msg);
 
             MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
 

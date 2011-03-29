@@ -73,11 +73,12 @@ public class RepsitoryEntryTest
 
         // Insert
         RepositoryEntryBO entry = new RepositoryEntryBO();
-        entry.setEntryTimestamp(ts);
-        entry.setEntrySource("log1");
-        entry.setEntryHost("localhost");
-        entry.setEntrySeverity(Severity.Action);
-        entry.setEntryMessage("my message");
+        entry.setTimestamp(ts);
+        entry.setSavedTimestamp(ts);
+        entry.setSource("log1");
+        entry.setHost("localhost");
+        entry.setSeverity(Severity.Action);
+        entry.setMessage("my message");
 
         assertFalse(entry.isExistingRecord());
         assertNull(entry.getDocumentID());
@@ -90,26 +91,27 @@ public class RepsitoryEntryTest
 
         // Get
         RepositoryEntryBO entry2 = RepositoryEntryController.getInstance(_repoInfo).get(_db, entry.getDocumentID());
-        assertEquals(ts.getTime(), entry2.getEntryTimestamp().getTime());
-        assertEquals("log1", entry2.getEntrySource());
-        assertEquals("localhost", entry2.getEntryHost());
-        assertEquals(Severity.Action, entry2.getEntrySeverity());
-        assertEquals("my message", entry2.getEntryMessage());
+        assertEquals(ts.getTime(), entry2.getTimestamp().getTime());
+        assertEquals(ts.getTime(), entry2.getSavedTimestamp().getTime());
+        assertEquals("log1", entry2.getSource());
+        assertEquals("localhost", entry2.getHost());
+        assertEquals(Severity.Action, entry2.getSeverity());
+        assertEquals("my message", entry2.getMessage());
         assertEquals(1, entry2.getDocumentVersion());
 
         // Update
-        entry.setEntrySource("log2");
-        entry.setEntryHost("localhost2");
-        entry.setEntrySeverity(Severity.Critical);
-        entry.setEntryMessage("my message 2");
+        entry.setSource("log2");
+        entry.setHost("localhost2");
+        entry.setSeverity(Severity.Critical);
+        entry.setMessage("my message 2");
         RepositoryEntryController.getInstance(_repoInfo).save(_db, entry);
 
         entry2 = RepositoryEntryController.getInstance(_repoInfo).get(_db, entry.getDocumentID());
-        assertEquals(ts.getTime(), entry2.getEntryTimestamp().getTime());
-        assertEquals("log2", entry2.getEntrySource());
-        assertEquals("localhost2", entry2.getEntryHost());
-        assertEquals(Severity.Critical, entry2.getEntrySeverity());
-        assertEquals("my message 2", entry2.getEntryMessage());
+        assertEquals(ts.getTime(), entry2.getTimestamp().getTime());
+        assertEquals("log2", entry2.getSource());
+        assertEquals("localhost2", entry2.getHost());
+        assertEquals(Severity.Critical, entry2.getSeverity());
+        assertEquals("my message 2", entry2.getMessage());
         assertEquals(2, entry2.getDocumentVersion());
 
         // Remove

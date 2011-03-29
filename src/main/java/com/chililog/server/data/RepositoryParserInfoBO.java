@@ -45,6 +45,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     private String _appliesToSourceFilter;
     private String _appliesToHostFilter;
     private String _className;
+    private long _maxKeywords = -2;
     private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
     private ArrayList<RepositoryFieldInfoBO> _fields = new ArrayList<RepositoryFieldInfoBO>();
     private Hashtable<String, String> _properties = new Hashtable<String, String>();
@@ -54,10 +55,15 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     static final String APPLIES_TO_SOURCE_FILTER_FIELD_NAME = "applies_to_source_filter";
     static final String APPLIES_TO_HOST_FILTER_FIELD_NAME = "applies_to_host_filter";
     static final String CLASS_NAME_FIELD_NAME = "class_name";
+    static final String MAX_KEYWORDS = "max_keywords";
     static final String PARSE_FIELD_ERROR_HANDLING_FIELD_NAME = "parse_field_error_handling";
     static final String FIELDS_FIELD_NAME = "fields";
     static final String PROPERTIES_FIELD_NAME = "properties";
 
+    public static final long MAX_KEYWORDS_UNLIMITED = -1;
+    public static final long MAX_KEYWORDS_INHERITED = -2;
+
+    
     /**
      * Basic constructor
      */
@@ -83,6 +89,8 @@ public class RepositoryParserInfoBO extends BO implements Serializable
         _appliesToHostFilter = MongoUtils.getString(dbObject, APPLIES_TO_HOST_FILTER_FIELD_NAME, false);
 
         _className = MongoUtils.getString(dbObject, CLASS_NAME_FIELD_NAME, true);
+
+        _maxKeywords = MongoUtils.getLong(dbObject, MAX_KEYWORDS, true);
 
         _parseFieldErrorHandling = ParseFieldErrorHandling.valueOf(MongoUtils.getString(dbObject,
                 PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, true));
@@ -121,6 +129,8 @@ public class RepositoryParserInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, APPLIES_TO_HOST_FILTER_FIELD_NAME, _appliesToHostFilter);
 
         MongoUtils.setString(dbObject, CLASS_NAME_FIELD_NAME, _className);
+
+        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords);
 
         MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString());
 
@@ -201,6 +211,19 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     public void setClassName(String className)
     {
         _className = className;
+    }
+
+    /**
+     * Maximum number of keywords to be stored per entry
+     */
+    public long getMaxKeywords()
+    {
+        return _maxKeywords;
+    }
+
+    public void setMaxKeywords(long maxKeywords)
+    {
+        _maxKeywords = maxKeywords;
     }
 
     /**

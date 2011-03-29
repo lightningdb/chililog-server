@@ -19,6 +19,7 @@
 package com.chililog.server.data;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -293,7 +294,7 @@ public class RepositoryInfoController extends Controller
                 throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, parserName,
                         repository.getName());
             }
-            
+
             // Validate unique field names per parser
             for (RepositoryFieldInfoBO f : p.getFields())
             {
@@ -316,6 +317,37 @@ public class RepositoryInfoController extends Controller
 
         // Save it
         super.save(db, repository);
+
+        // Add repository and index
+        createIndexes(db);
+    }
+
+    /**
+     * Creates the required repository index
+     * 
+     * @param db Database connection
+     */
+    private void createIndexes(DB db)
+    {
+        DBCollection col = db.getCollection(this.getDBCollectionName());
+        List<DBObject> indexes = col.getIndexInfo();
+
+        boolean found = false;
+        for (DBObject idx : indexes)
+        {
+            if (idx.get("name").equals("keyword_ts_index"))
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            BasicDBObject keys = new BasicDBObject();
+            keys.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, 1);
+            keys.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, 1);
+            col.ensureIndex(keys, "keyword_ts_index");
+        }
     }
 
     /**

@@ -18,13 +18,12 @@
 
 package com.chililog.server.engine.parsers;
 
-import java.lang.reflect.InvocationTargetException;
-
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.reflect.ConstructorUtils;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.engine.Strings;
 
@@ -43,17 +42,14 @@ public class EntryParserFactory
     /**
      * Instances the correct entry parser
      * 
+     * @param repoInfo
+     *            Repository meta data
      * @param repoParserInfo
      *            Parser meta data
      * @return Entry parser
      * @throws ChiliLogException
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
-     * @throws InvocationTargetException
-     * @throws IllegalAccessException
-     * @throws NoSuchMethodException
      */
-    public static EntryParser getParser(String repoName, RepositoryParserInfoBO repoParserInfo)
+    public static EntryParser getParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo)
             throws ChiliLogException
     {
         if (repoParserInfo == null)
@@ -66,25 +62,25 @@ public class EntryParserFactory
             String className = repoParserInfo.getClassName();
             if (className.equals(_delimitedEntryParserClassName))
             {
-                return new DelimitedEntryParser(repoName, repoParserInfo);
+                return new DelimitedEntryParser(repoInfo, repoParserInfo);
             }
             else if (className.equals(_regexEntryParserClassName))
             {
-                return new RegexEntryParser(repoName, repoParserInfo);
+                return new RegexEntryParser(repoInfo, repoParserInfo);
             }
             else if (className.equals(_jsonEntryParserClassName))
             {
-                return new JsonEntryParser(repoName, repoParserInfo);
+                return new JsonEntryParser(repoInfo, repoParserInfo);
             }
 
             // Use reflection to instance it
             Class<?> cls = ClassUtils.getClass(className);
             return (EntryParser) ConstructorUtils.invokeConstructor(cls, new Object[]
-            { repoName, repoParserInfo });
+            { repoInfo, repoParserInfo });
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.PARSER_FACTORY_ERROR, repoParserInfo.getName(), repoName,
+            throw new ChiliLogException(ex, Strings.PARSER_FACTORY_ERROR, repoParserInfo.getName(), repoInfo.getName(),
                     ex.getMessage());
         }
     }
@@ -93,12 +89,12 @@ public class EntryParserFactory
      * Instances the correct entry parser
      * 
      * @return Entry parser
-     * @throws ChiliLogException 
+     * @throws ChiliLogException
      */
-    public static EntryParser getDefaultParser(String repoName) throws ChiliLogException
+    public static EntryParser getDefaultParser(RepositoryInfoBO repoInfo) throws ChiliLogException
     {
         RepositoryParserInfoBO parserInfo = new RepositoryParserInfoBO();
         parserInfo.setName("Default");
-        return new DefaultEntryParser(repoName, parserInfo);
+        return new DefaultEntryParser(repoInfo, parserInfo);
     }
 }

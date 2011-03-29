@@ -18,6 +18,9 @@
 
 package com.chililog.server.engine;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.hornetq.api.core.Message;
@@ -174,6 +177,9 @@ public class RepositoryTest
     @Test
     public void testOK() throws Exception
     {
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+
         // Start
         MqManager.getInstance().start();
         Repository repo = new Repository(_repoInfo);
@@ -188,6 +194,7 @@ public class RepositoryTest
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "1");
@@ -196,6 +203,7 @@ public class RepositoryTest
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
+        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "2");
@@ -204,6 +212,7 @@ public class RepositoryTest
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
+        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
         message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
         message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
@@ -229,6 +238,9 @@ public class RepositoryTest
     @Test
     public void testUpdateRepositoryInfo() throws Exception
     {
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+
         // Start
         MqManager.getInstance().start();
         Repository repo = new Repository(_repoInfo);
@@ -282,6 +294,7 @@ public class RepositoryTest
         for (int i = 1; i <= 10000; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
@@ -322,6 +335,9 @@ public class RepositoryTest
     @Test
     public void testBadEntries() throws Exception
     {
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+
         // Start
         MqManager.getInstance().start();
         Repository repo = new Repository(_repoInfo);
@@ -339,6 +355,7 @@ public class RepositoryTest
         for (int i = 1; i <= 100; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "Debug");

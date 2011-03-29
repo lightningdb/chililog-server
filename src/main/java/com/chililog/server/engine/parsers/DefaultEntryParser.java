@@ -18,12 +18,13 @@
 
 package com.chililog.server.engine.parsers;
 
-import java.util.Date;
+import java.util.ArrayList;
 
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.RepositoryEntryBO;
 import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
 
 /**
@@ -43,15 +44,15 @@ public class DefaultEntryParser extends EntryParser
      * Basic constructor
      * </p>
      * 
-     * @param repoName
-     *            Name of repository (for reporting errors)
+     * @param repoInfo
+     *            Repository meta data
      * @param repoParserInfo
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public DefaultEntryParser(String repoName, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public DefaultEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
     {
-        super(repoName, repoParserInfo);
+        super(repoInfo, repoParserInfo);
         return;
     }
 
@@ -59,6 +60,8 @@ public class DefaultEntryParser extends EntryParser
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
+     * @param timetstamp
+     *            Time when this log entry was created at the source on the host.
      * @param source
      *            Name of the input device or application that created this text entry
      * @param host
@@ -71,20 +74,23 @@ public class DefaultEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String source, String host, String serverity, String message)
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
     {
         try
         {
             this.setLastParseError(null);
-            checkParseArguments(source, host, serverity, message);
-            Severity severity = Severity.parse(serverity);
+            checkParseArguments(timestamp, source, host, severity, message);
 
+            Severity sev = Severity.parse(severity);
+            ArrayList<String> keywords = parseKeywords(source, host, sev, message);
+            
             RepositoryEntryBO entry = new RepositoryEntryBO();
-            entry.setEntryTimestamp(new Date());
-            entry.setEntrySource(source);
-            entry.setEntryHost(host);
-            entry.setEntrySeverity(severity);
-            entry.setEntryMessage(message);
+            entry.setTimestamp(parseTimestamp(timestamp));
+            entry.setSource(source);
+            entry.setHost(host);
+            entry.setSeverity(sev);
+            entry.setKeywords(keywords);
+            entry.setMessage(message);
             return entry;
         }
         catch (Exception ex)

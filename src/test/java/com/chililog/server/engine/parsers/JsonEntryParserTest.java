@@ -22,6 +22,9 @@ import static org.junit.Assert.*;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -94,7 +97,7 @@ public class JsonEntryParserTest
         repoInfo.getParsers().add(repoParserInfo);
 
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
-        JsonEntryParser p = new JsonEntryParser(repoInfo.getName(), repoParserInfo);
+        JsonEntryParser p = new JsonEntryParser(repoInfo, repoParserInfo);
 
         StringBuilder sb = new StringBuilder();
         sb.append("{");
@@ -110,7 +113,7 @@ public class JsonEntryParserTest
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Save OK
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Critical.toString(), sb.toString());
+        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(), sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -121,8 +124,14 @@ public class JsonEntryParserTest
         query.put("_id", entry.toDBObject().get("_id"));
         dbObject = coll.findOne(query);
 
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTimeZone(TimeZone.getTimeZone("GMT"));
+        cal.set(2010, 10, 29, 19, 41, 46);
+        cal.set(Calendar.MILLISECOND, 0);
+        
         assertNotNull(dbObject);
-        assertTrue(dbObject.containsField(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
+        assertEquals(cal.getTime(), dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
         assertEquals(1, dbObject.get("field1"));
         assertEquals("abc", dbObject.get("field2"));
         assertEquals(true, dbObject.get("field3"));
@@ -130,10 +139,10 @@ public class JsonEntryParserTest
         assertEquals(888L, dbObject.get("field5"));
         assertEquals(5.5d, dbObject.get("field6"));
         assertEquals(sf.parse("2010-11-29T19:41:46GMT"), dbObject.get("field7"));
-        assertEquals("log1", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
-        assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
-        assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
-        assertEquals(sb.toString(), dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
+        assertEquals("log1", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertEquals(sb.toString(), dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
 
         // Should only be 1 entry
         assertEquals(1, coll.find().count());
@@ -159,10 +168,10 @@ public class JsonEntryParserTest
                 "^NumberLong\\(([0-9]+)\\)$");
         repoInfo.getParsers().add(repoParserInfo);
 
-        JsonEntryParser p = new JsonEntryParser(repoInfo.getName(), repoParserInfo);
+        JsonEntryParser p = new JsonEntryParser(repoInfo, repoParserInfo);
 
         // Error because xxx is not json format
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Emergency.toString(), "xxx");
+        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46Z","log1", "127.0.0.1", Severity.Emergency.toString(), "xxx");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

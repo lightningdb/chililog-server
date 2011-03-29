@@ -18,6 +18,7 @@
 
 package com.chililog.server.engine;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.NullArgumentException;
@@ -58,6 +59,11 @@ public class RepositoryWriter extends Thread
     private EntryParser _catchAllParser = null;
 
     /**
+     * HornetQ property identifying the time stamp of the event log. Format is: 2001-12-31T23:01:01.000Z
+     */
+    public static final String TIMESTAMP_PROPERTY_NAME = "Timestamp";
+
+    /**
      * HornetQ property identifying the application or service that created the log entry
      */
     public static final String SOURCE_PROPERTY_NAME = "Source";
@@ -73,6 +79,16 @@ public class RepositoryWriter extends Thread
      */
     public static final String SEVERITY_PROPERTY_NAME = "Severity";
 
+    /**
+     * Time stamp format for use with {@link SimpleDateFormat}
+     */
+    public static final String TIMESTAMP_FORMAT = EntryParser.TIMESTAMP_FORMAT;
+       
+    /**
+     * Time stamp time zone for use with {@link SimpleDateFormat}
+     */
+    public static final String TIMESTAMP_TIMEZONE = EntryParser.TIMESTAMP_TIMEZONE;
+    
     /**
      * 
      * Basic constructor
@@ -99,18 +115,18 @@ public class RepositoryWriter extends Thread
         {
             if (repoParserInfo.getAppliesTo() == AppliesTo.All)
             {
-                _catchAllParser = EntryParserFactory.getParser(repo.getRepoInfo().getName(), repoParserInfo);
+                _catchAllParser = EntryParserFactory.getParser(repo.getRepoInfo(), repoParserInfo);
             }
             else if (repoParserInfo.getAppliesTo() != AppliesTo.None)
             {
-                _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoInfo().getName(), repoParserInfo));
+                _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoInfo(), repoParserInfo));
             }
         }
 
         // If there is no catch all, then set it to the default one (that does no parsing)
         if (_catchAllParser == null)
         {
-            _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoInfo().getName());
+            _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoInfo());
         }
 
         return;
@@ -152,6 +168,7 @@ public class RepositoryWriter extends Thread
                 {
                     try
                     {
+                        String ts = messageReceived.getStringProperty(TIMESTAMP_PROPERTY_NAME);
                         String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
                         String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
                         String severity = messageReceived.getStringProperty(SEVERITY_PROPERTY_NAME);
@@ -159,7 +176,7 @@ public class RepositoryWriter extends Thread
 
                         // Parse message
                         EntryParser entryParser = getParser(source, host);
-                        RepositoryEntryBO repoEntry = entryParser.parse(source, host, severity, message);
+                        RepositoryEntryBO repoEntry = entryParser.parse(ts, source, host, severity, message);
 
                         // Save message
                         if (repoEntry != null)

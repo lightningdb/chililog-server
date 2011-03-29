@@ -18,22 +18,40 @@
 
 package com.chililog.server.engine.parsers;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.common.TextTokenizer;
 import com.chililog.server.data.RepositoryEntryBO;
+import com.chililog.server.data.RepositoryEntryBO.Severity;
+import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 
 /**
+ * <p>
  * Parses incoming entries to extract fields and keywords
+ * </p>
+ * <p>
+ * This code is NOT designed for multi-threaded use. It should only be used in 1 thread.
+ * </p>
  */
 public abstract class EntryParser
 {
+    public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    public static final String TIMESTAMP_TIMEZONE = "GMT";
+
     private String _repoName;
+    private long _maxKeywords = 0;
     private RepositoryParserInfoBO _repoParserInfo;
     private Exception _lastParseError = null;
 
@@ -41,6 +59,9 @@ public abstract class EntryParser
     private String[] _sourceCSV = null;
     private Pattern _hostPattern = null;
     private String[] _hostCSV = null;
+
+    private SimpleDateFormat _dateFormat;
+    private TextTokenizer _tokenizer;
 
     /**
      * <p>
@@ -53,19 +74,24 @@ public abstract class EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public EntryParser(String repoName, RepositoryParserInfoBO repoParserInfo)
+    public EntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo)
     {
-        if (StringUtils.isBlank(repoName))
+        if (repoInfo == null)
         {
-            throw new IllegalArgumentException("repoName is blank");
+            throw new NullArgumentException("repoInfo is null");
         }
         if (repoParserInfo == null)
         {
             throw new NullArgumentException("repoParserInfo is null");
         }
 
-        _repoName = repoName;
+        _repoName = repoInfo.getName();
         _repoParserInfo = repoParserInfo;
+        _maxKeywords = repoInfo.getMaxKeywords();
+        if (repoParserInfo.getMaxKeywords() != RepositoryParserInfoBO.MAX_KEYWORDS_INHERITED)
+        {
+            _maxKeywords = repoParserInfo.getMaxKeywords();
+        }
 
         // Get our regular expression ready for matching source and host
         if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV)
@@ -98,6 +124,13 @@ public abstract class EntryParser
                 _hostPattern = Pattern.compile(_repoParserInfo.getAppliesToHostFilter());
             }
         }
+
+        // Dates for parsing timestamp
+        _dateFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
+        _dateFormat.setTimeZone(TimeZone.getTimeZone(TIMESTAMP_TIMEZONE));
+
+        // Tokenizer for keyword extraction
+        _tokenizer = TextTokenizer.getInstance();
 
         return;
     }
@@ -199,8 +232,12 @@ public abstract class EntryParser
      * @param serverity
      * @param message
      */
-    protected void checkParseArguments(String source, String host, String serverity, String message)
+    protected void checkParseArguments(String timestamp, String source, String host, String serverity, String message)
     {
+        if (StringUtils.isBlank(timestamp))
+        {
+            throw new IllegalArgumentException("Entry timestamp is blank");
+        }
         if (StringUtils.isBlank(source))
         {
             throw new IllegalArgumentException("Entry source is blank");
@@ -220,9 +257,52 @@ public abstract class EntryParser
     }
 
     /**
+     * Parses the timestamp. Assumes the format is '2011-12-31T23:01:01.123Z'.
+     * 
+     * @param timestamp
+     * @return
+     * @throws ParseException
+     */
+    protected Date parseTimestamp(String timestamp) throws ParseException
+    {
+        return _dateFormat.parse(timestamp);
+    }
+
+    /**
+     * Parses our message to look for keywords
+     * 
+     * @param message Message to parse
+     * @return List of keywords
+     * @throws IOException
+     */
+    protected ArrayList<String> parseKeywords(String source, String host, Severity severity, String message) throws IOException
+    {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<String> l = _tokenizer.tokenize(message, _maxKeywords);
+        
+        // Add source to keywords
+        sb.append("s=").append(source);
+        l.add(sb.toString());
+
+        // Add host to keywords
+        sb.setLength(0);
+        sb.append("h=").append(host);
+        l.add(sb.toString());
+
+        // Add severity to keywords
+        sb.setLength(0);
+        sb.append("v=").append(severity.toCode());
+        l.add(sb.toString());
+
+        return l;
+    }
+
+    /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
+     * @param timetstamp
+     *            Time when this log entry was created at the source on the host.
      * @param source
      *            Name of the application or service that created this log entry
      * @param host
@@ -237,6 +317,10 @@ public abstract class EntryParser
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written
      *         to mongoDB, then null is returned
      */
-    public abstract RepositoryEntryBO parse(String source, String host, String serverity, String message);
+    public abstract RepositoryEntryBO parse(String timetstamp,
+                                            String source,
+                                            String host,
+                                            String severity,
+                                            String message);
 
 }

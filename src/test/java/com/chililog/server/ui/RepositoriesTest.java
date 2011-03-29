@@ -150,14 +150,14 @@ public class RepositoriesTest
 
         // Add 3 lines
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
-        EntryParser p = EntryParserFactory.getParser(repoInfo.getName(), repoInfo.getParsers().get(0));
-        RepositoryEntryBO entry = p.parse("log1", "127.0.0.1", Severity.Information.toString(), "line1|1");
+        EntryParser p = EntryParserFactory.getParser(repoInfo, repoInfo.getParsers().get(0));
+        RepositoryEntryBO entry = p.parse("2011-01-01T05:05:05.100Z", "log1", "127.0.0.1", Severity.Information.toString(), "line1|1");
         c.save(_db, entry);
 
-        entry = p.parse("log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
+        entry = p.parse("2011-01-01T05:05:05.200Z","log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
         c.save(_db, entry);
 
-        entry = p.parse("log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
+        entry = p.parse("2011-01-01T05:05:05.300Z","log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
         c.save(_db, entry);
 
         // Start server
@@ -185,12 +185,14 @@ public class RepositoriesTest
         query = new BasicDBObject();
         query.put("name", pattern);
         coll.remove(query);
+        
+        
 
         App.stopChiliLogServer();
     }
 
     /**
-     * Test queryies
+     * Test queries
      * 
      * @throws Exception
      */

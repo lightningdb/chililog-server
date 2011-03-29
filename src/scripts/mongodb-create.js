@@ -50,7 +50,6 @@ db.config.drop();
 db.users.drop();
 db.repositories_info.drop();
 db.chililog_repository.drop();
-db.test_repository.drop();
 
 
 //*************************************************************
@@ -65,9 +64,7 @@ db.config.ensureIndex({ name : 1 });
 // Create users
 //*************************************************************
 db.users.ensureIndex({ username : 1 });
-db.user_roles.ensureIndex({ username : 1 });
-db.user_roles.ensureIndex({ role : 1 });
-db.user_profiles.ensureIndex({ username : 1 });
+db.users.ensureIndex({ roles : 1, username : 1 });
 
 print("\nCreating ChiliLog Admin User");
 var adminUser = {
@@ -76,7 +73,7 @@ var adminUser = {
 	roles: [ "workbench.administrator" ],
 	status: "Active",
 	display_name: "Adminstrator",
-	doc_version: new NumberLong(1) 
+	c_ver: new NumberLong(1) 
 };
 db.users.insert(adminUser);
 
@@ -88,36 +85,20 @@ var chiliLogRepo = {
 	name: "chililog",
 	display_name: "ChiliLog Log",
 	description: "Log repository for ChiliLog events",
-	startup_status: 'ONLINE',
+	startup_status: "ONLINE",
 	is_read_queue_durable: false,
 	is_write_queue_durable: false,
 	write_queue_worker_count: new NumberLong(1),
 	write_queue_max_memory: new NumberLong(1024 * 1024 * 20),
 	write_queue_max_memory_policy: "PAGE",
 	write_queue_page_size: new NumberLong(1024 * 1024 * 4),
-	parsers: [
-	    {
-	    	name: "Default",
-	    	applies_to_source: "All",
-	    	applies_to_source_filter: "",
-	    	applies_to_host: "None",
-	    	applies_to_host_filter: "",
-	    	class_name: "com.chililog.server.engine.parsers.DelimitedEntryParser",
-	    	parse_field_error_handling: "SkipField",
-	    	fields: [ 
-	    	          { name: "timestamp", data_type: "Date", properties: { position: "1" } },
-	    	          { name: "thread", data_type: "String", properties: { position: "2" } },
-	    	          { name: "category", data_type: "String", properties: { position: "3" } },
-	    	          { name: "message", data_type: "String", properties: { position: "4" } }
-	    	],
-	    	properties: { delimiter: "|" }
-	    }
-	],
-	doc_version: new NumberLong(1)
+	max_keywords: new NumberLong(-1),
+	c_ver: new NumberLong(1)
 };
 db.repositories_info.insert(chiliLogRepo);
 
-db.chililog_repository.ensureIndex({ entry_timestamp : 1, entry_keywords : 1 });
+// http://www.mongodb.org/display/DOCS/Indexing+Advice+and+FAQ
+db.chililog_repository.ensureIndex({ c_keywords : 1, c_ts : 1 }, {name: "keyword_ts_index"});
 
 
 // *************************************************************

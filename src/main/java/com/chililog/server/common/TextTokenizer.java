@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -82,18 +81,20 @@ public class TextTokenizer
      * 
      * @param text
      *            Text to extract keywords
+     * @param maxKeyword
+     *            Maximum number of keywords to extract. If < 0, then no limit will be used.
      * @return Array of keywords
      * @throws IOException
      */
-    public List<String> tokenize(String text) throws IOException
+    public ArrayList<String> tokenize(String text, long maxKeywords) throws IOException
     {
-        List<String> tokens = new ArrayList<String>();
+        ArrayList<String> tokens = new ArrayList<String>();
 
-        if (StringUtils.isEmpty(text))
+        if (StringUtils.isEmpty(text) || maxKeywords == 0)
         {
             return tokens;
         }
-        
+
         Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
         HashMap<String, String> lookup = new HashMap<String, String>();
         TokenStream stream = analyzer.tokenStream("field", new StringReader(text));
@@ -133,11 +134,9 @@ public class TextTokenizer
                     char c = termBuffer[i];
                     if (c == '.' || c == '@')
                     {
-                        String term = sb.toString();
-                        if (sb.length() > 0 && !lookup.containsKey(term))
+                        if (!addToken(tokens, lookup, sb.toString(), maxKeywords))
                         {
-                            tokens.add(term);
-                            lookup.put(term, null);
+                            return tokens;
                         }
                         sb.setLength(0);
                     }
@@ -147,26 +146,50 @@ public class TextTokenizer
                     }
                 }
 
-                // last part
-                String term = sb.toString();
-                if (sb.length() > 0 && !lookup.containsKey(term))
+                // Add last part
+                if (!addToken(tokens, lookup, sb.toString(), maxKeywords))
                 {
-                    tokens.add(term);
-                    lookup.put(term, null);
+                    return tokens;
                 }
             }
             else
             {
                 // No splitting, just add term
-                String term = termAttribute.term();
-                if (!lookup.containsKey(term))
+                if (!addToken(tokens, lookup, termAttribute.term(), maxKeywords))
                 {
-                    tokens.add(term);
-                    lookup.put(term, null);
+                    return tokens;
                 }
             }
         }
 
         return tokens;
     }
+
+    /**
+     * Adds our token to our collection
+     * 
+     * @param tokens
+     *            collection of tokens
+     * @param lookup
+     *            lookup hashmap for duplicates
+     * @param token
+     *            token or term to add to the collection
+     * @param maxKeywords
+     *            maximum number of keywords
+     * @return True if it is OK to keep adding tokens, False if no more tokens should be added
+     */
+    private boolean addToken(ArrayList<String> tokens, HashMap<String, String> lookup, String token, long maxKeywords)
+    {
+        if (!StringUtils.isBlank(token) && !lookup.containsKey(token))
+        {
+            tokens.add(token);
+            lookup.put(token, null);
+            if (maxKeywords > 0 && tokens.size() >= maxKeywords)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

@@ -42,7 +42,8 @@ public class RepositoryParserInfoAO extends AO
     private String _appliesToSourceFilter;
     private String _appliesToHostFilter;
     private String _className;
-    private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
+    private long _maxKeywords = -1;
+   private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
     private RepositoryFieldInfoAO[] _fields = null;
     private RepositoryPropertyInfoAO[] _properties = null;
 
@@ -67,6 +68,7 @@ public class RepositoryParserInfoAO extends AO
         _appliesToSourceFilter = repoParserInfo.getAppliesToSourceFilter();
         _appliesToHostFilter = repoParserInfo.getAppliesToHostFilter();
         _className = repoParserInfo.getClassName();
+        _maxKeywords = repoParserInfo.getMaxKeywords();
 
         _parseFieldErrorHandling = repoParserInfo.getParseFieldErrorHandling();
 
@@ -115,6 +117,7 @@ public class RepositoryParserInfoAO extends AO
         repoParserInfo.setAppliesToSourceFilter(_appliesToSourceFilter);
         repoParserInfo.setAppliesToHostFilter(_appliesToHostFilter);
         repoParserInfo.setClassName(checkRequiredField("Class Name", _className));
+        repoParserInfo.setMaxKeywords(_maxKeywords);
 
         repoParserInfo.setParseFieldErrorHandling(_parseFieldErrorHandling);
 
@@ -189,6 +192,16 @@ public class RepositoryParserInfoAO extends AO
     public void setClassName(String className)
     {
         _className = className;
+    }
+    
+    public long getMaxKeywords()
+    {
+        return _maxKeywords;
+    }
+
+    public void setMaxKeywords(long maxKeywords)
+    {
+        _maxKeywords = maxKeywords;
     }
 
     public ParseFieldErrorHandling getParseFieldErrorHandling()

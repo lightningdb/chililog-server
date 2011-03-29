@@ -38,7 +38,7 @@ public abstract class BO
     private DBObject _dbObject = null;
 
     public static final String DOCUMENT_ID_FIELD_NAME = "_id";
-    public static final String DOCUMENT_VERSION_FIELD_NAME = "doc_version";
+    public static final String DOCUMENT_VERSION_FIELD_NAME = "c_ver";
 
     /**
      * Basic constructor

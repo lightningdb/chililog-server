@@ -20,6 +20,9 @@ package com.chililog.server;
 
 import static org.junit.Assert.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.hornetq.api.core.Message;
@@ -193,6 +196,9 @@ public class AppTest
         // Start
         App.startChiliLogServer();
 
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+        
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession("AppTestUser_Writer",
                 "222");
@@ -203,6 +209,7 @@ public class AppTest
         for (int i = 0; i < 10000; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "AppTest");
             message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");

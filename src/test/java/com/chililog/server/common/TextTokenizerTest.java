@@ -1,3 +1,20 @@
+//
+// Copyright 2010 Cinch Logic Pty Ltd.
+//
+// http://www.chililog.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package com.chililog.server.common;
 
@@ -26,7 +43,7 @@ public class TextTokenizerTest
     @Test
     public void testBasic() throws IOException
     {
-        List<String> text = TextTokenizer.getInstance().tokenize("Hello, I am Jim.");
+        List<String> text = TextTokenizer.getInstance().tokenize("Hello, I am Jim.", -1);
         _logger.info(text.toString());
         assertEquals(4, text.size());
         assertEquals("[hello, i, am, jim]", text.toString());
@@ -35,31 +52,39 @@ public class TextTokenizerTest
         List<String> apacheError = TextTokenizer
                 .getInstance()
                 .tokenize(
-                        "[Wed Oct 11 14:32:52 2000] [error] [client 127.0.0.1] client denied by server configuration: /export/home/live/ap/htdocs/test");
+                        "[Wed Oct 11 14:32:52 2000] [error] [client 127.0.0.1] client denied by server configuration: /export/home/live/ap/htdocs/test",
+                        -1);
         _logger.info(apacheError.toString());
 
         List<String> commonLogFormat = TextTokenizer.getInstance().tokenize(
-                "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326");
+                "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326", -1);
         _logger.info(commonLogFormat.toString());
 
         List<String> combinedLogFormat = TextTokenizer
                 .getInstance()
                 .tokenize(
-                        "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326 \"http://www.example.com/start.html\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"");
+                        "127.0.0.1 - frank [10/Oct/2000:13:55:36 -0700] \"GET /apache_pb.gif HTTP/1.0\" 200 2326 \"http://www.example.com/start.html\" \"Mozilla/4.08 [en] (Win98; I ;Nav)\"",
+                        -1);
         _logger.info(combinedLogFormat.toString());
 
         // Email and file path
         List<String> emails = TextTokenizer
                 .getInstance()
                 .tokenize(
-                        "vibul@testing.com.au is the email address to parse. C:\\folder1\\folder2\\vvv.java. /tmp/test/vvv.java");
+                        "vibul@testing.com.au is the email address to parse. C:\\folder1\\folder2\\vvv.java. /tmp/test/vvv.java",
+                        -1);
         _logger.info(emails.toString());
         assertEquals("[vibul, testing, com, au, email, address, parse, c, folder1, folder2, vvv, java, tmp, test]",
                 emails.toString());
 
         // xml
-        List<String> xml = TextTokenizer.getInstance().tokenize("<hello><afield>b</afield></hello>");
+        List<String> xml = TextTokenizer.getInstance().tokenize("<hello><afield>b</afield></hello>", -1);
         _logger.info(xml.toString());
+
+        // json
+        List<String> json = TextTokenizer.getInstance().tokenize("{ name: \"chililog\", display_name: \"ChiliLog Log\", " +
+                "description: \"Log repository for ChiliLog events\", startup_status: 'ONLINE'}", -1);
+        _logger.info(json.toString());
 
         // stack trace
         List<String> stackTrace = TextTokenizer
@@ -93,7 +118,7 @@ public class TextTokenizerTest
                                 + "at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)\n"
                                 + "Caused by: java.lang.NullPointerException: inner exception\n"
                                 + "at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:63)\n"
-                                + "... 23 more");
+                                + "... 23 more", -1);
         _logger.info(stackTrace.toString());
 
         return;
@@ -228,7 +253,7 @@ public class TextTokenizerTest
                                     + "at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:197)\n"
                                     + "Caused by: java.lang.NullPointerException: inner exception\n"
                                     + "at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:63)\n"
-                                    + "... 23 more");
+                                    + "... 23 more", -1);
 
         }
         endTime = new Date();

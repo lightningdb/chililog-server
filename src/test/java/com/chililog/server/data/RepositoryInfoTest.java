@@ -104,11 +104,13 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueMaxMemory(1);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         repoInfo.setWriteQueuePageSize(2);
+        repoInfo.setMaxKeywords(100);
         
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
         repoParserInfo.setName("parser1");
         repoParserInfo.setAppliesTo(AppliesTo.All);
         repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
+        repoParserInfo.setMaxKeywords(1L);
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put("key1", "value11");
         repoParserInfo.getProperties().put("key2", "value12");
@@ -156,12 +158,14 @@ public class RepositoryInfoTest
         assertEquals(1, repoInfo2.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, repoInfo2.getWriteQueuePageSize());
+        assertEquals(100L, repoInfo2.getMaxKeywords());
         assertEquals(1, repoInfo2.getParsers().size());
         
         RepositoryParserInfoBO repoParserInfo2 = repoInfo2.getParsers().get(0);
         assertEquals("parser1", repoParserInfo2.getName());
         assertEquals(AppliesTo.All, repoParserInfo2.getAppliesTo());
         assertEquals(DelimitedEntryParser.class.getName(), repoParserInfo2.getClassName());
+        assertEquals(1L, repoParserInfo2.getMaxKeywords());
         assertEquals(ParseFieldErrorHandling.SkipEntry, repoParserInfo2.getParseFieldErrorHandling());
 
         Hashtable<String, String> ht2 = repoParserInfo2.getProperties();
@@ -212,8 +216,10 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueMaxMemory(21);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.DROP);
         repoInfo.setWriteQueuePageSize(22);
+        repoInfo.setMaxKeywords(200);
 
         repoParserInfo.setClassName("com.chililog.server.data.DeclimitedRepositoryParserX");
+        repoParserInfo.setMaxKeywords(2);
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipFieldIgnoreError);
         repoParserInfo.getProperties().put("key1", "value11x");
         repoParserInfo.getProperties().put("key4", "value14x");
@@ -244,12 +250,14 @@ public class RepositoryInfoTest
         assertEquals(21, repoInfo2.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.DROP, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(22, repoInfo2.getWriteQueuePageSize());
+        assertEquals(200L, repoInfo2.getMaxKeywords());
         assertEquals(2, repoInfo2.getDocumentVersion());
 
         repoParserInfo2 = repoInfo2.getParsers().get(0);
         assertEquals("parser1", repoParserInfo2.getName());
         assertEquals(AppliesTo.All, repoParserInfo2.getAppliesTo());
         assertEquals("com.chililog.server.data.DeclimitedRepositoryParserX", repoParserInfo2.getClassName());
+        assertEquals(2L, repoParserInfo2.getMaxKeywords());
         assertEquals(ParseFieldErrorHandling.SkipFieldIgnoreError, repoParserInfo2.getParseFieldErrorHandling());
        
         ht2 = repoParserInfo2.getProperties();

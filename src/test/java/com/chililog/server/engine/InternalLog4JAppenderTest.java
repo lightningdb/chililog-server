@@ -93,11 +93,11 @@ public class InternalLog4JAppenderTest
 
         DBObject dbObject = coll.findOne();
 
-        assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
-        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
-        assertEquals(msg, dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
+        assertNotNull(dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertEquals(msg, dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertEquals(now, dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME));
@@ -129,11 +129,11 @@ public class InternalLog4JAppenderTest
 
         DBObject dbObject = coll.findOne();
 
-        assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
-        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
-        assertEquals(msg, dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
+        assertNotNull(dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertEquals(msg, dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
@@ -160,11 +160,11 @@ public class InternalLog4JAppenderTest
 
         DBObject dbObject = coll.findOne();
 
-        assertNotNull(dbObject.get(RepositoryEntryBO.ENTRY_TIMESTAMP_FIELD_NAME));
-        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.ENTRY_SOURCE_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.ENTRY_HOST_FIELD_NAME));
-        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.ENTRY_SEVERITY_FIELD_NAME));
-        assertEquals("", dbObject.get(RepositoryEntryBO.ENTRY_MESSAGE_FIELD_NAME));
+        assertNotNull(dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertEquals("", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
         assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
