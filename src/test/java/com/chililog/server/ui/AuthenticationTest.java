@@ -36,7 +36,9 @@ import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
+import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.ui.api.AuthenticationAO;
+import com.chililog.server.ui.api.UserAO;
 import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 import com.chililog.server.ui.api.Worker;
 import com.mongodb.BasicDBObject;
@@ -64,7 +66,7 @@ public class AuthenticationTest
         UserBO user = new UserBO();
         user.setUsername("AuthenticationTest");
         user.setPassword("hello there", true);
-        user.addRole("Admin");
+        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
         
         WebServerManager.getInstance().start();
@@ -186,9 +188,16 @@ public class AuthenticationTest
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
         
-        ApiUtils.check204NoContentResponse(responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode, headers);
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        assertEquals("", responseContent);
+        
+        UserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("AuthenticationTest", loggedInUser.getUsername());
+        assertNull(loggedInUser.getPassword());
+        assertEquals(1, loggedInUser.getRoles().length);
+        assertEquals(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE, loggedInUser.getRoles()[0]);
+        assertNotNull(loggedInUser.getDocumentID());
+        assertEquals(Status.Enabled, loggedInUser.getStatus());
     }
     
     /**

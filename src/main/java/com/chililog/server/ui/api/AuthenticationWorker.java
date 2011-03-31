@@ -145,7 +145,7 @@ public class AuthenticationWorker extends Worker
         AuthenticationTokenAO token = new AuthenticationTokenAO(user, requestApiObject);
 
         // Return response
-        return new ApiResult(token, null, null);
+        return new ApiResult(token, JSON_CONTENT_TYPE, new UserAO(user));
     }
 
     /**

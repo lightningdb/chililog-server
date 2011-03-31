@@ -71,7 +71,7 @@ var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
 	roles: [ "workbench.administrator" ],
-	status: "Active",
+	status: "Enabled",
 	display_name: "Adminstrator",
 	c_ver: new NumberLong(1) 
 };
