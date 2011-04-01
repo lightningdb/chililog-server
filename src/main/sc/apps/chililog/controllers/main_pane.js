@@ -20,9 +20,9 @@ Chililog.mainPaneStates = {
 /**
  * Controller that for the mainPane. Mainly handles menu selection option and login/logout
  *
- * @extends SC.ObjectController
+ * @extends SC.Object
  */
-Chililog.mainPaneController = SC.ObjectController.create(
+Chililog.mainPaneController = SC.Object.create(
 /** @scope Chililog.mainPaneController.prototype */ {
 
   state: Chililog.mainPaneStates.SEARCH,

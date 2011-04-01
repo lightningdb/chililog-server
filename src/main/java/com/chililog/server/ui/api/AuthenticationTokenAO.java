@@ -164,7 +164,7 @@ public class AuthenticationTokenAO
      * Convert the token to a string.
      * </p>
      * <p>
-     * Format is <code>encrypt(json(AuthenticationTokenAO) + ~~~ + hash(json(AuthenticationTokenAO)))</code>
+     * Format is <code>json(AuthenticationTokenAO) + ~~~ + hash(json(AuthenticationTokenAO))</code>
      * </p>
      */
     @Override
@@ -173,16 +173,13 @@ public class AuthenticationTokenAO
         try
         {
             AppProperties appProperties = AppProperties.getInstance();
-            String json = JsonTranslator.getInstance().toJson(this);
+            String json = JsonTranslator.getInstance().toJson(this).replace("\n", "");
             StringBuilder sb = new StringBuilder();
             sb.append(json);
             sb.append("~~~");
             sb.append(CryptoUtils.createHash(json, appProperties.getWebApiAuthenticationHashSalt(), false));
 
-            String encryptedToken = CryptoUtils.encryptTripleDES(sb.toString(),
-                    appProperties.getWebApiAuthenticationEncryptionPassword());
-
-            return encryptedToken;
+            return sb.toString();
         }
         catch (Exception ex)
         {
@@ -195,36 +192,30 @@ public class AuthenticationTokenAO
      * Loads from an encrypted token
      * </p>
      * <p>
-     * Format is <code>encrypt(json(AuthenticationTokenAO) + ~~~ + hash(json(AuthenticationTokenAO)))</code>
+     * Format is <code>json(AuthenticationTokenAO) + ~~~ + hash(json(AuthenticationTokenAO))</code>
      * </p>
      * 
+     * @param tokenString
+     *            String representation of a token as returned by <code>toString()</code>.
      * @throws ChiliLogException
      *             If token is invalid, errorCode set to Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR. If token is
      *             expired, errorCode set to Strings.AUTHENTICAITON_TOKEN_EXPIRED_ERROR.
      */
-    public static AuthenticationTokenAO fromString(String encryptedToken) throws ChiliLogException
+    public static AuthenticationTokenAO fromString(String tokenString) throws ChiliLogException
     {
-        if (StringUtils.isBlank(encryptedToken))
+        if (StringUtils.isBlank(tokenString))
         {
             throw new ChiliLogException(Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR);
         }
 
         AppProperties appProperties = AppProperties.getInstance();
 
-        String plainTextToken = null;
-        try
-        {
-            plainTextToken = CryptoUtils.decryptTripleDES(encryptedToken,
-                    appProperties.getWebApiAuthenticationEncryptionPassword());
+        int separatorIndex = tokenString.indexOf("~~~");
+        if (separatorIndex < 0) {
+            throw new ChiliLogException(Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR);
         }
-        catch (Exception ex)
-        {
-            throw new ChiliLogException(ex, Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR);
-        }
-
-        int separatorIndex = plainTextToken.indexOf("~~~");
-        String json = plainTextToken.substring(0, separatorIndex);
-        String hash = plainTextToken.substring(separatorIndex + 3);
+        String json = tokenString.substring(0, separatorIndex);
+        String hash = tokenString.substring(separatorIndex + 3);
 
         if (!CryptoUtils.verifyHash(json, appProperties.getWebApiAuthenticationHashSalt(), hash))
         {
