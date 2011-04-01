@@ -17,11 +17,6 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
 /** @scope Chililog.sessionController.prototype */ {
 
   /**
-   * YES if async login taking place, NO otherwise.
-   */
-  isBusy: NO,
-
-  /**
    * Last error message
    *
    * @type String
@@ -59,21 +54,33 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
   }.property('loggedInUser').cacheable(),
 
   /**
+   * Call this only once ... it will call itself every 5 minutes
+   */
+  checkExpiry: function() {
+    var pollSeconds = 300000;
+    if (this.get('isLoggedIn')) {
+      var now = SC.DateTime.create();
+      var expiry = this.get('authenticationTokenExpiry');
+
+      // Bring forward pollSeconds so that we don't miss expiry
+      expiry = expiry.advance({ second: -1 * pollSeconds });
+
+      if (SC.DateTime.compare(now, expiry) > 0) {
+        this.logout();
+      }
+    }
+
+    setTimeout('Chililog.sessionController.checkTokenExpiry()', pollSeconds)
+  },
+
+  /**
    * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
    *
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @returns {Boolean} YES if successfully loaded, NO if token not loaded and the user has to sign in again
    */
   load: function(isAsync) {
-    // Check if busy
-    if (this.get('isBusy')) {
-      throw SC.Error.desc('Session Controller is busy');
-    }
-
     try {
-      // Start login
-      this.set('isBusy', YES);
-
       if (SC.none(isAsync)) {
         isAsync = YES;
       }
@@ -99,7 +106,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
         return NO;
       }
 
-      var expiryString = json['ExpiresOn'];
+      var expiryString = json.ExpiresOn;
       if (expiryString === null) {
         return NO;
       }
@@ -114,7 +121,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       this.set('authenticationToken', token);
 
       // Get user from server
-      var url = '/api/Users/' + json['UserID'];
+      var url = '/api/Users/' + json.UserID;
       var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
       if (isAsync) {
         request.notify(this, 'endLoad').send();
@@ -122,13 +129,12 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
         var response = request.send();
         this.endLoad(response);
       }
+
+      return YES;
     }
     catch (err) {
       // Set Error
       this.set('errorMessage', err.message);
-
-      // Finish login processing
-      this.set('isBusy', NO);
 
       return NO;
     }
@@ -151,14 +157,10 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       // Clear error data
       this.set('errorMessage', '');
 
-      // Flag finish login processing to unlock screen
-      this.set('isBusy', NO);
-
       // Return YES to signal handling of callback
       return YES;
     }
     catch (err) {
-      this.set('isBusy', NO);
       this.set('errorMessage', err.message);
       SC.Logger.info('Error in endLogin: ' + err.message);
     }
@@ -171,20 +173,13 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {String} password The username to use for login
    * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object
    * @returns {Boolean} YES if async call successfully started, NO if it failed. If error, the error message
    * will be placed in the 'errorMessage' property.
    */
-  login: function(username, password, rememberMe, isAsync) {
-
-    // Check if busy
-    if (this.get('isBusy')) {
-      throw SC.Error.desc('Session Controller is busy');
-    }
-
+  login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction) {
     try {
-      // Start login
-      this.set('isBusy', YES);
-
       // Get our data from the properties using the SC 'get' methods
       // Need to do this because these properties have been bound/observed.
       if (username == null || username == '') {
@@ -196,7 +191,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       }
 
       if (SC.none(rememberMe)) {
-        rememberMe = MO;
+        rememberMe = NO;
       }
 
       if (SC.none(isAsync)) {
@@ -220,11 +215,12 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       // If the credentials not admin/admin, then get a bad url so we get 404 error
       var url = '/api/Authentication';
       var request = SC.Request.postUrl(url).async(isAsync).json(YES);
+      var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
       if (isAsync) {
-        request.notify(this, 'endLogin', { rememberMe: rememberMe }).send(postData);
+        request.notify(this, 'endLogin', params).send(postData);
       } else {
         var response = request.send(postData);
-        this.endLogin(response, { rememberMe: rememberMe });
+        this.endLogin(response, params);
       }
 
       return YES;
@@ -232,9 +228,6 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
     catch (err) {
       // Set Error
       this.set('errorMessage', err.message);
-
-      // Finish login processing
-      this.set('isBusy', NO);
 
       return NO;
     }
@@ -245,7 +238,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
    * the returned login info.
    *
    * @param {SC.Response} response The HTTP response
-   * @param {params} Hash of parameters passed into SC.Request.notify
+   * @param {params} Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
   endLogin: function(response, params) {
@@ -269,7 +262,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       }
 
       // Save token if rememeberMe
-      if (params['rememberMe']) {
+      if (params.rememberMe) {
         Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
       }
 
@@ -281,18 +274,19 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
 
       // Clear error data
       this.set('errorMessage', '');
-
-      // Flag finish login processing to unlock screen
-      this.set('isBusy', NO);
-
-      // Return YES to signal handling of callback
-      return YES;
     }
     catch (err) {
-      this.set('isBusy', NO);
       this.set('errorMessage', err.message);
       SC.Logger.info('Error in endLogin: ' + err.message);
     }
+
+    // Callback
+    if (!SC.none(params.callbackTarget) && !SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, null);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
   },
 
   /**

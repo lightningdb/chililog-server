@@ -10,18 +10,12 @@ test("test successful login", function() {
   stop(2000);
 
   ok(Chililog.sessionController.login('admin', 'admin', NO), 'Successful login');
-
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == YES, 'isBusy is YES');
-
+  
   setTimeout(checkLoginSuccess, 1000);
 });
 function checkLoginSuccess() {
   var errorMessage = Chililog.sessionController.get('errorMessage');
   ok(errorMessage.length == 0, 'No error messages');
-
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == NO, 'isBusy is NO');
 
   var loggedInUser = Chililog.sessionController.get('loggedInUser');
   ok(loggedInUser !== null, 'loggedInUser is not null');
@@ -74,9 +68,6 @@ function checkLoadSuccess() {
   var errorMessage = Chililog.sessionController.get('errorMessage');
   ok(errorMessage.length == 0, 'No error messages');
 
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == NO, 'isBusy is NO');
-
   var loggedInUser = Chililog.sessionController.get('loggedInUser');
   ok(loggedInUser !== null, 'loggedInUser is not null');
   ok(loggedInUser.Username === 'admin', 'loggedInUser name is admin');
@@ -90,9 +81,6 @@ test("test bad password", function() {
 
   ok(Chililog.sessionController.login('admin', 'bad password', NO), 'Bad password');
 
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == YES, 'isBusy is YES');
-
   setTimeout(checkError, 1000);
 });
 
@@ -101,18 +89,12 @@ test("test bad username", function() {
 
   ok(Chililog.sessionController.login('badusername', 'bad password', NO), 'Bad username');
 
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == YES, 'isBusy is YES');
-
   setTimeout(checkError, 1000);
 });
 
 function checkError() {
   var errorMessage = Chililog.sessionController.get('errorMessage');
   ok(errorMessage.length > 0, 'Error message is: ' + errorMessage);
-
-  var isBusy = Chililog.sessionController.get('isBusy');
-  ok(isBusy == NO, 'isBusy is NO');
 
   var isLoggedIn = Chililog.sessionController.get('isLoggedIn');
   ok(!isLoggedIn, 'is  not logged in');
