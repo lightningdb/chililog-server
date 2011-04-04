@@ -22,7 +22,7 @@ Chililog.main = function main() {
   }
 
   // See if we can load the session (ignore errors)
-  Chililog.sessionController.load(YES);
+  Chililog.sessionController.load(NO);
   Chililog.loginPaneController.isLoggedInDidChange();
 
   // Setup poller to check for session expiry

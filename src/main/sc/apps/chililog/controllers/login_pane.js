@@ -9,8 +9,7 @@
  */
 Chililog.loginPaneStates = {
   EDIT: 'Edit',
-  BUSY: 'Busy',
-  HIDDEN: 'Hidden'
+  BUSY: 'Busy'
 }
 
 /**
@@ -28,6 +27,28 @@ Chililog.loginPaneController = SC.ObjectController.create(
    */
   state: Chililog.loginPaneStates.EDIT,
 
+  /**
+   * Flag to indicate if this pane is in the busy state
+   * @return {Boolean}
+   */
+  isBusy: function() {
+    return this.get('state') === Chililog.loginPaneStates.BUSY;
+  }.property('state').cacheable(),
+
+  /**
+   * Flag to indicate if this pane is in the edit state
+   * @return {Boolean}
+   */
+  isEdit: function() {
+    return this.get('state') === Chililog.loginPaneStates.EDIT;
+  }.property('state').cacheable(),
+
+  /**
+   * Flag indicating if this form is showing or not
+   * @type {Boolean}
+   */
+  isShowing: null,
+  
   /**
    * Username to use for login
    *
@@ -54,19 +75,19 @@ Chililog.loginPaneController = SC.ObjectController.create(
    *
    * @type {String}
    */
-  errorMessage: null,
+  errorMessage: '',
 
   /**
    * Start async login process
    */
-  login: function() {
+  beginLogin: function() {
     try {
       var username = this.get('username');
       var password = this.get('password');
       var rememberMe = this.get('rememberMe');
 
       Chililog.sessionController.login(username, password, rememberMe, YES, this, this.endLogin);
-  
+
       // Say that we are busy
       this.set('state', Chililog.loginPaneStates.BUSY);
 
@@ -113,17 +134,30 @@ Chililog.loginPaneController = SC.ObjectController.create(
     }
 
     var isLoggedIn = Chililog.sessionController.get('isLoggedIn');
-    var state = this.get('state');
-    if (isLoggedIn && state === Chililog.loginPaneStates.HIDDEN) {
-      // Show main form
-      Chililog.getPath('loginPage.loginPane').remove();
-      Chililog.getPath('mainPage.mainPane').append();
-      this.set('state', Chililog.loginPaneStates.HIDDEN);
-    } else if (!isLoggedIn && state !== Chililog.loginPaneStates.HIDDEN) {
-      // Show login form
-      Chililog.getPath('mainPage.mainPane').remove();
-      Chililog.getPath('loginPage.loginPane').append();
-      this.set('state', Chililog.loginPaneStates.EDIT);
+    var isShowing = this.get('isShowing');
+    if (isShowing === null) {
+      // When first loaded, need to work a little differently
+      if (isLoggedIn) {
+        // Show main form
+        Chililog.getPath('mainPage.mainPane').append();
+        this.set('isShowing', NO);
+      } else {
+        // Show login form
+        Chililog.getPath('loginPage.loginPane').append();
+        this.set('isShowing', YES);
+      }
+    } else {
+      if (isLoggedIn && isShowing) {
+        // Show main form
+        Chililog.getPath('loginPage.loginPane').remove();
+        Chililog.getPath('mainPage.mainPane').append();
+        this.set('isShowing', NO);
+      } else if (!isLoggedIn && !isShowing) {
+        // Show login form
+        Chililog.getPath('mainPage.mainPane').remove();
+        Chililog.getPath('loginPage.loginPane').append();
+        this.set('isShowing', YES);
+      }
     }
   }.observes('Chililog.sessionController.isLoggedIn')
 });

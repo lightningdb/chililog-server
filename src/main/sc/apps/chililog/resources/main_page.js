@@ -43,7 +43,9 @@ Chililog.mainPage = SC.Page.design({
         layout: { top: 5, right: 8, width: 80 },
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
-        title: '_topBar.Logout'.loc()
+        title: '_topBar.Logout'.loc(),
+        target: 'Chililog.sessionController',
+        action: 'logout'
       })
     }),
 
@@ -68,7 +70,7 @@ Chililog.mainPage = SC.Page.design({
     }.observes('Chililog.mainPaneController.state')
 
 
-  })
+  })  //mainPane
 
 });
 
@@ -87,9 +89,3 @@ Chililog.aboutPane = SC.LabelView.design({
   value: 'Welcome to About!'
 });
 
-Chililog.loginPane = SC.LabelView.design({
-  layout: { centerX: 0, centerY: 0, width: 200, height: 18 },
-  textAlign: SC.ALIGN_CENTER,
-  tagName: 'h1',
-  value: 'Welcome to Login'
-});

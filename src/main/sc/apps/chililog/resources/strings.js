@@ -19,7 +19,10 @@ SC.stringsFor('English', {
   '_topBar.About': 'About',
   '_topBar.Logout': 'Logout',
 
-
+  '_login.Username': 'Username',
+  '_login.Password': 'Password',
+  '_login.RememberMe': 'Remember Me',
+  '_login.Login': 'Login',
 
   'end': 'end'
 });
