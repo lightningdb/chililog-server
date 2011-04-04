@@ -147,7 +147,7 @@ public class Repository
                     .getHornetQServerControl()
                     .addAddressSettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getDeadLetterAddress(), null,
                             false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getWriteQueueMaxMemory(),
-                            (int) _repoInfo.getWriteQueuePageSize(), appProperties.getMqRedeliveryDelayMilliseconds(),
+                            (int) _repoInfo.getWriteQueuePageSize(), 5, appProperties.getMqRedeliveryDelayMilliseconds(),
                             -1, true, _repoInfo.getWriteQueueMaxMemoryPolicy().toString());
 
             // Create queues

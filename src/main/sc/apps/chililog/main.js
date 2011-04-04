@@ -9,7 +9,7 @@
  *
  * @type Boolean
  */
-Chililog.RUNNING_UNIT_TESTS = YES;
+Chililog.RUNNING_UNIT_TESTS = NO;
 
 /**
  * This is the function that will start the app running.

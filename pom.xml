@@ -169,13 +169,13 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core</artifactId>
-      <version>2.2.0.QA-10117</version>
+      <version>2.2.2.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-jms</artifactId>
-      <version>2.2.0.QA-10117</version>
+      <version>2.2.2.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -193,20 +193,20 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core-client</artifactId>
-      <version>2.2.0.QA-10117</version>
+      <version>2.2.2.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-jms-client</artifactId>
-      <version>2.2.0.QA-10117</version>
+      <version>2.2.2.Final</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-logging</artifactId>
-      <version>2.1.2.Final</version>
+      <version>2.2.2.Final</version>
     </dependency>
 
     <dependency>

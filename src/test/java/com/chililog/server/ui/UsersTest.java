@@ -36,6 +36,7 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
+import com.chililog.server.ui.api.AuthenticationTokenAO;
 import com.chililog.server.ui.api.ErrorAO;
 import com.chililog.server.ui.api.UserAO;
 import com.chililog.server.ui.api.Worker;
@@ -168,7 +169,6 @@ public class UsersTest
         readResponseAO.setUsername("UsersTest_crud_after_update");
         readResponseAO.setRoles(new String[]
         { Worker.WORKBENCH_ANALYST_USER_ROLE, Worker.WORKBENCH_OPERATOR_USER_ROLE });
-        readResponseAO.setStatus(Status.Disabled);
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(readResponseAO, out);
@@ -185,11 +185,28 @@ public class UsersTest
         assertEquals(Worker.WORKBENCH_OPERATOR_USER_ROLE, updateResponseAO.getRoles()[1]);
         assertNotNull(updateResponseAO.getDocumentID());
         assertEquals(new Long(2), updateResponseAO.getDocumentVersion());
-        assertEquals(Status.Disabled, updateResponseAO.getStatus());
+        assertEquals(Status.Enabled, updateResponseAO.getStatus());
 
         // Try to login - password not changed
-        ApiUtils.login("UsersTest_crud_after_update", "test");
+        String crudTokenString = ApiUtils.login("UsersTest_crud_after_update", "test");
 
+        // Update again logging in as crud user
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
+                HttpMethod.PUT, crudTokenString);
+
+        updateResponseAO.setUsername("UsersTest_crud_after_update2");
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(updateResponseAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("UsersTest_crud_after_update2", updateResponseAO.getUsername());
+
+        
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
@@ -232,18 +249,28 @@ public class UsersTest
         StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
 
-        // Get list - OK
+        AuthenticationTokenAO adminToken  = AuthenticationTokenAO.fromString(_adminAuthToken);
+        AuthenticationTokenAO analystToken = AuthenticationTokenAO.fromString(_analystAuthToken);
+              
+        // Get ourself - OK
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _adminAuthToken);
+                "http://localhost:8989/api/users/" + analystToken.getUserID(), HttpMethod.GET, _analystAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
+        
+        // Get list not authorized
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
+                HttpMethod.GET, _analystAuthToken);
 
-        UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
-        assertEquals(2, getListResponseAO.length);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+        
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
-        // Create - not authroized
+        // Create - not authorized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _analystAuthToken);
 
         UserAO createRequestAO = new UserAO();
@@ -259,12 +286,12 @@ public class UsersTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
-        // Update
+        // Update - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                "http://localhost:8989/api/users/" + adminToken.getUserID(), HttpMethod.PUT,
                 _analystAuthToken);
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
@@ -277,9 +304,9 @@ public class UsersTest
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
-        // Delete
+        // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
+                "http://localhost:8989/api/users/" + adminToken.getUserID(), HttpMethod.DELETE,
                 _analystAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);

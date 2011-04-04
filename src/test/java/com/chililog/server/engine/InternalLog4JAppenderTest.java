@@ -100,7 +100,6 @@ public class InternalLog4JAppenderTest
         assertEquals(msg, dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
-        assertEquals(now, dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME));
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
 
@@ -115,7 +114,6 @@ public class InternalLog4JAppenderTest
     @Test
     public void testViaLogger() throws ChiliLogException
     {
-        Date d = new Date();
         String msg = "debug message";
 
         Logger logger = Logger.getLogger(InternalLog4JAppenderTest.class);
@@ -136,7 +134,6 @@ public class InternalLog4JAppenderTest
         assertEquals(msg, dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
-        assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
         assertEquals(InternalLog4JAppenderTest.class.getName(), dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
 
@@ -146,8 +143,6 @@ public class InternalLog4JAppenderTest
     @Test
     public void testNull() throws ChiliLogException, InterruptedException
     {
-        Date d = new Date();
-
         // Have to put in unique logger name otherwise we duplicate adding appenders
         Logger logger = Logger.getLogger(InternalLog4JAppenderTest.class.getName() + "_TestNull");
         logger.addAppender(new InternalLog4JAppender());
@@ -167,7 +162,6 @@ public class InternalLog4JAppenderTest
         assertEquals("", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
         assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
 
-        assertTrue(((Date) dbObject.get(InternalLog4JAppender.EVENT_TIMESTAMP_FIELD_NAME)).getTime() - d.getTime() >= 0);
         assertEquals(InternalLog4JAppenderTest.class.getName() + "_TestNull",
                 dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
         assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));

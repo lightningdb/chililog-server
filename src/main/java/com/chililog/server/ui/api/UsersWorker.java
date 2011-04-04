@@ -72,6 +72,43 @@ public class UsersWorker extends Worker
         { HttpMethod.POST, HttpMethod.DELETE, HttpMethod.GET, HttpMethod.PUT };
     }
 
+    @Override
+    protected ApiResult validateAuthenticatedUserRole()
+    {
+        HttpMethod requestMethod = this.getRequest().getMethod();
+        try
+        {
+            // Administrators can do it all
+            if (isAuthenticatedUserAdministrator())
+            {
+                return new ApiResult();
+            }
+
+            // Cannot POST or DELETE
+            if (requestMethod == HttpMethod.POST || requestMethod == HttpMethod.DELETE)
+            {
+                throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
+            }
+
+            // Cannot POST or DELETE
+            if (requestMethod == HttpMethod.PUT)
+            {
+                String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
+                if (!id.equals(this.getAuthenticatedUser().getDocumentID().toString())) {
+                    throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
+                }
+            }
+
+            // Do GET checks when we execute
+            return new ApiResult();
+        }
+        catch (Exception ex)
+        {
+            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
+        }
+        
+    }
+
     /**
      * Create
      * 
@@ -181,7 +218,13 @@ public class UsersWorker extends Worker
 
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
-                // Get list
+                // Get list - only available to admin user
+                if (!this.isAuthenticatedUserAdministrator())
+                {
+                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                            Strings.NOT_AUTHORIZED_ERROR));
+                }
+
                 UserListCriteria criteria = new UserListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
 
@@ -205,7 +248,7 @@ public class UsersWorker extends Worker
                         aoList.add(new UserAO(userBO));
                     }
                     responseContent = aoList.toArray(new UserAO[] {});
-                    
+
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
                     if (criteria.getDoPageCount())
                     {
@@ -218,6 +261,13 @@ public class UsersWorker extends Worker
             {
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
+
+                if (!this.isAuthenticatedUserAdministrator()
+                        && !id.equals(this.getAuthenticatedUser().getDocumentID().toString()))
+                {
+                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                            Strings.NOT_AUTHORIZED_ERROR));
+                }
 
                 responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
             }

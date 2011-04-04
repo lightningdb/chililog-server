@@ -60,7 +60,6 @@ public class InternalLog4JAppender extends AppenderSkeleton
     static final String REPOSITORY_NAME = "chililog";
     static final String MONGODB_COLLECTION_NAME = "chililog_repository";
 
-    static final String EVENT_TIMESTAMP_FIELD_NAME = "timestamp";
     static final String THREAD_FIELD_NAME = "thread";
     static final String CATEGORY_FIELD_NAME = "category";
 

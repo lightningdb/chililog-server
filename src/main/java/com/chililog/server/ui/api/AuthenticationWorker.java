@@ -28,6 +28,7 @@ import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
 import com.chililog.server.ui.Strings;
 import com.mongodb.DB;
@@ -139,6 +140,29 @@ public class AuthenticationWorker extends Worker
             _logger.error("Authentication failed. Invalid password for user '%s'", requestApiObject.getUsername());
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                     Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+        }
+
+        // Check if the user is enabled
+        if (user.getStatus() != Status.Enabled)
+        {
+            _logger.error("Authentication failed. User '%s' status not enabled: '%s'.", requestApiObject.getUsername(),
+                    user.getStatus());
+            if (user.getStatus() == Status.Disabled)
+            {
+                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                        Strings.AUTHENTICAITON_ACCOUNT_DISABLED_ERROR));
+            }
+            else if (user.getStatus() == Status.Locked)
+            {
+                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                        Strings.AUTHENTICAITON_ACCOUNT_LOCKED_ERROR));
+            }
+            else
+            {
+                // Catch all just in-case
+                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                        Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+            }
         }
 
         // Generate token

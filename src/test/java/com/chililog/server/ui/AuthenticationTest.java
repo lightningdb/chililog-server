@@ -62,13 +62,29 @@ public class AuthenticationTest
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
         
-        // Create writer user
+        // Create user
         UserBO user = new UserBO();
         user.setUsername("AuthenticationTest");
         user.setPassword("hello there", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
-        
+
+        // Create disabled user
+        user = new UserBO();
+        user.setUsername("AuthenticationTest_DisabledUser");
+        user.setPassword("hello there", true);
+        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.setStatus(Status.Disabled);
+        UserController.getInstance().save(_db, user);
+
+        // Create locked out user
+        user = new UserBO();
+        user.setUsername("AuthenticationTest_LockedUser");
+        user.setPassword("hello there", true);
+        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.setStatus(Status.Locked);
+        UserController.getInstance().save(_db, user);
+
         WebServerManager.getInstance().start();
     }
 
@@ -292,6 +308,98 @@ public class AuthenticationTest
         assertTrue(responseContent.contains("Bad username or password."));
     }
     
+    /**
+     * POST - login failed because user status is disabled
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testPOST_DisabledStatus() throws IOException
+    {    
+        // Create a URL for the desired page
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
+                
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest_DisabledUser");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+        
+        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+        JsonTranslator.getInstance().toJson(requestContent,  out);
+        out.close();
+
+        // Get response
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Account disabled."));
+    }
+ 
+    /**
+     * POST - login failed because user status is locked
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testPOST_LockedStatus() throws IOException
+    {    
+        // Create a URL for the desired page
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
+                
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest_LockedUser");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+        
+        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+        JsonTranslator.getInstance().toJson(requestContent,  out);
+        out.close();
+
+        // Get response
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Account locked."));
+    }
+
     /**
      * POST - login failed because user not supplied
      * 
