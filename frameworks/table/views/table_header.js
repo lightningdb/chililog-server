@@ -26,7 +26,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var columns = this.get('columns');
 
     width = columns.get('@sum(width)');
-    if(width == this._width) return;
+    if(width == this._width && !this._dragging) return;
     this._width = width;
 
     if(key == '[]') {
@@ -162,7 +162,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
     childViews.replace(index2, 1, view1);
     columns.replace(index1, 1, [ column2 ]);
     columns.replace(index2, 1, [ column1 ]);
-
+    
     childViews.endPropertyChanges();
     columns.endPropertyChanges();
   },
@@ -281,7 +281,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
         SC.$(this._dragging).removeClass('dragging');
         view._dragging = false;
       } else {
-        // this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
+        while(!view.instanceOf(this.get('exampleView'))) {
+          view = view.get('parentView');
+        }
+        this.get('table').sortByColumn(view.get('column'), view.get('sortState'));
       }
       this._lastX = null;
     }
