@@ -13,15 +13,17 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   classNames: ['sc-table-header'],
   
+  isResizable: YES,
+  isResizableBinding: '*column.isResizable',
+  
   exampleView: SC.TableHeaderCellView,
   
   thumbView: Endash.ThumbView.extend({
-    delegateBinding: '.parentView.parentView',
-    columnBinding: '.parentView.column',
     layout: {
       top: 0, bottom: 0, right: 0, width: 15
     },
-    isEnabledBinding: '.column.isResizable'
+    ownerBinding: '.parentView',
+    isEnabledBinding: 'owner.isResizable'
   }),
   
   widthsDidChange: function(object, key, value) {
@@ -101,7 +103,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var view2, idx2;
     var columns = this.get('columns');
 
-    view.adjust('left', put);
+    var layout = {left: put, width: this.thicknessForView(idx)}
+    view.adjust(layout);
 
   
     if(offset < 1 && idx > 0)
@@ -166,6 +169,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
   
   mouseDown: function(evt) {
     var view = $(evt.target).view()[0];
+    if(view == this) {
+      return NO;
+    }
     
     if(view.instanceOf(this.get('thumbView'))) {
       if (!view.get('isEnabled')) return NO ;
@@ -194,6 +200,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
   mouseDragged: function(evt) {
     var view = $(evt.target).view()[0];
     
+    if(view == this) {
+      return NO;
+    }
+    
     if(this._thumbDragging) {
       view = this._thumbDragging;
       
@@ -206,7 +216,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       this._lastX = evt.pageX;
       this._lastY = evt.pageY;
 
-      var column = view.get('column'),
+      var column = view.getPath('owner.column'),
         width = column.get('width') || 100,
         minWidth = column.get('minWidth') || 20,
         maxWidth = column.get('maxWidth'),
@@ -262,13 +272,21 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   mouseUp: function(evt) {
     var view = $(evt.target).view()[0];
+    
+    if(view == this) {
+      return NO;
+    }
+
+    console.log('mouseup')
+    console.log(evt.target)
+
 
     if(this._thumbDragging) {
+      view = this._thumbDragging
       this._thumbDragging = NO;
       if (!view.get('isEnabled')) return NO ;
       this._lastX = this._lastY = this._offset = this._mouseDownX = this.mouseDownY = null;
       view.$().removeClass('dragging');
-      return YES;
     } else {
       if(this._dragging) {
         this._dragging.set('dragging', NO);
@@ -277,13 +295,18 @@ SC.TableHeaderView = SC.TableRowView.extend({
         this._totalOffset = null;
         this.layoutViewsFrom(0);
       } else {
-        while(!view.instanceOf(this.get('exampleView'))) {
+        while(view && !view.instanceOf(this.get('exampleView'))) {
           view = view.get('parentView');
         }
-        this.get('table').sortByColumn(view.get('column'), view.get('sortState'));
+        
+        if(view) {
+          this.get('table').sortByColumn(view.get('column'), view.get('sortState'));
+        }
       }
       this._lastX = null;
     }
+    
+    return YES;
   },
   
   

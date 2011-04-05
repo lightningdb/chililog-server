@@ -113,13 +113,13 @@
   background-image: static_url('resources/sort-asc.png');
   background-repeat: no-repeat;
   background-position: center center;
-  opacity: .55;
+  opacity: .45;
 }
 
 .sc-sort-state-desc {
   background-image: static_url('resources/sort-desc.png');  
   background-repeat: no-repeat;
   background-position: center center;
-  opacity: .55;
+  opacity: .45;
 
 }

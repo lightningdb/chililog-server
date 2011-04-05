@@ -18,10 +18,11 @@ Endash.ThumbView = SC.View.extend(
 
   classNames: ['sc-thumb-view'],
   
-  isEnabled: YES,
-  isEnabledBindingDefault: SC.Binding.bool(),
+  owner: null,
+  ownerBindingDefault: SC.Binding.from(),
   
-  delegate: null,  
+  isEnabled: YES,
+  isEnabledBindingDefault: SC.Binding.bool(), 
   
   render: function(context, firstTime) {
     if(firstTime)

@@ -70,7 +70,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   }.observes('columns'),
   
   didCreateCells: function() {
-        this._sl_layoutChildViews(YES);
+    this._sl_layoutChildViews(YES);
   },
   
   /**
