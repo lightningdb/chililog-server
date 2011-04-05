@@ -43,6 +43,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.integration.logging.Log4jLogDelegateFactory;
 import org.hornetq.spi.core.security.JAASSecurityManager;
@@ -147,8 +148,14 @@ public class MqManager
 
         // Configure our server
         Configuration config = new ConfigurationImpl();
+
+        // Journal - see http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#persistence
         config.setPersistenceEnabled(appProperties.getMqPersistenceEnabled());
+        config.setJournalType(JournalType.NIO); // TODO allow configuration to async for it to be faster
+        config.setJournalDirectory("");
         config.setSecurityEnabled(true);
+
+        // Logging
         config.setLogDelegateFactoryClassName(Log4jLogDelegateFactory.class.getName());
 
         // Clustering - if we don't set username/password, we get annoying warning message in log
@@ -156,6 +163,7 @@ public class MqManager
         config.setClusterUser(appProperties.getJaasSystemUsername());
         config.setClusterPassword(appProperties.getJaasSystemPassword());
 
+        // Management address to send management messages to
         config.setManagementAddress(new SimpleString("jms.queue.hornetq.management"));
 
         // Transports
