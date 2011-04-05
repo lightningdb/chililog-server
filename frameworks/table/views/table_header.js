@@ -273,6 +273,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   mouseUp: function(evt) {
     if(!this._mouseDown) return;
+    this._mouseDown = NO;    
     
     var view = $(evt.target).view()[0];
 
@@ -305,7 +306,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       this._lastX = null;
     }
 
-    this._mouseDown = NO;    
+
     return YES;
   },
   
