@@ -78,6 +78,17 @@ var adminUser = {
 };
 db.users.insert(adminUser);
 
+var adminUser2 = {
+		username: "operator",
+		password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
+		roles: [ "workbench.operator" ],
+		status: "Enabled",
+		display_name: "Operator",
+		email_address: "operator@chililog.com",
+		c_ver: new NumberLong(1) 
+	};
+	db.users.insert(adminUser2);
+	
 // *************************************************************
 // Setup Repositories
 //*************************************************************

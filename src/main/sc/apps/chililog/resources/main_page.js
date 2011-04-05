@@ -20,37 +20,28 @@ Chililog.mainPage = SC.Page.design({
         layout: { top: 5, left: 8 },
         align: SC.ALIGN_LEFT,
         controlSize: SC.LARGE_CONTROL_SIZE,
-        items: [
-          { value: Chililog.mainPaneStates.SEARCH, title: '_topBar.Search'.loc() },
-          { value: Chililog.mainPaneStates.ANALYSIS, title: '_topBar.Analysis'.loc() },
-          { value: Chililog.mainPaneStates.MONITORS, title: '_topBar.Monitors'.loc() },
-          { value: Chililog.mainPaneStates.REPOSITORIES, title: '_topBar.Repositories'.loc() },
-          { value: Chililog.mainPaneStates.USERS, title: '_topBar.Users'.loc() },
-          { value: Chililog.mainPaneStates.ABOUT, title: '_topBar.About'.loc() }
-        ],
+        itemsBinding: 'Chililog.mainPaneController.menuOptions',
         itemValueKey: 'value',
         itemTitleKey: 'title',
-        value: Chililog.mainPaneStates.SEARCH,
-
-        valueDidChange: function() {
-          // Call sc_super to hi-light selected option
-          sc_super();
-          Chililog.mainPaneController.doAction(this.get('value'));
-        }.observes('value')
+        itemToolTipKey: 'toolTip',
+        itemTargetKey: 'target',
+        itemActionKey: 'action',
+        value: Chililog.mainPaneStates.SEARCH
       }),
 
       logoutButton: SC.ButtonView.design({
         layout: { top: 5, right: 8, width: 80 },
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
-        title: '_topBar.Logout'.loc(),
+        title: '_mainPane.Logout'.loc(),
         target: 'Chililog.sessionController',
         action: 'logout'
       })
     }),
 
     body: SC.ContainerView.design({
-      nowShowing: 'Chililog.searchPane'
+      layout: { top: 40, left: 0, right: 0, bottom: 0 },
+      nowShowing: 'Chililog.searchView'
     }),
 
     /**
@@ -59,10 +50,10 @@ Chililog.mainPage = SC.Page.design({
     stateDidChange: function() {
       var state = Chililog.mainPaneController.get('state');
       if (state === Chililog.mainPaneStates.SEARCH) {
-        this.setPath('body.nowShowing', 'Chililog.searchPane');
+        this.setPath('body.nowShowing', 'Chililog.searchView');
       }
       else if (state === Chililog.mainPaneStates.ABOUT) {
-        this.setPath('body.nowShowing', 'Chililog.aboutPane');
+        this.setPath('body.nowShowing', 'Chililog.aboutView');
       }
 
       // Make sure that we sync with state just in case someone changes the state
@@ -74,18 +65,17 @@ Chililog.mainPage = SC.Page.design({
 
 });
 
-Chililog.searchPane = SC.LabelView.design({
-  layout: { centerX: 0, centerY: 0, width: 200, height: 18 },
+Chililog.searchView = SC.LabelView.design( {
+  layout: { top: 0, left: 0, width: 200, height: 18 },
   textAlign: SC.ALIGN_CENTER,
   tagName: 'h1',
   value: 'Welcome to Search!'
 });
 
 
-Chililog.aboutPane = SC.LabelView.design({
-  layout: { centerX: 0, centerY: 0, width: 200, height: 18 },
-  textAlign: SC.ALIGN_CENTER,
-  tagName: 'h1',
-  value: 'Welcome to About!'
-});
+Chililog.aboutView =  SC.TemplateView.design({
+  layout: { top: 0, left: 0, width: 200, height: 18 },
+    templateName: 'about'
+  });
+
 

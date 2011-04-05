@@ -22,7 +22,7 @@ Chililog.loginPage = SC.Page.design({
 
         label: SC.LabelView.design({
           layout: { left: 0, width: 107, height: 18, centerY: 0 },
-          value: '_login.Username',
+          value: '_loginPane.Username',
           localize: YES,
           textAlign: SC.ALIGN_RIGHT
         }),
@@ -47,7 +47,7 @@ Chililog.loginPage = SC.Page.design({
 
         label: SC.LabelView.design({
           layout: { left: 0, width: 107, height: 18, centerY: 0 },
-          value: '_login.Password',
+          value: '_loginPane.Password',
           localize: YES,
           textAlign: SC.ALIGN_RIGHT
         }),
@@ -66,7 +66,7 @@ Chililog.loginPage = SC.Page.design({
 
         field: SC.CheckboxView.design({
           layout: { width: 200, height: 22, right: 3, centerY: 0 },
-          title: '_login.RememberMe',
+          title: '_loginPane.RememberMe',
           localize: YES,
           isEnabledBinding: 'Chililog.loginPaneController.isEdit',
           valueBinding: 'Chililog.loginPaneController.rememberMe'
@@ -75,7 +75,7 @@ Chililog.loginPage = SC.Page.design({
 
       loginButton: SC.ButtonView.design({
         layout: { height: 24, width: 80, bottom: 17, right: 17 },
-        title: '_login.Login',
+        title: '_loginPane.Login',
         localize: YES,
         isDefault: YES,
         isEnabledBinding: SC.Binding.from("LoginLogoutSample.loginPageController.isLoggingIn")

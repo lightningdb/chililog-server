@@ -54,6 +54,20 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
   }.property('loggedInUser').cacheable(),
 
   /**
+   * YES if the user is an administrator
+   *
+   * @type Boolean
+   */
+  isInAdministratorRole: function() {
+    var user = this.get('loggedInUser');
+    if (SC.none(user)) {
+      return NO;
+    }
+    var idx = jQuery.inArray('workbench.administrator', user.Roles);
+    return idx >= 0;
+  }.property('loggedInUser').cacheable(),
+
+  /**
    * Call this only once ... it will call itself every 5 minutes
    */
   checkExpiry: function() {

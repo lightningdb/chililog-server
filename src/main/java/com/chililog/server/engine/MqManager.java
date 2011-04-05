@@ -152,7 +152,7 @@ public class MqManager
         // Journal - see http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#persistence
         config.setPersistenceEnabled(appProperties.getMqPersistenceEnabled());
         config.setJournalType(JournalType.NIO); // TODO allow configuration to async for it to be faster
-        config.setJournalDirectory("");
+        //config.setJournalDirectory("");
         config.setSecurityEnabled(true);
 
         // Logging

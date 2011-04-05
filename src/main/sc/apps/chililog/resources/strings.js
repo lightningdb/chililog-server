@@ -11,18 +11,24 @@
 //
 
 SC.stringsFor('English', {
-  '_topBar.Search': 'Search',
-  '_topBar.Analysis': 'Analysis',
-  '_topBar.Monitors': 'Monitors',
-  '_topBar.Repositories': 'Repositories',
-  '_topBar.Users': 'Users',
-  '_topBar.About': 'About',
-  '_topBar.Logout': 'Logout',
+  '_mainPane.Search': 'Search',
+  '_mainPane.Search.ToolTip': 'Search for log entries',
+  '_mainPane.Analysis': 'Analysis',
+  '_mainPane.Analysis.ToolTip': 'Use map/reduce to count and group log entries',
+  '_mainPane.Monitors': 'Monitors',
+  '_mainPane.Monitors.ToolTip': 'Setup monitors to notify you when patterns in log entries are matched',
+  '_mainPane.Repositories': 'Repositories',
+  '_mainPane.Repositories.ToolTip': 'Manage your repositories',
+  '_mainPane.Users': 'Users',
+  '_mainPane.Users.ToolTip': 'Manage your users',
+  '_mainPane.About': 'About',
+  '_mainPane.About.ToolTip': 'Information about ChiliLog and how to contact us',
+  '_mainPane.Logout': 'Logout',
 
-  '_login.Username': 'Username',
-  '_login.Password': 'Password',
-  '_login.RememberMe': 'Remember Me',
-  '_login.Login': 'Login',
+  '_loginPane.Username': 'Username',
+  '_loginPane.Password': 'Password',
+  '_loginPane.RememberMe': 'Remember Me',
+  '_loginPane.Login': 'Login',
 
   'end': 'end'
 });
