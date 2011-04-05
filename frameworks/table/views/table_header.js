@@ -99,12 +99,12 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var childViews = this._layoutViews;
     var idx = childViews.indexOf(view);
     var view2, idx2;
-    var columns = this.get('columns'),
+    var columns = this.get('columns');
       // idx = columns.indexOf(view.get('column')),
       // view2, idx2;
 
-    var layout = {left: put, width: this.thicknessForView(idx)}
-    view.adjust(layout);
+    // var layout = {left: put, width: this.thicknessForView(idx)}
+    view.adjust('left', put);
 
   
     if(offset < 1 && idx > 0)
@@ -273,12 +273,12 @@ SC.TableHeaderView = SC.TableRowView.extend({
       view.$().removeClass('dragging')
       return YES;
     } else {
-      if(view._dragging) {
-        view.set('dragging', NO);
+      if(this._dragging) {
+        this._dragging.set('dragging', NO);
         this._dragging = null;
         this._totalOffset = null;
         this.layoutViewsFrom(0);
-        SC.$(view).removeClass('dragging');
+        SC.$(this._dragging).removeClass('dragging');
         view._dragging = false;
       } else {
         // this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));

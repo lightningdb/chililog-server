@@ -4,11 +4,11 @@ SC.SimpleLayout = {
 
   layoutDirection: SC.LAYOUT_HORIZONTAL,
 
+
   
-    // 
-    // thicknesses: null,
-    // thicknessesBindingDefault: SC.Binding.multiple(),
-  
+  thicknesses: null,
+  thicknessesBindingDefault: SC.Binding.multiple(),
+
   totalThickness: 0,
   
   widthDelta: null,
@@ -17,25 +17,8 @@ SC.SimpleLayout = {
   thicknessesKey: null,
   thicknessKey: null,
   
-  // initMixin: function() {
-    // this._thicknesses_observer = this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
-  // },
-  
-  // thicknessesDidChange: function(object, key, value) {
-  //   if(this._doLayout === NO) return;
-  //   var thicknesses = this.get('thicknesses');
-  //   var thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height";
-  // 
-  //   if(key == '[]') {
-  //     idx = 0;
-  //   } else {
-  //     idx = thicknesses.objectAt(object);
-  //   }
-  //   
-  // },
-  
   thicknessDidChangeForIndex: function(idx) {
-    var thicknesses = this.get(this.get('thicknessesKey')),
+    var thicknesses = this.get('thicknesses') || this.get(this.get('thicknessesKey')),
       thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height",
       total;
       
@@ -71,7 +54,7 @@ SC.SimpleLayout = {
     if(!index) index = 0;
     this.expireLayoutFrom(index);
   
-    var thicknesses = this.get(this.get('thicknessesKey')), view;
+    var thicknesses = this.get('thicknesses') || this.get(this.get('thicknessesKey')), view;
     if(!thicknesses) return
     
     for(var i = index, len = thicknesses.get('length'); i < len; i++) {
@@ -100,7 +83,7 @@ SC.SimpleLayout = {
   },
 
   thicknessForView: function(idx, view) {
-    var thicknesses = this.get(this.get('thicknessesKey'));
+    var thicknesses = this.get('thicknesses') || this.get(this.get('thicknessesKey'));
     return thicknesses.objectAt(idx).get(this.get('thicknessKey')) + (this.widthDelta || 0);
   },
 
