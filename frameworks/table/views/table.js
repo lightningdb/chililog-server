@@ -317,7 +317,6 @@ SC.TableView = SC.View.extend({
       hasHorizontalScrollerBinding: SC.Binding.from('hasHorizontalScroller', this),
       borderStyle: SC.BORDER_NONE,
       contentView: Endash.DataView.design({
-        // cellContentView: this.get('cellContentView') ? this.get('cellContentView') : ,
         classNames: ['sc-table-data-view'],
         table: this,
         rowHeight: this.get('rowHeight'),
@@ -331,6 +330,7 @@ SC.TableView = SC.View.extend({
         sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
         columnsBinding: SC.Binding.from('.columns',this).oneWay(),
         contentBinding: SC.Binding.from('.content',this),
+        useToggleSelection: SC.Binding.from('.useToggleSelection',this),
         delegate: this.get('delegate'),
         isDropTarget: this.get('isDropTarget'),
         isSelectable: this.get('isSelectable')
