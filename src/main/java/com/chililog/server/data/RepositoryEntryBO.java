@@ -134,13 +134,13 @@ public class RepositoryEntryBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setDate(dbObject, TIMESTAMP_FIELD_NAME, _timestamp);
-        MongoUtils.setDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, _savedTimestamp);
-        MongoUtils.setString(dbObject, SOURCE_FIELD_NAME, _source);
-        MongoUtils.setString(dbObject, HOST_FIELD_NAME, _host);
-        MongoUtils.setLong(dbObject, SEVERITY_FIELD_NAME, _severity.toCode());
-        MongoUtils.setStringArrayList(dbObject, KEYWORDS_FIELD_NAME, _keywords);
-        MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, _message);
+        MongoUtils.setDate(dbObject, TIMESTAMP_FIELD_NAME, _timestamp, true);
+        MongoUtils.setDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, _savedTimestamp, true);
+        MongoUtils.setString(dbObject, SOURCE_FIELD_NAME, _source, true);
+        MongoUtils.setString(dbObject, HOST_FIELD_NAME, _host, true);
+        MongoUtils.setLong(dbObject, SEVERITY_FIELD_NAME, _severity.toCode(), true);
+        MongoUtils.setStringArrayList(dbObject, KEYWORDS_FIELD_NAME, _keywords, false);
+        MongoUtils.setString(dbObject, MESSAGE_FIELD_NAME, _message, true);
         return;
     }
 

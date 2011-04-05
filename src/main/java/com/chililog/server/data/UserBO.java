@@ -47,12 +47,14 @@ public class UserBO extends BO implements Serializable
     private ArrayList<String> _roles = new ArrayList<String>();
     private Status _status = Status.Enabled;
     private String _displayName;
+    private String _emailAddress;
 
     static final String USERNAME_FIELD_NAME = "username";
     static final String PASSWORD_FIELD_NAME = "password";
     static final String ROLES_FIELD_NAME = "roles";
     static final String STATUS_FIELD_NAME = "status";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
+    static final String EMAIL_ADDRESS_FIELD_NAME = "email_address";
 
     /**
      * Basic constructor
@@ -77,6 +79,7 @@ public class UserBO extends BO implements Serializable
         _roles = MongoUtils.getStringArrayList(dbObject, ROLES_FIELD_NAME, false);
         _status = Status.valueOf(MongoUtils.getString(dbObject, STATUS_FIELD_NAME, true));
         _displayName = MongoUtils.getString(dbObject, DISPLAY_NAME_FIELD_NAME, false);
+        _emailAddress = MongoUtils.getString(dbObject, EMAIL_ADDRESS_FIELD_NAME, true);
         return;
     }
 
@@ -85,15 +88,17 @@ public class UserBO extends BO implements Serializable
      * 
      * @param dbObject
      *            mongoDB database object that can be used for saving
+     * @throws ChiliLogException 
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject)
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setString(dbObject, USERNAME_FIELD_NAME, _username);
-        MongoUtils.setString(dbObject, PASSWORD_FIELD_NAME, _password);
-        MongoUtils.setStringArrayList(dbObject, ROLES_FIELD_NAME, _roles);
-        MongoUtils.setString(dbObject, STATUS_FIELD_NAME, _status.toString());
-        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName);
+        MongoUtils.setString(dbObject, USERNAME_FIELD_NAME, _username, true);
+        MongoUtils.setString(dbObject, PASSWORD_FIELD_NAME, _password, true);
+        MongoUtils.setStringArrayList(dbObject, ROLES_FIELD_NAME, _roles, false);
+        MongoUtils.setString(dbObject, STATUS_FIELD_NAME, _status.toString(), true);
+        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
+        MongoUtils.setString(dbObject, EMAIL_ADDRESS_FIELD_NAME, _emailAddress, true);
     }
 
     /**
@@ -245,6 +250,19 @@ public class UserBO extends BO implements Serializable
     public void setDisplayName(String displayName)
     {
         _displayName = displayName;
+    }
+
+    /**
+     * Returns the email address of the user
+     */
+    public String getEmailAddress()
+    {
+        return _emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress)
+    {
+        _emailAddress = emailAddress;
     }
 
     /**

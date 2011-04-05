@@ -30,13 +30,15 @@ public class Strings
     public static final String MONGODB_AUTHENTICATION_ERROR = PREFIX + "MongoDB.AuthenticationError";
     public static final String MONGODB_CONNECTION_ERROR = PREFIX + "MongoDB.ConnectionError";
     public static final String MONGODB_FIELD_NOT_FOUND_ERROR = PREFIX + "MongoDB.FieldNotFoundError";
+    public static final String MONGODB_MISSING_REQURIED_FIELD_ERROR = PREFIX + "MongoDB.MissingRequiredFieldError";
     public static final String MONGODB_QUERY_ERROR = PREFIX + "MongoDB.QueryError";
     public static final String MONGODB_SAVE_ERROR = PREFIX + "MongoDB.SaveError";
     public static final String MONGODB_REMOVE_ERROR = PREFIX + "MongoDB.RemoveError";
-    
-    public static final String USER_DUPLICATE_USERNAME_ERROR = PREFIX + "User.DuplicateUsernameError";
+        
     public static final String USER_NOT_FOUND_ERROR = PREFIX + "User.NotFoundError";
-  
+    public static final String USER_DUPLICATE_USERNAME_ERROR = PREFIX + "User.DuplicateUsernameError";
+    public static final String USER_DUPLICATE_EMAIL_ADDRESS_ERROR = PREFIX + "User.DuplicateEmailAddressError";
+    
     public static final String REPO_INFO_DUPLICATE_NAME_ERROR = PREFIX + "RepoInfo.DuplicateNameError";
     public static final String REPO_INFO_DUPLICATE_PARSER_NAME_ERROR = PREFIX + "RepoInfo.DuplicateParserNameError";
     public static final String REPO_INFO_DUPLICATE_FIELD_NAME_ERROR = PREFIX + "RepoInfo.DuplicateFieldNameError";

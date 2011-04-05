@@ -101,6 +101,7 @@ public class UserTest
         user.addRole("junittestrole1");
         user.addRole("junittestrole2");        
         user.setDisplayName("Lloyd Christmas");
+        user.setEmailAddress("UserTestUser1@chililog.com");
 
         assertFalse(user.isExistingRecord());
         assertNull(user.getDocumentID());
@@ -118,6 +119,7 @@ public class UserTest
         assertTrue(user2.hasRole("junittestrole2"));
         assertEquals(UserBO.Status.Enabled, user2.getStatus());
         assertEquals("Lloyd Christmas", user2.getDisplayName());
+        assertEquals("UserTestUser1@chililog.com", user2.getEmailAddress());
         assertEquals(1, user2.getDocumentVersion());
 
         String id = user.getDocumentID().toString();
@@ -129,16 +131,18 @@ public class UserTest
         user.addRole("junittestrole3");
         user.setStatus(UserBO.Status.Disabled);
         user.setDisplayName("Harry Dunne");
+        user.setEmailAddress("UserTestUser1update@chililog.com");
         UserController.getInstance().save(_db, user);
         assertEquals(2, user.getDocumentVersion());
 
-        user2 = UserController.getInstance().getByUsername(_db, "UserTestUser2");
+        user2 = UserController.getInstance().getByEmailAddress(_db, "UserTestUser1update@chililog.com");
         assertEquals("UserTestUser2", user2.getUsername());
         assertTrue(user2.hasRole("junittestrole1"));
         assertTrue(user2.hasRole("junittestrole2"));
         assertTrue(user2.hasRole("junittestrole3"));
         assertEquals(UserBO.Status.Disabled, user2.getStatus());
         assertEquals("Harry Dunne", user2.getDisplayName());
+        assertEquals("UserTestUser1update@chililog.com", user2.getEmailAddress());
         assertEquals(2, user2.getDocumentVersion());
 
         // Remove
@@ -191,11 +195,13 @@ public class UserTest
             UserBO user = new UserBO();
             user.setUsername("UserTestUser3");
             user.setPassword("abc123!", true);
+            user.setEmailAddress("UserTestUser3@chililog.com");
             UserController.getInstance().save(_db, user);
 
             UserBO user2 = new UserBO();
             user2.setUsername("UserTestUser3");
             user2.setPassword("abc123!", true);
+            user.setEmailAddress("UserTestUser3@chililog.com");
             UserController.getInstance().save(_db, user2);
             
             fail("Exception expected");
@@ -203,6 +209,32 @@ public class UserTest
         catch (ChiliLogException ex)
         {
             assertEquals(Strings.USER_DUPLICATE_USERNAME_ERROR, ex.getErrorCode());
+        }
+    }
+    
+    @Test
+    public void testDuplicateEmailAddress() throws ChiliLogException
+    {
+        try
+        {
+            // Insert
+            UserBO user = new UserBO();
+            user.setUsername("UserTestUser6");
+            user.setPassword("abc123!", true);
+            user.setEmailAddress("UserTestUser6@chililog.com");
+            UserController.getInstance().save(_db, user);
+
+            UserBO user2 = new UserBO();
+            user2.setUsername("UserTestUser6.1");
+            user2.setPassword("abc123!", true);
+            user2.setEmailAddress("UserTestUser6@chililog.com");
+            UserController.getInstance().save(_db, user2);
+            
+            fail("Exception expected");
+        }
+        catch (ChiliLogException ex)
+        {
+            assertEquals(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, ex.getErrorCode());
         }
     }
     
@@ -215,6 +247,7 @@ public class UserTest
         user.setPassword("abc123!", true);
         user.addRole("ListRoleA");
         user.addRole("ListRoleB");
+        user.setEmailAddress("UserTestUserList4@chililog.com");
         UserController.getInstance().save(_db, user);
 
         UserBO user2 = new UserBO();
@@ -222,6 +255,7 @@ public class UserTest
         user2.setPassword("abc123!", true);
         user2.addRole("ListRoleA");
         user2.addRole("ListRoleC");
+        user2.setEmailAddress("UserTestUserList5@chililog.com");
         user2.setStatus(UserBO.Status.Disabled);
         UserController.getInstance().save(_db, user2);
         
@@ -260,6 +294,21 @@ public class UserTest
 
         criteria= new UserListCriteria();
         criteria.setUsernamePattern("^no matches for sure[\\w]*$");
+        list = UserController.getInstance().getList(_db, criteria);
+        assertEquals(0, list.size());
+
+        // ***************************
+        // email address pattern
+        // ***************************        
+        criteria= new UserListCriteria();
+        criteria.setEmailAddressPattern("^UserTestUserList[\\w]*@chililog\\.com$");
+        list = UserController.getInstance().getList(_db, criteria);
+        assertEquals(2, list.size());
+        assertEquals("UserTestUserList4", list.get(0).getUsername());
+        assertEquals("UserTestUserList5", list.get(1).getUsername());
+
+        criteria= new UserListCriteria();
+        criteria.setEmailAddressPattern("^no matches for sure[\\w]*$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
         

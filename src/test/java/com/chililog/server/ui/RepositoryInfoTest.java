@@ -91,6 +91,7 @@ public class RepositoryInfoTest
         // Create admin user
         UserBO user = new UserBO();
         user.setUsername("RepositoryInfoTest_Admin");
+        user.setEmailAddress("RepositoryInfoTest_Admin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -98,6 +99,7 @@ public class RepositoryInfoTest
         // Create analyst user
         user = new UserBO();
         user.setUsername("RepositoryInfoTest_Analyst");
+        user.setEmailAddress("RepositoryInfoTest_Analyst@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -570,24 +572,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
-
-        // Create no display name
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _adminAuthToken);
-
-        createRepoInfoAO.setName("RepositoryInfoTest_1");
-        createRepoInfoAO.setDisplayName(null);
-
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRepoInfoAO, out);
-        out.close();
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
-
-        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Create no class name
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
@@ -610,7 +595,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Update no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info/12341234", HttpMethod.PUT,
@@ -648,7 +633,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Update no doc version
         httpConn = ApiUtils.getHttpURLConnection(

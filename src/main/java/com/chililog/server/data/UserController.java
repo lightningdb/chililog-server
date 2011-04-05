@@ -203,6 +203,67 @@ public class UserController extends Controller
     }
 
     /**
+     * Retrieves the specified user by the email address
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param emailAddress
+     *            Email address of user to retrieve
+     * @return code>UserBO</code> representing the user
+     * @throws ChiliLogException
+     *             if not found or database error
+     */
+    public UserBO getByEmailAddress(DB db, String emailAddress) throws ChiliLogException
+    {
+        UserBO o = tryGetByEmailAddress(db, emailAddress);
+        if (o == null)
+        {
+            throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, emailAddress);
+        }
+        return o;
+    }
+    
+    /**
+     * Tries to retrieve the specified user by the email address. If not found, null is returned.
+     * 
+     * @param db
+     *            mongoDB connection
+     * @param emailAddress
+     *            Email address of user to retrieve
+     * @return <code>UserBO</code> representing the user or null if user is not found
+     * @throws ChiliLogException
+     *             if database or data error
+     */
+    public UserBO tryGetByEmailAddress(DB db, String emailAddress) throws ChiliLogException
+    {
+        try
+        {
+            if (db == null)
+            {
+                throw new IllegalArgumentException("db cannot be null");
+            }
+            if (StringUtils.isBlank(emailAddress))
+            {
+                throw new IllegalArgumentException("emailAddress cannot be blank");
+            }
+
+            DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
+            BasicDBObject query = new BasicDBObject();
+            query.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, emailAddress);
+            DBObject dbo = coll.findOne(query);
+            if (dbo == null)
+            {
+                return null;
+            }
+            return new UserBO(dbo);
+        }
+        catch (MongoException ex)
+        {
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
+        }
+    }
+
+    /**
      * Get a list of users
      * 
      * @param db
@@ -223,6 +284,11 @@ public class UserController extends Controller
         {
             Pattern pattern = Pattern.compile(criteria.getUsernamePattern());
             condition.put(UserBO.USERNAME_FIELD_NAME, pattern);
+        }
+        if (!StringUtils.isBlank(criteria.getEmailAddressPattern()))
+        {
+            Pattern pattern = Pattern.compile(criteria.getEmailAddressPattern());
+            condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, pattern);
         }
         if (!StringUtils.isBlank(criteria.getRole()))
         {
@@ -284,6 +350,19 @@ public class UserController extends Controller
             throw new ChiliLogException(Strings.USER_DUPLICATE_USERNAME_ERROR, user.getUsername());
         }
 
+        // Validate unique email address
+        condition = new BasicDBObject();
+        condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, user.getEmailAddress());
+        if (user.isExistingRecord())
+        {
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
+        }
+        i = coll.getCount(condition);
+        if (i > 0)
+        {
+            throw new ChiliLogException(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, user.getEmailAddress());
+        }
+        
         // Save it
         super.save(db, user);
     }

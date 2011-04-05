@@ -73,6 +73,7 @@ public class UsersTest
         // Create admin user
         UserBO user = new UserBO();
         user.setUsername("UsersTest_Admin");
+        user.setEmailAddress("UsersTest_Admin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -81,6 +82,7 @@ public class UsersTest
         user = new UserBO();
         user.setUsername("UsersTest_Analyst");
         user.setPassword("hello", true);
+        user.setEmailAddress("UsersTest_Analyst@chililog.com");
         user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
         UserController.getInstance().save(_db, user);
 
@@ -123,6 +125,7 @@ public class UsersTest
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud");
+        createRequestAO.setEmailAddress("UsersTest_crud@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { Worker.WORKBENCH_ANALYST_USER_ROLE });
@@ -155,6 +158,7 @@ public class UsersTest
 
         UserAO readResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
         assertEquals("UsersTest_crud", readResponseAO.getUsername());
+        assertEquals("UsersTest_crud@chililog.com", readResponseAO.getEmailAddress());
         assertNull(readResponseAO.getPassword());
         assertEquals(1, readResponseAO.getRoles().length);
         assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, readResponseAO.getRoles()[0]);
@@ -167,6 +171,7 @@ public class UsersTest
                 HttpMethod.PUT, _adminAuthToken);
 
         readResponseAO.setUsername("UsersTest_crud_after_update");
+        readResponseAO.setEmailAddress("UsersTest_crud_after_update@chililog.com");
         readResponseAO.setRoles(new String[]
         { Worker.WORKBENCH_ANALYST_USER_ROLE, Worker.WORKBENCH_OPERATOR_USER_ROLE });
 
@@ -179,6 +184,7 @@ public class UsersTest
 
         UserAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
         assertEquals("UsersTest_crud_after_update", updateResponseAO.getUsername());
+        assertEquals("UsersTest_crud_after_update@chililog.com", updateResponseAO.getEmailAddress());
         assertNull(updateResponseAO.getPassword());
         assertEquals(2, updateResponseAO.getRoles().length);
         assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, updateResponseAO.getRoles()[0]);
@@ -275,6 +281,7 @@ public class UsersTest
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud_notauthorised");
+        createRequestAO.setEmailAddress("UsersTest_crud_notauthorised@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { Worker.WORKBENCH_ANALYST_USER_ROLE });
@@ -430,6 +437,7 @@ public class UsersTest
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_change_password");
+        createRequestAO.setEmailAddress("UsersTest_change_password@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { Worker.WORKBENCH_ANALYST_USER_ROLE });
@@ -502,8 +510,27 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
+        // Create no email address
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+
+        createRequestAO = new UserAO();
+        createRequestAO.setUsername("UsersTest_bad_content");
+        createRequestAO.setPassword("test");
+        createRequestAO.setRoles(new String[]
+        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(createRequestAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
+        
         // Create no password
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
 
@@ -520,7 +547,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Error attempting to hash passwords. Error attempting to hash passwords. plainTextValue must not be null.", errorAO.getErrorCode());
 
         // Update no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/12341234", HttpMethod.PUT,
@@ -557,7 +584,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Update no doc version
         httpConn = ApiUtils.getHttpURLConnection(

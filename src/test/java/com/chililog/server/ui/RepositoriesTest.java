@@ -95,6 +95,7 @@ public class RepositoriesTest
         // Create admin user
         UserBO user = new UserBO();
         user.setUsername("RepositoriesTest_Admin");
+        user.setEmailAddress("RepositoriesTest_Admin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -102,6 +103,7 @@ public class RepositoriesTest
         // Create analyst user
         user = new UserBO();
         user.setUsername("RepositoriesTest_Analyst");
+        user.setEmailAddress("RepositoriesTest_Analyst@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -143,6 +145,7 @@ public class RepositoriesTest
         // Create analyst user
         user = new UserBO();
         user.setUsername("RepositoriesTest_Analyst_WithAccess");
+        user.setEmailAddress("RepositoriesTest_Analyst_WithAccess@chililog.com");
         user.setPassword("hello", true);
         user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
         user.addRole(repoInfo.getReadQueueRole());

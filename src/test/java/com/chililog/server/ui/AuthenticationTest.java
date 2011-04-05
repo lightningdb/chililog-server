@@ -65,6 +65,7 @@ public class AuthenticationTest
         // Create user
         UserBO user = new UserBO();
         user.setUsername("AuthenticationTest");
+        user.setEmailAddress("AuthenticationTest@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         UserController.getInstance().save(_db, user);
@@ -72,6 +73,7 @@ public class AuthenticationTest
         // Create disabled user
         user = new UserBO();
         user.setUsername("AuthenticationTest_DisabledUser");
+        user.setEmailAddress("AuthenticationTest_DisabledUser@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         user.setStatus(Status.Disabled);
@@ -80,6 +82,7 @@ public class AuthenticationTest
         // Create locked out user
         user = new UserBO();
         user.setUsername("AuthenticationTest_LockedUser");
+        user.setEmailAddress("AuthenticationTest_LockedUser@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
         user.setStatus(Status.Locked);
@@ -180,7 +183,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST() throws IOException
+    public void testPOST_ByUsername() throws IOException
     {    
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
@@ -209,12 +212,57 @@ public class AuthenticationTest
         
         UserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
         assertEquals("AuthenticationTest", loggedInUser.getUsername());
+        assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
         assertNull(loggedInUser.getPassword());
         assertEquals(1, loggedInUser.getRoles().length);
         assertEquals(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE, loggedInUser.getRoles()[0]);
         assertNotNull(loggedInUser.getDocumentID());
         assertEquals(Status.Enabled, loggedInUser.getStatus());
     }
+    
+    /**
+     * POST - login successful
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testPOST_ByEmailAddress() throws IOException
+    {    
+        // Create a URL for the desired page
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
+                
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest@chililog.com");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+        
+        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
+        JsonTranslator.getInstance().toJson(requestContent,  out);
+        out.close();
+
+        // Get response
+        String responseContent = ApiUtils.getResponseContent(conn);
+        
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        
+        ApiUtils.check200OKResponse(responseCode, headers);
+        assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        
+        UserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals("AuthenticationTest", loggedInUser.getUsername());
+        assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
+        assertNull(loggedInUser.getPassword());
+        assertEquals(1, loggedInUser.getRoles().length);
+        assertEquals(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE, loggedInUser.getRoles()[0]);
+        assertNotNull(loggedInUser.getDocumentID());
+        assertEquals(Status.Enabled, loggedInUser.getStatus());
+    }
+ 
     
     /**
      * POST - login failed because user not found

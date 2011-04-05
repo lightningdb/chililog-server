@@ -104,8 +104,8 @@ public class InternalLog4JAppender extends AppenderSkeleton
             DBObject dbObject = new BasicDBObject();
 
             // Custom Fields
-            MongoUtils.setString(dbObject, THREAD_FIELD_NAME, event.getThreadName());
-            MongoUtils.setString(dbObject, CATEGORY_FIELD_NAME, event.getLoggerName());
+            MongoUtils.setString(dbObject, THREAD_FIELD_NAME, event.getThreadName(), true);
+            MongoUtils.setString(dbObject, CATEGORY_FIELD_NAME, event.getLoggerName(), true);
 
             // Message Field
             StringBuilder sb = new StringBuilder();
@@ -144,17 +144,17 @@ public class InternalLog4JAppender extends AppenderSkeleton
                 severity = Severity.Emergency;
             }
 
-            MongoUtils.setDate(dbObject, RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new Date(event.getTimeStamp()));
-            MongoUtils.setDate(dbObject, RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME, new Date());
-            MongoUtils.setString(dbObject, RepositoryEntryBO.SOURCE_FIELD_NAME, "ChiliLogServer");
-            MongoUtils.setString(dbObject, RepositoryEntryBO.HOST_FIELD_NAME, _host);
-            MongoUtils.setLong(dbObject, RepositoryEntryBO.SEVERITY_FIELD_NAME, severity.toCode());
+            MongoUtils.setDate(dbObject, RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new Date(event.getTimeStamp()), true);
+            MongoUtils.setDate(dbObject, RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME, new Date(), true);
+            MongoUtils.setString(dbObject, RepositoryEntryBO.SOURCE_FIELD_NAME, "ChiliLogServer", true);
+            MongoUtils.setString(dbObject, RepositoryEntryBO.HOST_FIELD_NAME, _host, true);
+            MongoUtils.setLong(dbObject, RepositoryEntryBO.SEVERITY_FIELD_NAME, severity.toCode(), true);
             
             String msg = sb.toString();
-            MongoUtils.setStringArrayList(dbObject, RepositoryEntryBO.KEYWORDS_FIELD_NAME, _tokenizer.tokenize(msg, 20));
-            MongoUtils.setString(dbObject, RepositoryEntryBO.MESSAGE_FIELD_NAME, msg);
+            MongoUtils.setStringArrayList(dbObject, RepositoryEntryBO.KEYWORDS_FIELD_NAME, _tokenizer.tokenize(msg, 20), true);
+            MongoUtils.setString(dbObject, RepositoryEntryBO.MESSAGE_FIELD_NAME, msg, true);
 
-            MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
+            MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1, true);
 
             _coll.insert(dbObject);
 

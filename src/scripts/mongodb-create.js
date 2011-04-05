@@ -73,6 +73,7 @@ var adminUser = {
 	roles: [ "workbench.administrator" ],
 	status: "Enabled",
 	display_name: "Adminstrator",
+	email_address: "admin@chililog.com",
 	c_ver: new NumberLong(1) 
 };
 db.users.insert(adminUser);

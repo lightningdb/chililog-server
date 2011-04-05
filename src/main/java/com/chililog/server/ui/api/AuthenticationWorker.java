@@ -127,9 +127,13 @@ public class AuthenticationWorker extends Worker
         UserBO user = UserController.getInstance().tryGetByUsername(db, requestApiObject.getUsername());
         if (user == null)
         {
-            _logger.error("Authentication failed. Cannot find username '%s'", requestApiObject.getUsername());
-            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
-                    Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+            user = UserController.getInstance().tryGetByEmailAddress(db, requestApiObject.getUsername());
+            if (user == null)
+            {
+                _logger.error("Authentication failed. Cannot find username '%s'", requestApiObject.getUsername());
+                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                        Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+            }
         }
 
         // Check password

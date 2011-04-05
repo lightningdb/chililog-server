@@ -75,12 +75,24 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setString(DBObject dbObject, String fieldName, String fieldValue)
+    public static void setString(DBObject dbObject, String fieldName, String fieldValue, boolean isRequired)
+            throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
+        }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && fieldValue == null)
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
     }
@@ -122,12 +134,24 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setDate(DBObject dbObject, String fieldName, Date fieldValue)
+    public static void setDate(DBObject dbObject, String fieldName, Date fieldValue, boolean isRequired)
+            throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
+        }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && fieldValue == null)
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
     }
@@ -169,12 +193,24 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setBoolean(DBObject dbObject, String fieldName, Boolean fieldValue)
+    public static void setBoolean(DBObject dbObject, String fieldName, Boolean fieldValue, boolean isRequired)
+            throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
+        }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && fieldValue == null)
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
     }
@@ -221,12 +257,24 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setLong(DBObject dbObject, String fieldName, Long fieldValue)
+    public static void setLong(DBObject dbObject, String fieldName, Long fieldValue, boolean isRequired)
+            throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
+        }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && fieldValue == null)
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
     }
@@ -273,12 +321,26 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setStringArrayList(DBObject dbObject, String fieldName, ArrayList<String> fieldValue)
+    public static void setStringArrayList(DBObject dbObject,
+                                          String fieldName,
+                                          ArrayList<String> fieldValue,
+                                          boolean isRequired) throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
+        }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && (fieldValue == null || fieldValue.isEmpty()))
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
     }
@@ -334,13 +396,28 @@ public class MongoUtils
      *            name of field to save
      * @param fieldValue
      *            value of field to save
+     * @param isRequired
+     *            flag to indicate if field is required.
+     * @throws ChiliLogException
      */
-    public static void setKeyValuePairs(DBObject dbObject, String fieldName, Hashtable<String, String> fieldValue)
+    public static void setKeyValuePairs(DBObject dbObject,
+                                        String fieldName,
+                                        Hashtable<String, String> fieldValue,
+                                        boolean isRequired) throws ChiliLogException
     {
         if (dbObject == null)
         {
             throw new IllegalArgumentException("dbObject is null");
         }
+        if (StringUtils.isBlank(fieldName))
+        {
+            throw new IllegalArgumentException("fieldName is blank");
+        }
+        if (isRequired && (fieldValue == null || fieldValue.isEmpty()))
+        {
+            throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
+        }
+
         BasicDBObject obj = new BasicDBObject();
         for (Entry<String, String> s : fieldValue.entrySet())
         {

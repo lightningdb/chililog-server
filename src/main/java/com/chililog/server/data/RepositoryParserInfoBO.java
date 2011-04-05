@@ -122,17 +122,17 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name);
+        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
 
-        MongoUtils.setString(dbObject, APPLIES_TO_FIELD_NAME, _appliesTo.toString());
-        MongoUtils.setString(dbObject, APPLIES_TO_SOURCE_FILTER_FIELD_NAME, _appliesToSourceFilter);
-        MongoUtils.setString(dbObject, APPLIES_TO_HOST_FILTER_FIELD_NAME, _appliesToHostFilter);
+        MongoUtils.setString(dbObject, APPLIES_TO_FIELD_NAME, _appliesTo.toString(), true);
+        MongoUtils.setString(dbObject, APPLIES_TO_SOURCE_FILTER_FIELD_NAME, _appliesToSourceFilter, false);
+        MongoUtils.setString(dbObject, APPLIES_TO_HOST_FILTER_FIELD_NAME, _appliesToHostFilter, false);
 
-        MongoUtils.setString(dbObject, CLASS_NAME_FIELD_NAME, _className);
+        MongoUtils.setString(dbObject, CLASS_NAME_FIELD_NAME, _className, true);
 
-        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords);
+        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords, true);
 
-        MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString());
+        MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString(), true);
 
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
         for (RepositoryFieldInfoBO field : _fields)
@@ -143,7 +143,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
         }
         dbObject.put(FIELDS_FIELD_NAME, fieldList);
 
-        MongoUtils.setKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, _properties);
+        MongoUtils.setKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, _properties, false);
         return;
     }
 

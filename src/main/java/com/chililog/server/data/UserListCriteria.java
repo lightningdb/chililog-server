@@ -27,6 +27,7 @@ package com.chililog.server.data;
 public class UserListCriteria extends ListCriteria
 {
     private String _usernamePattern = null;
+    private String _emailAddressPattern = null;
     private String _role = null;
     private UserBO.Status _status = null;
     
@@ -49,6 +50,20 @@ public class UserListCriteria extends ListCriteria
     public void setUsernamePattern(String usernamePattern)
     {
         _usernamePattern = usernamePattern;
+    }
+
+        
+    public String getEmailAddressPattern()
+    {
+        return _emailAddressPattern;
+    }
+
+    /**
+     * Search for all users with matching email address 
+     */
+    public void setEmailAddressPattern(String emailAddressPattern)
+    {
+        _emailAddressPattern = emailAddressPattern;
     }
 
     public String getRole()

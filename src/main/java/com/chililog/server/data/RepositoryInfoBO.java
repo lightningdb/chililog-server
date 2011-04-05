@@ -125,20 +125,21 @@ public class RepositoryInfoBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name);
-        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName);
-        MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description);
-        MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString());
+        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
+        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
+        MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
+        MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString(), true);
 
-        MongoUtils.setBoolean(dbObject, DURABLE_READ_QUEUE_FIELD_NAME, _readQueueDurable);
+        MongoUtils.setBoolean(dbObject, DURABLE_READ_QUEUE_FIELD_NAME, _readQueueDurable, true);
 
-        MongoUtils.setBoolean(dbObject, WRITE_QUEUE_DURABLE_FIELD_NAME, _writeQueueDurable);
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_WORKER_COUNT_FIELD_NAME, _writeQueueWorkerCount);
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_MAX_MEMORY_FIELD_NAME, _writeQueueMaxMemory);
-        MongoUtils.setString(dbObject, WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, _writeQueueMaxMemoryPolicy.toString());
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, _writeQueuePageSize);
+        MongoUtils.setBoolean(dbObject, WRITE_QUEUE_DURABLE_FIELD_NAME, _writeQueueDurable, true);
+        MongoUtils.setLong(dbObject, WRITE_QUEUE_WORKER_COUNT_FIELD_NAME, _writeQueueWorkerCount, true);
+        MongoUtils.setLong(dbObject, WRITE_QUEUE_MAX_MEMORY_FIELD_NAME, _writeQueueMaxMemory, true);
+        MongoUtils.setString(dbObject, WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, _writeQueueMaxMemoryPolicy.toString(),
+                true);
+        MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, _writeQueuePageSize, true);
 
-        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords);
+        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords, true);
 
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
         for (RepositoryParserInfoBO parser : _parsers)

@@ -131,11 +131,11 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
     {
-        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name);
-        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName);
-        MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description);
-        MongoUtils.setString(dbObject, DATA_TYPE_FIELD_NAME, _dataType.toString());
-        MongoUtils.setKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, _properties);
+        MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
+        MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
+        MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
+        MongoUtils.setString(dbObject, DATA_TYPE_FIELD_NAME, _dataType.toString(), true);
+        MongoUtils.setKeyValuePairs(dbObject, PROPERTIES_FIELD_NAME, _properties, false);
     }
 
     /**

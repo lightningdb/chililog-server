@@ -37,6 +37,7 @@ public class UserAO extends AO
     private String _documentID;
     private Long _documentVersion;
     private String _username;
+    private String _emailAddress;
     private String _password;
     private String[] _roles = null;
     private Status _status = Status.Enabled;
@@ -65,6 +66,7 @@ public class UserAO extends AO
         _roles = userBO.getRoles();
         _status = userBO.getStatus();
         _displayName = userBO.getDisplayName();
+        _emailAddress = userBO.getEmailAddress();
         return;
     }
 
@@ -79,7 +81,7 @@ public class UserAO extends AO
         // Optimistic locking check
         checkOptimisticLocking(_documentVersion,  userBO);
 
-        userBO.setUsername(checkRequiredField("Username", _username));
+        userBO.setUsername(_username);
 
         // Password required on create. On update, change the password only if supplied
         if (userBO.isExistingRecord())
@@ -91,7 +93,7 @@ public class UserAO extends AO
         }
         else
         {
-            userBO.setPassword(checkRequiredField("Password", _password), true);
+            userBO.setPassword(_password, true);
         }
 
         userBO.removeAllRoles();
@@ -103,7 +105,9 @@ public class UserAO extends AO
         userBO.setStatus(_status);
 
         userBO.setDisplayName(_displayName);
-    }
+
+        userBO.setEmailAddress(_emailAddress);
+}
 
     public String getDocumentID()
     {
@@ -175,4 +179,15 @@ public class UserAO extends AO
         _displayName = displayName;
     }
 
+    public String getEmailAddress()
+    {
+        return _emailAddress;
+    }
+
+    public void setEmailAddress(String emailAddress)
+    {
+        _emailAddress = emailAddress;
+    }
+
+    
 }

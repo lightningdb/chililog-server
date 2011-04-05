@@ -114,8 +114,8 @@ public class RepositoryInfoAO extends AO
     {
         checkOptimisticLocking(_documentVersion, repoInfo);
 
-        repoInfo.setName(checkRequiredField("Name", _name));
-        repoInfo.setDisplayName(checkRequiredField("DisplayName", _displayName));
+        repoInfo.setName(_name);
+        repoInfo.setDisplayName(_displayName);
         repoInfo.setDescription(_description);
         repoInfo.setStartupStatus(_startupStatus);
 

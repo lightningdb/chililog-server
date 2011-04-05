@@ -50,6 +50,7 @@ import com.mongodb.DB;
 public class UsersWorker extends Worker
 {
     public static final String USERNAME_URI_QUERYSTRING_PARAMETER_NAME = "username";
+    public static final String EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME = "email";
     public static final String ROLE_URI_QUERYSTRING_PARAMETER_NAME = "role";
     public static final String STATUS_URI_QUERYSTRING_PARAMETER_NAME = "status";
 
@@ -229,6 +230,9 @@ public class UsersWorker extends Worker
                 this.loadBaseListCriteriaParameters(criteria);
 
                 criteria.setUsernamePattern(this.getUriQueryStringParameter(USERNAME_URI_QUERYSTRING_PARAMETER_NAME,
+                        true));
+
+                criteria.setEmailAddressPattern(this.getUriQueryStringParameter(EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME,
                         true));
 
                 criteria.setRole(this.getUriQueryStringParameter(ROLE_URI_QUERYSTRING_PARAMETER_NAME, true));

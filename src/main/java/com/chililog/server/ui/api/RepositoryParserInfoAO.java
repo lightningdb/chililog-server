@@ -112,11 +112,11 @@ public class RepositoryParserInfoAO extends AO
      */
     public void toBO(RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
     {
-        repoParserInfo.setName(checkRequiredField("Parser Name", _name));
+        repoParserInfo.setName(_name);
         repoParserInfo.setAppliesTo(_appliesTo);
         repoParserInfo.setAppliesToSourceFilter(_appliesToSourceFilter);
         repoParserInfo.setAppliesToHostFilter(_appliesToHostFilter);
-        repoParserInfo.setClassName(checkRequiredField("Class Name", _className));
+        repoParserInfo.setClassName(_className);
         repoParserInfo.setMaxKeywords(_maxKeywords);
 
         repoParserInfo.setParseFieldErrorHandling(_parseFieldErrorHandling);
