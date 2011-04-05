@@ -47,6 +47,40 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
       this.updatePropertyFromContent('value', '*', 'contentValueKey');
     }.observes('contentValueKey')
   }),
+  
+  didReload: function() {
+    if(!this.get('content')) return;
+    this._didFullReload = YES;
+    console.log('full reload')
+  },
+  
+  widthsDidChange: function(object, key, value) {
+    if(!this._didFullReload) return;
+    
+    var columns = this.get('columns');
+
+    width = columns.get('@sum(width)');
+    if(width == this._width) return;
+    this._width = width;
+
+    if(key == '[]') {
+      idx = 0;
+    } else {
+      idx = columns.indexOf(object);
+    }
+
+    var nowShowing = this.get('nowShowing'),
+      view, width;
+    
+    nowShowing.forEach(function(idx2) {
+      view = this.itemViewForContentIndex(idx2);
+      view.widthDidChangeForIndex(idx)
+    }, this)
+    
+    this.set('totalWidth', width);
+    this.adjust('minWidth', width);
+    this.set('calculatedWidth', width);
+  }.observes('*columns.@each.width'),
 
   /**
     @private
@@ -148,6 +182,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     
     this._repositionView(itemView.get('layer'), attrs.layout);
     itemView._updateCells();
+    itemView.widthDidChangeForIndex(0);
   }
   
 

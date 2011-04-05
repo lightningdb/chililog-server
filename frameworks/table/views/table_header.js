@@ -12,6 +12,36 @@ SC.TableHeaderView = SC.TableRowView.extend({
   classNames: ['sc-table-header'],
   
   exampleView: SC.TableHeaderCellView,
+  
+  thumbView: Endash.ThumbView.extend({
+    delegateBinding: '.parentView.parentView',
+    columnBinding: '.parentView.column',
+    layout: {
+      top: 0, bottom: 0, right: 0, width: 15
+    },
+    isEnabledBinding: '.column.isResizable'
+  }),
+  
+  widthsDidChange: function(object, key, value) {
+    var columns = this.get('columns');
+
+    width = columns.get('@sum(width)');
+    if(width == this._width) return;
+    this._width = width;
+
+    if(key == '[]') {
+      idx = 0;
+    } else {
+      idx = columns.objectAt(object);
+    }
+    
+    this.widthDidChangeForIndex(idx)
+    
+    width = columns.get('@sum(width)');
+    this.set('totalWidth', width);
+    this.adjust('minWidth', width);
+    this.set('calculatedWidth', width);
+  }.observes('*columns.@each.width'),
 
   headerViewForColumn: function(col) {
     var columns = this.get('columns'),
@@ -39,7 +69,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
       layoutIndex: col,
       delegate: this,
       first: col === 0,
-      layout: layout
+      layout: layout,
+      thumbView: this.get('thumbView')
     });
   },
   
@@ -53,35 +84,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
   
   _updateCell: function(idx, column) {},
   
-  // drag to reorder
-  /** @private */
-  headerDidBeginDrag: function(view, offset, evt) {
-    this._dragging = view;
-    // this.get('table').draggingColumn(view.get('column'));
-    // SC.$(view).addClass('dragging');
-  },
+
   
-  /** @private */
-  headerWasDragged: function(view, offset, evt) {
-    this.adjustDrag(view, offset);
-    // this.get('table').columnDragged(offset);
-  },
-  
-  /** @private */
-  headerDidEndDrag: function(view, evt) {
-    // this.get('table').endColumnDrag();
-    console.log('ending drag')
-    this._dragging = null;
-    this._totalOffset = null;
-    this.layoutViewsFrom(0);
-    SC.$(view).removeClass('dragging');
-  },
-  
-  // 
-  /** @private */
-  thumbWasDragged: function(view, offset, evt){
-    // this._sl_layoutChildViews();
-  },
   
   /** @private */
   adjustDrag: function(view, offset) {
@@ -159,5 +163,158 @@ SC.TableHeaderView = SC.TableRowView.extend({
 
     childViews.endPropertyChanges();
     columns.endPropertyChanges();
-  }
+  },
+  
+  mouseDown: function(evt) {
+    var view = $(evt.target).view()[0];
+        
+    if(view.instanceOf(this.get('thumbView'))) {
+      if (!view.get('isEnabled')) return NO ;
+  
+      var responder = this.getPath('pane.rootResponder') ;
+      if (!responder) return NO ;
+    
+      this._offset = {x: 0, y: 0};
+    
+      responder.dragDidStart(this) ;
+      
+      this._thumbDragging = view
+    
+      view.$().toggleClass('dragging', true)
+    
+      this._mouseDownX = this._lastX = evt.pageX ;
+      this._mouseDownY = this._lastY = evt.pageY ;
+  
+      return YES ;
+    }
+    
+    if(view.instanceOf(this.get('exampleView'))) {
+      this._initialX = evt.pageX;
+    }
+  },
+  
+  
+  mouseDragged: function(evt) {
+    var view = $(evt.target).view()[0];
+    
+    if(this._thumbDragging) {
+      view = this._thumbDragging;
+      
+      if (!view.get('isEnabled')) return NO ;
+      var offset = this._offset;
+
+      offset.x = evt.pageX - this._lastX;
+      offset.y = evt.pageY - this._lastY;
+
+      this._lastX = evt.pageX;
+      this._lastY = evt.pageY;
+
+      var column = view.get('column'),
+        width = column.get('width') || 100,
+        minWidth = column.get('minWidth') || 20,
+        maxWidth = column.get('maxWidth'),
+        newWidth;
+
+      newWidth = Math.max(minWidth, width + offset.x);
+      if(maxWidth)
+      {
+        newWidth = Math.min(maxWidth, newWidth);
+      }
+
+      column.set('width', newWidth);
+      
+      
+      return YES;
+    }
+    
+    if(view.instanceOf(this.get('exampleView'))) {
+      var x = evt.pageX,
+        isReorderable = view.getPath('column.isReorderable');
+
+      if (!isReorderable){
+        return YES;
+      }
+
+      if(!view._dragging)
+      {
+         if(Math.abs(this._initialX - x) < 6)
+         {
+          return;
+        }
+        else {
+          view._dragging = YES;
+          view.set('dragging', YES);
+          this._dragging = view;
+          return YES;
+        }
+      }
+
+      var lastX = this._lastX;
+      if(SC.none(lastX))
+      {
+        lastX = this._lastX = x;
+      }
+
+      var offset = x - lastX;
+      this._lastX = x;
+      
+      this.adjustDrag(view, offset);
+
+      return YES;
+    }
+  },
+  
+  /** @private */
+  mouseUp: function(evt) {
+    var view = $(evt.target).view()[0];
+
+    if(this._thumbDragging) {
+      this._thumbDragging = NO
+      if (!view.get('isEnabled')) return NO ;
+      this._lastX = this._lastY = this._offset = this._mouseDownX = this.mouseDownY = null;
+      view.$().removeClass('dragging')
+      return YES
+    }
+
+    if(view.instanceOf(this.get('exampleView'))) {
+      if(view._dragging) {
+        view.set('dragging', NO);
+        this._dragging = null;
+        this._totalOffset = null;
+        this.layoutViewsFrom(0);
+        SC.$(view).removeClass('dragging');
+        view._dragging = false;
+      } else {
+        // this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
+      }
+      this._lastX = null;
+    }
+  },
+  
+  
+  
+  
+  // ..........................................................
+   // touch support
+   // 
+   touchStart: function(evt){
+     return this.mouseDown(evt);
+   },
+
+   touchEnd: function(evt){
+     return this.mouseUp(evt);
+   },
+
+   touchesDragged: function(evt, touches) {
+     return this.mouseDragged(evt);
+   },
+
+   touchEntered: function(evt){
+     return this.mouseEntered(evt);
+   },
+
+   touchExited: function(evt){
+     return this.mouseExited(evt);
+   },
+  
 });

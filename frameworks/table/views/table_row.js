@@ -3,6 +3,7 @@ sc_require('views/table_cell')
 SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   isPoolable: YES,
   layerIsCacheable: YES,
+  thicknessesKey: 'columns',
   thicknessKey: 'width',
 
   columnsBinding: '.parentView.columns',
@@ -63,6 +64,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     
     this.endPropertyChanges();
     this._updateCells();
+    this.widthDidChangeForIndex(0);
   }.observes('columns'),
   
   /**
@@ -74,6 +76,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     var columns = this.get('columns'),
       column = columns.objectAt(i),
       views = this._sc_cell_views;
+    if(!views) return;
     return views[SC.guidFor(column)];
   },
 
@@ -173,8 +176,6 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
       
-      console.log(col, E)
-      
     var content = this.get('content')
     // var key = column.get('key')
     // if(key) content = content.get(column.get('key')) || content
@@ -197,6 +198,10 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
         layout: {left: 10, right: 10}
       })
     });
+  },
+  
+  widthDidChangeForIndex: function(idx) {
+    this.thicknessDidChangeForIndex(idx);
   }
 
   

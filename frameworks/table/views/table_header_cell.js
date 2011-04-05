@@ -4,13 +4,14 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   
   layout: {top:0, bottom:1},
   
-  column: null,
-  
   classNames: ['sc-table-cell'],
 
-  // titleBinding: '.column.label',
-  
   tagName: 'div',
+  
+  column: null,
+    
+  // TableHeader will pass this along
+  thumbView: null,
   
   displayProperties: ['column','title'],
   
@@ -63,13 +64,7 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   //   }.observes('sortState')
   // }),
   
-  thumbView: Endash.ThumbView.extend({
-    delegateBinding: '.parentView',
-    layout: {
-      top: 0, bottom: 0, right: 0, width: 15
-    },
-    isEnabledBinding: '.parentView*column.isResizable'
-  }),
+
   
   
   /** @private */
@@ -129,112 +124,9 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   //   }
   // },
   // 
-  /** @private */
-  mouseDown: function(evt) {
-    this._initialX = evt.pageX;
-    // return sc_super();
-  },
-    
-  /** @private */
-  mouseDragged: function(evt) {
-    var x = evt.pageX,
-      isReorderable = this.getPath('column.isReorderable');
-    
-    if (!isReorderable){
-      return YES;
-    }
-    
-    if(!this._dragging)
-    {
-       if(Math.abs(this._initialX - x) < 6)
-       {
-        return;
-      }
-      else {
-        this._dragging = YES;
-        this.set('dragging', YES);
-        this.invokeDelegateMethod(this.delegate, 'headerDidBeginDrag', this, evt);
-        return YES;
-      }
-    }
-      var lastX = this._lastX;
-      if(SC.none(lastX))
-      {
-        lastX = this._lastX = x;
-      }
-  
-    var offset = x - lastX;
-    this._lastX = x;
-    
-    this.invokeDelegateMethod(this.delegate, 'headerWasDragged', this, offset, evt);
-    return YES;
-  },
-  
-  /** @private */
-  mouseUp: function(evt) {
-    if(this._dragging) {
-      this.set('dragging', NO);
-      this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
-      this._dragging = false;
-    } else {
-      this.get('parentView').get('table').sortByColumn(this.get('column'), this.get('sortState'));
-    }
-    this._lastX = null;
-    // return sc_super();
-  },
   
   
-  // ..........................................................
-  // touch support
-  // 
-  touchStart: function(evt){
-    return this.mouseDown(evt);
-  },
   
-  touchEnd: function(evt){
-    return this.mouseUp(evt);
-  },
-  
-  touchesDragged: function(evt, touches) {
-    return this.mouseDragged(evt);
-  },
-  
-  touchEntered: function(evt){
-    return this.mouseEntered(evt);
-  },
-  
-  touchExited: function(evt){
-    return this.mouseExited(evt);
-  },
-  
-  
-  /** @private */
-  thumbViewWasDragged: function(view, offset, evt) {
-    var column = this.get('column'),
-      width = column.get('width') || 100,
-      minWidth = column.get('minWidth') || 20,
-      maxWidth = column.get('maxWidth'),
-      newWidth;
-      
-    newWidth = Math.max(minWidth, width + offset.x);
-    if(maxWidth)
-    {
-      newWidth = Math.min(maxWidth, newWidth);
-    }
-  
-    column.set('width', newWidth);
-    this.invokeDelegateMethod(this.delegate, 'thumbWasDragged', this, offset, evt);
-  },
 
-  /** @private */
-  thumbViewDidBeginDrag: function(view, offset, evt) {
-    this.set('dragging',YES);
-  },
-  
-  /** @private */
-  thumbViewDidEndDrag: function(view, offset, evt){
-    this.set('dragging',NO);
-    this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
-  }
 
 });

@@ -4,38 +4,51 @@ SC.SimpleLayout = {
 
   layoutDirection: SC.LAYOUT_HORIZONTAL,
 
-  thicknesses: null,
-  thicknessesBindingDefault: SC.Binding.multiple(),
-
+  
+    // 
+    // thicknesses: null,
+    // thicknessesBindingDefault: SC.Binding.multiple(),
+  
   totalThickness: 0,
   
   widthDelta: null,
   offsetDelta: null,
   
+  thicknessesKey: null,
   thicknessKey: null,
   
-  initMixin: function() {
-    this._thicknesses_observer = this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
-  },
+  // initMixin: function() {
+    // this._thicknesses_observer = this.addObserver('thicknesses.@each.' + this.get('thicknessKey'), this, 'thicknessesDidChange');
+  // },
   
-  thicknessesDidChange: function(object, key, value) {
-    if(this._doLayout === NO) return;
-    var thicknesses = this.get('thicknesses');
-    var thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height";
-
-    if(key == '[]') {
-      idx = 0;
-    } else {
-      idx = thicknesses.objectAt(object);
-    }
-    
+  // thicknessesDidChange: function(object, key, value) {
+  //   if(this._doLayout === NO) return;
+  //   var thicknesses = this.get('thicknesses');
+  //   var thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height";
+  // 
+  //   if(key == '[]') {
+  //     idx = 0;
+  //   } else {
+  //     idx = thicknesses.objectAt(object);
+  //   }
+  //   
+  // },
+  
+  thicknessDidChangeForIndex: function(idx) {
+    var thicknesses = this.get(this.get('thicknessesKey')),
+      thicknessProperty = this.get('layoutDirection') == SC.LAYOUT_HORIZONTAL ? "Width" : "Height",
+      total;
+      
+    if(!thicknesses) return;
+      
     this.expireLayoutFrom(idx);
-    this._sl_layoutChildViews(idx);
+    // this._sl_layoutChildViews(idx);
+    this.layoutViewsFrom(idx)
     
     var total = this.offsetForView(thicknesses.get('length'))
     this.set('totalThickness', total);
     this.adjust('min' + thicknessProperty, total);
-    this.set('calculated' + thicknessProperty, this.get('totalThickness'), total);
+    this.set('calculated' + thicknessProperty, this.get('totalThickness'), total);    
   },
   
   childViewsDidChange: function() {
@@ -56,19 +69,22 @@ SC.SimpleLayout = {
   },
   
   expireLayoutFrom: function(index) {
-    this._offsetCache = this._offsetCache ? this._offsetCache.slice(0, index) : null;
+    this._offsetCache = this._offsetCache ? this._offsetCache.slice(0, index + 1) : null;
   },
   
   layoutViewsFrom: function(index) {
     if(!index) index = 0;
     this.expireLayoutFrom(index);
   
-    var thicknesses = this.get('thicknesses'), view;
+    var thicknesses = this.get(this.get('thicknessesKey')), view;
+    if(!thicknesses) return
     
     for(var i = index, len = thicknesses.get('length'); i < len; i++) {
       view = this.viewForIndex(i);
-      if(!this.shouldLayoutView || this.shouldLayoutView(view, i)) {
-        this.repositionView(view, this.layoutForView(i, view));
+      if(view) {
+        if(!this.shouldLayoutView || this.shouldLayoutView(view, i)) {
+          this.repositionView(view, this.layoutForView(i, view));
+        }
       }
     }
   },
@@ -89,7 +105,7 @@ SC.SimpleLayout = {
   },
 
   thicknessForView: function(idx, view) {
-    var thicknesses = this.get('thicknesses');
+    var thicknesses = this.get(this.get('thicknessesKey'));
     return thicknesses.objectAt(idx).get(this.get('thicknessKey')) + (this.widthDelta || 0);
   },
 

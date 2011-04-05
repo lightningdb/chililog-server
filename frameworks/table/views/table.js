@@ -27,6 +27,10 @@ SC.TableView = SC.View.extend({
   classNames: ['sc-table-view'],
   
   horizontalScrollOffset: 0,
+  
+  thumbView: Endash.ThumbView,
+  
+  headerCellView: Endash.HeaderCellView,
 
   /**
     An array of content objects
@@ -100,6 +104,9 @@ SC.TableView = SC.View.extend({
     @property {SC.ScrollView}
   */
   exampleScrollView: SC.ScrollView,
+  
+  headerCellView: null,
+  thumbView: null,
   
   /**
      Equivalent of the orderBy property of an SC.ArrayController. It is actually bound to the content orderBy property
@@ -257,7 +264,17 @@ SC.TableView = SC.View.extend({
   selectOnMouseDown: YES,
   
   createChildViews: function() {
-    var header, data;
+    var header, data, attrs;
+    
+    attrs = {
+      layout:{top:0,left:0,right:0,bottom:0},
+      table: this,
+      columnsBinding: SC.Binding.from('.columns',this).oneWay(),
+      sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this)
+    };
+     
+    if(this.get('headerCellView')) attrs.exampleView = this.get('headerCellView');
+    if(this.get('thumbView')) attrs.thumbView = this.get('thumbView');
     
     this._tableHeaderView = header = this.createChildView(SC.ScrollView.design({
       isVisibleBinding: SC.Binding.from('.useHeaders', this),
@@ -286,12 +303,7 @@ SC.TableView = SC.View.extend({
       horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this),
       
       borderStyle: SC.BORDER_NONE,
-      contentView: SC.TableHeaderView.extend({
-        layout:{top:0,left:0,right:0,bottom:0},
-        table: this,
-        columnsBinding: SC.Binding.from('.columns',this).oneWay(),
-        sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this)
-       })
+      contentView: SC.TableHeaderView.extend(attrs)
     }));
     
     this._dataView = data = this.createChildView(this.get('exampleScrollView').design({
@@ -376,37 +388,38 @@ SC.TableView = SC.View.extend({
     this.set('sortDescriptor', sortState + " " + column.get('key'));
   },
 
-  /**
-    Called by the TableHeaderView when a column is being dragged
-    
-    @param {SC.TableColumn} column the column being dragged
-  */
-  draggingColumn: function(column) {
-    // this.$().addClass('reordering-columns');
-    // this._dragging = column;
-  },
-  
-  /** 
-    Called by the TableHeaderView when a column is being dragged. Adjusts the offset of the ghost
-    
-    @param {Number} offset The offset by which the column has been dragged
-  */
-  columnDragged: function(offset) {
-    // this._ghostLeft += offset;
-  },
-  
-  /** 
-    Called by the TableHeaderView when a column has stopped dragging.
-   */
-  endColumnDrag: function() {
-    this.$().removeClass('reordering-columns');
-    if (!SC.none(this._ghost))
-    {
-      this.get('layer').removeChild(this._ghost);
-    }
-    this._ghost = this._blocker = null;
-    this._ghostLeft = null;
-    this.get('columns').notifyPropertyChange('[]');
-  }
+  // 
+  // 
+  // /** @private */
+  // thumbViewWasDragged: function(view, offset, evt) {
+  //   var column = this.get('column'),
+  //     width = column.get('width') || 100,
+  //     minWidth = column.get('minWidth') || 20,
+  //     maxWidth = column.get('maxWidth'),
+  //     newWidth;
+  //     
+  //   newWidth = Math.max(minWidth, width + offset.x);
+  //   if(maxWidth)
+  //   {
+  //     newWidth = Math.min(maxWidth, newWidth);
+  //   }
+  // 
+  //   column.set('width', newWidth);
+  //   this.invokeDelegateMethod(this.delegate, 'thumbWasDragged', this, offset, evt);
+  // },
+  // 
+  // /** @private */
+  // thumbViewDidBeginDrag: function(view, offset, evt) {
+  //   this.set('dragging',YES);
+  // },
+  // 
+  // /** @private */
+  // thumbViewDidEndDrag: function(view, offset, evt){
+  //   this.set('dragging',NO);
+  //   this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
+  // }
+  // 
+  // 
+
   
 });
