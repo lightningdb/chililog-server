@@ -272,14 +272,6 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   mouseUp: function(evt) {
     var view = $(evt.target).view()[0];
-    
-    if(view == this) {
-      return NO;
-    }
-
-    console.log('mouseup')
-    console.log(evt.target)
-
 
     if(this._thumbDragging) {
       view = this._thumbDragging
@@ -295,6 +287,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
         this._totalOffset = null;
         this.layoutViewsFrom(0);
       } else {
+        if(view == this) {
+          return NO;
+        }
+        
         while(view && !view.instanceOf(this.get('exampleView'))) {
           view = view.get('parentView');
         }
