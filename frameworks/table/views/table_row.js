@@ -62,10 +62,16 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       this.appendChild(cell);
     }
     
+    if(this.didCreateCells) this.didCreateCells();
+    
     this.endPropertyChanges();
     this._updateCells();
     this.widthDidChangeForIndex(0);
   }.observes('columns'),
+  
+  didCreateCells: function() {
+        this._sl_layoutChildViews(YES);
+  },
   
   /**
     @private

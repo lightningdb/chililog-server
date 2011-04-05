@@ -42,7 +42,6 @@ SC.SimpleLayout = {
     if(!thicknesses) return;
       
     this.expireLayoutFrom(idx);
-    // this._sl_layoutChildViews(idx);
     this.layoutViewsFrom(idx)
     
     var total = this.offsetForView(thicknesses.get('length'))
@@ -51,21 +50,17 @@ SC.SimpleLayout = {
     this.set('calculated' + thicknessProperty, this.get('totalThickness'), total);    
   },
   
-  childViewsDidChange: function() {
-    this._sl_layoutChildViews();
-  }.observes('childViews'),
-  
-  _sl_layoutChildViews: function() {
-    var layoutViews = (this._layoutViews || (this._layoutViews = [])),
-      childViews = this.get('childViews');
+  _sl_layoutChildViews: function(force) {
+    if(!this._layoutViews || force) {    
+      var layoutViews = (this._layoutViews || (this._layoutViews = [])),
+        childViews = this.get('childViews').toArray();
       
-    childViews.forEach(function(c) {
-      if(c.layoutDelegate == this) {
-        layoutViews[c.layoutIndex] = c;
-      }
-    }, this);
-    
-    this.layoutViewsFrom(0);
+      childViews.forEach(function(c) {
+        if(c.layoutDelegate == this) {
+          layoutViews[c.layoutIndex] = c;
+        }
+      }, this);
+    }
   },
   
   expireLayoutFrom: function(index) {

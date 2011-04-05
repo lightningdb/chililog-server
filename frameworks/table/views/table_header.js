@@ -99,7 +99,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var childViews = this._layoutViews;
     var idx = childViews.indexOf(view);
     var view2, idx2;
-    var columns = this.get('columns')
+    var columns = this.get('columns'),
+      // idx = columns.indexOf(view.get('column')),
+      // view2, idx2;
 
     var layout = {left: put, width: this.thicknessForView(idx)}
     view.adjust(layout);
@@ -167,7 +169,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
   
   mouseDown: function(evt) {
     var view = $(evt.target).view()[0];
-        
+    
     if(view.instanceOf(this.get('thumbView'))) {
       if (!view.get('isEnabled')) return NO ;
   
@@ -186,9 +188,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       this._mouseDownY = this._lastY = evt.pageY ;
   
       return YES ;
-    }
-    
-    if(view.instanceOf(this.get('exampleView'))) {
+    } else {
       this._initialX = evt.pageX;
     }
   },
@@ -225,23 +225,22 @@ SC.TableHeaderView = SC.TableRowView.extend({
       
       
       return YES;
-    }
-    
-    if(view.instanceOf(this.get('exampleView'))) {
+    } else {
+      
       var x = evt.pageX,
-        isReorderable = view.getPath('column.isReorderable');
 
-      if (!isReorderable){
-        return YES;
-      }
-
-      if(!view._dragging)
-      {
-         if(Math.abs(this._initialX - x) < 6)
-         {
+      if(!this._dragging) {
+        if(Math.abs(this._initialX - x) < 6) {
           return;
-        }
-        else {
+        } else {
+          while(!view.instanceOf(this.get('exampleView'))) {
+            view = view.get('parentView');
+          }
+          
+          if (!view.getPath('column.isReorderable')){
+            return YES;
+          }
+          
           view._dragging = YES;
           view.set('dragging', YES);
           this._dragging = view;
@@ -250,15 +249,14 @@ SC.TableHeaderView = SC.TableRowView.extend({
       }
 
       var lastX = this._lastX;
-      if(SC.none(lastX))
-      {
+      if(SC.none(lastX)) {
         lastX = this._lastX = x;
       }
 
       var offset = x - lastX;
       this._lastX = x;
       
-      this.adjustDrag(view, offset);
+      this.adjustDrag(this._dragging, offset);
 
       return YES;
     }
@@ -273,10 +271,8 @@ SC.TableHeaderView = SC.TableRowView.extend({
       if (!view.get('isEnabled')) return NO ;
       this._lastX = this._lastY = this._offset = this._mouseDownX = this.mouseDownY = null;
       view.$().removeClass('dragging')
-      return YES
-    }
-
-    if(view.instanceOf(this.get('exampleView'))) {
+      return YES;
+    } else {
       if(view._dragging) {
         view.set('dragging', NO);
         this._dragging = null;
