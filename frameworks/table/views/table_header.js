@@ -87,15 +87,12 @@ SC.TableHeaderView = SC.TableRowView.extend({
   
   _updateCell: function(idx, column) {},
   
-
-  
-  
   /** @private */
   adjustDrag: function(view, offset) {
     var direction = this.get('layoutDirection');
     
     var put = (this._totalOffset === 0 ? 0 : (this._totalOffset || this.offsetForView(view.get('columnIndex')))) + offset;
-    // this.repositionView(view, {left: put});
+
     this._totalOffset = put;
     this.set('_draggingOffset', put);
     
@@ -103,10 +100,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var idx = childViews.indexOf(view);
     var view2, idx2;
     var columns = this.get('columns');
-      // idx = columns.indexOf(view.get('column')),
-      // view2, idx2;
 
-    // var layout = {left: put, width: this.thicknessForView(idx)}
     view.adjust('left', put);
 
   
@@ -278,11 +272,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
     } else {
       if(this._dragging) {
         this._dragging.set('dragging', NO);
+        SC.$(this._dragging).removeClass('dragging');
         this._dragging = null;
         this._totalOffset = null;
         this.layoutViewsFrom(0);
-        SC.$(this._dragging).removeClass('dragging');
-        view._dragging = false;
       } else {
         while(!view.instanceOf(this.get('exampleView'))) {
           view = view.get('parentView');

@@ -1,6 +1,6 @@
 /** 
   
-  NOTE: this was *not* written by Endash.
+  *********NOTE: this was *NOT* written by Endash.***********
   
   It was written yb Alexiskander. I've copied it into my namespace
   so that I might modify it without having to do it in the core repo
