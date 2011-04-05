@@ -108,3 +108,18 @@
 .sc-table-data-view .odd {
 /*  background-color: #f9fafb !important;*/
 }
+
+.sc-sort-state-asc {
+  background-image: static_url('resources/sort-asc.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: .55;
+}
+
+.sc-sort-state-desc {
+  background-image: static_url('resources/sort-desc.png');  
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: .55;
+
+}

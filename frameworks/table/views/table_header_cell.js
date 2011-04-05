@@ -23,12 +23,12 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   //
   
   // childViews: 'sortStateView labelView thumbView'.w(),
-  childViews: 'labelView thumbView'.w(),
+  childViews: 'labelView thumbView sortStateView'.w(),
     
   labelView: SC.View.extend({
     tagName: 'label',
     
-    layout:{left:8,right:15,top:0,bottom:0},
+    layout:{left:8,right:28,top:0,bottom:0},
     
     valueBinding: '.parentView.column.title',
     
@@ -40,29 +40,29 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
 
   // We're going to disable this for now
 
-  // /** 
-  //   This View renders the arrow indicating sort state
-  //   
-  //   @private 
-  // */
-  // sortStateView: SC.View.extend({
-  //   layout:{top: 17,height:8,right:17,width:9},
-  //   sortStateBinding: '.parentView.sortState',
-  //   sortStateDidChange: function(){
-  //     switch (this.get('sortState')){
-  //       case "ASC":
-  //         this.set('classNames',['sc-sort-state-asc']);
-  //       break;
-  //       case "DESC":
-  //         this.set('classNames',['sc-sort-state-desc']);
-  //       break;
-  //       default:
-  //       this.set('classNames',[]);
-  //       break;
-  //     }
-  //     this.displayDidChange();
-  //   }.observes('sortState')
-  // }),
+  /** 
+    This View renders the arrow indicating sort state
+    
+    @private 
+  */
+  sortStateView: SC.View.extend({
+    layout:{top: 0, bottom: 0, right:17,width:11},
+    sortStateBinding: '.parentView.sortState',
+    sortStateDidChange: function(){
+      switch (this.get('sortState')){
+        case "ASC":
+          this.set('classNames',['sc-view sc-sort-state-asc']);
+        break;
+        case "DESC":
+          this.set('classNames',['sc-view sc-sort-state-desc']);
+        break;
+        default:
+        this.set('classNames',['sc-view']);
+        break;
+      }
+      this.displayDidChange();
+    }.observes('sortState')
+  }),
   
 
   
