@@ -1,4 +1,4 @@
-sc_require('views/table_cell')
+sc_require('views/table_cell');
 
 SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   isPoolable: YES,
@@ -110,9 +110,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     var cellView = this._sc_cell_views[SC.guidFor(column)];
     var contentView = cellView.get('contentView');
     
-    var content = this.get('content')
-    // var key = column.get('key')
-    // if(key) content = content.get(column.get('key')) || content
+    var content = this.get('content');
     
     cellView.beginPropertyChanges();
     contentView.beginPropertyChanges();
@@ -182,10 +180,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       wrapper = this.get('parentView').get('cellView'),
       attrs = {};
       
-    var content = this.get('content')
-    // var key = column.get('key')
-    // if(key) content = content.get(column.get('key')) || content
-
+    var content = this.get('content');
       
     attrs.parentView = this;
     attrs.column = column;

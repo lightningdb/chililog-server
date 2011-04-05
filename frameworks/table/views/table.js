@@ -347,8 +347,8 @@ SC.TableView = SC.View.extend({
         var contentView = this.get('contentView') ;
         if (!contentView) return NO; // nothing to do if no contentView.
 
-        var layout = contentView.layoutForContentIndex(view.get('contentIndex'))
-        var vf = {x: layout.left, y: layout.top, height: layout.height, width: layout.width}
+        var layout = contentView.layoutForContentIndex(view.get('contentIndex'));
+        var vf = {x: layout.left, y: layout.top, height: layout.height, width: layout.width};
         if (!vf) return NO; // nothing to do
 
         // convert view's frame to an offset from the contentView origin.  This
@@ -386,40 +386,7 @@ SC.TableView = SC.View.extend({
     }
 
     this.set('sortDescriptor', sortState + " " + column.get('key'));
-  },
-
-  // 
-  // 
-  // /** @private */
-  // thumbViewWasDragged: function(view, offset, evt) {
-  //   var column = this.get('column'),
-  //     width = column.get('width') || 100,
-  //     minWidth = column.get('minWidth') || 20,
-  //     maxWidth = column.get('maxWidth'),
-  //     newWidth;
-  //     
-  //   newWidth = Math.max(minWidth, width + offset.x);
-  //   if(maxWidth)
-  //   {
-  //     newWidth = Math.min(maxWidth, newWidth);
-  //   }
-  // 
-  //   column.set('width', newWidth);
-  //   this.invokeDelegateMethod(this.delegate, 'thumbWasDragged', this, offset, evt);
-  // },
-  // 
-  // /** @private */
-  // thumbViewDidBeginDrag: function(view, offset, evt) {
-  //   this.set('dragging',YES);
-  // },
-  // 
-  // /** @private */
-  // thumbViewDidEndDrag: function(view, offset, evt){
-  //   this.set('dragging',NO);
-  //   this.invokeDelegateMethod(this.delegate, 'headerDidEndDrag', this, evt);
-  // }
-  // 
-  // 
+  }
 
   
 });

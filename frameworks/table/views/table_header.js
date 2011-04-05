@@ -6,6 +6,8 @@ sc_require('views/table_header_cell');
 //            Portions ©2008-2010 Apple, Inc. All rights reserved.
 // License:   Licensed under MIT license (see license.js)
 // ==========================================================================
+/*globals SC Endash */
+
 SC.TableHeaderView = SC.TableRowView.extend({
   
   /** @private */
@@ -23,9 +25,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
   }),
   
   widthsDidChange: function(object, key, value) {
-    var columns = this.get('columns');
-
-    width = columns.get('@sum(width)');
+    var columns = this.get('columns'),
+      width = columns.get('@sum(width)'),
+      idx;
+      
     if(width == this._width && !this._dragging) return;
     this._width = width;
 
@@ -35,7 +38,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       idx = columns.objectAt(object);
     }
     
-    this.widthDidChangeForIndex(idx)
+    this.widthDidChangeForIndex(idx);
     
     width = columns.get('@sum(width)');
     this.set('totalWidth', width);
@@ -180,9 +183,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
     
       responder.dragDidStart(this) ;
       
-      this._thumbDragging = view
+      this._thumbDragging = view;
     
-      view.$().toggleClass('dragging', true)
+      view.$().toggleClass('dragging', true);
     
       this._mouseDownX = this._lastX = evt.pageX ;
       this._mouseDownY = this._lastY = evt.pageY ;
@@ -227,7 +230,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       return YES;
     } else {
       
-      var x = evt.pageX,
+      var x = evt.pageX;
 
       if(!this._dragging) {
         if(Math.abs(this._initialX - x) < 6) {
@@ -253,7 +256,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
         lastX = this._lastX = x;
       }
 
-      var offset = x - lastX;
+      offset = x - lastX;
       this._lastX = x;
       
       this.adjustDrag(this._dragging, offset);
@@ -267,10 +270,10 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var view = $(evt.target).view()[0];
 
     if(this._thumbDragging) {
-      this._thumbDragging = NO
+      this._thumbDragging = NO;
       if (!view.get('isEnabled')) return NO ;
       this._lastX = this._lastY = this._offset = this._mouseDownX = this.mouseDownY = null;
-      view.$().removeClass('dragging')
+      view.$().removeClass('dragging');
       return YES;
     } else {
       if(this._dragging) {
@@ -314,6 +317,6 @@ SC.TableHeaderView = SC.TableRowView.extend({
 
    touchExited: function(evt){
      return this.mouseExited(evt);
-   },
+   }
   
 });

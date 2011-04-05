@@ -1,4 +1,4 @@
-sc_require('views/table_row')
+sc_require('views/table_row');
 
 // ==========================================================================
 // Project:   SproutCore - JavaScript Application Framework
@@ -55,7 +55,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
   didReload: function() {
     if(!this.get('content')) return;
     this._didFullReload = YES;
-    console.log('full reload')
   },
   
   widthsDidChange: function(object, key, value, force) {
@@ -64,7 +63,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     var columns = this.get('columns'),
       width = columns.get('@sum(width)'),
       nowShowing = this.get('nowShowing'),
-      view;
+      view, idx;
     
     if(width == this._width && !force) return;
     this._width = width;
@@ -77,8 +76,8 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     
     nowShowing.forEach(function(idx2) {
       view = this.itemViewForContentIndex(idx2);
-      view.widthDidChangeForIndex(idx)
-    }, this)
+      view.widthDidChangeForIndex(idx);
+    }, this);
     
     // this.set('totalWidth', width);
     // this.adjust('minWidth', width);
@@ -99,22 +98,6 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
 
     return this.get('cellContentView');
   },
-
-  /**
-    @private
-    We override this to call our own repositionView method
-  // */
-  // wakePooledView: function(view, attrs) {
-  //   // configure
-  //   this.configureItemView(view, attrs);
-  // 
-  //   var layer = view.get('layer');
-  //   this._repositionView(layer, attrs.layout);
-  //   
-  //   // awake from the pool, etc.
-  //   if (view.awakeFromPool) view.awakeFromPool(view.owningPool, this);
-  //   
-  // },
   
   /**
     @private

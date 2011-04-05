@@ -18,11 +18,8 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
   sortDescriptor: null,
   sortDescriptorBinding: '.parentView.sortDescriptor',
   
-  // 
-  // displayProperties: ['dragging', 'sortState'],
-  //
+  sortStateBinding: '*column.sortState'  ,
   
-  // childViews: 'sortStateView labelView thumbView'.w(),
   childViews: 'labelView thumbView sortStateView'.w(),
     
   labelView: SC.View.extend({
@@ -94,39 +91,6 @@ SC.TableHeaderCellView = SC.View.extend(SC.Button, {
     }
     
     return "none";
-  }.property('sortDescriptor').cacheable(),
-
-  sortStateBinding: '*column.sortState',
-  // 
-  // render: function(context, firstTime) {
-  //   var href, toolTip, classes, theme;
-  //   var sortState = this.get('sortState');
-  //   
-  //   context.setClass('first', this.get('first'));
-  // 
-  //   classes = this._TEMPORARY_CLASS_HASH || {};
-  //   classes.asc = (sortState  === "ASC");
-  //   classes.desc = (sortState === "DESC");
-  //   classes.selected = !SC.none(sortState) && sortState !== "none";
-  //   classes.draggging = this.get('dragging');
-  //   classes.def = this.get('isDefault');
-  //   classes.cancel = this.get('isCancel');
-  //   
-  //   classes.icon = !!this.get('icon');
-  //   classes.dragging = this.get('dragging');
-  //   
-  //   context.attr('role', 'button').setClass(classes);
-  //   theme = this.get('theme');
-  //   if (theme) context.addClass(theme);
-  //   if (firstTime)
-  //   {
-  //     this.renderChildViews(context, firstTime);
-  //   }
-  // },
-  // 
-  
-  
-  
-
+  }.property('sortDescriptor').cacheable()
 
 });
