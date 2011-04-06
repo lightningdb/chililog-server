@@ -280,9 +280,9 @@ public abstract class Worker
         for(String role :_authenticatedUser.getRoles())
         {
             String repoName = RepositoryInfoBO.getNameFromWorkBenchRoleName(role);
-            if (!StringUtils.isBlank(repoName) && !l.contains(role))
+            if (!StringUtils.isBlank(repoName) && !l.contains(repoName))
             {
-                l.add(role);
+                l.add(repoName);
             }
         }
         return l.toArray(new String[l.size()]);

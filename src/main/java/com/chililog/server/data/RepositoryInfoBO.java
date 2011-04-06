@@ -449,16 +449,25 @@ public class RepositoryInfoBO extends BO implements Serializable
      * Returns the name of the role in which a user must be a member before permission is granted find entries in this
      * repository and setup monitors.
      */
-    public String getWorkBenchRepositoryUserRoleName()
+    public String getUIStandardUserRoleName()
     {
-        return String.format("repo.%s.user", _name);
+        return String.format("repo.%s.standard", _name);
     }
 
+    /**
+     * Returns the name of the role in which a user must be a member before permission is granted find entries in this
+     * repository and setup monitors.
+     */
+    public String getUIPowerUserRoleName()
+    {
+        return String.format("repo.%s.power", _name);
+    }
+    
     /**
      * Returns the name of the role in which a user must be a member before permission is granted to find entries,
      * start/stop and reconfigure this repostiory.
      */
-    public String getWorkBenchRepositoryAdministratorRoleName()
+    public String getUIAdministratorUserRoleName()
     {
         return String.format("repo.%s.administrator", _name);
     }

@@ -50,6 +50,7 @@ db.config.drop();
 db.users.drop();
 db.repositories_info.drop();
 db.chililog_repository.drop();
+db.sandpit_repository.drop();
 
 
 //*************************************************************
@@ -78,22 +79,45 @@ var adminUser = {
 };
 db.users.insert(adminUser);
 
-var operatorUser = {
-		username: "operator",
-		password: "vcZ3/4Mw0bCAK+s3T8ROGAfv0XAPOP5M5XVT6NG6d0z/FqSmgIYqYoVteD8i1n8dj9BHPIqi/0HcgBLyl5MccodoAkvOVD2x", // YumCha
-		roles: [ "repo.chililog.user" ],
+var sandpitRepositoryAdminUser = {
+		username: "sandpitadmin",
+		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+		roles: [ "repo.sandpit.administrator" ],
 		status: "Enabled",
-		display_name: "Operator",
-		email_address: "operator@chililog.com",
+		display_name: "Sandpit Repository Administrator",
+		email_address: "sandpitadmin@chililog.com",
 		c_ver: new NumberLong(1) 
 	};
-db.users.insert(operatorUser);
-	
+db.users.insert(sandpitRepositoryAdminUser);
+
+var sandpitRepositoryPowerUser = {
+		username: "sandpitpoweruser",
+		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+		roles: [ "repo.sandpit.power" ],
+		status: "Enabled",
+		display_name: "Sandpit Repository Power User",
+		email_address: "sandpitpoweruser@chililog.com",
+		c_ver: new NumberLong(1) 
+	};
+db.users.insert(sandpitRepositoryPowerUser);
+
+var sandpitRepositoryStandardUser = {
+		username: "sandpituser",
+		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+		roles: [ "repo.sandpit.standard" ],
+		status: "Enabled",
+		display_name: "Sandpit Repository Standard User",
+		email_address: "sandpituser@chililog.com",
+		c_ver: new NumberLong(1) 
+	};
+db.users.insert(sandpitRepositoryStandardUser);
+
 // *************************************************************
 // Setup Repositories
+// See http://www.mongodb.org/display/DOCS/Indexing+Advice+and+FAQ
 //*************************************************************
 print("\nAdding ChiliLog Repository");
-var chiliLogRepo = {
+var chililogRepoInfo = {
 	name: "chililog",
 	display_name: "ChiliLog Log",
 	description: "Log repository for ChiliLog events",
@@ -108,11 +132,29 @@ var chiliLogRepo = {
 	max_keywords: new NumberLong(-1),
 	c_ver: new NumberLong(1)
 };
-db.repositories_info.insert(chiliLogRepo);
-
-// http://www.mongodb.org/display/DOCS/Indexing+Advice+and+FAQ
+db.repositories_info.insert(chililogRepoInfo);
 db.chililog_repository.ensureIndex({ c_keywords : 1, c_ts : 1 }, {name: "keyword_ts_index"});
 
+print("\nAdding Sandpit Repository");
+var sandpitRepoInfo = {
+	name: "sandpit",
+	display_name: "Sandpit",
+	description: "For testing and playing around",
+	startup_status: "ONLINE",
+	is_read_queue_durable: false,
+	read_queue_password: 'sandpit',
+	is_write_queue_durable: false,
+	write_queue_password: 'sandpit',
+	write_queue_worker_count: new NumberLong(1),
+	write_queue_max_memory: new NumberLong(1024 * 1024 * 20),	// 20MB
+	write_queue_max_memory_policy: "PAGE",
+	write_queue_page_size: new NumberLong(1024 * 1024 * 10),	// 10 MB
+	write_queue_page_count_cache: new NumberLong(3),
+	max_keywords: new NumberLong(20),
+	c_ver: new NumberLong(1)
+};
+db.repositories_info.insert(sandpitRepoInfo);
+db.sandpit_repository.ensureIndex({ c_keywords : 1, c_ts : 1 }, {name: "keyword_ts_index"});
 
 // *************************************************************
 // Finish

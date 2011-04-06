@@ -182,10 +182,9 @@ public class RepositoryInfoWorker extends Worker
             DB db = MongoConnection.getInstance().getConnection();
             RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-            // Only system admin and workbench admin for this repo can update details 
+            // Only system admin and workbench admin for this repo can update details
             UserBO user = this.getAuthenticatedUser();
-            if (!user.isSystemAdministrator()
-                    && !user.hasRole(repoInfoBO.getWorkBenchRepositoryAdministratorRoleName()))
+            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getUIAdministratorUserRoleName()))
             {
                 return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                         Strings.NOT_AUTHORIZED_ERROR));
@@ -227,7 +226,7 @@ public class RepositoryInfoWorker extends Worker
                 this.loadBaseListCriteriaParameters(criteria);
 
                 criteria.setNamePattern(this.getUriQueryStringParameter(NAME_URI_QUERYSTRING_PARAMETER_NAME, true));
-                
+
                 // if not system admin, limit result to those repo that the user has access
                 if (!user.isSystemAdministrator())
                 {
@@ -257,8 +256,9 @@ public class RepositoryInfoWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getWorkBenchRepositoryUserRoleName())
-                        && !user.hasRole(repoInfoBO.getWorkBenchRepositoryAdministratorRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getUIStandardUserRoleName())
+                        && !user.hasRole(repoInfoBO.getUIPowerUserRoleName())
+                        && !user.hasRole(repoInfoBO.getUIAdministratorUserRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));

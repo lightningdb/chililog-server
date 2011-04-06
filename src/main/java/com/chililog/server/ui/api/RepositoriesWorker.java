@@ -157,7 +157,7 @@ public class RepositoriesWorker extends Worker
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
 
                 if (!user.isSystemAdministrator()
-                        && !user.hasRole(repo.getRepoInfo().getWorkBenchRepositoryAdministratorRoleName()))
+                        && !user.hasRole(repo.getRepoInfo().getUIAdministratorUserRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
@@ -247,10 +247,12 @@ public class RepositoriesWorker extends Worker
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryManager.getInstance().getRepository(id);
-
-                if (repo != null
-                        && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
+                Repository repo = RepositoryManager.getInstance().getRepository(id);                
+                if (repo == null)
+                {
+                    throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
+                }
+                if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoInfo().getName()))
                 {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);

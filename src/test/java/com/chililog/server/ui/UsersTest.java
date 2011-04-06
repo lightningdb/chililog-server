@@ -54,8 +54,10 @@ import com.mongodb.DBObject;
 public class UsersTest
 {
     private static DB _db;
-    private static String _adminAuthToken;
-    private static String _analystAuthToken;
+    private static String _systemAdminAuthToken;
+    private static String _repoAdminAuthToken;
+    private static String _repoPowerUserAuthToken;
+    private static String _repoStandardUserAuthToken;
 
     @BeforeClass
     public static void classSetup() throws Exception
@@ -70,28 +72,46 @@ public class UsersTest
         query.put("username", pattern);
         coll.remove(query);
 
-        // Create admin user
+        // Create system admin user
         UserBO user = new UserBO();
-        user.setUsername("UsersTest_Admin");
-        user.setEmailAddress("UsersTest_Admin@chililog.com");
+        user.setUsername("UsersTest_SystemAdmin");
+        user.setEmailAddress("UsersTest_SystemAdmin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
-        // Create analyst user
+        // Create repository admin user
         user = new UserBO();
-        user.setUsername("UsersTest_Analyst");
+        user.setUsername("UsersTest_RepoAdmin");
         user.setPassword("hello", true);
-        user.setEmailAddress("UsersTest_Analyst@chililog.com");
-        user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
+        user.setEmailAddress("UsersTest_RepoAdmin@chililog.com");
+        user.addRole("repo.sandpit.administrator");
+        UserController.getInstance().save(_db, user);
+
+        // Create repository power user
+        user = new UserBO();
+        user.setUsername("UsersTest_RepoPower");
+        user.setPassword("hello", true);
+        user.setEmailAddress("UsersTest_RepoPower@chililog.com");
+        user.addRole("repo.sandpit.power");
+        UserController.getInstance().save(_db, user);
+
+        // Create repository standard user
+        user = new UserBO();
+        user.setUsername("UsersTest_RepoStandard");
+        user.setPassword("hello", true);
+        user.setEmailAddress("UsersTest_RepoStandard@chililog.com");
+        user.addRole("repo.sandpit.standard");
         UserController.getInstance().save(_db, user);
 
         // Start web server
         WebServerManager.getInstance().start();
 
         // Login
-        _adminAuthToken = ApiUtils.login("UsersTest_Admin", "hello");
-        _analystAuthToken = ApiUtils.login("UsersTest_Analyst", "hello");
+        _systemAdminAuthToken = ApiUtils.login("UsersTest_SystemAdmin", "hello");
+        _repoAdminAuthToken = ApiUtils.login("UsersTest_RepoAdmin", "hello");
+        _repoPowerUserAuthToken = ApiUtils.login("UsersTest_RepoPower", "hello");
+        _repoStandardUserAuthToken = ApiUtils.login("UsersTest_RepoStandard", "hello");
     }
 
     @AfterClass
@@ -121,14 +141,14 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud");
         createRequestAO.setEmailAddress("UsersTest_crud@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -141,7 +161,7 @@ public class UsersTest
         assertEquals("UsersTest_crud", createResponseAO.getUsername());
         assertNull(createResponseAO.getPassword());
         assertEquals(1, createResponseAO.getRoles().length);
-        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, createResponseAO.getRoles()[0]);
+        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, createResponseAO.getRoles()[0]);
         assertNotNull(createResponseAO.getDocumentID());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
         assertEquals(Status.Enabled, createResponseAO.getStatus());
@@ -151,7 +171,7 @@ public class UsersTest
 
         // Read one record
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -161,19 +181,19 @@ public class UsersTest
         assertEquals("UsersTest_crud@chililog.com", readResponseAO.getEmailAddress());
         assertNull(readResponseAO.getPassword());
         assertEquals(1, readResponseAO.getRoles().length);
-        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, readResponseAO.getRoles()[0]);
+        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, readResponseAO.getRoles()[0]);
         assertNotNull(readResponseAO.getDocumentID());
         assertEquals(new Long(1), readResponseAO.getDocumentVersion());
         assertEquals(Status.Enabled, readResponseAO.getStatus());
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.PUT, _adminAuthToken);
+                HttpMethod.PUT, _systemAdminAuthToken);
 
         readResponseAO.setUsername("UsersTest_crud_after_update");
         readResponseAO.setEmailAddress("UsersTest_crud_after_update@chililog.com");
         readResponseAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE, Worker.WORKBENCH_OPERATOR_USER_ROLE });
+        { "repo.chililog.standard", "repo.chililog.power" });
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(readResponseAO, out);
@@ -187,8 +207,8 @@ public class UsersTest
         assertEquals("UsersTest_crud_after_update@chililog.com", updateResponseAO.getEmailAddress());
         assertNull(updateResponseAO.getPassword());
         assertEquals(2, updateResponseAO.getRoles().length);
-        assertEquals(Worker.WORKBENCH_ANALYST_USER_ROLE, updateResponseAO.getRoles()[0]);
-        assertEquals(Worker.WORKBENCH_OPERATOR_USER_ROLE, updateResponseAO.getRoles()[1]);
+        assertEquals("repo.chililog.standard", updateResponseAO.getRoles()[0]);
+        assertEquals("repo.chililog.power", updateResponseAO.getRoles()[1]);
         assertNotNull(updateResponseAO.getDocumentID());
         assertEquals(new Long(2), updateResponseAO.getDocumentVersion());
         assertEquals(Status.Enabled, updateResponseAO.getStatus());
@@ -197,6 +217,7 @@ public class UsersTest
         String crudTokenString = ApiUtils.login("UsersTest_crud_after_update", "test");
 
         // Update again logging in as crud user
+        // User must be able to update their own details
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
                 HttpMethod.PUT, crudTokenString);
 
@@ -212,28 +233,27 @@ public class UsersTest
         updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
         assertEquals("UsersTest_crud_after_update2", updateResponseAO.getUsername());
 
-        
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
-        assertEquals(3, getListResponseAO.length);
+        assertEquals(5, getListResponseAO.length);
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.DELETE, _adminAuthToken);
+                HttpMethod.DELETE, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
 
         // Get record to check if it is gone
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -243,48 +263,48 @@ public class UsersTest
     }
 
     /**
-     * Analyst can only GET
+     * Common tests for all repository users
      * 
      * @throws Exception
      */
-    @Test
-    public void testAnalystReadOnly() throws Exception
+    public void testRepoUser(String repoUserAuthToken) throws Exception
     {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
 
-        AuthenticationTokenAO adminToken  = AuthenticationTokenAO.fromString(_adminAuthToken);
-        AuthenticationTokenAO analystToken = AuthenticationTokenAO.fromString(_analystAuthToken);
-              
+        AuthenticationTokenAO systemAdminToken = AuthenticationTokenAO.fromString(_systemAdminAuthToken);
+        AuthenticationTokenAO repoUserToken = AuthenticationTokenAO.fromString(repoUserAuthToken);
+
         // Get ourself - OK
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users/" + analystToken.getUserID(), HttpMethod.GET, _analystAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + repoUserToken.getUserID(),
+                HttpMethod.GET, repoUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
-        
+
         // Get list not authorized
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _analystAuthToken);
+                HttpMethod.GET, repoUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-        
+
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
         // Create - not authorized
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _analystAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST,
+                repoUserAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_crud_notauthorised");
         createRequestAO.setEmailAddress("UsersTest_crud_notauthorised@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -297,9 +317,8 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - not authorized
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users/" + adminToken.getUserID(), HttpMethod.PUT,
-                _analystAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + systemAdminToken.getUserID(),
+                HttpMethod.PUT, repoUserAuthToken);
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -312,15 +331,47 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
         // Delete - not authorized
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/users/" + adminToken.getUserID(), HttpMethod.DELETE,
-                _analystAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + systemAdminToken.getUserID(),
+                HttpMethod.DELETE, repoUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+    }
+    
+    /**
+     * Repo standard user can only GET own record
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRepoStandardUser() throws Exception
+    {
+        testRepoUser(_repoStandardUserAuthToken);
+    }
+
+    /**
+     * Repo power user can only GET own record
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRepoPowerUser() throws Exception
+    {
+        testRepoUser(_repoPowerUserAuthToken);
+    }
+
+    /**
+     * Repo Admin user user can only GET own record
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRepoAdminUser() throws Exception
+    {
+        testRepoUser(_repoAdminAuthToken);
     }
 
     /**
@@ -339,16 +390,16 @@ public class UsersTest
         // Get list - OK
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
-        assertEquals(2, getListResponseAO.length);
+        assertEquals(4, getListResponseAO.length);
 
         // Update
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.PUT, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.PUT, _systemAdminAuthToken);
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
@@ -361,7 +412,7 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
 
         // Delete
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.DELETE, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.DELETE, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -386,7 +437,7 @@ public class UsersTest
         // Get list - no records
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^xxxxxxxxx[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -396,21 +447,21 @@ public class UsersTest
         // Get list - page 1
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?records_per_page=1&start_page=1&do_page_count=true&username="
-                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
         assertEquals(1, getListResponseAO.length);
-        
+
         String pageCountHeader = headers.get(Worker.PAGE_COUNT_HEADER);
-        assertEquals("2", pageCountHeader);
+        assertEquals("4", pageCountHeader);
 
         // Get list - page 2
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?records_per_page=1&start_page=2&username="
-                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -433,14 +484,14 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_change_password");
         createRequestAO.setEmailAddress("UsersTest_change_password@chililog.com");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -457,7 +508,7 @@ public class UsersTest
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.PUT, _adminAuthToken);
+                HttpMethod.PUT, _systemAdminAuthToken);
 
         createResponseAO.setPassword("newpassword");
 
@@ -486,7 +537,7 @@ public class UsersTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Create no content
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -495,12 +546,12 @@ public class UsersTest
         assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
 
         // Create no username
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         UserAO createRequestAO = new UserAO();
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -513,13 +564,13 @@ public class UsersTest
         assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Create no email address
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_bad_content");
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -530,14 +581,14 @@ public class UsersTest
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
-        
+
         // Create no password
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _adminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
 
         createRequestAO = new UserAO();
         createRequestAO.setUsername("UsersTest_bad_content");
         createRequestAO.setRoles(new String[]
-        { Worker.WORKBENCH_ANALYST_USER_ROLE });
+        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(createRequestAO, out);
@@ -547,11 +598,13 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:Error attempting to hash passwords. Error attempting to hash passwords. plainTextValue must not be null.", errorAO.getErrorCode());
+        assertEquals(
+                "ChiliLogException:Error attempting to hash passwords. Error attempting to hash passwords. plainTextValue must not be null.",
+                errorAO.getErrorCode());
 
         // Update no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/12341234", HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -562,7 +615,7 @@ public class UsersTest
         // Update no username
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?records_per_page=1&start_page=1&username="
-                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -572,7 +625,7 @@ public class UsersTest
 
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         getListResponseAO[0].setUsername(null);
 
@@ -589,7 +642,7 @@ public class UsersTest
         // Update no doc version
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         getListResponseAO[0].setUsername("abc");
         getListResponseAO[0].setDocumentVersion(null);

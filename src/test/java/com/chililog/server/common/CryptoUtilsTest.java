@@ -37,6 +37,10 @@ public class CryptoUtilsTest
         _logger.info("Hashed password of 'admin' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("admin", hashValue));
 
+        hashValue = CryptoUtils.createHash("sandpit", null);
+        _logger.info("Hashed password of 'sandpit' is " + hashValue);
+        assertTrue(CryptoUtils.verifyHash("sandpit", hashValue));
+
         hashValue = CryptoUtils.createHash("YumCha", null);
         _logger.info("Hashed password of 'YumCha' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("YumCha", hashValue));

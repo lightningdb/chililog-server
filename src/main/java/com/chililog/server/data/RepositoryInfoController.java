@@ -225,7 +225,7 @@ public class RepositoryInfoController extends Controller
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
             condition.put(RepositoryInfoBO.NAME_FIELD_NAME, pattern);
         }
-        if (criteria.getNameRestrictions().length > 0)
+        if (criteria.getNameRestrictions() != null && criteria.getNameRestrictions().length > 0)
         {
             condition.put(RepositoryInfoBO.NAME_FIELD_NAME, new BasicDBObject("$in", criteria.getNameRestrictions()));
         }

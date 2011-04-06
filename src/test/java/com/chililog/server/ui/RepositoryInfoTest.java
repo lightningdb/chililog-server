@@ -65,8 +65,10 @@ import com.mongodb.DBObject;
 public class RepositoryInfoTest
 {
     private static DB _db;
-    private static String _adminAuthToken;
-    private static String _analystAuthToken;
+    private static String _systemAdminAuthToken;
+    private static String _repoAdminAuthToken;
+    private static String _repoPowerUserAuthToken;
+    private static String _repoStandardUserAuthToken;
 
     @BeforeClass
     public static void classSetup() throws Exception
@@ -76,37 +78,53 @@ public class RepositoryInfoTest
 
         // Clean up old user test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^RepositoryInfoTest[\\w]*$");
+        Pattern pattern = Pattern.compile("^TestRepoInfo[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
 
         // Clean up old repository test data if any exists
         coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
-        pattern = Pattern.compile("^RepositoryInfoTest[\\w]*$");
+        pattern = Pattern.compile("^test_repoinfo[\\w]*$");
         query = new BasicDBObject();
         query.put("name", pattern);
         coll.remove(query);
 
-        // Create admin user
+        // Create system admin user
         UserBO user = new UserBO();
-        user.setUsername("RepositoryInfoTest_Admin");
-        user.setEmailAddress("RepositoryInfoTest_Admin@chililog.com");
+        user.setUsername("TestRepoInfo_SystemAdmin");
+        user.setEmailAddress("TestRepoInfo_SystemAdmin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
-        // Create analyst user
+        // Create repository admin user
         user = new UserBO();
-        user.setUsername("RepositoryInfoTest_Analyst");
-        user.setEmailAddress("RepositoryInfoTest_Analyst@chililog.com");
+        user.setUsername("TestRepoInfo_RepoAdmin");
         user.setPassword("hello", true);
-        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
+        user.setEmailAddress("TestRepoInfo_RepoAdmin@chililog.com");
+        user.addRole("repo.test_repoinfo_common.administrator");
+        UserController.getInstance().save(_db, user);
+
+        // Create repository power user
+        user = new UserBO();
+        user.setUsername("TestRepoInfo_RepoPower");
+        user.setPassword("hello", true);
+        user.setEmailAddress("TestRepoInfo_RepoPower@chililog.com");
+        user.addRole("repo.test_repoinfo_common.power");
+        UserController.getInstance().save(_db, user);
+
+        // Create repository standard user
+        user = new UserBO();
+        user.setUsername("TestRepoInfo_RepoStandard");
+        user.setPassword("hello", true);
+        user.setEmailAddress("TestRepoInfo_RepoStandard@chililog.com");
+        user.addRole("repo.test_repoinfo_common.standard");
         UserController.getInstance().save(_db, user);
 
         // Create test repo
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
-        repoInfo.setName("RepositoryInfoTest_common");
+        repoInfo.setName("test_repoinfo_common");
         repoInfo.setDisplayName("Test 1");
         repoInfo.setDescription("description");
         repoInfo.setReadQueueDurable(true);
@@ -138,8 +156,10 @@ public class RepositoryInfoTest
         WebServerManager.getInstance().start();
 
         // Login
-        _adminAuthToken = ApiUtils.login("RepositoryInfoTest_Admin", "hello");
-        _analystAuthToken = ApiUtils.login("RepositoryInfoTest_Analyst", "hello");
+        _systemAdminAuthToken = ApiUtils.login("TestRepoInfo_SystemAdmin", "hello");
+        _repoAdminAuthToken = ApiUtils.login("TestRepoInfo_RepoAdmin", "hello");
+        _repoPowerUserAuthToken = ApiUtils.login("TestRepoInfo_RepoPower", "hello");
+        _repoStandardUserAuthToken = ApiUtils.login("TestRepoInfo_RepoStandard", "hello");
     }
 
     @AfterClass
@@ -147,18 +167,18 @@ public class RepositoryInfoTest
     {
         // Clean up old user test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^RepositoryInfoTest[\\w]*$");
+        Pattern pattern = Pattern.compile("^TestRepoInfo[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
 
         // Clean up old repository test data if any exists
         coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
-        pattern = Pattern.compile("^RepositoryInfoTest[\\w]*$");
+        pattern = Pattern.compile("^test_repoinfo[\\w]*$");
         query = new BasicDBObject();
         query.put("name", pattern);
         coll.remove(query);
-
+        
         WebServerManager.getInstance().stop();
     }
 
@@ -177,7 +197,7 @@ public class RepositoryInfoTest
 
         // Create
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         RepositoryFieldInfoAO f1 = new RepositoryFieldInfoAO();
         f1.setName("field1");
@@ -192,7 +212,7 @@ public class RepositoryInfoTest
         { new RepositoryPropertyInfoAO("F5", "F6"), new RepositoryPropertyInfoAO("F7", "F8") });
 
         RepositoryInfoAO createRepoInfoAO = new RepositoryInfoAO();
-        createRepoInfoAO.setName("RepositoryInfoTest_1");
+        createRepoInfoAO.setName("test_repoinfo_1");
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
@@ -229,7 +249,7 @@ public class RepositoryInfoTest
 
         RepositoryInfoAO createResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO.class);
-        assertEquals("RepositoryInfoTest_1", createResponseAO.getName());
+        assertEquals("test_repoinfo_1", createResponseAO.getName());
         assertEquals("Repository Test 1", createResponseAO.getDisplayName());
         assertEquals("description", createResponseAO.getDescription());
         assertEquals(Status.ONLINE, createResponseAO.getStartupStatus());
@@ -265,14 +285,14 @@ public class RepositoryInfoTest
         // Read one record
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + createResponseAO.getDocumentID(), HttpMethod.GET,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         RepositoryInfoAO readResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO.class);
-        assertEquals("RepositoryInfoTest_1", readResponseAO.getName());
+        assertEquals("test_repoinfo_1", readResponseAO.getName());
         assertEquals("Repository Test 1", readResponseAO.getDisplayName());
         assertEquals("description", readResponseAO.getDescription());
         assertEquals(Status.ONLINE, readResponseAO.getStartupStatus());
@@ -307,9 +327,9 @@ public class RepositoryInfoTest
         // Update
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + createResponseAO.getDocumentID(), HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
-        readResponseAO.setName("RepositoryInfoTest_1_update");
+        readResponseAO.setName("test_repoinfo_1_update");
         readResponseAO.setMaxKeywords(200);
         readResponseAO.getParsers()[0].setMaxKeywords(201);
         readResponseAO.getParsers()[0].setFields(new RepositoryFieldInfoAO[]
@@ -326,7 +346,7 @@ public class RepositoryInfoTest
 
         RepositoryInfoAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO.class);
-        assertEquals("RepositoryInfoTest_1_update", updateResponseAO.getName());
+        assertEquals("test_repoinfo_1_update", updateResponseAO.getName());
         assertEquals(200, updateResponseAO.getMaxKeywords());
         assertEquals(201, readResponseAO.getParsers()[0].getMaxKeywords());
         assertEquals(1, readResponseAO.getParsers()[0].getProperties().length);
@@ -335,7 +355,7 @@ public class RepositoryInfoTest
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?name="
-                        + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^test_repoinfo[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -347,7 +367,7 @@ public class RepositoryInfoTest
         // Delete
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + createResponseAO.getDocumentID(), HttpMethod.DELETE,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -355,7 +375,7 @@ public class RepositoryInfoTest
         // Get record to check if it is gone
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + createResponseAO.getDocumentID(), HttpMethod.GET,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -365,22 +385,21 @@ public class RepositoryInfoTest
     }
 
     /**
-     * Analyst can only GET
+     * Test access by repo admin users
      * 
      * @throws Exception
      */
     @Test
-    public void testAnalystReadOnly() throws Exception
+    public void testRepoAdminUser() throws Exception
     {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
 
-        // Get list - OK
+        // Get chililog repository
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_info?name="
-                        + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                "http://localhost:8989/api/repository_info?name=chililog", HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -388,13 +407,25 @@ public class RepositoryInfoTest
         RepositoryInfoAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryInfoAO[].class);
         assertEquals(1, getListResponseAO.length);
+        RepositoryInfoAO chililogRepoInfoAO = getListResponseAO[0];
+
+        // Get list - should only get back repositories we can access
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info?", HttpMethod.GET, _repoAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryInfoAO[].class);
+        assertEquals(1, getListResponseAO.length);
+        assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
 
         // Create - not authroized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _analystAuthToken);
+                _repoAdminAuthToken);
 
         RepositoryInfoAO repoInfoAO = new RepositoryInfoAO();
-        repoInfoAO.setName("RepositoryInfoTest_1");
+        repoInfoAO.setName("test_repoinfo_1");
         repoInfoAO.setDisplayName("Repository Test 1");
         repoInfoAO.setDescription("description");
 
@@ -408,13 +439,25 @@ public class RepositoryInfoTest
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
-        // Update
+        // Update - authorized for repo on which we have permission
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
-                _analystAuthToken);
+                _repoAdminAuthToken);
 
         out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(repoInfoAO, out);
+        JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // Update - not authorized for repo with no permission
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + chililogRepoInfoAO.getDocumentID(), HttpMethod.PUT,
+                _repoAdminAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(chililogRepoInfoAO, out);
         out.close();
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -423,10 +466,204 @@ public class RepositoryInfoTest
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
-        // Delete
+        // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
-                _analystAuthToken);
+                _repoAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+    }
+
+    /**
+     * Test access by repo power users
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRepoPowerUser() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Get chililog repository
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info?name=chililog", HttpMethod.GET, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        RepositoryInfoAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryInfoAO[].class);
+        assertEquals(1, getListResponseAO.length);
+        RepositoryInfoAO chililogRepoInfoAO = getListResponseAO[0];
+
+        // Get list - should only get back repositories we can access
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info?", HttpMethod.GET, _repoPowerUserAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryInfoAO[].class);
+        assertEquals(1, getListResponseAO.length);
+        assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
+
+        // Create - not authroized
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
+                _repoPowerUserAuthToken);
+
+        RepositoryInfoAO repoInfoAO = new RepositoryInfoAO();
+        repoInfoAO.setName("test_repoinfo_1");
+        repoInfoAO.setDisplayName("Repository Test 1");
+        repoInfoAO.setDescription("description");
+
+        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(repoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update - not authorized for repo on which we have permission
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                _repoPowerUserAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update - not authorized for repo with no permission
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + chililogRepoInfoAO.getDocumentID(), HttpMethod.PUT,
+                _repoPowerUserAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(chililogRepoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Delete - not authorized
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
+                _repoPowerUserAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+    }
+    
+    /**
+     * Test access by repo standard users
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testRepoStandardUser() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Get chililog repository
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info?name=chililog", HttpMethod.GET, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        RepositoryInfoAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryInfoAO[].class);
+        assertEquals(1, getListResponseAO.length);
+        RepositoryInfoAO chililogRepoInfoAO = getListResponseAO[0];
+
+        // Get list - should only get back repositories we can access
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info?", HttpMethod.GET, _repoStandardUserAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryInfoAO[].class);
+        assertEquals(1, getListResponseAO.length);
+        assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
+
+        // Create - not authroized
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
+                _repoStandardUserAuthToken);
+
+        RepositoryInfoAO repoInfoAO = new RepositoryInfoAO();
+        repoInfoAO.setName("test_repoinfo_1");
+        repoInfoAO.setDisplayName("Repository Test 1");
+        repoInfoAO.setDescription("description");
+
+        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(repoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update - not authorized for repo on which we have permission
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
+                _repoStandardUserAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update - not authorized for repo with no permission
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + chililogRepoInfoAO.getDocumentID(), HttpMethod.PUT,
+                _repoStandardUserAuthToken);
+
+        out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(chililogRepoInfoAO, out);
+        out.close();
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Delete - not authorized
+        httpConn = ApiUtils.getHttpURLConnection(
+                "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
+                _repoStandardUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -450,10 +687,10 @@ public class RepositoryInfoTest
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         RepositoryInfoAO repoInfoAO = new RepositoryInfoAO();
-        repoInfoAO.setName("RepositoryInfoTest_3");
+        repoInfoAO.setName("test_repoinfo_3");
         repoInfoAO.setDisplayName("Repository Test 3");
         repoInfoAO.setDescription("description");
 
@@ -469,7 +706,7 @@ public class RepositoryInfoTest
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.DELETE,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -494,7 +731,7 @@ public class RepositoryInfoTest
         // Get list - no records
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?name=" + URLEncoder.encode("^xxxxxxxxx[\\w]*$", "UTF-8"),
-                HttpMethod.GET, _adminAuthToken);
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -504,7 +741,7 @@ public class RepositoryInfoTest
         // Get list - page 1
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?records_per_page=1&start_page=1&do_page_count=true&name="
-                        + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^test_repoinfo[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -518,7 +755,7 @@ public class RepositoryInfoTest
         // Get list - page 2 (no more records)
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?records_per_page=1&start_page=2&name="
-                        + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^test_repoinfo[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
@@ -540,7 +777,7 @@ public class RepositoryInfoTest
 
         // Create no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -550,10 +787,10 @@ public class RepositoryInfoTest
 
         // Create no name
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         RepositoryInfoAO createRepoInfoAO = new RepositoryInfoAO();
-        // createRepoInfoAO.setName("RepositoryInfoTest_1");
+        // createRepoInfoAO.setName("test_repoinfo_1");
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
@@ -576,7 +813,7 @@ public class RepositoryInfoTest
 
         // Create no class name
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         RepositoryParserInfoAO createRepoParserInfo = new RepositoryParserInfoAO();
         createRepoParserInfo.setName("parser1");
@@ -599,7 +836,7 @@ public class RepositoryInfoTest
 
         // Update no content
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info/12341234", HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -610,7 +847,7 @@ public class RepositoryInfoTest
         // Update no name
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info?name="
-                        + URLEncoder.encode("^RepositoryInfoTest[\\w]*$", "UTF-8"), HttpMethod.GET, _adminAuthToken);
+                        + URLEncoder.encode("^test_repoinfo[\\w]*$", "UTF-8"), HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -621,7 +858,7 @@ public class RepositoryInfoTest
 
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         getListResponseAO[0].setName(null);
 
@@ -638,7 +875,7 @@ public class RepositoryInfoTest
         // Update no doc version
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/repository_info/" + getListResponseAO[0].getDocumentID(), HttpMethod.PUT,
-                _adminAuthToken);
+                _systemAdminAuthToken);
 
         getListResponseAO[0].setName("abc");
         getListResponseAO[0].setDocumentVersion(null);
