@@ -82,7 +82,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     // this.set('totalWidth', width);
     // this.adjust('minWidth', width);
     // this.set('calculatedWidth', width);
-  }.observes('*columns.@each.width'),
+  },
 
   /**
     @private

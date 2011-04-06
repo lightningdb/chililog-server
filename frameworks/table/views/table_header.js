@@ -46,7 +46,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
     this.set('totalWidth', width);
     this.adjust('minWidth', width);
     this.set('calculatedWidth', width);
-  }.observes('*columns.@each.width'),
+  },
 
   headerViewForColumn: function(col) {
     var columns = this.get('columns'),
@@ -160,11 +160,17 @@ SC.TableHeaderView = SC.TableRowView.extend({
 
     childViews.replace(index1, 1, view2);
     childViews.replace(index2, 1, view1);
-    columns.replace(index1, 1, [ column2 ]);
-    columns.replace(index2, 1, [ column1 ]);
+    
+    if(index1 < index2) {
+      columns.replace(index1, 2, [ column2, column1 ]);
+    } else {
+      columns.replace(index2, 2, [ column1, column2 ]);
+    }
     
     childViews.endPropertyChanges();
     columns.endPropertyChanges();
+    
+    columns.notifyPropertyChange('[]');
   },
   
   mouseDown: function(evt) {
@@ -278,6 +284,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
     var view = $(evt.target).view()[0];
 
     if(this._thumbDragging) {
+      
+      console.log(' end thumb dragging')
+      
       view = this._thumbDragging
       this._thumbDragging = NO;
       if (!view.get('isEnabled')) return NO ;

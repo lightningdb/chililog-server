@@ -386,7 +386,16 @@ SC.TableView = SC.View.extend({
     }
 
     this.set('sortDescriptor', sortState + " " + column.get('key'));
-  }
+  },
+  
+  // I'd rather have an observer for each view but you can seem to only
+  // observe each array once like this
+  
+  widthsDidChange: function(object, key, value, force) {
+    console.log('widthsdidchange')
+    this._dataView.contentView.widthsDidChange(object, key, value, force);
+    this._tableHeaderView.contentView.widthsDidChange(object, key, value, force);
+  }.observes('*columns.@each.width'),
 
   
 });

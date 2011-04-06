@@ -1,6 +1,6 @@
 sc_require('views/thumb');
 
-SC.TableHeaderCellView = SC.View.extend(SC.Button, {
+SC.TableHeaderCellView = SC.View.extend({
   
   layout: {top:0, bottom:1},
   
