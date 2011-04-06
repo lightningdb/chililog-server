@@ -45,8 +45,8 @@ import com.chililog.server.data.RepositoryInfoBO.Status;
  * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
  * processing.</li>
  * <li>The worker threads, {@link RepositoryWriter}, reads the queued log entries and writes them to mongoDB using
- * {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository definition
- * in {@link RepositoryInfoBO}.</li>
+ * {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository
+ * definition in {@link RepositoryInfoBO}.</li>
  * </ul>
  * 
  * @author vibul
@@ -137,8 +137,8 @@ public class Repository
             AppProperties appProperties = AppProperties.getInstance();
 
             // Setup security
-            mqManager.addSecuritySettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getWriteQueueRole(),
-                    appProperties.getJaasSystemRole());
+            mqManager.addSecuritySettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getWriteQueueRoleName(),
+                    mqManager.getSystemRoleName());
 
             // Setup queue properties. See
             // http://hornetq.sourceforge.net/docs/hornetq-2.1.2.Final/user-manual/en/html_single/index.html#queue-attributes.address-settings
@@ -147,8 +147,9 @@ public class Repository
                     .getHornetQServerControl()
                     .addAddressSettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getDeadLetterAddress(), null,
                             false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getWriteQueueMaxMemory(),
-                            (int) _repoInfo.getWriteQueuePageSize(), 5, appProperties.getMqRedeliveryDelayMilliseconds(),
-                            -1, true, _repoInfo.getWriteQueueMaxMemoryPolicy().toString());
+                            (int) _repoInfo.getWriteQueuePageSize(), (int)_repoInfo.getWriteQueuePageCountCache(),
+                            appProperties.getMqRedeliveryDelayMilliseconds(), -1, true,
+                            _repoInfo.getWriteQueueMaxMemoryPolicy().toString());
 
             // Create queues
             mqManager.deployQueue(_repoInfo.getWriteQueueAddress(), _repoInfo.getWriteQueueAddress(),

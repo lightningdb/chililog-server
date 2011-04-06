@@ -151,20 +151,7 @@ public class InternalLog4JAppenderTest
 
         // Check if entry is there
         DBCollection coll = _db.getCollection(InternalLog4JAppender.MONGODB_COLLECTION_NAME);
-        assertEquals(1, coll.find().count());
-
-        DBObject dbObject = coll.findOne();
-
-        assertNotNull(dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
-        assertEquals("ChiliLogServer", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
-        assertEquals(_machineName, dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
-        assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
-        assertEquals("", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
-        assertEquals((long) 1, dbObject.get(BO.DOCUMENT_VERSION_FIELD_NAME));
-
-        assertEquals(InternalLog4JAppenderTest.class.getName() + "_TestNull",
-                dbObject.get(InternalLog4JAppender.CATEGORY_FIELD_NAME));
-        assertEquals(Thread.currentThread().getName(), dbObject.get(InternalLog4JAppender.THREAD_FIELD_NAME));
+        assertEquals(0, coll.find().count());
 
         return;
 

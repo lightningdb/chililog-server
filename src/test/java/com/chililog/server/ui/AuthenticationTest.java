@@ -67,7 +67,7 @@ public class AuthenticationTest
         user.setUsername("AuthenticationTest");
         user.setEmailAddress("AuthenticationTest@chililog.com");
         user.setPassword("hello there", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create disabled user
@@ -75,7 +75,7 @@ public class AuthenticationTest
         user.setUsername("AuthenticationTest_DisabledUser");
         user.setEmailAddress("AuthenticationTest_DisabledUser@chililog.com");
         user.setPassword("hello there", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         user.setStatus(Status.Disabled);
         UserController.getInstance().save(_db, user);
 
@@ -84,7 +84,7 @@ public class AuthenticationTest
         user.setUsername("AuthenticationTest_LockedUser");
         user.setEmailAddress("AuthenticationTest_LockedUser@chililog.com");
         user.setPassword("hello there", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         user.setStatus(Status.Locked);
         UserController.getInstance().save(_db, user);
 
@@ -215,7 +215,7 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
         assertNull(loggedInUser.getPassword());
         assertEquals(1, loggedInUser.getRoles().length);
-        assertEquals(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE, loggedInUser.getRoles()[0]);
+        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, loggedInUser.getRoles()[0]);
         assertNotNull(loggedInUser.getDocumentID());
         assertEquals(Status.Enabled, loggedInUser.getStatus());
     }
@@ -258,7 +258,7 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
         assertNull(loggedInUser.getPassword());
         assertEquals(1, loggedInUser.getRoles().length);
-        assertEquals(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE, loggedInUser.getRoles()[0]);
+        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, loggedInUser.getRoles()[0]);
         assertNotNull(loggedInUser.getDocumentID());
         assertEquals(Status.Enabled, loggedInUser.getStatus());
     }

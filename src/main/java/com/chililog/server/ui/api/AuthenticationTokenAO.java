@@ -27,9 +27,9 @@ import org.apache.commons.lang.StringUtils;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.common.CryptoUtils;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.UserBO;
-import com.chililog.server.security.CryptoUtils;
 import com.chililog.server.ui.Strings;
 import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 

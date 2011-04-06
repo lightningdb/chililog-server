@@ -75,7 +75,7 @@ public class UsersTest
         user.setUsername("UsersTest_Admin");
         user.setEmailAddress("UsersTest_Admin@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create analyst user

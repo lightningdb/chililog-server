@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.security;
+package com.chililog.server.engine;
 
 import java.security.Principal;
 import java.security.acl.Group;
@@ -29,35 +29,42 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.login.AccountExpiredException;
-import javax.security.auth.login.AccountLockedException;
-import javax.security.auth.login.AccountNotFoundException;
-import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import com.chililog.server.common.AppProperties;
-import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.MongoConnection;
-import com.chililog.server.data.UserBO;
-import com.chililog.server.data.UserController;
-import com.mongodb.DB;
+import com.chililog.server.data.RepositoryInfoBO;
 
 /**
- * JAAS login module that uses the users collection in our MongoDb database
+ * <p>
+ * JAAS login module for HornetQ.
+ * </p>
+ * <p>
+ * We don't validate the username/password. Rather, the username and password is combined to form a role. By convention,
+ * the role code will be used to perform authentication and authorisation. For example:
+ * </p>
+ * 
+ * <pre>
+ * Repository name: repo1
+ * Write queue name: repository.repo1.write
+ * Write queue password: pw1
+ * Role allowed to write to the queue: repo1~~~pw1  
+ * 
+ * usename: repo1
+ * password: pw1
+ * role: repo1~~~pw1
+ * </pre>
  * 
  * @author vibul
  * 
  */
-public class MongoDBJAASLoginModule implements LoginModule
+public class JAASLoginModule implements LoginModule
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(MongoDBJAASLoginModule.class);
     private Subject _subject;
 
     /**
      * Basic constructor
      */
-    public MongoDBJAASLoginModule()
+    public JAASLoginModule()
     {
         return;
     }
@@ -117,65 +124,13 @@ public class MongoDBJAASLoginModule implements LoginModule
             char[] passwordChars = iterator2.next();
             String password = new String(passwordChars);
 
-            _logger.debug("User '%s' is logging in", username);
-            
-            // We do a special login of the trusted system user
-            AppProperties appProperties= AppProperties.getInstance();
-            if (username.equals(appProperties.getJaasSystemUsername()))
-            {
-                if (password.equals(appProperties.getJaasSystemPassword()))
-                {
-                    Group roles = new SimpleGroup("Roles");
-                    roles.addMember(new SimplePrincipal(appProperties.getJaasSystemRole()));
-                    _subject.getPrincipals().add(roles);
-
-                    return true;
-                }
-                else
-                {
-                    _logger.warn("User '%s' has wrong password", username);
-                    throw new FailedLoginException("Invalid username or password");                    
-                }
-            }
-            
-            // Get the user from mongoDB
-            DB db = MongoConnection.getInstance().getConnection();
-            UserBO user = UserController.getInstance().tryGetByUsername(db, username);
-            if (user == null)
-            {
-                // User not found
-                _logger.warn("User '%s' not found", username);
-                throw new AccountNotFoundException("Invalid username or password");
-            }
-
-            // Valid status
-            if (user.getStatus() == UserBO.Status.Disabled)
-            {
-                // User not found
-                _logger.warn("User '%s' is disabled", username);
-                throw new AccountExpiredException("Invalid username or password");
-            }
-            if (user.getStatus() == UserBO.Status.Locked)
-            {
-                // User account locked
-                _logger.warn("User '%s' is locked", username);
-                throw new AccountLockedException("Invalid username or password");
-            }
-
-            // Validate password
-            if (!user.validatePassword(password))
-            {
-                _logger.warn("User '%s' has wrong password", username);
-                throw new FailedLoginException("Invalid username or password");
-            }
+            // Don't need to perform user validation.
+            // It will be enforced by convention in the role
 
             // Add roles
+            String role = RepositoryInfoBO.formatQueueRoleName(username, password);
             Group roles = new SimpleGroup("Roles");
-            for (String r : user.getRoles())
-            {
-                _logger.debug("User '%s' belongs in role '%s'", username, r);
-                roles.addMember(new SimplePrincipal(r));
-            }
+            roles.addMember(new SimplePrincipal(role));
             _subject.getPrincipals().add(roles);
 
             return true;

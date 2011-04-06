@@ -70,7 +70,7 @@ print("\nCreating ChiliLog Admin User");
 var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
-	roles: [ "workbench.administrator" ],
+	roles: [ "system.administrator" ],
 	status: "Enabled",
 	display_name: "Adminstrator",
 	email_address: "admin@chililog.com",
@@ -78,16 +78,16 @@ var adminUser = {
 };
 db.users.insert(adminUser);
 
-var adminUser2 = {
+var operatorUser = {
 		username: "operator",
-		password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
-		roles: [ "workbench.operator" ],
+		password: "vcZ3/4Mw0bCAK+s3T8ROGAfv0XAPOP5M5XVT6NG6d0z/FqSmgIYqYoVteD8i1n8dj9BHPIqi/0HcgBLyl5MccodoAkvOVD2x", // YumCha
+		roles: [ "repo.chililog.user" ],
 		status: "Enabled",
 		display_name: "Operator",
 		email_address: "operator@chililog.com",
 		c_ver: new NumberLong(1) 
 	};
-	db.users.insert(adminUser2);
+db.users.insert(operatorUser);
 	
 // *************************************************************
 // Setup Repositories
@@ -100,10 +100,11 @@ var chiliLogRepo = {
 	startup_status: "ONLINE",
 	is_read_queue_durable: false,
 	is_write_queue_durable: false,
-	write_queue_worker_count: new NumberLong(1),
-	write_queue_max_memory: new NumberLong(1024 * 1024 * 20),
-	write_queue_max_memory_policy: "PAGE",
-	write_queue_page_size: new NumberLong(1024 * 1024 * 4),
+	write_queue_worker_count: new NumberLong(0),				// No workers because we write direct
+	write_queue_max_memory: new NumberLong(1024 * 1024 * 1),	// 1MB
+	write_queue_max_memory_policy: "DROP",
+	write_queue_page_size: new NumberLong(1),
+	write_queue_page_count_cache: new NumberLong(1),
 	max_keywords: new NumberLong(-1),
 	c_ver: new NumberLong(1)
 };

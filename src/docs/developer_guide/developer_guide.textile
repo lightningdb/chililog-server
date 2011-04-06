@@ -189,6 +189,8 @@ h3. 3.1 Definitions
 
 * *Repository Field*<br/>A data item within a repository entry. For example, the timestamp of a repository entry is a field.
 
+* *Users*<br/>Represent credentials and profiles of users who can log into the Chililog Workbench.
+
 !ChiliLogDefinitions.png!
 
 
@@ -206,7 +208,7 @@ The data model is implemented within a mongoDB database.
 
 * The *meta-data* that describes a repository is stored in the @repositories_info@ collection.
 
-* *User details* for authentication is stored in the @users@ collection. 
+* *User* account information is stored in the @users@ collection. 
 
 
 h3. 3.3 Data Access
@@ -248,40 +250,53 @@ p.
 Note that a mongoDB database connection is allocated by @MongoConnection@.  It provides an authenticated connection.  The credentials are read from the __app.properties__ file.
 
 
-h2. 4. Security Model
-
-ChiliLog uses JAAS as the framework for authentication and authorization.  Yes, it is more complex that other frameworks but it has the advantage of maturity and adoption (especially by HornetQ). 
-
-Our JAAS implementation is contained within the @com.chililog.server.security@ package.
-
-If you wish to use your own custom JAAS implementation:
-
-# Drop your JAAS implementation in the @/lib@ directory with the other JARs so that it is in the class path
-# Override the default JAAS settings in the @app.properties@ file.     
-
-Notes:
-
-* It is recommended that you copy @MongoDBJASSLoginModule@ class and amend it for your authentication requirements. Your login module needs to support the internal System user
-* User role and profile information is still stored in the @users@ collection in mongoDB.  We recommend you just perform authentication in your JAAS implementation. 
-
-
-h2. 5. The Engine
+h2. 4. The Engine
 
 @com.chililog.server.engine@ is where all the heavy lifting occurs.
 
-* @MqManager@ is our wrapper for HornetQ functions.
+* @MqManager@ is our wrapper for HornetQ.
 * The @Repository@ class is responsible for a single repository.  When a repository is started, @MqManger@ is called to start message queues and @RepositoryWorker@ is instance in a separate thread to consume incoming log entries.
 * The @RepositoryManager@ is responsible for all repositories as defined in the mongoDB @repsitories_info@ collection.
 
+There are 2 types of queues that is setup for a @Repository@.
 
-h2. 6. Web UI and API
+* Write queues
+** By convention, the physical HornetQ queues are named 'repository.XXXX.write'.
+** These queues accept incoming log entries from one or more agents. Queued log entries are processed by one or more @RepositoryWorker@.
+** Agents submitting log entries must provide credentials where the username is the repository name and the password is that specified in the repository meta-data.
+** @RepositoryWorker@ consuming queued log entries must provide credentials of the trusted system user. 
 
-TODO
+* Read queues
+** By convention, the physical HornetQ queues are named 'repository.XXXX.read'.
+** These queues accept incoming log entries from one or more @RepositoryWorker@. Queued entries are processed by one or more agents. This is the reverse of a write queue.
+** @RepositoryWorker@ submitting entries must provide credentials of the trusted system user.
+** Agents consuming entries must provide credentials where the username is the repository name and the password is that specified in the repository meta-data.
+
+HornetQ uses JAAS as the framework for authentication and authorization. Because we don't need to have real users accounts for agents or the system user (i.e. @users@), we use the following convention:
+* The role required to read/write from a queue is the combination: '[username]~~~[password]'.
+* When credentials are presented to HornetQ, our custom JAAS handler return the role in the above format.
+* If the role matches then the agent is allowed to read from or write to the queue.
+* The credentails for the trusted system user is managed by @AppProperties@. It is the single place from which all @RepositoryWorker@ can access the credentials.
+* The trusted system user was used instead of separate credentials for each repository because @RepositoryWorker@ are created by our code so it can be trusted.
 
 
-h2. 7. General Coding Notes
+h2. 5. Web UI and API
 
-h3. 7.1 Singletons
+We've chosen a client-server implementation for our user interface.
+
+* Sever
+** We use the Netty HTTP web server
+** We create a HTTP REST API for use by our client (see below) or other clients as needs be. 
+** @com.chililog.server.ui@ is the package containing all the server side code.
+
+* Client
+** We use Sproutcore framework to implement our client side user interface.
+** It communicates with the server to access data via the HTTP REST API.
+
+
+h2. 6. General Coding Notes
+
+h3. 6.1 Singletons
 
 We decided to use the singleton pattern because: 
 
@@ -289,7 +304,7 @@ We decided to use the singleton pattern because:
 * Better than static classes because we can use inheritance
 
 
-h3. 7.2 Strings
+h3. 6.2 Strings
 
 Strings are externalised into the __src/main/resources/strings.properties__ file.
 
@@ -307,7 +322,7 @@ pre(code)..
 p. The @com.chililog.sever.common.StringProperties@ class is use to read strings from this file.
 
 
-h3. 7.3 Exceptions
+h3. 6.3 Exceptions
 
 We use a standard exception @com.chililog.sever.common.ChiliLogException@.
 
@@ -316,7 +331,7 @@ Use @ChiliLogException.getErrorCode()@ to retrieve the error that triggered the 
 Error codes are tightly integrated with Strings (see above section).  The error code is the same as a string code.  The error message is the string value.
 
 
-h3. 7.4 Application and System Properties
+h3. 6.4 Application and System Properties
 
 All application and system properties used in the code are strongly typed and cached in the @com.chililog.sever.common.AppProperties@ and  @com.chililog.sever.common.SystemProperties@ respectively.
 
@@ -325,7 +340,7 @@ All application and system properties used in the code are strongly typed and ca
 @AppProperties@ reads properties from the __src/main/resources/app.properties__ file.  Values in this file can be overriden by creating a new app.properties file and setting system property @chililog.config.directory@ to the name of the directory where the override app.properties file is located.
 
 
-h3. 7.4 Logging
+h3. 6.5 Logging
 
 We are using log4J to manage logging inside ChiliLog server.
 
@@ -338,7 +353,7 @@ To override this, ....
 
 
 
-h2. 8. Contributing
+h2. 7. Contributing
 
 Just fork the code and submit Pull Requests.
 

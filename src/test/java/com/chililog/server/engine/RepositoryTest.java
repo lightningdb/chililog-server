@@ -21,7 +21,6 @@ package com.chililog.server.engine;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
@@ -41,14 +40,11 @@ import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
-import com.chililog.server.data.UserBO;
-import com.chililog.server.data.UserController;
 import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+
 
 /**
  * Test a repository
@@ -62,6 +58,8 @@ public class RepositoryTest
     private static RepositoryInfoBO _repoInfo;
 
     private static final String REPOSITORY_NAME = "repo_junit_test";
+    private static final String REPOSITORY_WRITER_PASSWORD = "pw4Writer";
+    private static final String REPOSITORY_READER_PASSWORD = "pw4Writer";
     private static final String MONGODB_COLLECTION_NAME = "repo_junit_test_repository";
 
     @BeforeClass
@@ -72,7 +70,9 @@ public class RepositoryTest
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Repository Test 1");
         _repoInfo.setReadQueueDurable(false);
+        _repoInfo.setReadQueuePassword(REPOSITORY_READER_PASSWORD);
         _repoInfo.setWriteQueueDurable(false);
+        _repoInfo.setWriteQueuePassword(REPOSITORY_WRITER_PASSWORD);
         _repoInfo.setWriteQueueWorkerCount(2);
 
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
@@ -123,33 +123,6 @@ public class RepositoryTest
         // Database
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
-
-        // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^RepositoryTestUser[\\w]*$");
-        DBObject query = new BasicDBObject();
-        query.put("username", pattern);
-        coll.remove(query);
-
-        coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
-            coll.drop();
-        }
-
-        // Create writer user
-        UserBO user = new UserBO();
-        user.setUsername("RepositoryTestUser_Writer");
-        user.setPassword("222", true);
-        user.addRole(_repoInfo.getWriteQueueRole());
-        UserController.getInstance().save(_db, user);
-
-        // Create reader user
-        user = new UserBO();
-        user.setUsername("RepositoryTestUser_Reader");
-        user.setPassword("333", true);
-        user.addRole(_repoInfo.getReadQueueRole());
-        UserController.getInstance().save(_db, user);
     }
 
     @Before
@@ -165,13 +138,6 @@ public class RepositoryTest
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
-
-        // Clean up old users
-        DBCollection coll2 = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^RepositoryTestUser[\\w]*$");
-        DBObject query = new BasicDBObject();
-        query.put("username", pattern);
-        coll2.remove(query);
     }
 
     @Test
@@ -188,7 +154,7 @@ public class RepositoryTest
 
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                "RepositoryTestUser_Writer", "222");
+                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
 
         String queueAddress = _repoInfo.getWriteQueueAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -286,7 +252,7 @@ public class RepositoryTest
 
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                "RepositoryTestUser_Writer", "222");
+                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
 
         String queueAddress = _repoInfo.getWriteQueueAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -346,7 +312,7 @@ public class RepositoryTest
 
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                "RepositoryTestUser_Writer", "222");
+                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
 
         String queueAddress = _repoInfo.getWriteQueueAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);

@@ -152,14 +152,14 @@ public class AppTest
         UserBO user = new UserBO();
         user.setUsername("AppTestUser_Writer");
         user.setPassword("222", true);
-        user.addRole(_repoInfo.getWriteQueueRole());
+        user.addRole(_repoInfo.getWriteQueueRoleName());
         UserController.getInstance().save(_db, user);
 
         // Create reader user
         user = new UserBO();
         user.setUsername("AppTestUser_Reader");
         user.setPassword("333", true);
-        user.addRole(_repoInfo.getReadQueueRole());
+        user.addRole(_repoInfo.getReadQueueRoleName());
         UserController.getInstance().save(_db, user);
     }
 

@@ -25,9 +25,7 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.security.auth.callback.CallbackHandler;
 
-import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.reflect.ConstructorUtils;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -50,6 +48,7 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
+import com.chililog.server.data.RepositoryInfoBO;
 
 /**
  * <p>
@@ -113,9 +112,9 @@ public class MqManager
     {
         try
         {
-            _systemUsername = AppProperties.getInstance().getJaasSystemUsername();
-            _systemPassword = AppProperties.getInstance().getJaasSystemPassword();
-            _systemRoleName = AppProperties.getInstance().getJaasSystemRole();
+            _systemUsername = AppProperties.getInstance().getMqSystemUsername();
+            _systemPassword = AppProperties.getInstance().getMqSystemPassword();
+            _systemRoleName = RepositoryInfoBO.formatQueueRoleName(_systemUsername, _systemPassword);
             return;
         }
         catch (Exception e)
@@ -127,11 +126,34 @@ public class MqManager
     }
 
     /**
+     * Returns the trusted system user name    
+     */
+    public String getSystemUsername()
+    {
+        return _systemUsername;
+    }
+
+    /**
+     * Returns the trusted system user's password    
+     */
+    public String getSystemPassword()
+    {
+        return _systemPassword;
+    }
+
+    /**
+     * Returns the trusted system user's role    
+     */
+    public String getSystemRoleName()
+    {
+        return _systemRoleName;
+    }
+
+    /**
      * Starts our HornetQ message queue
      * 
      * @throws Exception
      */
-    @SuppressWarnings("rawtypes")
     public void start() throws Exception
     {
         if (_hornetqServer != null)
@@ -150,9 +172,11 @@ public class MqManager
         Configuration config = new ConfigurationImpl();
 
         // Journal - see http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#persistence
-        config.setPersistenceEnabled(appProperties.getMqPersistenceEnabled());
-        config.setJournalType(JournalType.NIO); // TODO allow configuration to async for it to be faster
-        //config.setJournalDirectory("");
+        // TODO allow configuration to async for it to be faster
+        config.setPersistenceEnabled(appProperties.getMqJournallingEnabled());
+        config.setJournalType(JournalType.NIO);
+        config.setJournalDirectory(appProperties.getMqJournalDirectory());
+        config.setPagingDirectory(appProperties.getMqPagingDirectory());
         config.setSecurityEnabled(true);
 
         // Logging
@@ -160,8 +184,8 @@ public class MqManager
 
         // Clustering - if we don't set username/password, we get annoying warning message in log
         config.setClustered(appProperties.getMqClusteredEnabled());
-        config.setClusterUser(appProperties.getJaasSystemUsername());
-        config.setClusterPassword(appProperties.getJaasSystemPassword());
+        config.setClusterUser(appProperties.getMqSystemUsername());
+        config.setClusterPassword(appProperties.getMqSystemPassword());
 
         // Management address to send management messages to
         config.setManagementAddress(new SimpleString("jms.queue.hornetq.management"));
@@ -171,15 +195,13 @@ public class MqManager
 
         // Setup JAAS security manager.
         JAASSecurityManager securityManager = new JAASSecurityManager();
-        securityManager.setConfigurationName(AppProperties.getInstance().getJaasConfigurationName());
+        securityManager.setConfigurationName("not_used");
 
-        Class configClass = ClassUtils.getClass(AppProperties.getInstance().getJaasConfigurationClassName());
-        Object configObject = ConstructorUtils.invokeConstructor(configClass, null);
-        securityManager.setConfiguration((javax.security.auth.login.Configuration) configObject);
+        javax.security.auth.login.Configuration configObject = new JAASConfiguration();
+        securityManager.setConfiguration(configObject);
 
-        Class callbackHandlerClass = ClassUtils.getClass(AppProperties.getInstance().getJaasCallbackHandlerClassName());
-        Object callbackHandlerObject = ConstructorUtils.invokeConstructor(callbackHandlerClass, null);
-        securityManager.setCallbackHandler((CallbackHandler) callbackHandlerObject);
+        CallbackHandler callbackHandlerObject = new JAASCallbackHandler();
+        securityManager.setCallbackHandler(callbackHandlerObject);
 
         // Start server. See org.hornetq.core.server.HornetQServers
         _hornetqServer = new HornetQServerImpl(config, ManagementFactory.getPlatformMBeanServer(), securityManager);

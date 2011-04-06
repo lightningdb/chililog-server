@@ -34,6 +34,7 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.ListCriteria;
 import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.ui.HttpRequestHandler;
@@ -79,10 +80,6 @@ public abstract class Worker
 
     public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";
     public static final String JSON_CHARSET = "UTF-8";
-
-    public static final String WORKBENCH_ADMINISTRATOR_USER_ROLE = "workbench.administrator";
-    public static final String WORKBENCH_ANALYST_USER_ROLE = "workbench.analyst";
-    public static final String WORKBENCH_OPERATOR_USER_ROLE = "workbench.operator";
 
     /**
      * Constructor
@@ -273,6 +270,25 @@ public abstract class Worker
     }
 
     /**
+     * Returns an array of repository names to which the authenticated user has access
+     * 
+     * @return Array of repository names
+     */
+    protected String[] getAuthenticatedUserAllowedRepository()
+    {
+        ArrayList<String> l = new ArrayList<String>();
+        for(String role :_authenticatedUser.getRoles())
+        {
+            String repoName = RepositoryInfoBO.getNameFromWorkBenchRoleName(role);
+            if (!StringUtils.isBlank(repoName) && !l.contains(role))
+            {
+                l.add(role);
+            }
+        }
+        return l.toArray(new String[l.size()]);
+    }
+
+    /**
      * Performs initial validation including authentication.
      * 
      * @param request
@@ -393,63 +409,7 @@ public abstract class Worker
      * 
      * @return {@link ApiResult}
      */
-    protected ApiResult validateAuthenticatedUserRole()
-    {
-        HttpMethod requestMethod = _request.getMethod();
-        try
-        {
-            // Administrators can do it all
-            if (!isAuthenticatedUserAdministrator())
-            {
-                // Analysts can only GET
-                if (isAuthenticatedUserAnalyst())
-                {
-                    if (requestMethod != HttpMethod.GET)
-                    {
-                        throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
-                    }
-                }
-
-                // Operators can only GET
-                if (isAuthenticatedUserOperator())
-                {
-                    if (requestMethod != HttpMethod.GET)
-                    {
-                        return new ApiResult();
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
-        }
-        return new ApiResult();
-    }
-
-    /**
-     * Returns if the authenticated user is in the administrator role
-     */
-    protected boolean isAuthenticatedUserAdministrator()
-    {
-        return _authenticatedUser.hasRole(WORKBENCH_ADMINISTRATOR_USER_ROLE);
-    }
-
-    /**
-     * Returns if the authenticated user is in the analyst role
-     */
-    protected boolean isAuthenticatedUserAnalyst()
-    {
-        return _authenticatedUser.hasRole(WORKBENCH_ANALYST_USER_ROLE);
-    }
-
-    /**
-     * Returns if the authenticated user is in the operator role
-     */
-    protected boolean isAuthenticatedUserOperator()
-    {
-        return _authenticatedUser.hasRole(WORKBENCH_OPERATOR_USER_ROLE);
-    }
+    protected abstract ApiResult validateAuthenticatedUserRole();
 
     /**
      * <p>

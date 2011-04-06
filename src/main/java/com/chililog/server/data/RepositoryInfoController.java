@@ -225,6 +225,10 @@ public class RepositoryInfoController extends Controller
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
             condition.put(RepositoryInfoBO.NAME_FIELD_NAME, pattern);
         }
+        if (criteria.getNameRestrictions().length > 0)
+        {
+            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, new BasicDBObject("$in", criteria.getNameRestrictions()));
+        }
 
         // Order
         DBObject orderBy = new BasicDBObject();
@@ -325,7 +329,8 @@ public class RepositoryInfoController extends Controller
     /**
      * Creates the required repository index
      * 
-     * @param db Database connection
+     * @param db
+     *            Database connection
      */
     private void createIndexes(DB db)
     {

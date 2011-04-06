@@ -73,14 +73,19 @@ public class UsersWorker extends Worker
         { HttpMethod.POST, HttpMethod.DELETE, HttpMethod.GET, HttpMethod.PUT };
     }
 
+    /**
+     * Let's validate if the user is able to access these functions
+     */
     @Override
     protected ApiResult validateAuthenticatedUserRole()
     {
         HttpMethod requestMethod = this.getRequest().getMethod();
         try
         {
+            UserBO user = this.getAuthenticatedUser();
+
             // Administrators can do it all
-            if (isAuthenticatedUserAdministrator())
+            if (user.isSystemAdministrator())
             {
                 return new ApiResult();
             }
@@ -91,11 +96,12 @@ public class UsersWorker extends Worker
                 throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
             }
 
-            // Cannot POST or DELETE
+            // Cannot PUT any other user record except for the logged in user
             if (requestMethod == HttpMethod.PUT)
             {
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                if (!id.equals(this.getAuthenticatedUser().getDocumentID().toString())) {
+                if (!id.equals(this.getAuthenticatedUser().getDocumentID().toString()))
+                {
                     throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
                 }
             }
@@ -107,7 +113,7 @@ public class UsersWorker extends Worker
         {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
-        
+
     }
 
     /**
@@ -216,11 +222,12 @@ public class UsersWorker extends Worker
         {
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
+            UserBO user = this.getAuthenticatedUser();
 
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
-                // Get list - only available to admin user
-                if (!this.isAuthenticatedUserAdministrator())
+                // Get list - only available to system admin user
+                if (!user.isSystemAdministrator())
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
@@ -232,8 +239,8 @@ public class UsersWorker extends Worker
                 criteria.setUsernamePattern(this.getUriQueryStringParameter(USERNAME_URI_QUERYSTRING_PARAMETER_NAME,
                         true));
 
-                criteria.setEmailAddressPattern(this.getUriQueryStringParameter(EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME,
-                        true));
+                criteria.setEmailAddressPattern(this.getUriQueryStringParameter(
+                        EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME, true));
 
                 criteria.setRole(this.getUriQueryStringParameter(ROLE_URI_QUERYSTRING_PARAMETER_NAME, true));
 
@@ -263,11 +270,10 @@ public class UsersWorker extends Worker
             }
             else
             {
-                // Get specific user
+                // Get specific user - available to system administrator and the authenticate user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
-                if (!this.isAuthenticatedUserAdministrator()
-                        && !id.equals(this.getAuthenticatedUser().getDocumentID().toString()))
+                if (!user.isSystemAdministrator() && !id.equals(user.getDocumentID().toString()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));

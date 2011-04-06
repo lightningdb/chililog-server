@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.security;
+package com.chililog.server.common;
 
 import static org.junit.Assert.*;
 
@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.security.CryptoUtils;
+import com.chililog.server.common.CryptoUtils;
 
 public class CryptoUtilsTest
 {

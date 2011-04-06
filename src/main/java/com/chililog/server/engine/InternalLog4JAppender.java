@@ -101,6 +101,12 @@ public class InternalLog4JAppender extends AppenderSkeleton
     {
         try
         {
+            // If not message, then there's nothing to record
+            if (event.getMessage() == null)
+            {
+                return;
+            }
+
             DBObject dbObject = new BasicDBObject();
 
             // Custom Fields
@@ -108,11 +114,7 @@ public class InternalLog4JAppender extends AppenderSkeleton
             MongoUtils.setString(dbObject, CATEGORY_FIELD_NAME, event.getLoggerName(), true);
 
             // Message Field
-            StringBuilder sb = new StringBuilder();
-            if (event.getMessage() != null)
-            {
-                sb.append(event.getMessage().toString());
-            }
+            StringBuilder sb = new StringBuilder(event.getMessage().toString());
             String[] s = event.getThrowableStrRep();
             if (s != null)
             {
@@ -149,9 +151,10 @@ public class InternalLog4JAppender extends AppenderSkeleton
             MongoUtils.setString(dbObject, RepositoryEntryBO.SOURCE_FIELD_NAME, "ChiliLogServer", true);
             MongoUtils.setString(dbObject, RepositoryEntryBO.HOST_FIELD_NAME, _host, true);
             MongoUtils.setLong(dbObject, RepositoryEntryBO.SEVERITY_FIELD_NAME, severity.toCode(), true);
-            
+
             String msg = sb.toString();
-            MongoUtils.setStringArrayList(dbObject, RepositoryEntryBO.KEYWORDS_FIELD_NAME, _tokenizer.tokenize(msg, 20), true);
+            MongoUtils.setStringArrayList(dbObject, RepositoryEntryBO.KEYWORDS_FIELD_NAME,
+                    _tokenizer.tokenize(msg, 20), true);
             MongoUtils.setString(dbObject, RepositoryEntryBO.MESSAGE_FIELD_NAME, msg, true);
 
             MongoUtils.setLong(dbObject, BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1, true);

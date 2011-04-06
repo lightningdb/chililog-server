@@ -42,12 +42,18 @@ public class RepositoryInfoAO extends AO
     private String _displayName;
     private String _description;
     private Status _startupStatus = Status.ONLINE;
+    
     private boolean _readQueueDurable = false;
+    private String _readQueuePassword = null;
+
     private boolean _writeQueueDurable = false;
+    private String _writeQueuePassword = null;
     private long _writeQueueWorkerCount = 1;
     private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
     private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
-    private long _writeQueuePageSize = 1024 * 1024 * 4; // MB
+    private long _writeQueuePageSize = 1024 * 1024 * 10; // 10 MB
+    private long _writeQueuePageCountCache = 3; // max 3 pages in memory when paging
+
     private long _maxKeywords = -1;
 
     private RepositoryParserInfoAO[] _parsers = null;
@@ -77,13 +83,16 @@ public class RepositoryInfoAO extends AO
         _startupStatus = repoInfo.getStartupStatus();
 
         _readQueueDurable = repoInfo.isReadQueueDurable();
+        _readQueuePassword = repoInfo.getReadQueuePassword();
 
         _writeQueueDurable = repoInfo.isWriteQueueDurable();
+        _writeQueuePassword = repoInfo.getWriteQueuePassword();
         _writeQueueWorkerCount = repoInfo.getWriteQueueWorkerCount();
         _writeQueueMaxMemory = repoInfo.getWriteQueueMaxMemory();
         _writeQueueMaxMemoryPolicy = repoInfo.getWriteQueueMaxMemoryPolicy();
         _writeQueuePageSize = repoInfo.getWriteQueuePageSize();
-
+        _writeQueuePageCountCache = repoInfo.getWriteQueuePageCountCache();
+        
         _maxKeywords = repoInfo.getMaxKeywords();
         
         if (repoInfo.getParsers() == null || repoInfo.getParsers().isEmpty())
@@ -120,12 +129,15 @@ public class RepositoryInfoAO extends AO
         repoInfo.setStartupStatus(_startupStatus);
 
         repoInfo.setReadQueueDurable(_readQueueDurable);
+        repoInfo.setReadQueuePassword(_readQueuePassword);
 
         repoInfo.setWriteQueueDurable(_writeQueueDurable);
+        repoInfo.setWriteQueuePassword(_writeQueuePassword);
         repoInfo.setWriteQueueWorkerCount(_writeQueueWorkerCount);
         repoInfo.setWriteQueueMaxMemory(_writeQueueMaxMemory);
         repoInfo.setWriteQueueMaxMemoryPolicy(_writeQueueMaxMemoryPolicy);
         repoInfo.setWriteQueuePageSize(_writeQueuePageSize);
+        repoInfo.setWriteQueuePageCountCache(_writeQueuePageCountCache);
 
         repoInfo.setMaxKeywords(_maxKeywords);
         
@@ -213,6 +225,16 @@ public class RepositoryInfoAO extends AO
         _readQueueDurable = readQueueDurable;
     }
 
+    public String getReadQueuePassword()
+    {
+        return _readQueuePassword;
+    }
+
+    public void setReadQueuePassword(String readQueuePassword)
+    {
+        _readQueuePassword = readQueuePassword;
+    }
+
     public boolean isWriteQueueDurable()
     {
         return _writeQueueDurable;
@@ -221,6 +243,16 @@ public class RepositoryInfoAO extends AO
     public void setWriteQueueDurable(boolean writeQueueDurable)
     {
         _writeQueueDurable = writeQueueDurable;
+    }
+
+    public String getWriteQueuePassword()
+    {
+        return _writeQueuePassword;
+    }
+
+    public void setWriteQueuePassword(String writeQueuePassword)
+    {
+        _writeQueuePassword = writeQueuePassword;
     }
 
     public long getWriteQueueWorkerCount()
@@ -263,6 +295,16 @@ public class RepositoryInfoAO extends AO
         _writeQueuePageSize = writeQueuePageSize;
     }
     
+    public long getWriteQueuePageCountCache()
+    {
+        return _writeQueuePageCountCache;
+    }
+
+    public void setWriteQueuePageCountCache(long writeQueuePageCountCache)
+    {
+        _writeQueuePageCountCache = writeQueuePageCountCache;
+    }
+
     public long getMaxKeywords()
     {
         return _maxKeywords;

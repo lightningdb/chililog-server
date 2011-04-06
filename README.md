@@ -19,7 +19,7 @@ Wow - what a pain in the arse.
 
 The logs were in different formats, the timestamps were in different timezones and I had to wait 1 week before I got access to the firewall logs.
 
-It was at this moment that the idea for an ChiliLog was born.  
+It was at this moment that the idea for ChiliLog was born.  
 
 I tried to find open source software but none did everything I wanted in one package.  Also, due to corporate policy, I could not use a cloud logging service.
 
@@ -35,11 +35,11 @@ The current road map is:
 
 * JAN 2011 - Integrate HornetQ and mongoDB, parse incoming logs and store to mongoDB. (Done)
 
-* MAR 2011 - UI for configuration and log analysis. (In Progress)
-
-* APR 2011 - Monitoring.
+* APR 2011 - UI for configuration and log analysis. (In Progress)
 
 * MAY 2011 - Tentative alpha release.
+
+* JUN 2011 - Monitoring.
 
 
 Links

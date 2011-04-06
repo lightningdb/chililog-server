@@ -27,6 +27,8 @@ import com.chililog.server.common.ChiliLogException;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 
 /**
  * Singleton to manage our connection to the mongoDB database
@@ -97,7 +99,10 @@ public class MongoConnection
     void loadMongo() throws UnknownHostException, MongoException
     {
         AppProperties appProperties = AppProperties.getInstance();
-        _mongo = new Mongo(appProperties.getDbIpAddress(), appProperties.getDbIpPort());
+        ServerAddress addr = new ServerAddress(appProperties.getDbIpAddress(), appProperties.getDbIpPort());
+        MongoOptions options = new MongoOptions();
+        options.connectionsPerHost = appProperties.getDbConnectionsPerHost();
+        _mongo = new Mongo(addr, options);
     }
 
     /**

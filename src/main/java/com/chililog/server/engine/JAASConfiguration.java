@@ -16,15 +16,13 @@
 // limitations under the License.
 //
 
-package com.chililog.server.security;
+package com.chililog.server.engine;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
-
-import com.chililog.server.common.AppProperties;
 
 public class JAASConfiguration extends Configuration
 {
@@ -35,7 +33,7 @@ public class JAASConfiguration extends Configuration
      */
     public JAASConfiguration()
     {
-        _loginModuleClassName = AppProperties.getInstance().getJaasLoginModuleClassName();
+        _loginModuleClassName = JAASLoginModule.class.getName();
         return;
     }
 

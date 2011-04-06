@@ -21,7 +21,6 @@ package com.chililog.server.engine;
 import static org.junit.Assert.*;
 
 import java.util.Date;
-import java.util.regex.Pattern;
 
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
@@ -40,54 +39,30 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.MongoConnection;
-import com.chililog.server.data.UserBO;
-import com.chililog.server.data.UserController;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.chililog.server.data.RepositoryInfoBO;
 
 /**
  * More tests regarding MqManager and transactions
  */
 public class MqManagerTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTest.class);    
 
-    private static DB _db;
-
+    private static final String WRITER_USERNAME = "writer";
+    private static final String WRITER_PASSWORD = "pw4writer";
+    private static final String WRITER_ROLE = RepositoryInfoBO.formatQueueRoleName(WRITER_USERNAME, WRITER_PASSWORD);
+    
+    private static final String READER_USERNAME = "reader";
+    private static final String READER_PASSWORD = "pw4reader";
+    private static final String READER_ROLE = RepositoryInfoBO.formatQueueRoleName(READER_USERNAME, READER_PASSWORD);
+    
     @BeforeClass
     public static void classSetup() throws Exception
     {
-        _db = MongoConnection.getInstance().getConnection();
-        assertNotNull(_db);
-
-        // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^MqManagerTestUser[\\w]*$");
-        DBObject query = new BasicDBObject();
-        query.put("username", pattern);
-        coll.remove(query);
-
-        // Create writer user
-        UserBO user = new UserBO();
-        user.setUsername("MqManagerTestUser_Writer");
-        user.setPassword("222", true);
-        user.addRole("writer");
-        UserController.getInstance().save(_db, user);
-
-        // Create reader user
-        user = new UserBO();
-        user.setUsername("MqManagerTestUser_Reader");
-        user.setPassword("333", true);
-        user.addRole("reader");
-        UserController.getInstance().save(_db, user);
-
         MqManager.getInstance().start();
 
         // Configure security
-        MqManager.getInstance().addSecuritySettings("MqManagerTest#", "writer", "reader");
+        MqManager.getInstance().addSecuritySettings("MqManagerTest#", WRITER_ROLE, READER_ROLE);
         MqManager.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
     }
 
@@ -95,13 +70,6 @@ public class MqManagerTest
     public static void classTeardown() throws Exception
     {
         MqManager.getInstance().stop();
-
-        // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
-        Pattern pattern = Pattern.compile("^MqManagerTestUser[\\w]*$");
-        DBObject query = new BasicDBObject();
-        query.put("username", pattern);
-        coll.remove(query);
     }
 
     @Test
@@ -163,12 +131,12 @@ public class MqManagerTest
         ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
 
         ClientSession producerSession = MqManager.getInstance().getNonTransactionalClientSession(
-                "MqManagerTestUser_Writer", "222");
+                WRITER_USERNAME, WRITER_PASSWORD);
         assertTrue(producerSession.isAutoCommitSends());
         assertTrue(producerSession.isAutoCommitAcks());
 
         ClientSession consumerSession = MqManager.getInstance().getNonTransactionalClientSession(
-                "MqManagerTestUser_Reader", "333");
+                READER_USERNAME, READER_PASSWORD);
         assertTrue(consumerSession.isAutoCommitSends());
         assertTrue(consumerSession.isAutoCommitAcks());
 
@@ -223,12 +191,12 @@ public class MqManagerTest
         ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
 
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                "MqManagerTestUser_Writer", "222");
+                WRITER_USERNAME, WRITER_PASSWORD);
         assertFalse(producerSession.isAutoCommitSends());
         assertFalse(producerSession.isAutoCommitAcks());
 
         ClientSession consumerSession = MqManager.getInstance().getTransactionalClientSession(
-                "MqManagerTestUser_Reader", "333");
+                READER_USERNAME, READER_PASSWORD);
         assertFalse(consumerSession.isAutoCommitSends());
         assertFalse(consumerSession.isAutoCommitAcks());
 

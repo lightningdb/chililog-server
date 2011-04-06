@@ -19,6 +19,7 @@
 package com.chililog.server.ui.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.naming.OperationNotSupportedException;
@@ -33,6 +34,7 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.MongoJsonSerializer;
 import com.chililog.server.data.RepositoryEntryController;
 import com.chililog.server.data.RepositoryListCriteria;
+import com.chililog.server.data.UserBO;
 import com.chililog.server.data.RepositoryListCriteria.QueryType;
 import com.chililog.server.engine.Repository;
 import com.chililog.server.engine.RepositoryManager;
@@ -98,7 +100,17 @@ public class RepositoriesWorker extends Worker
     }
 
     /**
-     * Create
+     * Let's validate if the user is able to access these functions
+     */
+    @Override
+    protected ApiResult validateAuthenticatedUserRole()
+    {
+        // Do checks when we execute
+        return new ApiResult();
+    }
+
+    /**
+     * Start
      * 
      * @throws Exception
      */
@@ -107,9 +119,19 @@ public class RepositoriesWorker extends Worker
     {
         try
         {
+            UserBO user = this.getAuthenticatedUser();
             String action = this.getUriQueryStringParameter(ACTION_URI_QUERYSTRING_PARAMETER_NAME, false);
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
+                // Start/Stop/Reload all
+                // Only available to system administrators
+
+                if (!user.isSystemAdministrator())
+                {
+                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                            Strings.NOT_AUTHORIZED_ERROR));
+                }
+
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
                     RepositoryManager.getInstance().start();
@@ -129,8 +151,17 @@ public class RepositoriesWorker extends Worker
             }
             else
             {
+                // Start/Stop/Reload specific one
+                // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
+
+                if (!user.isSystemAdministrator()
+                        && !user.hasRole(repo.getRepoInfo().getWorkBenchRepositoryAdministratorRoleName()))
+                {
+                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                            Strings.NOT_AUTHORIZED_ERROR));
+                }
 
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
@@ -166,6 +197,9 @@ public class RepositoriesWorker extends Worker
     {
         try
         {
+            UserBO user = this.getAuthenticatedUser();
+            List<String> allowedRepositories = Arrays.asList(this.getAuthenticatedUserAllowedRepository());
+
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
 
@@ -179,8 +213,7 @@ public class RepositoriesWorker extends Worker
                     ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
                     for (Repository repo : list)
                     {
-                        if (isAuthenticatedUserAdministrator()
-                                || this.getAuthenticatedUser().hasRole(repo.getRepoInfo().getReadQueueRole()))
+                        if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName()))
                         {
                             aoList.add(new RepositoryAO(repo));
                         }
@@ -199,8 +232,7 @@ public class RepositoriesWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
                 if (repo != null
-                        && (isAuthenticatedUserAdministrator() || this.getAuthenticatedUser().hasRole(
-                                repo.getRepoInfo().getReadQueueRole())))
+                        && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
                 {
                     responseContent = new RepositoryAO(repo);
                 }
@@ -217,9 +249,8 @@ public class RepositoriesWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
 
-                if (repo == null
-                        || (!isAuthenticatedUserAdministrator() && !this.getAuthenticatedUser().hasRole(
-                                repo.getRepoInfo().getReadQueueRole())))
+                if (repo != null
+                        && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
                 {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);

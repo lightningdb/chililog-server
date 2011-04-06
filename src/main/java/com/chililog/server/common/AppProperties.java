@@ -438,89 +438,38 @@ public class AppProperties
     }
 
     /**
-     * Returns The full class name to use as the JAAS login module
+     * Returns the number of connections per host. The default is 10.
      */
-    public String getJaasLoginModuleClassName()
+    public int getDbConnectionsPerHost()
     {
-        return _jaasLoginModuleClassName;
+        return _dbConnectionsPerHost;
     }
 
-    static final String JAAS_LOGIN_MODULE_CLASS_NAME = "jaas.login_module_class_name";
+    static final String DB_CONNECTIONS_PER_HOST = "db.connections_per_host";
 
-    private String _jaasLoginModuleClassName = null;
+    private int _dbConnectionsPerHost = 0;
 
-    static String loadJaasLoginModuleClassName(Properties properties)
+    static int loadDbConnectionsPerHost(Properties properties)
     {
-        return loadString(properties, JAAS_LOGIN_MODULE_CLASS_NAME);
+        return loadInt(properties, DB_CONNECTIONS_PER_HOST, 10);
     }
-
-    /**
-     * Returns The full class name to use as the JAAS configuration
-     */
-    public String getJaasConfigurationClassName()
-    {
-        return _jaasConfigurationClassName;
-    }
-
-    static final String JAAS_CONFIGURATION_CLASS_NAME = "jaas.configuration_class_name";
-
-    private String _jaasConfigurationClassName = null;
-
-    static String loadJaasConfigurationClassName(Properties properties)
-    {
-        return loadString(properties, JAAS_CONFIGURATION_CLASS_NAME);
-    }
-
-    /**
-     * Returns The name of the configuration stored within the JAAS configuration class to use for login
-     */
-    public String getJaasConfigurationName()
-    {
-        return _jaasConfigurationName;
-    }
-
-    static final String JAAS_CONFIGURATION_NAME = "jaas.configuration_name";
-
-    private String _jaasConfigurationName = null;
-
-    static String loadJaasConfigurationName(Properties properties)
-    {
-        return loadString(properties, JAAS_CONFIGURATION_NAME);
-    }
-
-    /**
-     * Returns The full class name to use as the JAAS callback handler
-     */
-    public String getJaasCallbackHandlerClassName()
-    {
-        return _jaasCallbackHandlerClassName;
-    }
-
-    static final String JAAS_CALLBACK_HANDLER_CLASS_NAME = "jaas.callback_handler_class_name";
-
-    private String _jaasCallbackHandlerClassName = null;
-
-    static String loadJaasCallbackHandlerClassName(Properties properties)
-    {
-        return loadString(properties, JAAS_CALLBACK_HANDLER_CLASS_NAME);
-    }
-
+    
     /**
      * Returns The name of the ChiliLog system user. This auto-create user will have permission to manage all aspects of
      * ChiliLog. If it is not set, then we generate a random one. It should be set for load-balanced installations.
      */
-    public String getJaasSystemUsername()
+    public String getMqSystemUsername()
     {
-        return _jaasSystemUsername;
+        return _mqSystemUsername;
     }
 
-    static final String JAAS_SYSTEM_USERNAME = "jaas.system_username";
+    static final String MQ_SYSTEM_USERNAME = "mq.system_username";
 
-    private String _jaasSystemUsername = null;
+    private String _mqSystemUsername = null;
 
-    static String loadJaasSystemUsername(Properties properties)
+    static String loadMqSystemUsername(Properties properties)
     {
-        String s = loadString(properties, JAAS_SYSTEM_USERNAME, StringUtils.EMPTY);
+        String s = loadString(properties, MQ_SYSTEM_USERNAME, StringUtils.EMPTY);
         if (StringUtils.isBlank(s))
         {
             s = "systemuser_" + UUID.randomUUID().toString();
@@ -532,18 +481,18 @@ public class AppProperties
      * Returns The password of the ChiliLog system user. This auto-create user will have permission to manage all
      * aspects of ChiliLog. If it is not set, then we generate a random one.
      */
-    public String getJaasSystemPassword()
+    public String getMqSystemPassword()
     {
-        return _jaasSystemPassword;
+        return _mqSystemPassword;
     }
 
-    static final String JAAS_SYSTEM_PASSWORD = "jaas.system_password";
+    static final String MQ_SYSTEM_PASSWORD = "mq.system_password";
 
-    private String _jaasSystemPassword = null;
+    private String _mqSystemPassword = null;
 
-    static String loadJaasSystemPassword(Properties properties)
+    static String loadMqSystemPassword(Properties properties)
     {
-        String s = loadString(properties, JAAS_SYSTEM_PASSWORD, StringUtils.EMPTY);
+        String s = loadString(properties, MQ_SYSTEM_PASSWORD, StringUtils.EMPTY);
         if (StringUtils.isBlank(s))
         {
             s = UUID.randomUUID().toString();
@@ -552,39 +501,59 @@ public class AppProperties
     }
 
     /**
-     * Returns The role of the ChiliLog system user.
+     * Returns Flag to indicate if journalling is enabled or not. If so, then messages from message queues flagged as
+     * durable will be persisted (or journalled). Default is false.
      */
-    public String getJaasSystemRole()
+    public boolean getMqJournallingEnabled()
     {
-        return _jaasSystemRole;
+        return _mqJournallingEnabled;
     }
 
-    static final String JAAS_SYSTEM_ROLE = "jaas.system_role";
+    static final String MQ_JOURNALLING_ENABLED = "mq.journalling_enabled";
 
-    private String _jaasSystemRole = null;
+    private boolean _mqJournallingEnabled = false;
 
-    static String loadJaasSystemRole(Properties properties)
+    static boolean loadMqJournallingEnabled(Properties properties)
     {
-        return loadString(properties, JAAS_SYSTEM_ROLE);
+        return loadBoolean(properties, MQ_JOURNALLING_ENABLED, false);
     }
 
     /**
-     * Returns Flag to indicate if persistent message queues are to be used. Default is false.
+     * Returns the directory to store journal files
      */
-    public boolean getMqPersistenceEnabled()
+    public String getMqJournalDirectory()
     {
-        return _mqPersistenceEnabled;
+        return _mqJournalDirectory;
     }
 
-    static final String MQ_PERSISTENCE_ENABLED = "mq.persistence_enabled";
+    static final String MQ_JOURNAL_DIRECTORY = "mq.journal_directory";
 
-    private boolean _mqPersistenceEnabled = false;
+    private String _mqJournalDirectory = null;
 
-    static boolean loadMqPersistenceEnabled(Properties properties)
+    static String loadMqJournalDirectory(Properties properties)
     {
-        return loadBoolean(properties, MQ_PERSISTENCE_ENABLED, false);
+        String s = loadString(properties, MQ_JOURNAL_DIRECTORY);
+        return s;
+    }
+    
+    /**
+     * Returns the directory to store paging files.
+     */
+    public String getMqPagingDirectory()
+    {
+        return _mqPagingDirectory;
     }
 
+    static final String MQ_PAGING_DIRECTORY = "mq.paging_directory";
+
+    private String _mqPagingDirectory = null;
+
+    static String loadMqPagingDirectory(Properties properties)
+    {
+        String s = loadString(properties, MQ_PAGING_DIRECTORY);
+        return s;
+    }
+    
     /**
      * Returns Flag to indicate if message queue clustering is to be used. Default is false.
      */
@@ -1001,7 +970,7 @@ public class AppProperties
             return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
-    
+
     /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
      * 

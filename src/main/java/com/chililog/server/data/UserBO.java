@@ -20,9 +20,10 @@ package com.chililog.server.data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import com.chililog.server.common.ChiliLogException;
-import com.chililog.server.security.CryptoUtils;
+import com.chililog.server.common.CryptoUtils;
 import com.mongodb.DBObject;
 
 /**
@@ -41,6 +42,12 @@ import com.mongodb.DBObject;
 public class UserBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
+
+    public static final String SYSTEM_ADMINISTRATOR_ROLE_NAME = "system.administrator";
+
+    // Pattern thanks to http://www.regular-expressions.info/email.html
+    private static Pattern _emailAddressPattern = Pattern
+            .compile("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\\.)+[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$");
 
     private String _username;
     private String _password;
@@ -88,7 +95,7 @@ public class UserBO extends BO implements Serializable
      * 
      * @param dbObject
      *            mongoDB database object that can be used for saving
-     * @throws ChiliLogException 
+     * @throws ChiliLogException
      */
     @Override
     protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
@@ -99,6 +106,11 @@ public class UserBO extends BO implements Serializable
         MongoUtils.setString(dbObject, STATUS_FIELD_NAME, _status.toString(), true);
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
         MongoUtils.setString(dbObject, EMAIL_ADDRESS_FIELD_NAME, _emailAddress, true);
+
+        if (!_emailAddressPattern.matcher(_emailAddress).matches())
+        {
+            throw new ChiliLogException(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, _emailAddress);
+        }
     }
 
     /**
@@ -196,7 +208,7 @@ public class UserBO extends BO implements Serializable
     {
         _roles.clear();
     }
-    
+
     /**
      * Does the user have this role?
      * 
@@ -263,6 +275,14 @@ public class UserBO extends BO implements Serializable
     public void setEmailAddress(String emailAddress)
     {
         _emailAddress = emailAddress;
+    }
+
+    /**
+     * Returns if the user is a system administrator or not
+     */
+    public boolean isSystemAdministrator()
+    {
+        return hasRole(SYSTEM_ADMINISTRATOR_ROLE_NAME);
     }
 
     /**

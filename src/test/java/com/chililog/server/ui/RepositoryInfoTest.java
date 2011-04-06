@@ -93,7 +93,7 @@ public class RepositoryInfoTest
         user.setUsername("RepositoryInfoTest_Admin");
         user.setEmailAddress("RepositoryInfoTest_Admin@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create analyst user
@@ -101,7 +101,7 @@ public class RepositoryInfoTest
         user.setUsername("RepositoryInfoTest_Analyst");
         user.setEmailAddress("RepositoryInfoTest_Analyst@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create test repo

@@ -143,57 +143,30 @@ public class AppPropertiesTest
     }
 
     @Test
-    public void testJaasLoginModuleClassName() throws UnknownHostException
+    public void testDbConnectionsPerHost() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getJaasLoginModuleClassName();
-        assertEquals("com.chililog.server.security.MongoDBJAASLoginModule", s);
+        int i = AppProperties.getInstance().getDbConnectionsPerHost();
+        assertEquals(10, i);
+    }
+    
+    @Test
+    public void testMqJournallingEnabled() throws UnknownHostException
+    {
+        assertFalse(AppProperties.getInstance().getMqJournallingEnabled());
     }
 
     @Test
-    public void testJaasConfigurationClassName() throws UnknownHostException
+    public void testMqJournalDirectory() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getJaasConfigurationClassName();
-        assertEquals("com.chililog.server.security.JAASConfiguration", s);
+        String s = AppProperties.getInstance().getMqJournalDirectory();
+        assertEquals("/tmp/chililog/journal", s);
     }
 
     @Test
-    public void testJaasConfigurationName() throws UnknownHostException
+    public void testMqPagingDirectory() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getJaasConfigurationName();
-        assertEquals("notused", s);
-    }
-
-    @Test
-    public void testJaasCallbackHandlerClassName() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getJaasCallbackHandlerClassName();
-        assertEquals("com.chililog.server.security.JAASCallbackHandler", s);
-    }
-
-    @Test
-    public void testJaasSystemUsername() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getJaasSystemUsername();
-        assertTrue(!StringUtils.isBlank(s));
-    }
-
-    @Test
-    public void testJaasSystemPassword() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getJaasSystemPassword();
-        assertTrue(!StringUtils.isBlank(s));
-    }
-
-    public void testJaasSystemRole() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getJaasSystemRole();
-        assertEquals("system", s);
-    }
-
-    @Test
-    public void testMqPersistenceEnabled() throws UnknownHostException
-    {
-        assertFalse(AppProperties.getInstance().getMqPersistenceEnabled());
+        String s = AppProperties.getInstance().getMqPagingDirectory();
+        assertEquals("/tmp/chililog/paging", s);
     }
 
     @Test

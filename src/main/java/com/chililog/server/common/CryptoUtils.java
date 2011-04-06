@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.security;
+package com.chililog.server.common;
 
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -34,7 +34,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NullArgumentException;
 
-import com.chililog.server.common.ChiliLogException;
 
 /**
  * <p>

@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.security;
+package com.chililog.server.engine;
 
 import java.io.IOException;
 

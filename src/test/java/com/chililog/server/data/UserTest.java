@@ -239,6 +239,26 @@ public class UserTest
     }
     
     @Test
+    public void testBadEmailAddress() throws ChiliLogException
+    {
+        try
+        {
+            // Insert
+            UserBO user = new UserBO();
+            user.setUsername("UserTestUser7");
+            user.setPassword("abc123!", true);
+            user.setEmailAddress("bad email address");
+            UserController.getInstance().save(_db, user);
+            
+            fail("Exception expected");
+        }
+        catch (ChiliLogException ex)
+        {
+            assertEquals(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, ex.getErrorCode());
+        }
+    }
+    
+    @Test
     public void testList() throws ChiliLogException
     {
         // Insert

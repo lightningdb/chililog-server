@@ -38,7 +38,10 @@ public class Strings
     public static final String USER_NOT_FOUND_ERROR = PREFIX + "User.NotFoundError";
     public static final String USER_DUPLICATE_USERNAME_ERROR = PREFIX + "User.DuplicateUsernameError";
     public static final String USER_DUPLICATE_EMAIL_ADDRESS_ERROR = PREFIX + "User.DuplicateEmailAddressError";
+    public static final String USER_EMAIL_ADDRESS_FORMAT_ERROR = PREFIX + "User.EmailAddressFormatError";
     
+    public static final String REPO_INFO_NAME_FORMAT_ERROR = PREFIX + "RepoInfo.NameFormatError";
+    public static final String REPO_INFO_PASSWORD_FORMAT_ERROR = PREFIX + "RepoInfo.PasswordFormatError";
     public static final String REPO_INFO_DUPLICATE_NAME_ERROR = PREFIX + "RepoInfo.DuplicateNameError";
     public static final String REPO_INFO_DUPLICATE_PARSER_NAME_ERROR = PREFIX + "RepoInfo.DuplicateParserNameError";
     public static final String REPO_INFO_DUPLICATE_FIELD_NAME_ERROR = PREFIX + "RepoInfo.DuplicateFieldNameError";

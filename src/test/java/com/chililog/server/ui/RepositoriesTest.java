@@ -52,7 +52,6 @@ import com.chililog.server.engine.parsers.EntryParser;
 import com.chililog.server.engine.parsers.EntryParserFactory;
 import com.chililog.server.ui.api.ErrorAO;
 import com.chililog.server.ui.api.RepositoryAO;
-import com.chililog.server.ui.api.Worker;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -97,7 +96,7 @@ public class RepositoriesTest
         user.setUsername("RepositoriesTest_Admin");
         user.setEmailAddress("RepositoriesTest_Admin@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ADMINISTRATOR_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create analyst user
@@ -105,7 +104,7 @@ public class RepositoriesTest
         user.setUsername("RepositoriesTest_Analyst");
         user.setEmailAddress("RepositoriesTest_Analyst@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         UserController.getInstance().save(_db, user);
 
         // Create test repo
@@ -147,8 +146,8 @@ public class RepositoriesTest
         user.setUsername("RepositoriesTest_Analyst_WithAccess");
         user.setEmailAddress("RepositoriesTest_Analyst_WithAccess@chililog.com");
         user.setPassword("hello", true);
-        user.addRole(Worker.WORKBENCH_ANALYST_USER_ROLE);
-        user.addRole(repoInfo.getReadQueueRole());
+        user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
+        user.addRole(repoInfo.getReadQueueRoleName());
         UserController.getInstance().save(_db, user);
 
         // Add 3 lines
