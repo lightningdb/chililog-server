@@ -25,3 +25,4 @@ SC.Theme.addTheme(Chililog.Theme);
 // Setting it as the default theme makes every pane SproutCore
 // creates default to this theme unless otherwise specified.
 SC.defaultTheme = 'chililog';
+

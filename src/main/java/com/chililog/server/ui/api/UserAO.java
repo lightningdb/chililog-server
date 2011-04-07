@@ -21,6 +21,7 @@ package com.chililog.server.ui.api;
 import org.apache.commons.lang.StringUtils;
 
 import com.chililog.server.common.ChiliLogException;
+import com.chililog.server.common.CryptoUtils;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserBO.Status;
 
@@ -42,6 +43,7 @@ public class UserAO extends AO
     private String[] _roles = null;
     private Status _status = Status.Enabled;
     private String _displayName;
+    private String _gravatarMD5Hash;
 
     /**
      * Basic constructor
@@ -59,7 +61,7 @@ public class UserAO extends AO
      */
     public UserAO(UserBO userBO)
     {
-        // Note: password hash is NEVER supplied for security reasons 
+        // Note: password hash is NEVER supplied for security reasons
         _documentID = userBO.getDocumentID().toString();
         _documentVersion = userBO.getDocumentVersion();
         _username = userBO.getUsername();
@@ -67,6 +69,17 @@ public class UserAO extends AO
         _status = userBO.getStatus();
         _displayName = userBO.getDisplayName();
         _emailAddress = userBO.getEmailAddress();
+        if (!StringUtils.isBlank(_emailAddress))
+        {
+            try
+            {
+                _gravatarMD5Hash = CryptoUtils.createMD5Hash(_emailAddress.trim().toLowerCase());
+            }
+            catch (Exception ex)
+            {
+                // ignore
+            }
+        }
         return;
     }
 
@@ -79,7 +92,7 @@ public class UserAO extends AO
     public void toBO(UserBO userBO) throws ChiliLogException
     {
         // Optimistic locking check
-        checkOptimisticLocking(_documentVersion,  userBO);
+        checkOptimisticLocking(_documentVersion, userBO);
 
         userBO.setUsername(_username);
 
@@ -107,7 +120,7 @@ public class UserAO extends AO
         userBO.setDisplayName(_displayName);
 
         userBO.setEmailAddress(_emailAddress);
-}
+    }
 
     public String getDocumentID()
     {
@@ -189,5 +202,14 @@ public class UserAO extends AO
         _emailAddress = emailAddress;
     }
 
-    
+    public String getGravatarMD5Hash()
+    {
+        return _gravatarMD5Hash;
+    }
+
+    public void setGravatarMD5Hash(String gravatarMD5Hash)
+    {
+        _gravatarMD5Hash = gravatarMD5Hash;
+    }
+
 }

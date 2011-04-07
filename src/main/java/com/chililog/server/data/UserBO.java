@@ -153,7 +153,7 @@ public class UserBO extends BO implements Serializable
     {
         if (isPlainText)
         {
-            _password = CryptoUtils.createHash(password, null);
+            _password = CryptoUtils.createSHA512Hash(password, null);
         }
         else
         {

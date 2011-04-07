@@ -31,37 +31,51 @@ public class CryptoUtilsTest
     private static Logger _logger = Logger.getLogger(CryptoUtilsTest.class);
 
     @Test
-    public void testOK() throws Exception
+    public void testMD5Hash() throws Exception
     {
-        String hashValue = CryptoUtils.createHash("admin", null);
+        String hashValue = CryptoUtils.createMD5Hash("admin");
+        _logger.info("Hashed password of 'admin' is " + hashValue);
+        
+        hashValue = CryptoUtils.createMD5Hash("sandpit");
+        _logger.info("Hashed password of 'sandpit' is " + hashValue);
+
+        hashValue = CryptoUtils.createMD5Hash("hello");
+        _logger.info("Hashed password of 'hello' is " + hashValue);
+
+    }
+    
+    @Test
+    public void testSHA512() throws Exception
+    {
+        String hashValue = CryptoUtils.createSHA512Hash("admin", null);
         _logger.info("Hashed password of 'admin' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("admin", hashValue));
 
-        hashValue = CryptoUtils.createHash("sandpit", null);
+        hashValue = CryptoUtils.createSHA512Hash("sandpit", null);
         _logger.info("Hashed password of 'sandpit' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("sandpit", hashValue));
 
-        hashValue = CryptoUtils.createHash("YumCha", null);
+        hashValue = CryptoUtils.createSHA512Hash("YumCha", null);
         _logger.info("Hashed password of 'YumCha' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("YumCha", hashValue));
 
-        hashValue = CryptoUtils.createHash("SpringRolls", null);
+        hashValue = CryptoUtils.createSHA512Hash("SpringRolls", null);
         _logger.info("Hashed password of 'SpringRolls' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("SpringRolls", hashValue));
 
-        hashValue = CryptoUtils.createHash("BBQPorkBuns", null);
+        hashValue = CryptoUtils.createSHA512Hash("BBQPorkBuns", null);
         _logger.info("Hashed password of 'BBQPorkBuns' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("BBQPorkBuns", hashValue));
 
         String s = "asdAd!@#$%^&*() 12344576890-=_+<>,.;'`\"~;':]{}\\|[";
-        hashValue = CryptoUtils.createHash(s, null);
+        hashValue = CryptoUtils.createSHA512Hash(s, null);
         assertTrue(CryptoUtils.verifyHash(s, hashValue));
     }
 
     @Test
     public void testNotOK() throws Exception
     {
-        String hashValue = CryptoUtils.createHash("admin", null);
+        String hashValue = CryptoUtils.createSHA512Hash("admin", null);
         assertFalse(CryptoUtils.verifyHash("not admin", hashValue));
     }
 
@@ -73,8 +87,8 @@ public class CryptoUtilsTest
     @Test
     public void testSaltiness() throws Exception
     {
-        String hashValue = CryptoUtils.createHash("Yeeeeee Haaaaaa", null);
-        String hashValue2 = CryptoUtils.createHash("Yeeeeee Haaaaaa", null);
+        String hashValue = CryptoUtils.createSHA512Hash("Yeeeeee Haaaaaa", null);
+        String hashValue2 = CryptoUtils.createSHA512Hash("Yeeeeee Haaaaaa", null);
         assertFalse(hashValue.equals(hashValue2));
     }
 
@@ -89,7 +103,7 @@ public class CryptoUtilsTest
         byte[] salt = new byte[]
         { 1, 2, 3, 4, 5, 6, 7, 8 };
 
-        String hashValue = CryptoUtils.createHash("rocksalt", salt, false);
+        String hashValue = CryptoUtils.createSHA512Hash("rocksalt", salt, false);
         _logger.info("Hashed password of 'rocksalt' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("rocksalt", salt, hashValue));
     }

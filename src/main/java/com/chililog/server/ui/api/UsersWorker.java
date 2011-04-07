@@ -222,17 +222,9 @@ public class UsersWorker extends Worker
         {
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
-            UserBO user = this.getAuthenticatedUser();
 
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
-                // Get list - only available to system admin user
-                if (!user.isSystemAdministrator())
-                {
-                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
-                            Strings.NOT_AUTHORIZED_ERROR));
-                }
-
                 UserListCriteria criteria = new UserListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
 
@@ -270,15 +262,8 @@ public class UsersWorker extends Worker
             }
             else
             {
-                // Get specific user - available to system administrator and the authenticate user
+                // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-
-                if (!user.isSystemAdministrator() && !id.equals(user.getDocumentID().toString()))
-                {
-                    return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
-                            Strings.NOT_AUTHORIZED_ERROR));
-                }
-
                 responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
             }
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);

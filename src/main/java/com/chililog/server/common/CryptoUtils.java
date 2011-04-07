@@ -34,7 +34,6 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.NullArgumentException;
 
-
 /**
  * <p>
  * Utilities methods for hashing and encrypting.
@@ -55,6 +54,34 @@ public class CryptoUtils
     { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
     /**
+     * MD5 hash
+     * 
+     * @param s
+     *            string to hash
+     * @return MD5 hash as a hex string
+     * @throws ChiliLogException
+     */
+    public static String createMD5Hash(String s) throws ChiliLogException
+    {
+        try
+        {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] array = md.digest(s.getBytes("CP1252"));
+            StringBuffer sb = new StringBuffer();
+            for (int i = 0; i < array.length; ++i)
+            {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
+            }
+
+            return sb.toString();
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, "Error attempting to MD5 hash: " + ex.getMessage());
+        }
+    }
+
+    /**
      * <p>
      * From a password, a number of iterations and a salt, returns the corresponding hash. For convenience, the salt is
      * stored within the hash.
@@ -72,7 +99,7 @@ public class CryptoUtils
      * @throws ChiliLogException
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
-    public static String createHash(String plainTextValue, byte[] salt) throws ChiliLogException
+    public static String createSHA512Hash(String plainTextValue, byte[] salt) throws ChiliLogException
     {
         try
         {
@@ -81,7 +108,7 @@ public class CryptoUtils
             salt = new byte[8];
             random.nextBytes(salt);
 
-            return createHash(plainTextValue, salt, true);
+            return createSHA512Hash(plainTextValue, salt, true);
         }
         catch (Exception ex)
         {
@@ -112,7 +139,8 @@ public class CryptoUtils
      * @throws ChiliLogException
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
-    public static String createHash(String plainTextValue, byte[] salt, boolean appendSalt) throws ChiliLogException
+    public static String createSHA512Hash(String plainTextValue, byte[] salt, boolean appendSalt)
+            throws ChiliLogException
     {
         try
         {
@@ -250,7 +278,7 @@ public class CryptoUtils
             }
 
             // Compute a new hash string.
-            String expectedHashString = createHash(plainTextValue, saltBytes, saltAppended);
+            String expectedHashString = createSHA512Hash(plainTextValue, saltBytes, saltAppended);
 
             // If the computed hash matches the specified hash,
             // the plain text value must be correct.

@@ -9,12 +9,11 @@
  */
 Chililog.mainPaneStates = {
   SEARCH: 'Search',
-  ANALYSIS: 'Analysis',
-  MONITORS: 'Monitors',
-  REPOSITORIES: 'Repositories',
-  USERS: 'Users',
+  ANALYSE: 'Analyse',
+  MONITOR: 'Monitor',
+  CONFIGURE: 'Configure',
   ABOUT: 'About',
-  LOGIN: 'Login'
+  MY_PROFILE: 'MyProfile'
 }
 
 /**
@@ -48,9 +47,9 @@ Chililog.mainPaneController = SC.Object.create(
         target: Chililog.mainPaneController,
         action: 'showSearch'
       },
-      { value: Chililog.mainPaneStates.ANALYSIS,
-        title: '_mainPane.Analysis'.loc(),
-        toolTip: '_mainPane.Analysis.ToolTip'.loc(),
+      { value: Chililog.mainPaneStates.ANALYSE,
+        title: '_mainPane.Analyse'.loc(),
+        toolTip: '_mainPane.Analyse.ToolTip'.loc(),
         target: Chililog.mainPaneController,
         action: 'showAnalysis'
       }
@@ -59,18 +58,11 @@ Chililog.mainPaneController = SC.Object.create(
     var isAdmin = Chililog.sessionController.get('isInAdministratorRole');
     if (isAdmin) {
       values.push({
-        value: Chililog.mainPaneStates.REPOSITORIES,
-        title: '_mainPane.Repositories'.loc(),
-        toolTip: '_mainPane.Repositories.ToolTip'.loc(),
+        value: Chililog.mainPaneStates.CONFIGURE,
+        title: '_mainPane.Configure'.loc(),
+        toolTip: '_mainPane.Configure.ToolTip'.loc(),
         target: Chililog.mainPaneController,
         action: 'showRepositories'
-      });
-      values.push({
-        value: Chililog.mainPaneStates.USERS,
-        title: '_mainPane.Users'.loc(),
-        toolTip: '_mainPane.Users.ToolTip'.loc(),
-        target: Chililog.mainPaneController,
-        action: 'showUsers'
       });
     }
 
@@ -97,28 +89,28 @@ Chililog.mainPaneController = SC.Object.create(
    * Show analysis view
    */
   showAnalysis: function() {
-    this.set('state', Chililog.mainPaneStates.ANALYSIS);
+    this.set('state', Chililog.mainPaneStates.ANALYSE);
   },
 
   /**
    * Show monitors view
    */
   showMonitors: function() {
-    this.set('state', Chililog.mainPaneStates.MONITORS);
+    this.set('state', Chililog.mainPaneStates.MONITOR);
   },
 
   /**
    * Show repository views
    */
   showRepositories: function() {
-    this.set('state', Chililog.mainPaneStates.REPOSITORIES);
+    this.set('state', Chililog.mainPaneStates.CONFIGURE);
   },
 
   /**
-   * Show users view
+   * Show user profile view
    */
-  showUsers: function() {
-    this.set('state', Chililog.mainPaneStates.USERS);
+  showMyProfile: function() {
+    this.set('state', Chililog.mainPaneStates.MY_PROFILE);
   },
 
   /**

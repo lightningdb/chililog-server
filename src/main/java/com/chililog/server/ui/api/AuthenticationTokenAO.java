@@ -177,7 +177,7 @@ public class AuthenticationTokenAO
             StringBuilder sb = new StringBuilder();
             sb.append(json);
             sb.append("~~~");
-            sb.append(CryptoUtils.createHash(json, appProperties.getWebApiAuthenticationHashSalt(), false));
+            sb.append(CryptoUtils.createSHA512Hash(json, appProperties.getWebApiAuthenticationHashSalt(), false));
 
             return sb.toString();
         }

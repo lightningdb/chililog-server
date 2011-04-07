@@ -284,16 +284,13 @@ public class UsersTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get list not authorized
+        // Get list OK
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, repoUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-
-        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Create - not authorized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST,
@@ -313,7 +310,7 @@ public class UsersTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - not authorized

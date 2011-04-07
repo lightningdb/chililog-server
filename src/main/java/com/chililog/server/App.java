@@ -92,6 +92,7 @@ public class App
         _logger.info("CHILILOG Server Starting Up...");
         _logger.info("System Properties\n" + SystemProperties.getInstance().toString());
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());
+        _logger.info("Current Directory: " + new File(".").getCanonicalPath());
 
         MqManager.getInstance().start();
         RepositoryManager.getInstance().start();

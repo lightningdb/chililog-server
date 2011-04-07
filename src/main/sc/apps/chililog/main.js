@@ -28,8 +28,24 @@ Chililog.main = function main() {
   // Setup poller to check for session expiry
   Chililog.sessionController.checkExpiry();
 
-  // Step 2. Set the content property on your primary controller.
-  // This will make your app come alive!
+  // Check for startup page on the URL querystring
+  if (!SC.empty(window.location.search))
+  {
+    var a = window.location.search.substr(1).split('&');
+    for (var i = 0; i < a.length; ++i)
+    {
+      var p=a[i].split('=');
+      var name = p[0];
+      var value = p[1];
+      if (name === 'StartPage')
+      {
+        // Init state to force an DidChange event
+        Chililog.mainPaneController.set('state', '');
+        // Set state to the new value that is specified
+        Chililog.mainPaneController.set('state', value);
+      }
+    }
+  }
 
   // TODO: Set the content property on your primary controller
   // ex: Chililog.contactsController.set('content',Chililog.contacts);

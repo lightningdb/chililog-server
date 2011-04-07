@@ -54,6 +54,38 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
   }.property('loggedInUser').cacheable(),
 
   /**
+   * Returns the display name of the logged in user. If not set, the username is returned.
+   *
+   * @type String
+   */
+  loggedInUserDisplayName: function() {
+    var loggedInUser = this.get('loggedInUser');
+    if (loggedInUser === null) {
+      return '';
+    }
+    if (!SC.empty(loggedInUser.DisplayName)) {
+      return loggedInUser.DisplayName;
+    }
+    return loggedInUser.Username;
+  }.property('loggedInUser').cacheable(),
+
+  /**
+   * Returns the display name of the logged in user. If not set, the username is returned.
+   *
+   * @type String
+   */
+  loggedInUserGravatarURL: function() {
+    var loggedInUser = this.get('loggedInUser');
+    if (loggedInUser === null) {
+      return null;
+    }
+    if (SC.empty(loggedInUser.GravatarMD5Hash)) {
+      return null;
+    }
+    return 'http://www.gravatar.com/avatar/' + loggedInUser.GravatarMD5Hash + '.jpg?s=18&d=mm';
+  }.property('loggedInUser').cacheable(),
+
+  /**
    * YES if the user is an administrator
    *
    * @type Boolean
@@ -63,7 +95,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
     if (SC.none(user)) {
       return NO;
     }
-    var idx = jQuery.inArray('workbench.administrator', user.Roles);
+    var idx = jQuery.inArray('system.administrator', user.Roles);
     return idx >= 0;
   }.property('loggedInUser').cacheable(),
 

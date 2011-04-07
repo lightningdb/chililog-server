@@ -14,7 +14,7 @@ Chililog.mainPage = SC.Page.design({
     toolBar: SC.ToolbarView.design({
       layout: { top: 0, left: 0, right: 0, height: 40 },
       anchorLocation: SC.ANCHOR_TOP,
-      childViews: 'menuOptions logoutButton'.w(),
+      childViews: 'menuOptions myProfileButton logoutButton'.w(),
 
       menuOptions: SC.SegmentedView.design({
         layout: { top: 5, left: 8 },
@@ -25,8 +25,27 @@ Chililog.mainPage = SC.Page.design({
         itemTitleKey: 'title',
         itemToolTipKey: 'toolTip',
         itemTargetKey: 'target',
-        itemActionKey: 'action',
-        value: Chililog.mainPaneStates.SEARCH
+        itemActionKey: 'action'
+      }),
+
+      myProfileButton: SC.ButtonView.design({
+        layout: { top: 5, right: 100, width: 150 },
+        classNames: ['bold'],
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        align: SC.ALIGN_RIGHT,
+        iconBinding: 'Chililog.sessionController.loggedInUserGravatarURL',
+        titleBinding: 'Chililog.sessionController.loggedInUserDisplayName',
+        toolTip: '_mainPane.MyProfile.ToolTip'.loc(),
+        buttonBehavior: SC.TOGGLE_BEHAVIOR,
+        value: NO,
+        toggleOnValue: YES,
+        toggleOffValue: NO,
+
+        valueDidChange2: function() {
+          if (this.get('value') === this.get('toggleOnValue')) {
+            Chililog.mainPaneController.showMyProfile();
+          }
+        }.observes('value')
       }),
 
       logoutButton: SC.ButtonView.design({
@@ -40,8 +59,7 @@ Chililog.mainPage = SC.Page.design({
     }),
 
     body: SC.ContainerView.design({
-      layout: { top: 40, left: 0, right: 0, bottom: 0 },
-      nowShowing: 'Chililog.searchView'
+      layout: { top: 40, left: 0, right: 0, bottom: 0 }
     }),
 
     /**
@@ -55,9 +73,13 @@ Chililog.mainPage = SC.Page.design({
       else if (state === Chililog.mainPaneStates.ABOUT) {
         this.setPath('body.nowShowing', 'Chililog.aboutView');
       }
+      else if (state === Chililog.mainPaneStates.MY_PROFILE) {
+        this.setPath('body.nowShowing', 'Chililog.myProfileView');
+      }
 
-      // Make sure that we sync with state just in case someone changes the state
+      // Make sure that we sync buttons with state just in case someone changes the state
       this.setPath('toolBar.menuOptions.value', state);
+      this.setPath('toolBar.myProfileButton.value', state === Chililog.mainPaneStates.MY_PROFILE);
     }.observes('Chililog.mainPaneController.state')
 
 
@@ -77,5 +99,4 @@ Chililog.aboutView =  SC.TemplateView.design({
   layout: { top: 0, left: 0, width: 200, height: 18 },
     templateName: 'about'
   });
-
 

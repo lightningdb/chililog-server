@@ -1,0 +1,13 @@
+
+.bold {
+  font-weight: bold;
+}
+
+.sc-label-view.sc-huge-size {
+	font-size: 24px;
+	line-height: 30px;
+}
+
+.sc-view.box {
+  border: 1px solid #999;
+}
