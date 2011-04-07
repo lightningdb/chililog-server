@@ -25,7 +25,11 @@ Chililog.mainPage = SC.Page.design({
         itemTitleKey: 'title',
         itemToolTipKey: 'toolTip',
         itemTargetKey: 'target',
-        itemActionKey: 'action'
+        itemActionKey: 'action',
+
+        valueDidChange2: function() {
+          return;
+        }.observes('value')
       }),
 
       myProfileButton: SC.ButtonView.design({
@@ -67,13 +71,17 @@ Chililog.mainPage = SC.Page.design({
      */
     stateDidChange: function() {
       var state = Chililog.mainPaneController.get('state');
-      if (state === Chililog.mainPaneStates.SEARCH) {
+      var nowShowing = this.getPath('body.nowShowing');
+      if (state === Chililog.mainPaneStates.SEARCH &&  nowShowing !== 'Chililog.searchView') {
         this.setPath('body.nowShowing', 'Chililog.searchView');
       }
-      else if (state === Chililog.mainPaneStates.ABOUT) {
+      else if (state === Chililog.mainPaneStates.ANALYSE &&  nowShowing !== 'Chililog.aboutView') {
         this.setPath('body.nowShowing', 'Chililog.aboutView');
       }
-      else if (state === Chililog.mainPaneStates.MY_PROFILE) {
+      else if (state === Chililog.mainPaneStates.ABOUT &&  nowShowing !== 'Chililog.aboutView') {
+        this.setPath('body.nowShowing', 'Chililog.aboutView');
+      }
+      else if (state === Chililog.mainPaneStates.MY_PROFILE &&  nowShowing !== 'Chililog.myProfileView') {
         this.setPath('body.nowShowing', 'Chililog.myProfileView');
       }
 

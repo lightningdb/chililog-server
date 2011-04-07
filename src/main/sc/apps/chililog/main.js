@@ -28,7 +28,8 @@ Chililog.main = function main() {
   // Setup poller to check for session expiry
   Chililog.sessionController.checkExpiry();
 
-  // Check for startup page on the URL querystring
+  // Set startup state (can be defined in query string
+  var startUpState = Chililog.mainPaneStates.SEARCH;
   if (!SC.empty(window.location.search))
   {
     var a = window.location.search.substr(1).split('&');
@@ -37,15 +38,17 @@ Chililog.main = function main() {
       var p=a[i].split('=');
       var name = p[0];
       var value = p[1];
-      if (name === 'StartPage')
+      if (name === 'StartState')
       {
-        // Init state to force an DidChange event
-        Chililog.mainPaneController.set('state', '');
-        // Set state to the new value that is specified
-        Chililog.mainPaneController.set('state', value);
+        startUpState = value;
       }
     }
   }
+  Chililog.mainPaneController.set('state', startUpState);
+
+  // Manually fire event of state change because it does not fire until main finishes
+  var mainPane = Chililog.mainPage.get('mainPane');
+  mainPane.get('stateDidChange').call(mainPane);
 
   // TODO: Set the content property on your primary controller
   // ex: Chililog.contactsController.set('content',Chililog.contacts);

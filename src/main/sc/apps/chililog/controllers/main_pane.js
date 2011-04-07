@@ -28,7 +28,7 @@ Chililog.mainPaneController = SC.Object.create(
    * Determines the current visible 'body' view
    * @type State
    */
-  state: Chililog.mainPaneStates.SEARCH,
+  state: '',
 
   /**
    * Array of menu options items
@@ -74,8 +74,12 @@ Chililog.mainPaneController = SC.Object.create(
       action: 'showAbout'
     });
 
+    // Set new menu options
     this.set('menuOptions', values);
 
+    // Make views react to changes in menu options because after logging out,
+    // menu option changes. So when the user logs back in, we have to select what was there before
+    this.notifyPropertyChange('state');
   }.observes('Chililog.sessionController.loggedInUser'),
 
   /**
