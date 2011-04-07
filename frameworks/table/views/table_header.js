@@ -174,9 +174,9 @@ SC.TableHeaderView = SC.TableRowView.extend({
   },
   
   mouseDown: function(evt) {
-    this._mouseDown = YES;
-    
     var view = $(evt.target).view()[0];
+ 
+    this._mouseDown = view;
     
     if(view.instanceOf(this.get('thumbView'))) {
       if (!view.get('isEnabled')) return NO ;
@@ -247,18 +247,20 @@ SC.TableHeaderView = SC.TableRowView.extend({
         if(Math.abs(this._initialX - x) < 6) {
           return;
         } else {
-          while(!view.instanceOf(this.get('exampleView'))) {
-            view = view.get('parentView');
-          }
+          // if(view == this._mouseDown) {
+            while(!view.instanceOf(this.get('exampleView'))) {
+              view = view.get('parentView');
+            }
           
-          if (!view.getPath('column.isReorderable')){
+            if (!view.getPath('column.isReorderable')){
+              return YES;
+            }
+          
+            view._dragging = YES;
+            view.set('dragging', YES);
+            this._dragging = view;
             return YES;
-          }
-          
-          view._dragging = YES;
-          view.set('dragging', YES);
-          this._dragging = view;
-          return YES;
+          // }
         }
       }
 

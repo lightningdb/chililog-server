@@ -72,7 +72,7 @@ SC.TableView = SC.View.extend({
     Spacing between rows (for borders or such)
     @property {Number}
   */
-  rowSpacing: 1,
+  rowSpacing: 0,
   
   
   /**
@@ -392,7 +392,6 @@ SC.TableView = SC.View.extend({
   // observe each array once like this
   
   widthsDidChange: function(object, key, value, force) {
-    console.log('widthsdidchange')
     this._dataView.contentView.widthsDidChange(object, key, value, force);
     this._tableHeaderView.contentView.widthsDidChange(object, key, value, force);
   }.observes('*columns.@each.width'),

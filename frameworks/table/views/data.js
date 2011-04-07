@@ -21,6 +21,7 @@ sc_require('views/table_row');
 /*globals Endash */
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
+  backgroundColor: 'red',
   /**
     TableRow
     @property {SC.View}
@@ -104,8 +105,8 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     We handle repositioning the view specifically to avoid the overhead
     of using set layout or adjust
   */
-  _repositionView: function(layer, layout) {
-    if(SC.platform.touch) {
+  _repositionView: function(layer, layout, view) {
+    if(SC.platform.supportsAcceleratedLayers) {
       var transform = 'translate3d(0px, ' + layout.top + 'px,0)';
       if (layer) {
         layer.style.webkitTransform = transform;
@@ -126,7 +127,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     pool.push(view);
     var f = view.get("frame");
     
-    this._repositionView(view.get('layer'), {top: -(f.height + 2)});
+    this._repositionView(view.get('layer'), {top: -(f.height + 2)}, view);
     
     view.set("layerId", SC.guidFor(view));
     if (view.sleepInDOMPool) view.sleepInDOMPool();
@@ -166,7 +167,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     itemView.setIfChanged('page', this.page);
     itemView.endPropertyChanges();
     
-    this._repositionView(itemView.get('layer'), attrs.layout);
+    this._repositionView(itemView.get('layer'), attrs.layout, itemView);
     itemView._updateCells();
     itemView.widthDidChangeForIndex(0);
   }

@@ -55,8 +55,8 @@
 /*  background-color: #38a0f0 !important;*/
   background-color: #72bdf7 !important;
 /*  background-color: #84c1f0 !important;*/
-  border-bottom: 1px solid #5ab5fb !important;
-  border-bottom: 1px solid white !important;
+/*  border-bottom: 1px solid #5ab5fb !important;*/
+/*  border-bottom: 1px solid white !important;*/
   color: white !important;
 }
 
@@ -97,11 +97,11 @@
 
 
 .sc-table-data-view .sc-dataview-row {
-  border-bottom: 1px solid rgba(0, 0, 0, .07);
+/*  border-bottom: 1px solid rgba(0, 0, 0, .07);*/
 }
 
 .sc-table-data-view .odd.sc-dataview-row {
-  border-bottom: 1px solid rgba(0, 0, 0, .05);
+/*  border-bottom: 1px solid rgba(0, 0, 0, .05);*/
 }
 
 

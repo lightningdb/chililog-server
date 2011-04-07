@@ -30,9 +30,9 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
   },
   
   // we'll handle layout from here-on-out thank you
-  renderLayout: function(context, firstTime) {
-    if(firstTime) sc_super();
-  },
+  // renderLayout: function(context, firstTime) {
+  //   if(firstTime) sc_super();
+  // },
  
   /**
     @private
@@ -109,8 +109,14 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
     
     var cellView = this._sc_cell_views[SC.guidFor(column)];
     var contentView = cellView.get('contentView');
-    
     var content = this.get('content');
+
+    if(column.updateCell && cellView.get('layer')) {
+      column.updateCell(cellView, contentView, this.get('contentIndex'), this.get('content'))
+      return
+    }
+    
+
     
     cellView.beginPropertyChanges();
     contentView.beginPropertyChanges();
@@ -155,7 +161,8 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       transform;
 
     if (layer) {
-      if(SC.isTouch) {
+      // if(SC.platform.supportsAcceleratedLayers) {
+      if(SC.platform.touch) {
         transform = 'translate3d(' + layout.left + 'px, 0px,0) ';
         layer.style.left = '';
         layer.style.webkitTransform = transform;
