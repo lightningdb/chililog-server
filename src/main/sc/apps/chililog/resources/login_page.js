@@ -9,26 +9,38 @@
 Chililog.loginPage = SC.Page.design({
 
   loginPane:  SC.MainPane.design({
-    layout: { width: 360, height: 160, centerX: 0, centerY: 0 },
-    classNames: ['login-pane'],
+    layout: { top: 0, left: 0, bottom: 0, right: 0 },
     childViews: 'boxView'.w(),
 
     boxView: SC.View.design({
-      childViews: 'username password rememberMe loginButton loadingImage errorMessage'.w(),
+      layout: { width: 300, height: 280, centerX: 0, centerY: 0 },
+      classNames: ['login-box'],
+      childViews: 'title line username password rememberMe loginButton loadingImage'.w(),
+
+      title: SC.LabelView.design({
+        layout: { top: 20, left: 10, right: 10, height: 30 },
+        controlSize: SC.LARGE_CONTROL_SIZE, 
+        tagName: 'h1',
+        value: 'Chililog Workbench Login'
+      }),
+
+      line: SC.LabelView.design({
+        layout: { top: 50, left: 10, right: 10, height: 2 },
+        tagName: 'hr'
+      }),
 
       username: SC.View.design({
-        layout: { left: 17, right: 14, top: 17, height: 26 },
+        layout: {top: 70, left: 10, right: 10, height: 50 },
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
-          layout: { left: 0, width: 107, height: 18, centerY: 0 },
+          layout: { top: 0, left: 0, right: 0, height: 19 },
           value: '_loginPane.Username',
-          localize: YES,
-          textAlign: SC.ALIGN_RIGHT
+          localize: YES
         }),
 
         field: SC.TextFieldView.design({
-          layout: { width: 200, height: 22, right: 3, centerY: 0 },
+          layout: { top: 20, left: 0, right: 0, height: 25 },
           isEnabledBinding: 'Chililog.loginPaneController.isEdit',
           valueBinding: 'Chililog.loginPaneController.username',
           // Set focus
@@ -42,18 +54,17 @@ Chililog.loginPage = SC.Page.design({
       }),
 
       password: SC.View.design({
-        layout: { left: 17, right: 14, top: 45, height: 26 },
+        layout: {top: 130, left: 10, right: 10, height: 50 },
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
-          layout: { left: 0, width: 107, height: 18, centerY: 0 },
+          layout: { top: 0, left: 0, right: 0, height: 19 },
           value: '_loginPane.Password',
-          localize: YES,
-          textAlign: SC.ALIGN_RIGHT
+          localize: YES
         }),
 
         field: SC.TextFieldView.design({
-          layout: { width: 200, height: 22, right: 3, centerY: 0 },
+          layout: { top: 20, left: 0, right: 0, height: 25 },
           isPassword: YES,
           isEnabledBinding: 'Chililog.loginPaneController.isEdit',
           valueBinding: 'Chililog.loginPaneController.password'
@@ -61,11 +72,11 @@ Chililog.loginPage = SC.Page.design({
       }),
 
       rememberMe: SC.View.design({
-        layout: { left: 17, right: 14, top: 72, height: 26 },
+        layout: {top: 190, left: 10, right: 10, height: 20 },
         childViews: 'field'.w(),
 
         field: SC.CheckboxView.design({
-          layout: { width: 200, height: 22, right: 3, centerY: 0 },
+          layout: { top: 0, left: 0, right: 0, height: 20 },
           title: '_loginPane.RememberMe',
           localize: YES,
           isEnabledBinding: 'Chililog.loginPaneController.isEdit',
@@ -74,11 +85,12 @@ Chililog.loginPage = SC.Page.design({
       }),
 
       loginButton: SC.ButtonView.design({
-        layout: { height: 24, width: 80, bottom: 17, right: 17 },
+        layout: {top: 230, width: 100, centerX: 0 },
         title: '_loginPane.Login',
         localize: YES,
         isDefault: YES,
-        isEnabledBinding: SC.Binding.from("LoginLogoutSample.loginPageController.isLoggingIn")
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isBusy')
           .bool()
           .transform(function(value, isForward) {
           return !value;
@@ -88,20 +100,12 @@ Chililog.loginPage = SC.Page.design({
         action: 'beginLogin'
       }),
 
-      loadingImage: SC.ImageView.design({
-        layout: { width: 16, height: 16, bottom: 20, right: 110 },
-        value: sc_static('images/loading'),
-        useImageCache: NO,
-        isVisibleBinding: 'Chililog.loginPaneController.isBusy'
-      }),
-
-      errorMessage: SC.LabelView.design({
-        layout: { height: 40, width: 230, right: 120, bottom: 7 },
-        classNames: ['error-message'],
-
-        valueBinding: 'Chililog.loginPaneController.errorMessage'
+      loadingImage: Chililog.ImageView.design({
+        layout: { top: 235, right: 50, width: 16, height: 16 },
+        value: sc_static('images/working'),
+        isVisibleBinding: 'Chililog.loginPaneController.isBusy',
+        useImageCache: NO
       })
-
     })  //boxView
 
   })  //loginPane

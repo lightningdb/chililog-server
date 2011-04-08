@@ -228,11 +228,11 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
     try {
       // Get our data from the properties using the SC 'get' methods
       // Need to do this because these properties have been bound/observed.
-      if (username == null || username == '') {
+      if (SC.empty(username)) {
         throw SC.Error.desc('Username is required');
       }
 
-      if (password == null || password == '') {
+      if (SC.empty(password)) {
         throw SC.Error.desc('Password is required');
       }
 

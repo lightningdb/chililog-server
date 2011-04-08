@@ -4,7 +4,7 @@
 // ==========================================================================
 
 /**
- * Wrapper around the local store functions
+ * Wrapper around the browser local store functions
  *
  * @extends SC.Object
  */

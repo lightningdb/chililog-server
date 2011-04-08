@@ -1,4 +1,8 @@
 
+/*******************************************
+ * General
+ *******************************************/
+
 .bold {
   font-weight: bold;
 }
@@ -11,3 +15,32 @@
 .sc-view.box {
   border: 1px solid #999;
 }
+
+.safari .sc-text-field-view .border {
+  -webkit-appearance: none;  /*override default value 'textfield'*/
+  border: 1px solid #999;
+}
+
+.sc-label-view.sc-regular-size {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+.sc-view select, .sc-view input, .sc-view textarea, .sc-view button
+{
+  font-size: 14px;
+}
+/*******************************************
+ * Login
+ *******************************************/
+.sc-view.login-box {
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #222;
+}
+
+.sc-view.login-box hr {
+  border: 1px solid #999;
+  background-color: #999;
+}
+
