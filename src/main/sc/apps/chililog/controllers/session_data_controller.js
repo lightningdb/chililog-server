@@ -13,15 +13,15 @@ Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'ChiliLog.AuthenticationToken';
  *
  * @extends SC.Object
  */
-Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
+Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 /** @scope Chililog.sessionController.prototype */ {
 
   /**
-   * Last error message
+   * Error returned from an asynchronous call
    *
-   * @type String
+   * @type SC.Error
    */
-  errorMessage: '',
+  error: '',
 
   /**
    * The logged in user
@@ -116,7 +116,7 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       }
     }
 
-    setTimeout('Chililog.sessionController.checkTokenExpiry()', pollSeconds)
+    setTimeout('Chililog.sessionDataController.checkExpiry()', pollSeconds)
   },
 
   /**
@@ -126,64 +126,56 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
    * @returns {Boolean} YES if successfully loaded, NO if token not loaded and the user has to sign in again
    */
   load: function(isAsync) {
-    try {
-      if (SC.none(isAsync)) {
-        isAsync = YES;
-      }
-
-      // Assumed logged out
-      this.set('authenticationTokenExpiry', null);
-      this.set('authenticationToken', null);
-      this.set('loggedInUser', null);
-
-      // Get token from local store
-      var token = Chililog.localStoreController.getItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
-      if (SC.none(token)) {
-        return NO;
-      }
-
-      var delimiterIndex = token.indexOf('~~~');
-      if (delimiterIndex < 0) {
-        return NO;
-      }
-      var jsonString = token.substr(0, delimiterIndex);
-      var json = SC.json.decode(jsonString);
-      if (SC.none(json)) {
-        return NO;
-      }
-
-      var expiryString = json.ExpiresOn;
-      if (expiryString === null) {
-        return NO;
-      }
-      var now = SC.DateTime.create();
-      var expiry = SC.DateTime.parse(expiryString, SC.DATETIME_ISO8601);
-      if (SC.DateTime.compare(now, expiry) > 0) {
-        return NO;
-      }
-
-      // Save what we have so far
-      this.set('authenticationTokenExpiry', expiry);
-      this.set('authenticationToken', token);
-
-      // Get user from server
-      var url = '/api/Users/' + json.UserID;
-      var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
-      if (isAsync) {
-        request.notify(this, 'endLoad').send();
-      } else {
-        var response = request.send();
-        this.endLoad(response);
-      }
-
-      return YES;
+    if (SC.none(isAsync)) {
+      isAsync = YES;
     }
-    catch (err) {
-      // Set Error
-      this.set('errorMessage', err.message);
 
+    // Assumed logged out
+    this.set('authenticationTokenExpiry', null);
+    this.set('authenticationToken', null);
+    this.set('loggedInUser', null);
+
+    // Get token from local store
+    var token = Chililog.localStoreController.getItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
+    if (SC.none(token)) {
       return NO;
     }
+
+    var delimiterIndex = token.indexOf('~~~');
+    if (delimiterIndex < 0) {
+      return NO;
+    }
+    var jsonString = token.substr(0, delimiterIndex);
+    var json = SC.json.decode(jsonString);
+    if (SC.none(json)) {
+      return NO;
+    }
+
+    var expiryString = json.ExpiresOn;
+    if (expiryString === null) {
+      return NO;
+    }
+    var now = SC.DateTime.create();
+    var expiry = SC.DateTime.parse(expiryString, SC.DATETIME_ISO8601);
+    if (SC.DateTime.compare(now, expiry) > 0) {
+      return NO;
+    }
+
+    // Save what we have so far
+    this.set('authenticationTokenExpiry', expiry);
+    this.set('authenticationToken', token);
+
+    // Get user from server
+    var url = '/api/Users/' + json.UserID;
+    var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
+    if (isAsync) {
+      request.notify(this, 'endLoad').send();
+    } else {
+      var response = request.send();
+      this.endLoad(response);
+    }
+
+    return YES;
   },
 
   /**
@@ -201,13 +193,13 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       this.set('loggedInUser', userJson);
 
       // Clear error data
-      this.set('errorMessage', '');
+      this.set('error', null);
 
       // Return YES to signal handling of callback
       return YES;
     }
     catch (err) {
-      this.set('errorMessage', err.message);
+      this.set('error', err);
       SC.Logger.info('Error in endLogin: ' + err.message);
     }
   },
@@ -221,62 +213,53 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object
-   * @returns {Boolean} YES if async call successfully started, NO if it failed. If error, the error message
-   * will be placed in the 'errorMessage' property.
+   * will be placed in the 'error' property.
    */
   login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction) {
-    try {
-      // Get our data from the properties using the SC 'get' methods
-      // Need to do this because these properties have been bound/observed.
-      if (SC.empty(username)) {
-        throw SC.Error.desc('Username is required');
-      }
-
-      if (SC.empty(password)) {
-        throw SC.Error.desc('Password is required');
-      }
-
-      if (SC.none(rememberMe)) {
-        rememberMe = NO;
-      }
-
-      if (SC.none(isAsync)) {
-        isAsync = YES;
-      }
-
-      // Assumes the user has logged out - if not force logout
-      this.logout();
-
-      // Clear error data
-      this.set('errorMessage', '');
-
-      var postData = {
-        'Username': username,
-        'Password': password,
-        'ExpiryType': 'Absolute',
-        'ExpirySeconds': Chililog.AUTHENTICATION_TOKEN_EXPIRY_SECONDS
-      };
-
-      // Simulate a HTTP call to check our data.
-      // If the credentials not admin/admin, then get a bad url so we get 404 error
-      var url = '/api/Authentication';
-      var request = SC.Request.postUrl(url).async(isAsync).json(YES);
-      var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-      if (isAsync) {
-        request.notify(this, 'endLogin', params).send(postData);
-      } else {
-        var response = request.send(postData);
-        this.endLogin(response, params);
-      }
-
-      return YES;
+    // Get our data from the properties using the SC 'get' methods
+    // Need to do this because these properties have been bound/observed.
+    if (SC.empty(username)) {
+      throw SC.Error.desc('_sessionDataController.UsernameRequired'.loc(), 'username');
     }
-    catch (err) {
-      // Set Error
-      this.set('errorMessage', err.message);
 
-      return NO;
+    if (SC.empty(password)) {
+      throw SC.Error.desc('_sessionDataController.PasswordRequired'.loc(), 'password');
     }
+
+    if (SC.none(rememberMe)) {
+      rememberMe = NO;
+    }
+
+    if (SC.none(isAsync)) {
+      isAsync = YES;
+    }
+
+    // Assumes the user has logged out - if not force logout
+    this.logout();
+
+    // Clear error data
+    this.set('error', null);
+
+    var postData = {
+      'Username': username,
+      'Password': password,
+      'ExpiryType': 'Absolute',
+      'ExpirySeconds': Chililog.AUTHENTICATION_TOKEN_EXPIRY_SECONDS
+    };
+
+    // Simulate a HTTP call to check our data.
+    // If the credentials not admin/admin, then get a bad url so we get 404 error
+    var url = '/api/Authentication';
+    var request = SC.Request.postUrl(url).async(isAsync).json(YES);
+    var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    if (isAsync) {
+      request.notify(this, 'endLogin', params).send(postData);
+    } else {
+      var response = request.send(postData);
+      this.endLogin(response, params);
+    }
+
+    return;
   },
 
   /**
@@ -319,10 +302,10 @@ Chililog.sessionController = SC.Object.create(Chililog.ServerApiMixin,
       this.set('authenticationTokenExpiry', expiry);
 
       // Clear error data
-      this.set('errorMessage', '');
+      this.set('error', null);
     }
     catch (err) {
-      this.set('errorMessage', err.message);
+      this.set('error', err);
       SC.Logger.info('Error in endLogin: ' + err.message);
     }
 

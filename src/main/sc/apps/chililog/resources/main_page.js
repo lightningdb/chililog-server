@@ -37,8 +37,8 @@ Chililog.mainPage = SC.Page.design({
         classNames: ['bold'],
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
-        iconBinding: 'Chililog.sessionController.loggedInUserGravatarURL',
-        titleBinding: 'Chililog.sessionController.loggedInUserDisplayName',
+        iconBinding: 'Chililog.sessionDataController.loggedInUserGravatarURL',
+        titleBinding: 'Chililog.sessionDataController.loggedInUserDisplayName',
         toolTip: '_mainPane.MyProfile.ToolTip'.loc(),
         buttonBehavior: SC.TOGGLE_BEHAVIOR,
         value: NO,
@@ -57,7 +57,7 @@ Chililog.mainPage = SC.Page.design({
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
         title: '_mainPane.Logout'.loc(),
-        target: 'Chililog.sessionController',
+        target: 'Chililog.sessionDataController',
         action: 'logout'
       })
     }),

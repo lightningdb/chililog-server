@@ -52,41 +52,43 @@ Chililog.loginPaneController = SC.ObjectController.create(
   /**
    * Username to use for login
    *
-   * @type {String}
+   * @type String
    */
   username: null,
 
   /**
    * Password to use for login
    *
-   * @type {String}
+   * @type String
    */
   password: null,
 
   /**
    * Remember Me flag so the user does not have to login for 14 days
    *
-   * @type {Boolean}
+   * @type Boolean
    */
   rememberMe: NO,
 
   /**
-   * Error message to display to the user
+   * Error object
    *
-   * @type {String}
+   * @type SC.Error
    */
-  errorMessage: '',
+  error: null,
 
   /**
    * Start async login process
    */
-  beginLogin: function() {
+  login: function() {
     try {
       var username = this.get('username');
       var password = this.get('password');
       var rememberMe = this.get('rememberMe');
 
-      Chililog.sessionController.login(username, password, rememberMe, YES, this, this.endLogin);
+      this.set('error', null);
+
+      Chililog.sessionDataController.login(username, password, rememberMe, YES, this, this.endLogin);
 
       // Say that we are busy
       this.set('state', Chililog.loginPaneStates.BUSY);
@@ -95,14 +97,14 @@ Chililog.loginPaneController = SC.ObjectController.create(
       return YES;
     }
     catch (err) {
-      // Set Error
-      this.set('errorMessage', err.message);
+      this.set('state', Chililog.loginPaneStates.EDIT);
+      this.set('error', err);
       return NO;
     }
   },
 
   /**
-   * Callback from beginLogin() after we get a response from the server to process
+   * Callback from login() after we get a response from the server to process
    * the returned login info.
    *
    * @param {SC.Response} response The HTTP response
@@ -110,14 +112,14 @@ Chililog.loginPaneController = SC.ObjectController.create(
    * @returns {Boolean} YES if successful
    */
   endLogin: function() {
-    var errorMessage = Chililog.sessionController.get('errorMessage');
-    if (SC.empty(errorMessage)) {
+    var error = Chililog.sessionDataController.get('error');
+    if (SC.none(error)) {
       // Clear error data and password
       this.set('password', '');
-      this.set('errorMessage', '');
+      this.set('error', null);
     } else {
       // Show error
-      this.set('errorMessage', errorMessage);
+      this.set('error', error);
     }
 
     // Return to edit mode from BUSY
@@ -133,7 +135,7 @@ Chililog.loginPaneController = SC.ObjectController.create(
       return;
     }
 
-    var isLoggedIn = Chililog.sessionController.get('isLoggedIn');
+    var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
     var isShowing = this.get('isShowing');
     if (isShowing === null) {
       // When first loaded, need to work a little differently
@@ -159,6 +161,6 @@ Chililog.loginPaneController = SC.ObjectController.create(
         this.set('isShowing', YES);
       }
     }
-  }.observes('Chililog.sessionController.isLoggedIn')
+  }.observes('Chililog.sessionDataController.isLoggedIn')
 });
 

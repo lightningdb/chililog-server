@@ -30,5 +30,8 @@ SC.stringsFor('English', {
   '_loginPane.RememberMe': 'Remember Me',
   '_loginPane.Login': 'Login',
 
+  '_sessionDataController.UsernameRequired': 'Username is required',
+  '_sessionDataController.PasswordRequired': 'Password is required',
+
   'end': 'end'
 });
