@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   Chililog.sessionController
+// Project:   Chililog
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
@@ -14,7 +14,7 @@ Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'ChiliLog.AuthenticationToken';
  * @extends SC.Object
  */
 Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
-/** @scope Chililog.sessionController.prototype */ {
+/** @scope Chililog.sessionDataController.prototype */ {
 
   /**
    * Error returned from an asynchronous call

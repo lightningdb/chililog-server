@@ -55,7 +55,7 @@ Chililog.mainPaneController = SC.Object.create(
       }
     ];
 
-    var isAdmin = Chililog.sessionController.get('isInAdministratorRole');
+    var isAdmin = Chililog.sessionDataController.get('isInAdministratorRole');
     if (isAdmin) {
       values.push({
         value: Chililog.mainPaneStates.CONFIGURE,
@@ -80,7 +80,7 @@ Chililog.mainPaneController = SC.Object.create(
     // Make views react to changes in menu options because after logging out,
     // menu option changes. So when the user logs back in, we have to select what was there before
     this.notifyPropertyChange('state');
-  }.observes('Chililog.sessionController.loggedInUser'),
+  }.observes('Chililog.sessionDataController.loggedInUser'),
 
   /**
    * Show search view

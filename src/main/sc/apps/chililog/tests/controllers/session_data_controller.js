@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   Chililog.sessionController Unit Test
+// Project:   Chililog Unit Test
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 /*globals Chililog module test ok equals same stop start */

@@ -48,8 +48,8 @@ Chililog.main = function main() {
     var mainPane = Chililog.mainPage.get('mainPane');
     mainPane.get('stateDidChange').call(mainPane);
 
-    // TODO: Set the content property on your primary controller
-    // ex: Chililog.contactsController.set('content',Chililog.contacts);
+    // Sync data with server
+    Chililog.userDataController.synchronizeWithServer(null, null);
 
   }
   catch (err) {

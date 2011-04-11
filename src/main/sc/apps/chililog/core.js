@@ -22,6 +22,4 @@ Chililog = SC.Application.create(
   // to any fixtures you define.
   store: SC.Store.create().from(SC.Record.fixtures)
   
-  // TODO: Add global constants or singleton objects needed by your app here.
-
 }) ;
