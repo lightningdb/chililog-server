@@ -21,7 +21,6 @@ sc_require('views/table_row');
 /*globals Endash */
 
 Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
-  backgroundColor: 'red',
   /**
     TableRow
     @property {SC.View}
