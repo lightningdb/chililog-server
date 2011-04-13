@@ -11,6 +11,9 @@
 //
 
 SC.stringsFor('English', {
+  '_save': 'Save',
+  '_cancel': 'Cancel',
+
   '_mainPane.Search': 'Search',
   '_mainPane.Search.ToolTip': 'Search for log entries',
   '_mainPane.Analyse': 'Analyse',
@@ -29,6 +32,16 @@ SC.stringsFor('English', {
   '_loginPane.Password': 'Password',
   '_loginPane.RememberMe': 'Remember Me',
   '_loginPane.Login': 'Login',
+
+  '_myAccountView.Title': 'My Account',
+  '_myAccountView.MyProfile': 'My Profile',
+  '_myAccountView.Username': 'Username',
+  '_myAccountView.EmailAddress': 'Email Address',
+  '_myAccountView.DisplayName': 'Display Name',
+  '_myAccountView.ChangePassword': 'Change My Password',
+  '_myAccountView.OldPassword': 'Old Password',
+  '_myAccountView.NewPassword': 'New Password',
+  '_myAccountView.ConfirmPassword': 'Confirm New Password',
 
   '_sessionDataController.UsernameRequired': 'Username is required',
   '_sessionDataController.PasswordRequired': 'Password is required',

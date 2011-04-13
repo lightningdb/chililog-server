@@ -13,7 +13,7 @@ Chililog.mainPaneStates = {
   MONITOR: 'Monitor',
   CONFIGURE: 'Configure',
   ABOUT: 'About',
-  MY_PROFILE: 'MyProfile'
+  MY_ACCOUNT: 'MyAccount'
 }
 
 /**
@@ -111,10 +111,10 @@ Chililog.mainPaneController = SC.Object.create(
   },
 
   /**
-   * Show user profile view
+   * Show user account view
    */
-  showMyProfile: function() {
-    this.set('state', Chililog.mainPaneStates.MY_PROFILE);
+  showMyAccount: function() {
+    this.set('state', Chililog.mainPaneStates.MY_ACCOUNT);
   },
 
   /**

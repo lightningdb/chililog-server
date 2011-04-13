@@ -30,6 +30,13 @@
 {
   font-size: 14px;
 }
+
+.sc-view.edit-box {
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #222;
+}
+
 /*******************************************
  * Login
  *******************************************/

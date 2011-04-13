@@ -30,6 +30,7 @@ import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 
 import com.chililog.server.common.JsonTranslator;
@@ -66,7 +67,10 @@ public class ApiUtils
             conn.setRequestMethod(method.getName());
             conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
         }
-        conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authtoken);
+        if (!StringUtils.isEmpty(authtoken))
+        {
+            conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authtoken);
+        }
         return conn;
     }
 
@@ -309,7 +313,7 @@ public class ApiUtils
         // Should have ErrorAO to describe error
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
     }
-    
+
     /**
      * Check for a 401 Unauthorized response
      * 
@@ -323,5 +327,21 @@ public class ApiUtils
 
         // Should have ErrorAO to describe error
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+    }
+
+    /**
+     * Sends the request data as JSON
+     * 
+     * @param httpConn
+     *            HTTP connection
+     * @param jsonObject
+     *            Object to jsonify
+     * @throws IOException
+     */
+    public static void sendJSON(HttpURLConnection httpConn, Object objectToJsonify) throws IOException
+    {
+        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
+        JsonTranslator.getInstance().toJson(objectToJsonify, out);
+        out.close();
     }
 }

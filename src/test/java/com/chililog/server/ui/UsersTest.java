@@ -149,11 +149,9 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
+        createRequestAO.setStatus(Status.Enabled);
 
-        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
@@ -195,10 +193,7 @@ public class UsersTest
         readResponseAO.setRoles(new String[]
         { "repo.chililog.standard", "repo.chililog.power" });
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(readResponseAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, readResponseAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
@@ -214,24 +209,7 @@ public class UsersTest
         assertEquals(Status.Enabled, updateResponseAO.getStatus());
 
         // Try to login - password not changed
-        String crudTokenString = ApiUtils.login("UsersTest_crud_after_update", "test");
-
-        // Update again logging in as crud user
-        // User must be able to update their own details
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
-                HttpMethod.PUT, crudTokenString);
-
-        updateResponseAO.setUsername("UsersTest_crud_after_update2");
-
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(updateResponseAO, out);
-        out.close();
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check200OKResponse(responseCode.toString(), headers);
-
-        updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
-        assertEquals("UsersTest_crud_after_update2", updateResponseAO.getUsername());
+        ApiUtils.login("UsersTest_crud_after_update", "test");
 
         // Get list
         httpConn = ApiUtils.getHttpURLConnection(
@@ -277,14 +255,21 @@ public class UsersTest
         AuthenticationTokenAO systemAdminToken = AuthenticationTokenAO.fromString(_systemAdminAuthToken);
         AuthenticationTokenAO repoUserToken = AuthenticationTokenAO.fromString(repoUserAuthToken);
 
-        // Get ourself - OK
+        // Get ourself - ok
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + repoUserToken.getUserID(),
                 HttpMethod.GET, repoUserAuthToken);
-
+        
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get list OK
+        UserAO updateResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+        assertEquals(repoUserToken.getUserID(), updateResponseAO.getDocumentID());
+        assertNotNull(updateResponseAO.getUsername());
+        assertNull(updateResponseAO.getPassword());
+        assertNull(updateResponseAO.getRoles());
+        assertNull(updateResponseAO.getStatus());
+        
+        // Get list ok
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, repoUserAuthToken);
@@ -303,10 +288,7 @@ public class UsersTest
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
-        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
@@ -317,10 +299,7 @@ public class UsersTest
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + systemAdminToken.getUserID(),
                 HttpMethod.PUT, repoUserAuthToken);
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
@@ -489,11 +468,9 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
+        createRequestAO.setStatus(Status.Enabled);
 
-        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
@@ -509,10 +486,7 @@ public class UsersTest
 
         createResponseAO.setPassword("newpassword");
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createResponseAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createResponseAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
@@ -550,10 +524,7 @@ public class UsersTest
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
-        OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
@@ -568,11 +539,9 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
+        createRequestAO.setStatus(Status.Enabled);
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
@@ -587,10 +556,7 @@ public class UsersTest
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(createRequestAO, out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
@@ -626,10 +592,7 @@ public class UsersTest
 
         getListResponseAO[0].setUsername(null);
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, getListResponseAO[0]);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
@@ -644,10 +607,7 @@ public class UsersTest
         getListResponseAO[0].setUsername("abc");
         getListResponseAO[0].setDocumentVersion(null);
 
-        out = new OutputStreamWriter(httpConn.getOutputStream());
-        JsonTranslator.getInstance().toJson(getListResponseAO[0], out);
-        out.close();
-
+        ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 

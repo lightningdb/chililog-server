@@ -166,7 +166,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     this.set('authenticationToken', token);
 
     // Get user from server
-    var url = '/api/Users/' + json.UserID;
+    var url = '/api/Authentication';
     var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
     if (isAsync) {
       request.notify(this, 'endLoad').send();
@@ -189,8 +189,8 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       this.checkResponse(response);
 
       // Set data
-      var userJson = response.get('body');
-      this.set('loggedInUser', userJson);
+      var authenticatedUser = response.get('body');
+      this.set('loggedInUser', authenticatedUser);
 
       // Clear error data
       this.set('error', null);
@@ -200,7 +200,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     }
     catch (err) {
       this.set('error', err);
-      SC.Logger.info('Error in endLogin: ' + err.message);
+      SC.Logger.info('Error in endLoad: ' + err.message);
     }
   },
 
@@ -296,8 +296,8 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       }
 
       // Set data
-      var userJson = response.get('body');
-      this.set('loggedInUser', userJson);
+      var authenticatedUser = response.get('body');
+      this.set('loggedInUser', authenticatedUser);
       this.set('authenticationToken', token);
       this.set('authenticationTokenExpiry', expiry);
 

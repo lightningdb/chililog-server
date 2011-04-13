@@ -47,7 +47,7 @@ Chililog.mainPage = SC.Page.design({
 
         valueDidChange2: function() {
           if (this.get('value') === this.get('toggleOnValue')) {
-            Chililog.mainPaneController.showMyProfile();
+            Chililog.mainPaneController.showMyAccount();
           }
         }.observes('value')
       }),
@@ -81,13 +81,13 @@ Chililog.mainPage = SC.Page.design({
       else if (state === Chililog.mainPaneStates.ABOUT &&  nowShowing !== 'Chililog.aboutView') {
         this.setPath('body.nowShowing', 'Chililog.aboutView');
       }
-      else if (state === Chililog.mainPaneStates.MY_PROFILE &&  nowShowing !== 'Chililog.myProfileView') {
-        this.setPath('body.nowShowing', 'Chililog.myProfileView');
+      else if (state === Chililog.mainPaneStates.MY_ACCOUNT &&  nowShowing !== 'Chililog.myAccountView') {
+        this.setPath('body.nowShowing', 'Chililog.myAccountView');
       }
 
       // Make sure that we sync buttons with state just in case someone changes the state
       this.setPath('toolBar.menuOptions.value', state);
-      this.setPath('toolBar.myProfileButton.value', state === Chililog.mainPaneStates.MY_PROFILE);
+      this.setPath('toolBar.myProfileButton.value', state === Chililog.mainPaneStates.MY_ACCOUNT);
     }.observes('Chililog.mainPaneController.state')
 
 

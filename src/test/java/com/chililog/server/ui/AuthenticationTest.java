@@ -21,13 +21,12 @@ package com.chililog.server.ui;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,8 +36,10 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.data.UserBO.Status;
+import com.chililog.server.ui.api.AuthenticatedUserAO;
+import com.chililog.server.ui.api.AuthenticatedUserPasswordAO;
 import com.chililog.server.ui.api.AuthenticationAO;
-import com.chililog.server.ui.api.UserAO;
+import com.chililog.server.ui.api.ErrorAO;
 import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 import com.chililog.server.ui.api.Worker;
 import com.mongodb.BasicDBObject;
@@ -55,19 +56,38 @@ import com.mongodb.DBObject;
 public class AuthenticationTest
 {
     private static DB _db;
-    
+
     @BeforeClass
     public static void classSetup() throws Exception
     {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
-        
+
         // Create user
         UserBO user = new UserBO();
         user.setUsername("AuthenticationTest");
         user.setEmailAddress("AuthenticationTest@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
+        user.setStatus(Status.Enabled);
+        UserController.getInstance().save(_db, user);
+
+        // Create user to change profile
+        user = new UserBO();
+        user.setUsername("AuthenticationTest_UpdateProfile");
+        user.setEmailAddress("AuthenticationTest_UpdateProfile@chililog.com");
+        user.setPassword("hello there", true);
+        user.addRole("repo.sandpit.standard");
+        user.setStatus(Status.Enabled);
+        UserController.getInstance().save(_db, user);
+
+        // Create user to change profile
+        user = new UserBO();
+        user.setUsername("AuthenticationTest_ChangePassword");
+        user.setEmailAddress("AuthenticationTest_ChangePassword@chililog.com");
+        user.setPassword("hello there", true);
+        user.addRole("repo.sandpit.standard");
+        user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
         // Create disabled user
@@ -100,81 +120,361 @@ public class AuthenticationTest
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
-        
+
         WebServerManager.getInstance().stop();
     }
 
-    
     /**
-     * GET = 405 Method Not Allowed
+     * GEt the logged in user's details
      * 
-     * @throws IOException
+     * @throws Exception
      */
     @Test
-    public void testGET() throws IOException
+    public void testGET() throws Exception
     {
-        // Create a URL for the desired page
-        URL url = new URL("http://localhost:8989/api/Authentication");
-        URLConnection conn = url.openConnection();
-
-        String content = null;
-        try
-        {
-            conn.getInputStream();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
-        }
-
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
-        //_logger.debug(ApiUtils.formatResponseForLogging(responseCode, headers, content));
 
-        assertEquals("HTTP/1.1 405 Method Not Allowed", responseCode);
-        assertNotNull(headers.get("Date"));
-        assertEquals("POST, DELETE", headers.get("Allow"));
-        assertNull(headers.get("Content-Type"));
-        assertNull(content);
+        // Login OK
+        String token = ApiUtils.login("AuthenticationTest", "hello there");
+
+        // Get user details
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, token);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        AuthenticatedUserAO readResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest", readResponseAO.getUsername());
+        assertEquals("AuthenticationTest@chililog.com", readResponseAO.getEmailAddress());
+
     }
-    
+
     /**
-     * PUT = 405 Method Not Allowed
+     * Update profile
      * 
-     * @throws IOException
+     * @throws Exception
      */
     @Test
-    public void testPUT() throws IOException
+    public void testUpdateProfile() throws Exception
     {
-        // Create a URL for the desired page
-        URL url = new URL("http://localhost:8989/api/Authentication");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setDoOutput(true);
-        conn.setRequestMethod("PUT");
-
-        String content = null;
-        try
-        {
-            conn.getInputStream();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
-        }
-
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
-        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
-        //_logger.debug(ApiUtils.formatResponseForLogging(responseCode, headers, content));
 
-        assertEquals("HTTP/1.1 405 Method Not Allowed", responseCode);
-        assertNotNull(headers.get("Date"));
-        assertEquals("POST, DELETE", headers.get("Allow"));
-        assertNull(headers.get("Content-Type"));
-        assertNull(content);
+        // Login OK
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.POST, null);
+
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest_UpdateProfile");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+
+        ApiUtils.sendJSON(httpConn, requestContent);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        AuthenticatedUserAO authenticatedUser = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest_UpdateProfile", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest_UpdateProfile@chililog.com", authenticatedUser.getEmailAddress());
+        assertNull(authenticatedUser.getDisplayName());
+
+        String token = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
+
+        // Update OK
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        authenticatedUser.setUsername("AuthenticationTest_UpdateProfile2");
+        authenticatedUser.setEmailAddress("AuthenticationTest_UpdateProfile2@chililog.com");
+        authenticatedUser.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, authenticatedUser);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        authenticatedUser = JsonTranslator.getInstance()
+                .fromJson(responseContent.toString(), AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest_UpdateProfile2", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest_UpdateProfile2@chililog.com", authenticatedUser.getEmailAddress());
+        assertEquals("Changed Man", authenticatedUser.getDisplayName());
+
+        // Update - error wrong document id
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        AuthenticatedUserAO request = new AuthenticatedUserAO();
+        request.setDocumentID("badid");
+        request.setDocumentVersion(4L);
+        request.setUsername("AuthenticationTest_UpdateProfile2");
+        request.setEmailAddress("AuthenticationTest_UpdateProfile2@chililog.com");
+        request.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+
+        // Update - error missing username
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setDocumentVersion(authenticatedUser.getDocumentVersion());
+        request.setUsername(null);
+        request.setEmailAddress("AuthenticationTest_UpdateProfile2@chililog.com");
+        request.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
+
+        // Update - error duplicate username
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setDocumentVersion(authenticatedUser.getDocumentVersion());
+        request.setUsername("AuthenticationTest");
+        request.setEmailAddress("AuthenticationTest_UpdateProfile2@chililog.com");
+        request.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.User.DuplicateUsernameError", errorAO.getErrorCode());
+
+        // Update - error missing email
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setDocumentVersion(authenticatedUser.getDocumentVersion());
+        request.setUsername("AuthenticationTest_UpdateProfile2");
+        request.setEmailAddress(null);
+        request.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
+
+        // Update - duplicate email
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setDocumentVersion(authenticatedUser.getDocumentVersion());
+        request.setUsername("AuthenticationTest_UpdateProfile2");
+        request.setEmailAddress("AuthenticationTest@chililog.com");
+        request.setDisplayName("Changed Man");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Data.User.DuplicateEmailAddressError", errorAO.getErrorCode());
+    }
+
+    /**
+     * Change password
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testChangePassword() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Login OK
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.POST, null);
+
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest_ChangePassword");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+
+        ApiUtils.sendJSON(httpConn, requestContent);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        AuthenticatedUserAO authenticatedUser = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest_ChangePassword", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest_ChangePassword@chililog.com", authenticatedUser.getEmailAddress());
+        assertNull(authenticatedUser.getDisplayName());
+
+        String token = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
+
+        // Change password OK
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=change_password",
+                HttpMethod.PUT, token);
+
+        AuthenticatedUserPasswordAO request = new AuthenticatedUserPasswordAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setOldPassword("hello there");
+        request.setNewPassword("bye");
+        request.setConfirmNewPassword("bye");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        authenticatedUser = JsonTranslator.getInstance()
+                .fromJson(responseContent.toString(), AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest_ChangePassword", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest_ChangePassword@chililog.com", authenticatedUser.getEmailAddress());
+        assertNull(authenticatedUser.getDisplayName());
+
+        // Login again OK
+        ApiUtils.login("AuthenticationTest_ChangePassword", "bye");
+
+        // Change password error - bad old password
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=change_password",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserPasswordAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setOldPassword("bad password");
+        request.setNewPassword("bye1");
+        request.setConfirmNewPassword("bye1");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
+
+        // Change password error - bad confirm password
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=change_password",
+                HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserPasswordAO();
+        request.setDocumentID(authenticatedUser.getDocumentID());
+        request.setOldPassword("bye");
+        request.setNewPassword("bye1");
+        request.setConfirmNewPassword("bye2");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
+
+    }
+
+    /**
+     * Change password
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testInvalidPutActions() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Login OK
+        String token = ApiUtils.login("AuthenticationTest", "hello there");
+
+        // Bad action
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=bad", HttpMethod.PUT,
+                token);
+
+        AuthenticatedUserPasswordAO request = new AuthenticatedUserPasswordAO();
+        request.setDocumentID("abc");
+        request.setOldPassword("hello there");
+        request.setNewPassword("bye");
+        request.setConfirmNewPassword("bye");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("java.lang.UnsupportedOperationException", errorAO.getErrorCode());
+
+        // Bad no action
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.PUT, token);
+
+        request = new AuthenticatedUserPasswordAO();
+        request.setDocumentID("abc");
+        request.setOldPassword("hello there");
+        request.setNewPassword("bye");
+        request.setConfirmNewPassword("bye");
+
+        ApiUtils.sendJSON(httpConn, request);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.UriQueryStringParameterError", errorAO.getErrorCode());
+    }
+
+    /**
+     * Change password
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testInvalidTokens() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Login OK
+        String token = ApiUtils.login("AuthenticationTest", "hello there");
+
+        // No token
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, null);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.AuthenticationTokenInvalidError", errorAO.getErrorCode());
+
+        // Bad hash
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, token + "abc");
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:UI.AuthenticationTokenInvalidError", errorAO.getErrorCode());
+        
+    
+    
     }
     
     /**
@@ -184,42 +484,37 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_ByUsername() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest");
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = ApiUtils.getResponseContent(conn);
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         ApiUtils.check200OKResponse(responseCode, headers);
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
-        UserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+
+        AuthenticatedUserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
         assertEquals("AuthenticationTest", loggedInUser.getUsername());
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
-        assertNull(loggedInUser.getPassword());
-        assertEquals(1, loggedInUser.getRoles().length);
-        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, loggedInUser.getRoles()[0]);
         assertNotNull(loggedInUser.getDocumentID());
-        assertEquals(Status.Enabled, loggedInUser.getStatus());
     }
-    
+
     /**
      * POST - login successful
      * 
@@ -227,43 +522,37 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_ByEmailAddress() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest@chililog.com");
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = ApiUtils.getResponseContent(conn);
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         ApiUtils.check200OKResponse(responseCode, headers);
         assertNotNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
-        UserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO.class);
+
+        AuthenticatedUserAO loggedInUser = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
         assertEquals("AuthenticationTest", loggedInUser.getUsername());
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
-        assertNull(loggedInUser.getPassword());
-        assertEquals(1, loggedInUser.getRoles().length);
-        assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, loggedInUser.getRoles()[0]);
         assertNotNull(loggedInUser.getDocumentID());
-        assertEquals(Status.Enabled, loggedInUser.getStatus());
     }
- 
-    
+
     /**
      * POST - login failed because user not found
      * 
@@ -271,22 +560,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_UserNotFound() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("badusername");
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -299,17 +586,17 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Bad username or password."));
     }
-    
+
     /**
      * POST - login failed because of a bad password
      * 
@@ -317,22 +604,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_BadPassword() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest");
         requestContent.setPassword("bad password");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -345,17 +630,17 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Bad username or password."));
     }
-    
+
     /**
      * POST - login failed because user status is disabled
      * 
@@ -363,22 +648,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_DisabledStatus() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest_DisabledUser");
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -391,17 +674,17 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Account disabled."));
     }
- 
+
     /**
      * POST - login failed because user status is locked
      * 
@@ -409,22 +692,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_LockedStatus() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest_LockedUser");
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -437,10 +718,10 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
@@ -455,22 +736,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_NoUser() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername(null);
         requestContent.setPassword("hello there");
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -483,17 +762,17 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 400 Bad Request", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("'Username' is required but not supplied."));
     }
-    
+
     /**
      * POST - login failed because password not supplied
      * 
@@ -501,22 +780,20 @@ public class AuthenticationTest
      */
     @Test
     public void testPOST_NoPassword() throws IOException
-    {    
+    {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
-                
+
         AuthenticationAO requestContent = new AuthenticationAO();
         requestContent.setUsername("AuthenticationTest");
         requestContent.setPassword(null);
         requestContent.setExpiryType(ExpiryType.Absolute);
         requestContent.setExpirySeconds(6000);
-        
-        OutputStreamWriter out = new OutputStreamWriter(conn.getOutputStream());
-        JsonTranslator.getInstance().toJson(requestContent,  out);
-        out.close();
+
+        ApiUtils.sendJSON(conn, requestContent);
 
         // Get response
         String responseContent = null;
@@ -529,17 +806,17 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 400 Bad Request", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Password' is required but not supplied."));
     }
-    
+
     /**
      * DELETE - logout successful
      * 
@@ -547,16 +824,16 @@ public class AuthenticationTest
      */
     @Test
     public void testDELETE() throws IOException
-    {    
+    {
         // Login
         String authToken = ApiUtils.login("AuthenticationTest", "hello there");
-        
+
         // Logout
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
         conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authToken);
-        
+
         String logoutResponseContent = ApiUtils.getResponseContent(conn);
 
         HashMap<String, String> logoutHeaders = new HashMap<String, String>();
@@ -565,7 +842,7 @@ public class AuthenticationTest
         ApiUtils.check204NoContentResponse(logoutResponseCode, logoutHeaders);
         assertEquals("", logoutResponseContent);
     }
-    
+
     /**
      * DELETE - logout failed. Authentication token not present
      * 
@@ -573,12 +850,12 @@ public class AuthenticationTest
      */
     @Test
     public void testDELETE_AuthenticationTokenNotPresent() throws IOException
-    {    
+    {
         // Logout
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
-        
+
         String responseContent = null;
         try
         {
@@ -589,14 +866,14 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
+
         // Content
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Authentication token is invalid. Please login again."));
@@ -609,7 +886,7 @@ public class AuthenticationTest
      */
     @Test
     public void testDELETE_AuthenticationTokenInvalid() throws IOException
-    {    
+    {
         // Logout
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -626,14 +903,14 @@ public class AuthenticationTest
         {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
+
         // Content
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Authentication token is invalid. Please login again."));
@@ -646,7 +923,7 @@ public class AuthenticationTest
      */
     @Test
     public void testDELETE_AuthenticationTokenExpired() throws IOException
-    {    
+    {
         // Login
         String authToken = ApiUtils.login("AuthenticationTest", "hello there", ExpiryType.Absolute, -1);
 
@@ -657,17 +934,17 @@ public class AuthenticationTest
         conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, authToken);
 
         String responseContent = ApiUtils.getResponseContent((HttpURLConnection) conn);
-        
+
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
-        
+
         assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
         assertNotNull(headers.get("Date"));
         assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
-        
+
         // Content
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Authentication token expired. Please login again."));
     }
-    
+
 }

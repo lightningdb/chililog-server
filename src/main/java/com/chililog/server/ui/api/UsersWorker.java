@@ -90,23 +90,13 @@ public class UsersWorker extends Worker
                 return new ApiResult();
             }
 
-            // Cannot POST or DELETE
-            if (requestMethod == HttpMethod.POST || requestMethod == HttpMethod.DELETE)
+            // Cannot PUT, POST or DELETE
+            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.POST || requestMethod == HttpMethod.DELETE)
             {
                 throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
             }
 
-            // Cannot PUT any other user record except for the logged in user
-            if (requestMethod == HttpMethod.PUT)
-            {
-                String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                if (!id.equals(this.getAuthenticatedUser().getDocumentID().toString()))
-                {
-                    throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
-                }
-            }
-
-            // Do GET checks when we execute
+            // Allow GET
             return new ApiResult();
         }
         catch (Exception ex)
@@ -222,6 +212,7 @@ public class UsersWorker extends Worker
         {
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
+            boolean isSysAdmin = this.getAuthenticatedUser().isSystemAdministrator();
 
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
@@ -248,7 +239,7 @@ public class UsersWorker extends Worker
                     ArrayList<UserAO> aoList = new ArrayList<UserAO>();
                     for (UserBO userBO : boList)
                     {
-                        aoList.add(new UserAO(userBO));
+                        aoList.add(new UserAO(userBO, isSysAdmin));
                     }
                     responseContent = aoList.toArray(new UserAO[] {});
 
@@ -264,7 +255,7 @@ public class UsersWorker extends Worker
             {
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)));
+                responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)), isSysAdmin);
             }
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }

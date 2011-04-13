@@ -41,7 +41,7 @@ Chililog.loginPage = SC.Page.design({
 
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
-          isEnabledBinding: 'Chililog.loginPaneController.isEdit',
+          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
           valueBinding: 'Chililog.loginPaneController.username'
           // Set focus
           // http://groups.google.com/group/sproutcore/browse_thread/thread/7e72be97d0229689
@@ -66,7 +66,7 @@ Chililog.loginPage = SC.Page.design({
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
           isPassword: YES,
-          isEnabledBinding: 'Chililog.loginPaneController.isEdit',
+          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
           valueBinding: 'Chililog.loginPaneController.password'
         })
       }),
@@ -79,7 +79,7 @@ Chililog.loginPage = SC.Page.design({
           layout: { top: 0, left: 0, right: 0, height: 20 },
           title: '_loginPane.RememberMe',
           localize: YES,
-          isEnabledBinding: 'Chililog.loginPaneController.isEdit',
+          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
           valueBinding: 'Chililog.loginPaneController.rememberMe'
         })
       }),
@@ -90,12 +90,7 @@ Chililog.loginPage = SC.Page.design({
         localize: YES,
         isDefault: YES,
         controlSize: SC.HUGE_CONTROL_SIZE,
-        isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isBusy')
-          .bool()
-          .transform(function(value, isForward) {
-          return !value;
-        }),
-
+        isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isBusy').oneWay().not(),
         target: 'Chililog.loginPaneController',
         action: 'login'
       }),
@@ -103,8 +98,8 @@ Chililog.loginPage = SC.Page.design({
       loadingImage: Chililog.ImageView.design({
         layout: { top: 235, right: 50, width: 16, height: 16 },
         value: sc_static('images/working'),
-        isVisibleBinding: 'Chililog.loginPaneController.isBusy',
-        useImageCache: NO
+        isVisibleBinding: SC.Binding.from('Chililog.loginPaneController.isBusy').oneWay().bool(),
+        useImageQueue: NO
       })
     }),  //boxView
 
