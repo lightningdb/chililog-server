@@ -3,19 +3,6 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
-/**
- * Maps Chililog.UserRecord property names to property names used by the server
- */
-Chililog.userDataMap = [
-  ['username' ,'Username'],
-  ['emailAddress' ,'EmailAddress'],
-  ['password' ,'Password'],
-  ['roles' ,'Roles'],
-  ['status' ,'Status'],
-  ['displayName' ,'DisplayName'],
-  ['gravatarMD5Hash' ,'GravatarMD5Hash']
-];
-
 
 /** @class
 
@@ -41,7 +28,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    */
   synchronizeWithServer: function(callbackTarget, callbackFunction) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
-    var loggedInUser = Chililog.sessionDataController.get('loggedInUser');
+    var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
 
     var isBusy = this.get('isBusy');
     if (isBusy) {
@@ -49,7 +36,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
     }
 
     // Not logged in, so cannot sync
-    if (SC.none(loggedInUser)) {
+    if (!isLoggedIn) {
       return;
     }
 
@@ -71,17 +58,17 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       this.checkResponse(response);
 
       // Set data
-      var users = response.get('body');
-      if (!SC.none(users) && SC.isArray(users)) {
-        for (var i = 0; i < users.length; i++) {
-          var user = users[i];
+      var userAOArray = response.get('body');
+      if (!SC.none(userAOArray) && SC.isArray(userAOArray)) {
+        for (var i = 0; i < userAOArray.length; i++) {
+          var userAO = userAOArray[i];
 
           // See if user record exists
-          var userRecord = Chililog.store.find(Chililog.UserRecord, user.DocumentID);
+          var userRecord = Chililog.store.find(Chililog.UserRecord, userAO.DocumentID);
           if (SC.none(userRecord)) {
-            userRecord = Chililog.store.createRecord(Chililog.UserRecord, {}, user.DocumentID);
+            userRecord = Chililog.store.createRecord(Chililog.UserRecord, {}, userAO.DocumentID);
           }
-          this.serverDataToRecord(user, userRecord);
+          userRecord.fromApiObject(userAO);
         }
       }
 
@@ -100,42 +87,6 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 
     // Return YES to signal handling of callback
     return YES;
-  },
-
-  /**
-   * Maps server data to a user record
-   * @param {Object} serverData
-   * @param {Chililog.UserRecord} record
-   */
-  serverDataToRecord: function(serverData, record) {
-    // If version has not changed, then there's nothing to update
-    var recordVersion = record.get('documentVersion');
-    var serverDataVersion = serverData.DocumentVersion;
-    if (recordVersion === serverDataVersion) {
-      return;
-    }
-
-    record.set('documentVersion', serverDataVersion);
-    for (var i = 0; i < Chililog.userDataMap.length; i++) {
-      var map = Chililog.userDataMap[i];
-      var recordPropertyName = map[0];
-      var serverDataPropertyName = map[1];
-      record.set(recordPropertyName, serverData[serverDataPropertyName]);
-    }
-  },
-
-  /**
-   * Maps user record data to server data
-   * @param {Chililog.UserRecord} record
-   * @param {Object} serverData
-   */
-  recordToServerData: function(record, serverData) {
-    for (var i = 0; i < Chililog.userDataMap.length; i++) {
-      var map = Chililog.userDataMap[i];
-      var recordPropertyName = map[0];
-      var serverDataPropertyName = map[1];
-      serverData[serverDataPropertyName] = record.get(recordPropertyName);
-    }
   }
 
 });

@@ -24,13 +24,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
   error: '',
 
   /**
-   * The logged in user
-   *
-   * @type User object hash
-   */
-  loggedInUser: null,
-
-  /**
    * The authentication token
    *
    * @type String
@@ -50,8 +43,22 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @type Boolean
    */
   isLoggedIn: function() {
-    return this.get('loggedInUser') !== null;
-  }.property('loggedInUser').cacheable(),
+    return !SC.empty(this.get('authenticationToken'));
+  }.property('authenticationToken').cacheable(),
+
+  /**
+   * Get the logged in user from the store.  There should only be 1 record if user is logged in.
+   *
+   * @type Chililog.AuthenticatedUserRecord
+   */
+  loggedInUser: function() {
+    var userRecords = Chililog.store.find(Chililog.AuthenticatedUserRecord);
+    if (userRecords.get('length') === 0) {
+      return null;
+    } else {
+      return userRecords.objectAt(0);
+    }
+  }.property('authenticationToken').cacheable(),
 
   /**
    * Returns the display name of the logged in user. If not set, the username is returned.
@@ -130,16 +137,15 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       isAsync = YES;
     }
 
-    // Assumed logged out
-    this.set('authenticationTokenExpiry', null);
-    this.set('authenticationToken', null);
-    this.set('loggedInUser', null);
-
     // Get token from local store
     var token = Chililog.localStoreController.getItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
     if (SC.none(token)) {
+      this.logout();
       return NO;
     }
+
+    // Assumed logged out
+    this.logout();
 
     var delimiterIndex = token.indexOf('~~~');
     if (delimiterIndex < 0) {
@@ -161,15 +167,12 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       return NO;
     }
 
-    // Save what we have so far
-    this.set('authenticationTokenExpiry', expiry);
-    this.set('authenticationToken', token);
-
     // Get user from server
     var url = '/api/Authentication';
     var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
+    var params = { expiry: expiry, token: token };
     if (isAsync) {
-      request.notify(this, 'endLoad').send();
+      request.notify(this, 'endLoad', params).send();
     } else {
       var response = request.send();
       this.endLoad(response);
@@ -182,15 +185,22 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * Process data when user information returns
    *
    * @param {SC.Response} response
+   * @param {Object} data hash of parameters pass edin via request.notify()
    */
-  endLoad: function(response) {
+  endLoad: function(response, params) {
     try {
       // Check status
       this.checkResponse(response);
 
-      // Set data
-      var authenticatedUser = response.get('body');
-      this.set('loggedInUser', authenticatedUser);
+      // Save authenticated user details
+      var authenticatedUserAO = response.get('body');
+      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {}, authenticatedUserAO['DocumentID']);
+      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+      Chililog.store.commitRecords();
+
+      // Save what we have so far
+      this.set('authenticationTokenExpiry', params.expiry);
+      this.set('authenticationToken', params.token);
 
       // Clear error data
       this.set('error', null);
@@ -295,9 +305,12 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
         Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
       }
 
-      // Set data
-      var authenticatedUser = response.get('body');
-      this.set('loggedInUser', authenticatedUser);
+      // Save authenticated user details
+      var authenticatedUserAO = response.get('body');
+      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {}, authenticatedUserAO['DocumentID']);
+      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+      Chililog.store.commitRecords();
+
       this.set('authenticationToken', token);
       this.set('authenticationTokenExpiry', expiry);
 
@@ -322,11 +335,20 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * Remove authentication tokens
    */
   logout: function() {
+    // Remove token from local store
     Chililog.localStoreController.removeItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
 
+    // Delete authenticated user from store
+    var authenticatedUserRecords = Chililog.store.find(Chililog.AuthenticatedUserRecord);
+    authenticatedUserRecords.forEach(function(item, index, enumerable) {
+      item.destroy();
+    }, this);
+    Chililog.store.commitRecords();
+
+    // Clear cached token
     this.set('authenticationTokenExpiry', null);
     this.set('authenticationToken', null);
-    this.set('loggedInUser', null);
+    this.notifyPropertyChange('authenticationToken');
 
     return;
   }

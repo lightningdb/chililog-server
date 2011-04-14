@@ -9,7 +9,7 @@
  *
  * @type Boolean
  */
-Chililog.RUNNING_UNIT_TESTS = NO;
+Chililog.RUNNING_UNIT_TESTS = YES;
 
 /**
  * This is the function that will start the app running.
@@ -17,6 +17,8 @@ Chililog.RUNNING_UNIT_TESTS = NO;
 Chililog.main = function main() {
   try {
     // Don't need to execute anything below this line if running unit test cases
+    // if (window.location.hash.toString().match(‘fixtures’))
+    // Chililog.store.from(SC.Record.fixtures);
     if (Chililog.RUNNING_UNIT_TESTS) {
       return;
     }
