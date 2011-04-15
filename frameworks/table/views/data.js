@@ -39,6 +39,7 @@ Endash.DataView = SC.ListView.extend(Endash.CollectionFastPath, {
     @property {SC.View}
   */
   cellContentView: SC.LabelView.extend({
+    layout: {left: 10, right: 10},
     isPoolable: YES,
     layerIsCacheable: YES,
     contentValueKeyBinding: '*column.key',

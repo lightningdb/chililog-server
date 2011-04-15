@@ -202,8 +202,7 @@ SC.TableRowView = SC.View.extend(SC.SimpleLayout, {
       layoutIndex: col,
       childViews: ['contentView'],
       contentView: E.extend(attrs, {
-        parentView: null, 
-        layout: {left: 10, right: 10}
+        parentView: null
       })
     });
   },
