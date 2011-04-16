@@ -330,7 +330,7 @@ SC.TableView = SC.View.extend({
         sortDescriptorBinding: SC.Binding.from('.sortDescriptor',this),
         columnsBinding: SC.Binding.from('.columns',this).oneWay(),
         contentBinding: SC.Binding.from('.content',this),
-        useToggleSelection: SC.Binding.from('.useToggleSelection',this),
+        useToggleSelectionBinding: SC.Binding.from('.useToggleSelection',this),
         delegate: this.get('delegate'),
         isDropTarget: this.get('isDropTarget'),
         isSelectable: this.get('isSelectable')
