@@ -43,7 +43,8 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.myAccountViewController.username'
       })
     }),
 
@@ -58,7 +59,8 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.myAccountViewController.emailAddress'
       })
     }),
 
@@ -73,7 +75,8 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.myAccountViewController.displayName'
       })
     }),
 
@@ -81,7 +84,10 @@ Chililog.myAccountView = SC.View.design({
       layout: {top: 210, left: 20, width: 100 },
       title: '_save',
       localize: YES,
-      controlSize: SC.HUGE_CONTROL_SIZE
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isDefault: YES,
+      target: 'Chililog.myAccountViewController',
+      action: 'save'
     }),
     
     cancelButton: SC.ButtonView.design({
@@ -156,7 +162,9 @@ Chililog.myAccountView = SC.View.design({
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
       isDefault: YES,
-      isEnabled: NO
+      target: 'Chililog.myAccountViewController',
+      action: 'changePassword'
+
     })
   })  // changePassword
 

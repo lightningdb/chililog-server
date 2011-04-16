@@ -39,6 +39,7 @@ public class AuthenticatedUserAO extends AO
     private String _username;
     private String _emailAddress;
     private String _displayName;
+    private String[] _roles = null;
     private String _gravatarMD5Hash;
 
     /**
@@ -62,6 +63,7 @@ public class AuthenticatedUserAO extends AO
         _username = userBO.getUsername();
         _displayName = userBO.getDisplayName();
         _emailAddress = userBO.getEmailAddress();
+        _roles = userBO.getRoles();
         if (!StringUtils.isBlank(_emailAddress))
         {
             try
@@ -91,6 +93,8 @@ public class AuthenticatedUserAO extends AO
         userBO.setDisplayName(_displayName);
 
         userBO.setEmailAddress(_emailAddress);
+        
+        // Not allowed to update roles under "my account"
     }
 
     public String getDocumentID()
@@ -151,6 +155,16 @@ public class AuthenticatedUserAO extends AO
     public void setGravatarMD5Hash(String gravatarMD5Hash)
     {
         _gravatarMD5Hash = gravatarMD5Hash;
+    }
+
+    public String[] getRoles()
+    {
+        return _roles;
+    }
+
+    public void setRoles(String[] roles)
+    {
+        _roles = roles;
     }
 
 }

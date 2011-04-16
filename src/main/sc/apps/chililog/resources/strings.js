@@ -13,6 +13,8 @@
 SC.stringsFor('English', {
   '_save': 'Save',
   '_cancel': 'Cancel',
+  '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
+  '_illegalStateError': 'Illegal state "%@".',
 
   '_mainPane.Search': 'Search',
   '_mainPane.Search.ToolTip': 'Search for log entries',
@@ -43,8 +45,9 @@ SC.stringsFor('English', {
   '_myAccountView.NewPassword': 'New Password',
   '_myAccountView.ConfirmPassword': 'Confirm New Password',
 
-  '_sessionDataController.UsernameRequired': 'Username is required',
-  '_sessionDataController.PasswordRequired': 'Password is required',
+  '_sessionDataController.UsernameRequiredError': 'Username is required',
+  '_sessionDataController.PasswordRequiredError': 'Password is required',
+  '_sessionDataController.TokenNotFoundInResponseError': 'Token not found in authentication response',
 
   'end': 'end'
 });

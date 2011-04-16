@@ -14,7 +14,7 @@
 Chililog.UserRecord = SC.Record.extend(
 /** @scope Chililog.UserRecord.prototype */ {
 
-  primaryKey: 'documentID',
+  primaryKey: Chililog.DOCUMENT_ID_RECORD_FIELD_NAME,
 
   documentID: SC.Record.attr(String),
   documentVersion: SC.Record.attr(Number),
@@ -33,8 +33,8 @@ Chililog.UserRecord = SC.Record.extend(
    */
   fromApiObject: function(userAO) {
     // If version has not changed, then there's nothing to update
-    var recordVersion = this.get('documentVersion');
-    var apiObjectVersion = userAO['DocumentVersion'];
+    var recordVersion = this.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    var apiObjectVersion = userAO[Chililog.DOCUMENT_VERSION_AO_FIELD_NAME ];
     if (recordVersion === apiObjectVersion) {
       return;
     }
@@ -70,8 +70,8 @@ Chililog.UserRecord = SC.Record.extend(
  * Maps Chililog.UserRecord property names to property names used by the server API objects
  */
 Chililog.USER_RECORD_MAP = [
-  ['documentID' ,'DocumentID'],
-  ['documentVersion' ,'DocumentVersion'],
+  [Chililog.DOCUMENT_ID_RECORD_FIELD_NAME, Chililog.DOCUMENT_ID_AO_FIELD_NAME ],
+  [Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME, Chililog.DOCUMENT_VERSION_AO_FIELD_NAME],
   ['username' ,'Username'],
   ['emailAddress' ,'EmailAddress'],
   ['password' ,'Password'],

@@ -17,7 +17,7 @@ Chililog.DataSource = SC.DataSource.extend(
 /** @scope Chililog.DataSource.prototype */ {
 
   /**
-   We are not going to handle this because it is done via our data controllers
+   We are not going to do server lookups this because it is done via our data controllers
    We only perform local queries on the store.
 
    @param {SC.Store} store the requesting store
@@ -25,11 +25,11 @@ Chililog.DataSource = SC.DataSource.extend(
    @returns {Boolean} YES if you can handle fetching the query, NO otherwise
    */
   fetch: function(store, query) {
-    return NO; // return YES if you handled the query
+    return YES; // return YES if you handled the query
   },
 
   /**
-   We are not going to handle this because it is done via our data controllers.
+   We are not going to do server lookups this because it is done via our data controllers.
    We only perform local queries on the store.
 
    @param {SC.Store} store the requesting store
@@ -37,7 +37,7 @@ Chililog.DataSource = SC.DataSource.extend(
    @returns {Boolean} YES if you can handle fetching the query, NO otherwise
    */
   retrieveRecord: function(store, storeKey) {
-    return NO; // return YES if you handled the storeKey
+    return YES; // return YES if you handled the storeKey
   },
 
   /**

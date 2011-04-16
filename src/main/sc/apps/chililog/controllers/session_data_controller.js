@@ -100,11 +100,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @type Boolean
    */
   isInAdministratorRole: function() {
-    var user = this.get('loggedInUser');
-    if (SC.none(user)) {
+    var loggedInUser = this.get('loggedInUser');
+    if (SC.none(loggedInUser)) {
       return NO;
     }
-    var idx = jQuery.inArray('system.administrator', user.Roles);
+    var idx = jQuery.inArray('system.administrator', loggedInUser.get('roles'));
     return idx >= 0;
   }.property('loggedInUser').cacheable(),
 
@@ -222,7 +222,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * Start async login process
    *
    * @param {String} username The username to use for login
-   * @param {String} password The username to use for login
+   * @param {String} password The password to use for login
    * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @param {Object} [callbackTarget] Optional callback object
@@ -233,11 +233,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     // Get our data from the properties using the SC 'get' methods
     // Need to do this because these properties have been bound/observed.
     if (SC.empty(username)) {
-      throw SC.Error.desc('_sessionDataController.UsernameRequired'.loc(), 'username');
+      throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
     }
 
     if (SC.empty(password)) {
-      throw SC.Error.desc('_sessionDataController.PasswordRequired'.loc(), 'password');
+      throw Chililog.$error('_sessionDataController.PasswordRequiredError', null, 'password');
     }
 
     if (SC.none(rememberMe)) {
@@ -300,7 +300,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       if (SC.none(token)) {
         token = headers[Chililog.AUTHENTICATION_HEADER_NAME_LCASE];
         if (SC.none(token)) {
-          throw SC.Error.desc('Token not found in authentication response');
+          throw Chililog.$error('_sessionDataController.TokenNotFoundInResponseError');
         }
       }
 

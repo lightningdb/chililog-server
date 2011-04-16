@@ -38,8 +38,7 @@ Chililog.main = function main() {
     Chililog.mainPaneController.set('state', startUpState);
 
     // Manually fire event of state change because bindings do not fire until main finishes
-    var mainPane = Chililog.mainPage.get('mainPane');
-    mainPane.get('stateDidChange').call(mainPane);
+    Chililog.mainPaneController.get('stateDidChange').call(Chililog.mainPaneController);
 
     // Sync data with server
     Chililog.userDataController.synchronizeWithServer(null, null);
@@ -48,6 +47,7 @@ Chililog.main = function main() {
   catch (err) {
     // Show Error
     SC.AlertPane.error(err);
+    SC.Logger.error('main(): ' + err);
   }
 };
 

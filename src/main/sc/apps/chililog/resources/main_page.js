@@ -64,33 +64,8 @@ Chililog.mainPage = SC.Page.design({
 
     body: SC.ContainerView.design({
       layout: { top: 40, left: 0, right: 0, bottom: 0 }
-    }),
-
-    /**
-     * When the state in the controller changes, we change this pane to reflect it
-     */
-    stateDidChange: function() {
-      var state = Chililog.mainPaneController.get('state');
-      var nowShowing = this.getPath('body.nowShowing');
-      if (state === Chililog.mainPaneStates.SEARCH &&  nowShowing !== 'Chililog.searchView') {
-        this.setPath('body.nowShowing', 'Chililog.searchView');
-      }
-      else if (state === Chililog.mainPaneStates.ANALYSE &&  nowShowing !== 'Chililog.aboutView') {
-        this.setPath('body.nowShowing', 'Chililog.aboutView');
-      }
-      else if (state === Chililog.mainPaneStates.ABOUT &&  nowShowing !== 'Chililog.aboutView') {
-        this.setPath('body.nowShowing', 'Chililog.aboutView');
-      }
-      else if (state === Chililog.mainPaneStates.MY_ACCOUNT &&  nowShowing !== 'Chililog.myAccountView') {
-        this.setPath('body.nowShowing', 'Chililog.myAccountView');
-      }
-
-      // Make sure that we sync buttons with state just in case someone changes the state
-      this.setPath('toolBar.menuOptions.value', state);
-      this.setPath('toolBar.myProfileButton.value', state === Chililog.mainPaneStates.MY_ACCOUNT);
-    }.observes('Chililog.mainPaneController.state')
-
-
+    })
+    
   })  //mainPane
 
 });

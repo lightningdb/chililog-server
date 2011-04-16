@@ -17,5 +17,4 @@ Chililog = SC.Application.create(
   VERSION: '0.1.0',
 
   store: SC.Store.create().from('Chililog.DataSource')
-  
 });
