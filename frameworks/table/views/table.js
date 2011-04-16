@@ -394,7 +394,7 @@ SC.TableView = SC.View.extend({
   widthsDidChange: function(object, key, value, force) {
     this._dataView.contentView.widthsDidChange(object, key, value, force);
     this._tableHeaderView.contentView.widthsDidChange(object, key, value, force);
-  }.observes('*columns.@each.width'),
+  }.observes('*columns.@each.width')
 
   
 });
