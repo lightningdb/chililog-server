@@ -1524,13 +1524,49 @@ function clickOn(view, shiftKey, ctrlKey) {
 var pane = SC.ControlTestPane.design()
   .add("basicNoHeaders", SC.TableView, {
     layout: { width: 300, height: 200 },
-    columns:columns,
+    columns:[
+      SC.TableColumn.create({
+        key:   'title',
+        label: 'Title',
+        width: 80
+      }),
+
+      SC.TableColumn.create({
+        key:   'rating',
+        label: 'Rating',
+        width: 80
+      }),
+
+      SC.TableColumn.create({
+        key:   'votes',
+        label: 'Votes',
+        width: 80
+      })
+    ],
     content:content,
     useHeaders:NO
   })
   .add("basicHeaders", SC.TableView, {
     layout: { width: 300, height: 200 },
-    columns:columns,
+    columns:[
+      SC.TableColumn.create({
+        key:   'title',
+        label: 'Title',
+        width: 80
+      }),
+
+      SC.TableColumn.create({
+        key:   'rating',
+        label: 'Rating',
+        width: 80
+      }),
+
+      SC.TableColumn.create({
+        key:   'votes',
+        label: 'Votes',
+        width: 80
+      })
+    ],
     content:content,
     useHeaders:YES,
     headerHeight:36
