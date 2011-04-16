@@ -16,6 +16,6 @@ Chililog = SC.Application.create(
   NAMESPACE: 'Chililog',
   VERSION: '0.1.0',
 
-  store: SC.Store.create().from(SC.Record.fixtures)
+  store: SC.Store.create().from('Chililog.DataSource')
   
 });

@@ -4,22 +4,13 @@
 // ==========================================================================
 
 /**
- * Flag to indicate if we are running unit test cases or not. If YES, then we turn off page switching based on
- * login status.
- *
- * @type Boolean
- */
-Chililog.RUNNING_UNIT_TESTS = YES;
-
-/**
  * This is the function that will start the app running.
  */
 Chililog.main = function main() {
   try {
     // Don't need to execute anything below this line if running unit test cases
-    // if (window.location.hash.toString().match(‘fixtures’))
-    // Chililog.store.from(SC.Record.fixtures);
-    if (Chililog.RUNNING_UNIT_TESTS) {
+    // http://localhost:4020/chililog/en/current/tests/controllers/session_data_controller.html#test
+    if (window.location.hash.toString().match('test')) {
       return;
     }
 

@@ -70,10 +70,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     if (loggedInUser === null) {
       return '';
     }
-    if (!SC.empty(loggedInUser.DisplayName)) {
-      return loggedInUser.DisplayName;
+    var displayName = loggedInUser.get('displayName');
+    if (!SC.empty(displayName)) {
+      return displayName;
     }
-    return loggedInUser.Username;
+    return loggedInUser.get('username');
   }.property('loggedInUser').cacheable(),
 
   /**
@@ -86,10 +87,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     if (loggedInUser === null) {
       return null;
     }
-    if (SC.empty(loggedInUser.GravatarMD5Hash)) {
+    var ghash = loggedInUser.get('gravatarMD5Hash');
+    if (SC.empty(ghash)) {
       return null;
     }
-    return 'http://www.gravatar.com/avatar/' + loggedInUser.GravatarMD5Hash + '.jpg?s=18&d=mm';
+    return 'http://www.gravatar.com/avatar/' + ghash + '.jpg?s=18&d=mm';
   }.property('loggedInUser').cacheable(),
 
   /**
@@ -147,6 +149,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     // Assumed logged out
     this.logout();
 
+    // Decode token
     var delimiterIndex = token.indexOf('~~~');
     if (delimiterIndex < 0) {
       return NO;
@@ -175,7 +178,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       request.notify(this, 'endLoad', params).send();
     } else {
       var response = request.send();
-      this.endLoad(response);
+      this.endLoad(response, params);
     }
 
     return YES;
@@ -201,6 +204,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       // Save what we have so far
       this.set('authenticationTokenExpiry', params.expiry);
       this.set('authenticationToken', params.token);
+      Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, params.token);
 
       // Clear error data
       this.set('error', null);

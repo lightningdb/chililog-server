@@ -13,11 +13,31 @@ Chililog.AUTHENTICATION_HEADER_NAME = 'X-ChiliLog-Authentication';
  */
 Chililog.AUTHENTICATION_HEADER_NAME_LCASE = 'x-chililog-authentication';
 
-
 /**
  * All tokens to expire in 14 days
  */
 Chililog.AUTHENTICATION_TOKEN_EXPIRY_SECONDS = 60 * 60 * 24 * 14;
+
+/**
+ * Name of the primary key field in Server API objects
+ */
+Chililog.DOCUMENT_ID_AO_FIELD_NAME = 'DocumentID';
+
+/**
+ * Name of the primary key field our SC.Records
+ */
+Chililog.DOCUMENT_ID_RECORD_FIELD_NAME = 'documentID';
+
+/**
+ * Name of the version field in Server API objects
+ */
+Chililog.DOCUMENT_VERSION_AO_FIELD_NAME = 'DocumentVersion';
+
+/**
+ * Name of the version field in our SC.Records
+ */
+Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME = 'DocumentVersion';
+
 
 /**
  * Mixin for heaping with server API comms
