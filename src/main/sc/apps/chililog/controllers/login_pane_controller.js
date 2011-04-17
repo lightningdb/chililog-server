@@ -107,12 +107,9 @@ Chililog.loginPaneController = SC.ObjectController.create(
    * Callback from login() after we get a response from the server to process
    * the returned login info.
    *
-   * @param {SC.Response} response The HTTP response
-   * @param {params} Hash of parameters passed into SC.Request.notify
-   * @returns {Boolean} YES if successful
+   * @param {SC.Error} error Error object or null if no error.
    */
-  endLogin: function() {
-    var error = Chililog.sessionDataController.get('error');
+  endLogin: function(error) {
     if (SC.none(error)) {
       // Clear error data and password
       this.set('password', '');
@@ -131,7 +128,7 @@ Chililog.loginPaneController = SC.ObjectController.create(
    */
   isLoggedInDidChange: function() {
     // Don't change screens if running unit tests
-    if (Chililog.RUNNING_UNIT_TESTS) {
+    if (Chililog.isRunningTests()) {
       return;
     }
 

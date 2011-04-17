@@ -14,17 +14,10 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
-   * Error returned from an asynchronous call
-   *
-   * @type SC.Error
-   */
-  error: '',
-
-  /**
    * Synchronize data in the store with the data on the server
    *
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
   synchronizeWithServer: function(callbackTarget, callbackFunction) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
@@ -53,6 +46,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {SC.Response} response
    */
   endSynchronizeWithServer: function(response, params) {
+    var error = null;
     try {
       // Check status
       this.checkResponse(response);
@@ -71,18 +65,15 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
           userRecord.fromApiObject(userAO);
         }
       }
-
-      // Clear error data
-      this.set('error', null);
     }
     catch (err) {
-      this.set('error', err);
-      SC.Logger.info('Error in endSynchronizeWithServer: ' + err.message);
+      error = err;
+      SC.Logger.error('endSynchronizeWithServer: ' + err.message);
     }
 
     // Callback
-    if (!SC.none(params.callbackTarget) && !SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, null);
+    if (!SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, error);
     }
 
     // Return YES to signal handling of callback

@@ -25,7 +25,7 @@ Chililog.DataSource = SC.DataSource.extend(
    @returns {Boolean} YES if you can handle fetching the query, NO otherwise
    */
   fetch: function(store, query) {
-    return YES; // return YES if you handled the query
+    return NO; // return YES if you handled the query
   },
 
   /**
@@ -37,7 +37,7 @@ Chililog.DataSource = SC.DataSource.extend(
    @returns {Boolean} YES if you can handle fetching the query, NO otherwise
    */
   retrieveRecord: function(store, storeKey) {
-    return YES; // return YES if you handled the storeKey
+    return NO; // return YES if you handled the storeKey
   },
 
   /**

@@ -36,7 +36,7 @@ Chililog.DOCUMENT_VERSION_AO_FIELD_NAME = 'DocumentVersion';
 /**
  * Name of the version field in our SC.Records
  */
-Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME = 'DocumentVersion';
+Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME = 'documentVersion';
 
 
 /**

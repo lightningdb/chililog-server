@@ -9,8 +9,7 @@
 Chililog.main = function main() {
   try {
     // Don't need to execute anything below this line if running unit test cases
-    // http://localhost:4020/chililog/en/current/tests/controllers/session_data_controller.html#test
-    if (window.location.hash.toString().match('test')) {
+    if (Chililog.isRunningTests()) {
       return;
     }
 

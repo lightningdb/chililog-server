@@ -21,7 +21,7 @@ Chililog.AuthenticatedUserRecord = SC.Record.extend(
   username: SC.Record.attr(String),
   emailAddress: SC.Record.attr(String),
   displayName: SC.Record.attr(String),
-  role: SC.Record.attr(Array),
+  role: SC.Record.attr(),
   gravatarMD5Hash: SC.Record.attr(String),
 
   /**

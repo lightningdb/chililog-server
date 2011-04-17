@@ -47,6 +47,8 @@ SC.stringsFor('English', {
 
   '_sessionDataController.UsernameRequiredError': 'Username is required',
   '_sessionDataController.PasswordRequiredError': 'Password is required',
+  '_sessionDataController.EmailAddressRequiredError': 'Email Address is required',
+  '_sessionDataController.DisplayNameRequiredError': 'Display Name is required',
   '_sessionDataController.TokenNotFoundInResponseError': 'Token not found in authentication response',
 
   'end': 'end'

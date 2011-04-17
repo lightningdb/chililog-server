@@ -17,13 +17,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 /** @scope Chililog.sessionDataController.prototype */ {
 
   /**
-   * Error returned from an asynchronous call
-   *
-   * @type SC.Error
-   */
-  error: '',
-
-  /**
    * The authentication token
    *
    * @type String
@@ -131,14 +124,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
   /**
    * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
    *
-   * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
-   * @returns {Boolean} YES if successfully loaded, NO if token not loaded and the user has to sign in again
+   * @returns {Boolean} YES if successfully loaded, NO if token not loaded and the user has to sign in again.
    */
-  load: function(isAsync) {
-    if (SC.none(isAsync)) {
-      isAsync = YES;
-    }
-
+  load: function() {
     // Get token from local store
     var token = Chililog.localStoreController.getItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
     if (SC.none(token)) {
@@ -170,52 +158,29 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       return NO;
     }
 
-    // Get user from server
+    // Synchronously get user from server
     var url = '/api/Authentication';
-    var request = SC.Request.getUrl(url).async(isAsync).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
+    var request = SC.Request.getUrl(url).async(NO).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
     var params = { expiry: expiry, token: token };
-    if (isAsync) {
-      request.notify(this, 'endLoad', params).send();
-    } else {
-      var response = request.send();
-      this.endLoad(response, params);
-    }
+    var response = request.send();
 
+    // Check status
+    this.checkResponse(response);
+
+    // Save authenticated user details
+    var authenticatedUserAO = response.get('body');
+    var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {},
+      authenticatedUserAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+    Chililog.store.commitRecords();
+
+    // Save what we have so far
+    this.set('authenticationTokenExpiry', params.expiry);
+    this.set('authenticationToken', params.token);
+    Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, params.token);
+
+    // Return YES to signal handling of callback
     return YES;
-  },
-
-  /**
-   * Process data when user information returns
-   *
-   * @param {SC.Response} response
-   * @param {Object} data hash of parameters pass edin via request.notify()
-   */
-  endLoad: function(response, params) {
-    try {
-      // Check status
-      this.checkResponse(response);
-
-      // Save authenticated user details
-      var authenticatedUserAO = response.get('body');
-      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {}, authenticatedUserAO['DocumentID']);
-      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-      Chililog.store.commitRecords();
-
-      // Save what we have so far
-      this.set('authenticationTokenExpiry', params.expiry);
-      this.set('authenticationToken', params.token);
-      Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, params.token);
-
-      // Clear error data
-      this.set('error', null);
-
-      // Return YES to signal handling of callback
-      return YES;
-    }
-    catch (err) {
-      this.set('error', err);
-      SC.Logger.info('Error in endLoad: ' + err.message);
-    }
   },
 
   /**
@@ -226,8 +191,8 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object
-   * will be placed in the 'error' property.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   *
    */
   login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction) {
     // Get our data from the properties using the SC 'get' methods
@@ -251,9 +216,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     // Assumes the user has logged out - if not force logout
     this.logout();
 
-    // Clear error data
-    this.set('error', null);
-
     var postData = {
       'Username': username,
       'Password': password,
@@ -261,14 +223,20 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       'ExpirySeconds': Chililog.AUTHENTICATION_TOKEN_EXPIRY_SECONDS
     };
 
-    // Simulate a HTTP call to check our data.
-    // If the credentials not admin/admin, then get a bad url so we get 404 error
+    // Call server
     var url = '/api/Authentication';
     var request = SC.Request.postUrl(url).async(isAsync).json(YES);
     var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     if (isAsync) {
       request.notify(this, 'endLogin', params).send(postData);
     } else {
+      // For sync logins, throw an error if no callback passed
+      if (SC.none(callbackFunction))
+      {
+        params.callbackTarget = this;
+        params.callbackFunction = function(error) { if (!SC.none(error)) throw error; };
+      }
+
       var response = request.send(postData);
       this.endLogin(response, params);
     }
@@ -281,10 +249,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * the returned login info.
    *
    * @param {SC.Response} response The HTTP response
-   * @param {params} Hash of parameters passed into SC.Request.notify()
+   * @param {Hash} params Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
   endLogin: function(response, params) {
+    var error = null;
     try {
       // Check status
       this.checkResponse(response);
@@ -311,24 +280,22 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
       // Save authenticated user details
       var authenticatedUserAO = response.get('body');
-      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {}, authenticatedUserAO['DocumentID']);
+      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {},
+        authenticatedUserAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
       authenticatedUserRecord.fromApiObject(authenticatedUserAO);
       Chililog.store.commitRecords();
 
       this.set('authenticationToken', token);
       this.set('authenticationTokenExpiry', expiry);
-
-      // Clear error data
-      this.set('error', null);
     }
     catch (err) {
-      this.set('error', err);
-      SC.Logger.info('Error in endLogin: ' + err.message);
+      error = err;
+      SC.Logger.error('endLogin: ' + err.message);
     }
 
     // Callback
-    if (!SC.none(params.callbackTarget) && !SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, null);
+    if (!SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, error);
     }
 
     // Return YES to signal handling of callback
@@ -355,6 +322,123 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     this.notifyPropertyChange('authenticationToken');
 
     return;
+  },
+
+  /**
+   * Returns the logged in user profile for editing. If not logged in, null is returned.
+   * @returns {Chililog.AuthenticatedUserRecord}
+   */
+  editProfile: function() {
+    var nestedStore = Chililog.store.chain();
+    var authenticatedUserRecord = Chililog.sessionDataController.get('loggedInUser');
+    if (SC.none(authenticatedUserRecord)) {
+      // Not logged in ... better unload
+      return null;
+    }
+
+    authenticatedUserRecord = nestedStore.find(authenticatedUserRecord);
+    return authenticatedUserRecord;
+  },
+
+  /**
+   * Saves a profile to the server
+   * @param authenticatedUserRecord record to save
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   */
+  saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction) {
+    // Get our data from the properties using the SC 'get' methods
+    // Need to do this because these properties have been bound/observed.
+    if (SC.empty(authenticatedUserRecord.get('username'))) {
+      throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
+    }
+
+    if (SC.empty(authenticatedUserRecord.get('emailAddress'))) {
+      throw Chililog.$error('_sessionDataController.EmailAddressRequiredError', null, 'emailAddress');
+    }
+
+    if (SC.empty(authenticatedUserRecord.get('displayName'))) {
+      throw Chililog.$error('_sessionDataController.DisplayNameRequiredError', null, 'displayName');
+    }
+
+    var postData = authenticatedUserRecord.toApiObject();
+
+    var url = '/api/Authentication';
+    var request = SC.Request.putUrl(url).async(YES).json(YES);
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    request.notify(this, 'endSaveProfile', params).send(postData);
+
+    return;
+  },
+
+  /**
+   * Callback from saveProfile() after we get a response from the server to process
+   * the returned info.
+   *
+   * @param {SC.Response} response The HTTP response
+   * @param {Hash} params Hash of parameters passed into SC.Request.notify()
+   * @returns {Boolean} YES if successful
+   */
+  endSaveProfile: function(response, params) {
+    var error = null;
+    try {
+      // Check status
+      this.checkResponse(response);
+
+      // Delete authenticated user from store
+      var authenticatedUserRecords = Chililog.store.find(Chililog.AuthenticatedUserRecord);
+      authenticatedUserRecords.forEach(function(item, index, enumerable) {
+        item.destroy();
+      }, this);
+      Chililog.store.commitRecords();
+
+      // Save new authenticated user details
+      var authenticatedUserAO = response.get('body');
+      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {},
+        authenticatedUserAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+      Chililog.store.commitRecords();
+
+      // Update logged in user by simulating an authentication token change
+      this.notifyPropertyChange('authenticationToken');
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('endSaveProfile: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+
+  /**
+   * Discard changes
+   * @param authenticatedUserRecord record to discard
+   */
+  discardProfileChanges: function(authenticatedUserRecord) {
+    if (!SC.none(authenticatedUserRecord)) {
+      var nestedStore = authenticatedUserRecord.get('store');
+      nestedStore.destroy();
+    }
+    return;
+  },
+
+  /**
+   *
+   * @param oldPassword
+   * @param newPassword
+   * @param confirmNewPassword
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   */
+  changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction) {
+
   }
 
 

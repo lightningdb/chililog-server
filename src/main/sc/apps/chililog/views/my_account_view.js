@@ -20,7 +20,7 @@ Chililog.myAccountView = SC.View.design({
   }),
 
   myProfile: SC.View.design({
-    layout: { top: 35, left: 0, width: 400, height: 265 },
+    layout: { top: 35, left: 0, width: 400, height: 300 },
     classNames: ['edit-box'],
     childViews: 'title username email displayName saveButton cancelButton'.w(),
 
@@ -49,7 +49,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     email: SC.View.design({
-      layout: {top: 100, left: 20, right: 20, height: 50 },
+      layout: {top: 110, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -65,7 +65,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     displayName: SC.View.design({
-      layout: {top: 150, left: 20, right: 20, height: 50 },
+      layout: {top: 170, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -81,7 +81,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     saveButton: SC.ButtonView.design({
-      layout: {top: 210, left: 20, width: 100 },
+      layout: {top: 240, left: 20, width: 100 },
       title: '_save',
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
@@ -91,7 +91,7 @@ Chililog.myAccountView = SC.View.design({
     }),
     
     cancelButton: SC.ButtonView.design({
-      layout: {top: 210, left: 130, width: 100 },
+      layout: {top: 240, left: 130, width: 100 },
       title: '_cancel',
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE
@@ -99,7 +99,7 @@ Chililog.myAccountView = SC.View.design({
   }),  //myProfile
 
   changePassword: SC.View.design({
-    layout: { top: 35, left: 410, width: 400, height: 265 },
+    layout: { top: 35, left: 410, width: 400, height: 300 },
     classNames: ['edit-box'],
     childViews: 'title oldPassword newPassword confirmNewPassword changePasswordButton'.w(),
 
@@ -127,7 +127,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     newPassword: SC.View.design({
-      layout: {top: 100, left: 20, right: 20, height: 50 },
+      layout: {top: 110, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -142,7 +142,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     confirmNewPassword: SC.View.design({
-      layout: {top: 150, left: 20, right: 20, height: 50 },
+      layout: {top: 170, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -157,7 +157,7 @@ Chililog.myAccountView = SC.View.design({
     }),
 
     changePasswordButton: SC.ButtonView.design({
-      layout: {top: 210, left: 20, width: 200 },
+      layout: {top: 240, left: 20, width: 200 },
       title: '_myAccountView.ChangePassword',
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,

@@ -6,16 +6,18 @@
 
 module("Chililog.sessionDataController");
 
+var loginError = null;
 test("test successful login", function() {
   stop(2000);
 
-  Chililog.sessionDataController.login('admin', 'admin', NO, YES);
+  Chililog.sessionDataController.login('admin', 'admin', NO, YES, null, function(error) {
+    loginError = error;
+  });
   
   setTimeout(checkLoginSuccess, 1000);
 });
 function checkLoginSuccess() {
-  var error = Chililog.sessionDataController.get('error');
-  ok(SC.none(error), 'No error messages');
+  ok(SC.none(loginError), 'No error messages');
 
   var loggedInUser = Chililog.sessionDataController.get('loggedInUser');
   ok(loggedInUser !== null, 'loggedInUser is not null');
@@ -43,7 +45,6 @@ function checkLoginSuccess() {
 var loadAuthenticationToken;
 var loadAuthenticationTokenExpiry;
 test("test successful load", function() {
-  stop(2000);
   SC.RunLoop.begin();
   Chililog.sessionDataController.login('admin', 'admin', YES, NO);
   SC.RunLoop.end();
@@ -58,13 +59,8 @@ test("test successful load", function() {
   loadAuthenticationTokenExpiry = Chililog.sessionDataController.get('authenticationTokenExpiryExpiry');
   ok(loadAuthenticationTokenExpiry !== null, 'authenticationTokenExpiry is not null');
 
+  // this is a synchronous call
   Chililog.sessionDataController.load();
-
-  setTimeout(checkLoadSuccess, 1000);
-});
-function checkLoadSuccess() {
-  var error = Chililog.sessionDataController.get('error');
-  ok(SC.none(error), 'No error messages');
 
   ok(loadAuthenticationToken === Chililog.sessionDataController.get('authenticationToken'), 'authenticationToken is the same');
 
@@ -74,15 +70,15 @@ function checkLoadSuccess() {
   var loggedInUser = Chililog.sessionDataController.get('loggedInUser');
   ok(loggedInUser !== null, 'loggedInUser is not null');
   ok(loggedInUser.get('username'), 'loggedInUser name is admin');
-
-  start();
-}
+});
 
 
 test("test bad password", function() {
   stop(2000);
 
-  Chililog.sessionDataController.login('admin', 'bad password', NO);
+  Chililog.sessionDataController.login('admin', 'bad password', NO, YES, null, function(error) {
+    loginError = error;
+  });
 
   setTimeout(checkError, 1000);
 });
@@ -90,14 +86,15 @@ test("test bad password", function() {
 test("test bad username", function() {
   stop(2000);
 
-  Chililog.sessionDataController.login('badusername', 'admin', NO);
+  Chililog.sessionDataController.login('badusername', 'admin', NO, YES, null, function(error) {
+    loginError = error;
+  });
 
   setTimeout(checkError, 1000);
 });
 
 function checkError() {
-  var error = Chililog.sessionDataController.get('error');
-  ok(!SC.none(error), 'Error message is: ' + error['message']);
+  ok(!SC.none(loginError), 'Error message is: ' + loginError['message']);
 
   var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
   ok(!isLoggedIn, 'is  not logged in');
