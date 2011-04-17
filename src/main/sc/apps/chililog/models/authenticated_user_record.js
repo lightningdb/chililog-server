@@ -52,7 +52,7 @@ Chililog.AuthenticatedUserRecord = SC.Record.extend(
    */
   toApiObject: function() {
     var apiObject = new Object();
-    for (var i = 0; i < Chililog.USER_RECORD_MAP.length; i++) {
+    for (var i = 0; i < Chililog.AUTHENTICATED_USER_RECORD_MAP.length; i++) {
       var map = Chililog.AUTHENTICATED_USER_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];

@@ -24,11 +24,11 @@ Chililog.$error = function(errorCode, params, label, errorValue) {
     localized = str;
   }
 
-  if (SC.none(params)) {
-    return localized;
+  var message = localized;
+  if (!SC.none(params)) {
+    message = SC.String.fmt(localized, params);
   }
 
-  var message = SC.String.fmt(localized, params);
   return SC.$error(message, label, errorValue, errorCode);
 };
 

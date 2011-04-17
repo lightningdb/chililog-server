@@ -22,7 +22,7 @@ Chililog.myAccountView = SC.View.design({
   myProfile: SC.View.design({
     layout: { top: 35, left: 0, width: 400, height: 300 },
     classNames: ['edit-box'],
-    childViews: 'title username email displayName saveButton cancelButton'.w(),
+    childViews: 'title username email displayName saveButton cancelButton savingImage'.w(),
 
     title: SC.LabelView.design({
       layout: {top: 20, left: 20, right: 20, height: 30 },
@@ -86,22 +86,36 @@ Chililog.myAccountView = SC.View.design({
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
       isDefault: YES,
+      isEnabledBinding: SC.Binding.from('Chililog.myAccountViewController.canSaveProfile').oneWay(),
       target: 'Chililog.myAccountViewController',
-      action: 'save'
+      action: 'saveProfile'
     }),
-    
+
     cancelButton: SC.ButtonView.design({
       layout: {top: 240, left: 130, width: 100 },
       title: '_cancel',
       localize: YES,
-      controlSize: SC.HUGE_CONTROL_SIZE
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isEnabledBinding: SC.Binding.from('Chililog.myAccountViewController.canSaveProfile').oneWay(),
+      target: 'Chililog.myAccountViewController',
+      action: 'discardProfileChanges'
+    }),
+
+    savingImage: Chililog.ImageView.design({
+      layout: { top: 245, left: 250, width: 16, height: 16 },
+      value: sc_static('images/working'),
+      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.state').oneWay().transform(
+        function(value, isForward) {
+          return value === Chililog.myAccountViewStates.SAVING;
+        }),
+      useImageQueue: NO
     })
   }),  //myProfile
 
   changePassword: SC.View.design({
     layout: { top: 35, left: 410, width: 400, height: 300 },
     classNames: ['edit-box'],
-    childViews: 'title oldPassword newPassword confirmNewPassword changePasswordButton'.w(),
+    childViews: 'title oldPassword newPassword confirmNewPassword changePasswordButton changingPasswordImage'.w(),
 
     title: SC.LabelView.design({
       layout: {top: 20, left: 20, right: 20, height: 30 },
@@ -122,7 +136,9 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        isPassword: YES,
+        valueBinding: 'Chililog.myAccountViewController.oldPassword'
       })
     }),
 
@@ -137,7 +153,9 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        isPassword: YES,
+        valueBinding: 'Chililog.myAccountViewController.newPassword'
       })
     }),
 
@@ -152,7 +170,9 @@ Chililog.myAccountView = SC.View.design({
       }),
 
       field: SC.TextFieldView.design({
-        layout: { top: 20, left: 0, height: 25 }
+        layout: { top: 20, left: 0, height: 25 },
+        isPassword: YES,
+        valueBinding: 'Chililog.myAccountViewController.confirmNewPassword'
       })
     }),
 
@@ -162,10 +182,55 @@ Chililog.myAccountView = SC.View.design({
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
       isDefault: YES,
+      isEnabledBinding: SC.Binding.from('Chililog.myAccountViewController.canChangePassword').oneWay(),
       target: 'Chililog.myAccountViewController',
       action: 'changePassword'
+    }),
 
+    changingPasswordImage: Chililog.ImageView.design({
+      layout: { top: 245, left: 250, width: 16, height: 16 },
+      value: sc_static('images/working'),
+      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.state').oneWay().transform(
+        function(value, isForward) {
+          return value === Chililog.myAccountViewStates.CHANGING_PASSWORD;
+        }),
+      useImageQueue: NO
     })
-  })  // changePassword
+  }),  // changePassword
+
+  /**
+   * Displays error messages
+   */
+  errorDidChange: function() {
+    var error = Chililog.myAccountViewController.get('error');
+    if (SC.none(error)) {
+      return;
+    }
+
+    if (SC.instanceOf(error, SC.Error)) {
+      var message = error.get('message');
+      if (SC.empty(message)) {
+        return;
+      }
+      SC.AlertPane.error({ message: message });
+
+      var label = error.get('label');
+      if (SC.empty(label)) {
+        label = 'username';
+      }
+
+      var fieldPath = 'myProfile.%@.field'.fmt(label);
+      if (label.indexOf('Password') != -1) {
+        fieldPath = 'changePassword.%@.field'.fmt(label);
+      }
+      var field = this.getPath(fieldPath);
+      if (!SC.none(field)) {
+        field.becomeFirstResponder();
+      }
+    } else {
+      SC.AlertPane.error(error);
+    }
+
+  }.observes('Chililog.myAccountViewController.error')
 
 });

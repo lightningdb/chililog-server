@@ -363,8 +363,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
     var postData = authenticatedUserRecord.toApiObject();
 
-    var url = '/api/Authentication';
-    var request = SC.Request.putUrl(url).async(YES).json(YES);
+    var url = '/api/Authentication?action=update_profile';
+    var authToken = this.get('authenticationToken');
+    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);;
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     request.notify(this, 'endSaveProfile', params).send(postData);
 
@@ -416,7 +417,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     return YES;
   },
 
-
   /**
    * Discard changes
    * @param authenticatedUserRecord record to discard
@@ -438,8 +438,83 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
   changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction) {
+    // Get our data from the properties using the SC 'get' methods
+    // Need to do this because these properties have been bound/observed.
+    if (SC.empty(oldPassword)) {
+      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'oldPassword');
+    }
 
+    if (SC.empty(newPassword)) {
+      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'newPassword');
+    }
+
+    if (SC.empty(confirmNewPassword)) {
+      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'confirmNewPassword');
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      throw Chililog.$error('_sessionDataController.ConfirmPasswordError', null, 'newPassword');
+    }
+
+    var postData = {
+      'DocumentID': this.getPath('loggedInUser.documentID'),
+      'OldPassword': oldPassword,
+      'NewPassword': newPassword,
+      'ConfirmNewPassword': confirmNewPassword
+    };
+
+    var url = '/api/Authentication?action=change_password';
+    var authToken = this.get('authenticationToken');
+    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);;
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    request.notify(this, 'endChangePassword', params).send(postData);
+
+    return;
+  },
+
+  /**
+   * Callback from saveProfile() after we get a response from the server to process
+   * the returned info.
+   *
+   * @param {SC.Response} response The HTTP response
+   * @param {Hash} params Hash of parameters passed into SC.Request.notify()
+   * @returns {Boolean} YES if successful
+   */
+  endChangePassword: function(response, params) {
+    var error = null;
+    try {
+      // Check status
+      this.checkResponse(response);
+
+      // Delete authenticated user from store
+      var authenticatedUserRecords = Chililog.store.find(Chililog.AuthenticatedUserRecord);
+      authenticatedUserRecords.forEach(function(item, index, enumerable) {
+        item.destroy();
+      }, this);
+      Chililog.store.commitRecords();
+
+      // Save new authenticated user details
+      var authenticatedUserAO = response.get('body');
+      var authenticatedUserRecord = Chililog.store.createRecord(Chililog.AuthenticatedUserRecord, {},
+        authenticatedUserAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+      Chililog.store.commitRecords();
+
+      // Update logged in user by simulating an authentication token change
+      this.notifyPropertyChange('authenticationToken');
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('endChangePassword: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
   }
-
 
 });

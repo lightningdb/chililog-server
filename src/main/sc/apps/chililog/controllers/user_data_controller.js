@@ -29,7 +29,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
     }
 
     // Not logged in, so cannot sync
-    if (!isLoggedIn) {
+    if (!isLoggedIn) {null
       return;
     }
 

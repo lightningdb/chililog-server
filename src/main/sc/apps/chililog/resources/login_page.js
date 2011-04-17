@@ -114,6 +114,9 @@ Chililog.loginPage = SC.Page.design({
       
       if (SC.instanceOf(error, SC.Error)) {
         var message = error.get('message');
+        if (SC.empty(message)) {
+          return;
+        }
         SC.AlertPane.error({ message: message });
 
         var label = error.get('label');

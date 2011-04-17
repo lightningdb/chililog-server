@@ -54,7 +54,7 @@ Chililog.ServerApiMixin = {
     var responseStatus = response.get('status');
     if (!SC.ok(response)) {
       SC.Logger.error('HTTP error status code: ' + responseStatus);
-      if (responseStatus === 500 || responseStatus === 401) {
+      if (responseStatus === 500 || responseStatus === 400 || responseStatus === 401) {
         var responseString = response.get('encodedBody');
         SC.Logger.error('HTTP response ' + responseString);
 

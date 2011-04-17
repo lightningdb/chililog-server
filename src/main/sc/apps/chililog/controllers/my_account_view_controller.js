@@ -35,14 +35,41 @@ Chililog.myAccountViewController = SC.ObjectController.create(
   content: null,
 
   /**
+   * Error object
+   *
+   * @type SC.Error
+   */
+  error: null,
+
+  /**
+   * Current password
+   * @type String
+   */
+  oldPassword: null,
+
+  /**
+   * New password
+   * @type String
+   */
+  newPassword: null,
+
+  /**
+   * Confirmation of new password
+   * @type String
+   */
+  confirmNewPassword: null,
+
+  /**
    * When the state in the controller changes, we change this pane to reflect it
    */
   mainPaneStateDidChange: function() {
     var state = this.get('state');
     var mainPaneState = Chililog.mainPaneController.get('state');
 
-    if (mainPaneState === Chililog.mainPaneStates.MY_ACCOUNT && state !== Chililog.myAccountViewStates.LOADED) {
-      this.load();
+    if (mainPaneState === Chililog.mainPaneStates.MY_ACCOUNT) {
+      if (state === Chililog.myAccountViewStates.UNLOADED) {
+        this.load();
+      }
     }
     else if (mainPaneState !== Chililog.mainPaneStates.MY_ACCOUNT && state !== Chililog.myAccountViewStates.UNLOADED) {
       this.unload();
@@ -57,18 +84,20 @@ Chililog.myAccountViewController = SC.ObjectController.create(
       throw Chililog.$error('_illegalStateError', [this.get('state')]);
     }
 
-    var nestedStore = Chililog.store.chain();
-    var authenticatedUserRecord = Chililog.sessionDataController.get('loggedInUser');
+    var authenticatedUserRecord = Chililog.sessionDataController.editProfile();
     if (SC.none(authenticatedUserRecord)) {
       // Not logged in ... better unload
       this.unload();
       return;
     }
 
-    authenticatedUserRecord = nestedStore.find(authenticatedUserRecord);
+    this.set('oldPassword', null);
+    this.set('newPassword', null);
+    this.set('confirmNewPassword', null);
 
     this.set('content', authenticatedUserRecord);
     this.set('state', Chililog.myAccountViewStates.LOADED);
+    return;
   },
 
   /**
@@ -77,36 +106,147 @@ Chililog.myAccountViewController = SC.ObjectController.create(
    */
   unload: function() {
     var authenticatedUserRecord = this.get('content');
-    if (!SC.none(authenticatedUserRecord)) {
-      var nestedStore = authenticatedUserRecord.get('store');
-      nestedStore.destroy();
-    }
-    
+    Chililog.sessionDataController.discardProfileChanges(authenticatedUserRecord);
     this.set('state', Chililog.myAccountViewStates.UNLOADED);
+    return;
   },
 
   /**
-   * Saves the user's details
+   * Flag to indicate if the user's profile can be saved.
+   * Can only be saved if form is loaded and the data has changed
+   *
+   * @type Boolean
    */
-  save: function() {
-    if (this.get('state') !== Chililog.myAccountViewStates.LOADED) {
-      throw Chililog.$error('_illegalStateError', [this.get('state')]);
+  canSaveProfile: function() {
+    var state = this.get('state');
+    var recordStatus = this.getPath('content.status');
+
+    if (!SC.none(state) && !SC.none(recordStatus)) {
+      if (state === Chililog.myAccountViewStates.LOADED && recordStatus !== SC.Record.READY_CLEAN) {
+        return YES;
+      }
     }
 
-    alert('save')
-    //this.set('state', Chililog.myAccountViewStates.SAVING);
+    return NO;
+  }.property('state', 'content.status').cacheable(),
+
+  /**
+   * Saves the user's details
+   *
+   * @returns {Boolean} YES if ok, NO if error. Error object set to the 'error' property
+   */
+  saveProfile: function() {
+    try {
+      if (this.get('state') !== Chililog.myAccountViewStates.LOADED) {
+        throw Chililog.$error('_illegalStateError', [this.get('state')]);
+      }
+
+      Chililog.sessionDataController.saveProfile(this.get('content'), this, this.endSaveProfile);
+
+      this.set('error', null);
+      this.set('state', Chililog.myAccountViewStates.SAVING);
+      return YES;
+    }
+    catch (err) {
+      SC.Logger.error('Chililog.myAccountViewController.save: ' + err);
+      this.set('error', err);
+      this.set('state', Chililog.myAccountViewStates.LOADED);
+      return NO;
+    }
+
   },
+
+  /**
+   * Callback from login() after we get a response from the server to process
+   * the returned login info.
+   *
+   * @param {SC.Error} error Error object or null if no error.
+   */
+  endSaveProfile: function(error) {
+    if (SC.none(error)) {
+      // Reload the data
+      var authenticatedUserRecord = Chililog.sessionDataController.editProfile();
+      this.set('content', authenticatedUserRecord);
+      this.set('error', null);
+    } else {
+      // Show error
+      this.set('error', error);
+    }
+
+    // Return to edit mode from BUSY
+    this.set('state', Chililog.myAccountViewStates.LOADED);
+  },
+
+  /**
+   * Restore previous values
+   */
+  discardProfileChanges: function() {
+    this.unload();
+    this.load();
+  },
+
+  /**
+   * Flag to indicate if the user is able to change password
+   * Only valid if old, new and confirm passwords have been entered
+   *
+   * @type Boolean
+   */
+  canChangePassword: function() {
+    if (!SC.empty(this.get('oldPassword')) && !SC.empty(this.get('newPassword')) &&
+      !SC.empty(this.get('confirmNewPassword'))) {
+      return YES;
+    }
+    return NO;
+  }.property('oldPassword', 'newPassword', 'confirmNewPassword').cacheable(),
 
   /**
    * Change the user's password
    */
   changePassword: function () {
-    if (this.get('state') !== Chililog.myAccountViewStates.LOADED) {
-      throw Chililog.$error('_illegalStateError', [this.get('state')]);
+    try {
+      if (this.get('state') !== Chililog.myAccountViewStates.LOADED) {
+        throw Chililog.$error('_illegalStateError', [this.get('state')]);
+      }
+
+      Chililog.sessionDataController.changePassword(this.get('oldPassword'), this.get('newPassword'),
+        this.get('confirmNewPassword'), this, this.endChangePassword);
+
+      this.set('error', null);
+      this.set('state', Chililog.myAccountViewStates.CHANGING_PASSWORD);
+      return YES;
+    }
+    catch (err) {
+      SC.Logger.error('Chililog.myAccountViewController.changePassword: ' + err);
+      this.set('error', err);
+      this.set('state', Chililog.myAccountViewStates.LOADED);
+      return NO;
     }
 
-    alert('change password')
-    //this.set('state', Chililog.myAccountViewStates.CHANGING_PASSWORD);
+  },
+
+  /**
+   * Callback from login() after we get a response from the server to process
+   * the returned login info.
+   *
+   * @param {SC.Error} error Error object or null if no error.
+   */
+  endChangePassword: function(error) {
+    if (SC.none(error)) {
+      // Reload the data
+      var authenticatedUserRecord = Chililog.sessionDataController.editProfile();
+      this.set('oldPassword', null);
+      this.set('newPassword', null);
+      this.set('confirmNewPassword', null);
+      this.set('content', authenticatedUserRecord);
+      this.set('error', null);
+    } else {
+      // Show error
+      error.set('label', 'oldPassword');
+      this.set('error', error);
+    }
+
+    // Return to edit mode from BUSY
+    this.set('state', Chililog.myAccountViewStates.LOADED);
   }
 
 

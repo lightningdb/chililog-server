@@ -79,6 +79,8 @@ Chililog.loginPaneController = SC.ObjectController.create(
 
   /**
    * Start async login process
+   *
+   * @returns {Boolean} YES if ok, NO if error. Error object set to the 'error' property
    */
   login: function() {
     try {
