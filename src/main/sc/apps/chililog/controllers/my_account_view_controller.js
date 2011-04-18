@@ -35,13 +35,6 @@ Chililog.myAccountViewController = SC.ObjectController.create(
   content: null,
 
   /**
-   * Error object
-   *
-   * @type SC.Error
-   */
-  error: null,
-
-  /**
    * Current password
    * @type String
    */
@@ -131,6 +124,13 @@ Chililog.myAccountViewController = SC.ObjectController.create(
   }.property('state', 'content.status').cacheable(),
 
   /**
+   * Result of calling saveProfile(). YES if success, SC.Error if error, null if not set or executing.
+   *
+   * @type Object
+   */
+  saveProfileResult: null,
+
+  /**
    * Saves the user's details
    *
    * @returns {Boolean} YES if ok, NO if error. Error object set to the 'error' property
@@ -143,13 +143,13 @@ Chililog.myAccountViewController = SC.ObjectController.create(
 
       Chililog.sessionDataController.saveProfile(this.get('content'), this, this.endSaveProfile);
 
-      this.set('error', null);
+      this.set('saveProfileResult', null);
       this.set('state', Chililog.myAccountViewStates.SAVING);
       return YES;
     }
     catch (err) {
       SC.Logger.error('Chililog.myAccountViewController.save: ' + err);
-      this.set('error', err);
+      this.set('saveProfileResult', err);
       this.set('state', Chililog.myAccountViewStates.LOADED);
       return NO;
     }
@@ -167,10 +167,10 @@ Chililog.myAccountViewController = SC.ObjectController.create(
       // Reload the data
       var authenticatedUserRecord = Chililog.sessionDataController.editProfile();
       this.set('content', authenticatedUserRecord);
-      this.set('error', null);
+      this.set('saveProfileResult', YES);
     } else {
       // Show error
-      this.set('error', error);
+      this.set('saveProfileResult', error);
     }
 
     // Return to edit mode from BUSY
@@ -200,6 +200,13 @@ Chililog.myAccountViewController = SC.ObjectController.create(
   }.property('oldPassword', 'newPassword', 'confirmNewPassword').cacheable(),
 
   /**
+   * Result of calling changePassword(). YES if success, SC.Error if error, null if not set or executing.
+   *
+   * @type Object
+   */
+  changePasswordResult: null,
+
+  /**
    * Change the user's password
    */
   changePassword: function () {
@@ -211,13 +218,13 @@ Chililog.myAccountViewController = SC.ObjectController.create(
       Chililog.sessionDataController.changePassword(this.get('oldPassword'), this.get('newPassword'),
         this.get('confirmNewPassword'), this, this.endChangePassword);
 
-      this.set('error', null);
+      this.set('changePasswordResult', null);
       this.set('state', Chililog.myAccountViewStates.CHANGING_PASSWORD);
       return YES;
     }
     catch (err) {
       SC.Logger.error('Chililog.myAccountViewController.changePassword: ' + err);
-      this.set('error', err);
+      this.set('changePasswordResult', err);
       this.set('state', Chililog.myAccountViewStates.LOADED);
       return NO;
     }
@@ -238,11 +245,11 @@ Chililog.myAccountViewController = SC.ObjectController.create(
       this.set('newPassword', null);
       this.set('confirmNewPassword', null);
       this.set('content', authenticatedUserRecord);
-      this.set('error', null);
+      this.set('changePasswordResult', YES);
     } else {
       // Show error
       error.set('label', 'oldPassword');
-      this.set('error', error);
+      this.set('changePasswordResult', error);
     }
 
     // Return to edit mode from BUSY

@@ -44,6 +44,8 @@ SC.stringsFor('English', {
   '_myAccountView.OldPassword': 'Old Password',
   '_myAccountView.NewPassword': 'New Password',
   '_myAccountView.ConfirmPassword': 'Confirm New Password',
+  '_myAccountView.ChangePasswordSuccess': 'Password changed',
+  '_myAccountView.SaveProfileSuccess': 'Profile saved',
 
   '_sessionDataController.UsernameRequiredError': 'Username is required',
   '_sessionDataController.PasswordRequiredError': 'Password is required',

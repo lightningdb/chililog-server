@@ -37,6 +37,21 @@
   color: #222;
 }
 
+.sc-label-view.success {
+  font-size: 12px;
+  height: 26px;
+  line-height: 24px;
+	font-weight: bold;
+  color: #008000;
+  background-color: #fffacd;
+  border-color: #008000;
+  border-style: solid;
+  border-width: 1px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+
 /*******************************************
  * Login
  *******************************************/
