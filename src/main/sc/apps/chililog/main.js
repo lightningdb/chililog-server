@@ -45,7 +45,13 @@ Chililog.main = function main() {
   }
   catch (err) {
     // Show Error
-    SC.AlertPane.error(err);
+    if (SC.instanceOf(err, SC.Error)) {
+      // Error
+      var message = err.get('message');
+      SC.AlertPane.error({ message: message });
+    } else {
+      SC.AlertPane.error(err);
+    }
     SC.Logger.error('main(): ' + err);
   }
 };

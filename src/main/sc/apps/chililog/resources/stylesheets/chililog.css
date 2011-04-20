@@ -66,3 +66,18 @@
   background-color: #999;
 }
 
+/*******************************************
+ * About
+ *******************************************/
+.sc-view .about {
+  margin: 10px;
+}
+
+.sc-view .about .edit-box {
+  padding: 20px;
+  border: 1px solid #999;
+}
+
+.sc-view .about .inline {
+  display: inline;
+}

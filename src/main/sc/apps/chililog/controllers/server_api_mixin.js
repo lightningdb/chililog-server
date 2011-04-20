@@ -9,9 +9,14 @@
 Chililog.AUTHENTICATION_HEADER_NAME = 'X-ChiliLog-Authentication';
 
 /**
- * Name of Authentication header returned in API responses in lower case
+ * Name of app version header returned in API responses
  */
-Chililog.AUTHENTICATION_HEADER_NAME_LCASE = 'x-chililog-authentication';
+Chililog.VERSION_HEADER_NAME = 'X-ChiliLog-Version';
+
+/**
+ * Name of app build timestamp header returned in API responses
+ */
+Chililog.BUILD_TIMESTAMP_HEADER_NAME = 'X-ChiliLog-Build-Timestamp';
 
 /**
  * All tokens to expire in 14 days

@@ -14,22 +14,29 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
+   * YEs if we are performing a server synchronization
+   * @type Boolean
+   */
+  isSynchronizingWithServer: NO,
+
+  /**
    * Synchronize data in the store with the data on the server
    *
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
   synchronizeWithServer: function(callbackTarget, callbackFunction) {
-    var authToken = Chililog.sessionDataController.get('authenticationToken');
-    var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
-
-    var isBusy = this.get('isBusy');
-    if (isBusy) {
+    // If operation already under way, just exit
+    var isSynchronizingWithServer = this.get('isSynchronizingWithServer');
+    if (isSynchronizingWithServer) {
       return;
     }
+    this.set('isSynchronizingWithServer', YES);
 
     // Not logged in, so cannot sync
-    if (!isLoggedIn) {null
+    var authToken = Chililog.sessionDataController.get('authenticationToken');
+    var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
+    if (!isLoggedIn) {
       return;
     }
 
@@ -70,6 +77,9 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       error = err;
       SC.Logger.error('endSynchronizeWithServer: ' + err.message);
     }
+
+    // Finish sync'ing
+    this.set('isSynchronizingWithServer', NO);
 
     // Callback
     if (!SC.none(params.callbackFunction)) {

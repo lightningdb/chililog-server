@@ -31,6 +31,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
@@ -151,7 +152,10 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest", readResponseAO.getUsername());
         assertEquals("AuthenticationTest@chililog.com", readResponseAO.getEmailAddress());
 
-    }
+        AppProperties appProperties = AppProperties.getInstance();
+        assertEquals(appProperties.getAppVersion(), headers.get(Worker.AUTHENTICATION_SERVER_VERSION));
+        assertEquals(appProperties.getBuildTimestamp(), headers.get(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP));
+    } 
 
     /**
      * Update profile

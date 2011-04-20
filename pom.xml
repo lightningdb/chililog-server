@@ -98,10 +98,8 @@
               <source>
                 import java.util.Date
                 import java.text.MessageFormat
-                def vartimestamp =
-                MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Date())
-                project.properties['build.timestamp'] =
-                vartimestamp
+                def vartimestamp = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Date())
+                project.properties['build.timestamp'] = vartimestamp
                 project.properties['build.machinename'] = java.net.InetAddress.getLocalHost().getHostName()
                 project.properties['build.username'] = System.getProperty("user.name")
               </source>

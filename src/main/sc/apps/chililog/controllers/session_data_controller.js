@@ -31,6 +31,20 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
   authenticationTokenExpiry: null,
 
   /**
+   * Chililog Version sourced from the server upon login/load
+   *
+   * @type String
+   */
+  chililogVersion: null,
+
+  /**
+   * Chililog build timestamp sourced from the server upon login/load
+   *
+   * @type String
+   */
+  chililogBuildTimestamp: null,
+
+  /**
    * YES if the user is logged in, NO if not.
    *
    * @type Boolean
@@ -161,7 +175,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     // Synchronously get user from server
     var url = '/api/Authentication';
     var request = SC.Request.getUrl(url).async(NO).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, token);
-    var params = { expiry: expiry, token: token };
     var response = request.send();
 
     // Check status
@@ -175,9 +188,10 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     Chililog.store.commitRecords();
 
     // Save what we have so far
-    this.set('authenticationTokenExpiry', params.expiry);
-    this.set('authenticationToken', params.token);
-    Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, params.token);
+    this.loadVersionAndBuildInfo(response.get('headers'));
+    this.set('authenticationTokenExpiry', expiry);
+    this.set('authenticationToken', token);
+    Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
 
     // Return YES to signal handling of callback
     return YES;
@@ -231,10 +245,13 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       request.notify(this, 'endLogin', params).send(postData);
     } else {
       // For sync logins, throw an error if no callback passed
-      if (SC.none(callbackFunction))
-      {
+      if (SC.none(callbackFunction)) {
         params.callbackTarget = this;
-        params.callbackFunction = function(error) { if (!SC.none(error)) throw error; };
+        params.callbackFunction = function(error) {
+          if (!SC.none(error)) {
+            throw error;
+          }
+        };
       }
 
       var response = request.send(postData);
@@ -267,11 +284,12 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       var headers = response.get('headers');
       var token = headers[Chililog.AUTHENTICATION_HEADER_NAME];
       if (SC.none(token)) {
-        token = headers[Chililog.AUTHENTICATION_HEADER_NAME_LCASE];
+        token = headers[Chililog.AUTHENTICATION_HEADER_NAME.toLowerCase()];
         if (SC.none(token)) {
           throw Chililog.$error('_sessionDataController.TokenNotFoundInResponseError');
         }
       }
+      this.loadVersionAndBuildInfo(headers);
 
       // Save token if rememeberMe
       if (params.rememberMe) {
@@ -300,6 +318,30 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Load version and build info from response headers
+   * @param {Map} headers SC.Response header
+   */
+  loadVersionAndBuildInfo: function(headers) {
+    var version = headers[Chililog.VERSION_HEADER_NAME];
+    if (SC.none(version)) {
+      version = headers[Chililog.VERSION_HEADER_NAME.toLowerCase()];
+      if (SC.none(version)) {
+        throw Chililog.$error('_sessionDataController.VersionNotFoundInResponseError');
+      }
+    }
+    this.set('chililogVersion', version);
+
+    var buildTimestamp = headers[Chililog.BUILD_TIMESTAMP_HEADER_NAME];
+    if (SC.none(buildTimestamp)) {
+      buildTimestamp = headers[Chililog.BUILD_TIMESTAMP_HEADER_NAME.toLowerCase()];
+      if (SC.none(buildTimestamp)) {
+        throw Chililog.$error('_sessionDataController.BuildTimestampNotFoundInResponseError');
+      }
+    }
+    this.set('chililogBuildTimestamp', buildTimestamp);
   },
 
   /**
@@ -365,7 +407,8 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
     var url = '/api/Authentication?action=update_profile';
     var authToken = this.get('authenticationToken');
-    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);;
+    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
+    ;
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     request.notify(this, 'endSaveProfile', params).send(postData);
 
@@ -412,6 +455,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     if (!SC.none(params.callbackFunction)) {
       params.callbackFunction.call(params.callbackTarget, error);
     }
+
+    // Sync user data
+    Chililog.userDataController.synchronizeWithServer();
 
     // Return YES to signal handling of callback
     return YES;
@@ -465,7 +511,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
     var url = '/api/Authentication?action=change_password';
     var authToken = this.get('authenticationToken');
-    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);;
+    var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     request.notify(this, 'endChangePassword', params).send(postData);
 

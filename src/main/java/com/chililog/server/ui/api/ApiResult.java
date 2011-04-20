@@ -26,6 +26,7 @@ import java.util.HashMap;
 
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
 import com.chililog.server.ui.api.Worker.ContentIOStyle;
@@ -89,6 +90,8 @@ public class ApiResult
      */
     public ApiResult(AuthenticationTokenAO authenticationToken, String contentType, Object content)
     {
+        AppProperties appProperties = AppProperties.getInstance();
+
         _responseStatus = (content == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
         _responseContentType = contentType;
 
@@ -98,6 +101,8 @@ public class ApiResult
             authenticationToken.updateExpiresOn();
         }
         _headers.put(Worker.AUTHENTICATION_TOKEN_HEADER, authenticationToken.toString());
+        _headers.put(Worker.AUTHENTICATION_SERVER_VERSION, appProperties.getAppVersion());
+        _headers.put(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP, appProperties.getBuildTimestamp());
 
         if (content != null)
         {

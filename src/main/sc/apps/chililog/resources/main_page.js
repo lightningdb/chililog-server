@@ -78,8 +78,3 @@ Chililog.searchView = SC.LabelView.design( {
 });
 
 
-Chililog.aboutView =  SC.TemplateView.design({
-  layout: { top: 0, left: 0, width: 200, height: 18 },
-    templateName: 'about'
-  });
-

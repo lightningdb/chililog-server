@@ -76,6 +76,8 @@ public abstract class Worker
     public static final String DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME = "do_page_count";
 
     public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
+    public static final String AUTHENTICATION_SERVER_VERSION = "X-ChiliLog-Version";
+    public static final String AUTHENTICATION_SERVER_BUILD_TIMESTAMP = "X-ChiliLog-Build-Timestamp";
     public static final String PAGE_COUNT_HEADER = "X-ChiliLog-PageCount";
 
     public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";

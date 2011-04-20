@@ -282,9 +282,6 @@ Chililog.myAccountView = SC.View.design({
     } else if (SC.instanceOf(result, SC.Error)) {
       // Error
       var message = error.get('message');
-      if (SC.empty(result)) {
-        return;
-      }
       SC.AlertPane.error({ message: message });
 
       var label = result.get('label');
