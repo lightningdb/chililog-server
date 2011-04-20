@@ -62,7 +62,7 @@ Chililog.mainPaneController = SC.Object.create(
         title: '_mainPane.Configure'.loc(),
         toolTip: '_mainPane.Configure.ToolTip'.loc(),
         target: Chililog.mainPaneController,
-        action: 'showRepositories'
+        action: 'showConfigure'
       });
     }
 
@@ -104,9 +104,9 @@ Chililog.mainPaneController = SC.Object.create(
   },
 
   /**
-   * Show repository views
+   * Show configure views
    */
-  showRepositories: function() {
+  showConfigure: function() {
     this.set('state', Chililog.mainPaneStates.CONFIGURE);
   },
 
@@ -137,6 +137,9 @@ Chililog.mainPaneController = SC.Object.create(
     }
     else if (state === Chililog.mainPaneStates.ANALYSE && nowShowing !== 'Chililog.aboutView') {
       body.set('nowShowing', 'Chililog.aboutView');
+    }
+    else if (state === Chililog.mainPaneStates.CONFIGURE && nowShowing !== 'Chililog.configureView') {
+      body.set('nowShowing', 'Chililog.configureView');
     }
     else if (state === Chililog.mainPaneStates.ABOUT && nowShowing !== 'Chililog.aboutView') {
       body.set('nowShowing', 'Chililog.aboutView');

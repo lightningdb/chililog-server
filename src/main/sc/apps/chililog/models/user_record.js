@@ -61,9 +61,27 @@ Chililog.UserRecord = SC.Record.extend(
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
     }
     return apiObject;
-  }
+  },
 
-  
+  /**
+   * Item display name in a tree view.  Just show the username
+   */
+  treeItemName: function() {
+    return this.get('username');
+  }.property('username').cacheable(),
+
+  /**
+   * Because there are no child items, there is no need to expand in a tree view
+   */
+  treeItemIsExpanded: NO,
+
+  /**
+   * There are no child items for display in a tree view under users
+   */
+  treeItemChildren: function(){
+     return null;
+  }.property().cacheable()
+   
 });
 
 /**

@@ -42,6 +42,8 @@ Chililog.main = function main() {
     // Sync data with server
     Chililog.userDataController.synchronizeWithServer(null, null);
 
+    // Load initial views
+    Chililog.configureViewTreeController.populate();
   }
   catch (err) {
     // Show Error

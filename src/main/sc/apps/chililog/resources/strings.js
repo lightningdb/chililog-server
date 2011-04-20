@@ -57,5 +57,7 @@ SC.stringsFor('English', {
   '_sessionDataController.OldNewConfirmPasswordRequiredError': 'Old, new and confirm passwords are required.',
   '_sessionDataController.ConfirmPasswordError': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
 
+  '_configureView.Title': 'Configure',
+
   'end': 'end'
 });
