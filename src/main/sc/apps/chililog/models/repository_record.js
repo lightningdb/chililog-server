@@ -18,7 +18,8 @@ Chililog.RepositoryRecord = SC.Record.extend(
   documentID: SC.Record.attr(String),
   documentVersion: SC.Record.attr(Number),
   name: SC.Record.attr(String),
-  status: SC.Record.attr(String),
+  currentStatus: SC.Record.attr(String),
+
 
   /**
    * Maps server api data into this record
@@ -85,5 +86,5 @@ Chililog.REPOSITORY_INFO_RECORD_MAP = [
   [Chililog.DOCUMENT_ID_RECORD_FIELD_NAME, Chililog.DOCUMENT_ID_AO_FIELD_NAME ],
   [Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME, Chililog.DOCUMENT_VERSION_AO_FIELD_NAME],
   ['name' ,'Name'],
-  ['status' ,'Status']
+  ['currentStatus' ,'Status']
 ];

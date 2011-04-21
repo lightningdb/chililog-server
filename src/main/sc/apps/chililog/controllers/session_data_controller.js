@@ -579,7 +579,8 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    */
   synchronizeServerData: function(clearLoadData) {
     Chililog.userDataController.synchronizeWithServer(clearLoadData, null, null);
-    Chililog.repositoryInfoDataController.synchronizeWithServer(clearLoadData, null, null);
+
+    // repositoryDataController will call repositoryInfoDataController
     Chililog.repositoryDataController.synchronizeWithServer(clearLoadData, null, null);
   }
 

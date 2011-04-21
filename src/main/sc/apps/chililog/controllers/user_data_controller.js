@@ -76,13 +76,33 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 
           // See if user record exists
           var userRecord = Chililog.store.find(Chililog.UserRecord, userAO.DocumentID);
-          if (SC.none(userRecord)) {
+          if (SC.none(userRecord) || (userRecord.get('status') & SC.Record.DESTROYED)) {
             userRecord = Chililog.store.createRecord(Chililog.UserRecord, {}, userAO.DocumentID);
           }
           userRecord.fromApiObject(userAO);
         }
         Chililog.store.commitRecords();
       }
+
+      // Delete records that have not been returned
+      var records = Chililog.store.find(Chililog.UserRecord);
+      records.forEach(function(record) {
+        var doDelete = YES;
+        if (!SC.none(userAOArray) && SC.isArray(userAOArray)) {
+          for (var i = 0; i < userAOArray.length; i++) {
+            var userAO = userAOArray[i];
+            if (userAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME] === record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+              doDelete = NO;
+              break;
+            }
+          }
+        }
+        if (doDelete) {
+          record.destroy()
+        }
+      });
+      Chililog.store.commitRecords();
+      
     }
     catch (err) {
       error = err;

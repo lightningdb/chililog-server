@@ -45,6 +45,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerAp
     // Not logged in, so cannot sync
     var authToken = Chililog.sessionDataController.get('authenticationToken');
     if (SC.empty(authToken)) {
+      Chililog.repositoryInfoDataController.synchronizeWithServer(clearLocalData);
       return;
     }
 
@@ -52,7 +53,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerAp
     this.set('isSynchronizingWithServer', YES);
 
     // Get data
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { clearLocalData: clearLocalData, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     var url = '/api/repositories';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     request.notify(this, 'endSynchronizeWithServer', params).send();
@@ -75,15 +76,35 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerAp
         for (var i = 0; i < repoAOArray.length; i++) {
           var repoAO = repoAOArray[i];
 
-          // See if user record exists
-          var repoInfoRecord = Chililog.store.find(Chililog.RepositoryRecord, repoAO.DocumentID);
-          if (SC.none(repoInfoRecord)) {
-            repoInfoRecord = Chililog.store.createRecord(Chililog.RepositoryRecord, {}, repoAO.DocumentID);
+          // See if record exists
+          var repoRecord = Chililog.store.find(Chililog.RepositoryRecord, repoAO.DocumentID);
+          if (SC.none(repoRecord) || (repoRecord.get('status') & SC.Record.DESTROYED)) {
+            repoRecord = Chililog.store.createRecord(Chililog.RepositoryRecord, {}, repoAO.DocumentID);
           }
-          repoInfoRecord.fromApiObject(repoAO);
+          repoRecord.fromApiObject(repoAO);
         }
         Chililog.store.commitRecords();
       }
+
+      // Delete records that have not been returned
+      var records = Chililog.store.find(Chililog.RepositoryRecord);
+      records.forEach(function(record) {
+        var doDelete = YES;
+        if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
+          for (var i = 0; i < repoAOArray.length; i++) {
+            var repoAO = repoAOArray[i];
+            if (repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME] === record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+              doDelete = NO;
+              break;
+            }
+          }
+        }
+        if (doDelete) {
+          record.destroy()
+        }
+      });
+      Chililog.store.commitRecords();
+      
     }
     catch (err) {
       error = err;
@@ -92,6 +113,9 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerAp
 
     // Finish sync'ing
     this.set('isSynchronizingWithServer', NO);
+
+    // Synch repo info
+    Chililog.repositoryInfoDataController.synchronizeWithServer(params.clearLocalData);
 
     // Callback
     if (!SC.none(params.callbackFunction)) {

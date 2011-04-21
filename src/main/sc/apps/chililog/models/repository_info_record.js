@@ -35,6 +35,8 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   maxKeywords: SC.Record.attr(Number),
 
+  repository: SC.Record.toOne('Chililog.RepositoryRecord'),
+
   /**
    * Maps server api data into this record
    *
@@ -58,7 +60,7 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   /**
    * Maps record data to api object
-   * 
+   *
    * @returns {Object} repoInfoAO
    */
   toApiObject: function() {
@@ -80,6 +82,18 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
   }.property('name').cacheable(),
 
   /**
+   * Green dot if online, Red if not
+   */
+  treeItemIcon: function() {
+    var currentStatus = this.getPath('repository.currentStatus');
+    if (!SC.empty(currentStatus) && currentStatus === 'ONLINE') {
+      return sc_static('images/bullet_green.png');
+    } else {
+      return sc_static('images/bullet_red.png');
+    }
+  }.property('repository.currentStatus').cacheable(),
+
+  /**
    * Because there are no child items, there is no need to expand in a tree view
    */
   treeItemIsExpanded: NO,
@@ -87,10 +101,10 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
   /**
    * There are no child items for display in a tree view under users
    */
-  treeItemChildren: function(){
-     return null;
+  treeItemChildren: function() {
+    return null;
   }.property().cacheable()
-   
+
 });
 
 /**

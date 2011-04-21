@@ -23,6 +23,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
 
   /**
    * Synchronize data in the store with the data on the server
+   * We sync repository status after we get all the repository info
    *
    * @param {Boolean} clearLocalData YES will delete data from local store before loading.
    * @param {Object} [callbackTarget] Optional callback object
@@ -76,15 +77,42 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
         for (var i = 0; i < repoInfoAOArray.length; i++) {
           var repoInfoAO = repoInfoAOArray[i];
 
-          // See if user record exists
+          // See if record exists
           var repoInfoRecord = Chililog.store.find(Chililog.RepositoryInfoRecord, repoInfoAO.DocumentID);
-          if (SC.none(repoInfoRecord)) {
+          if (SC.none(repoInfoRecord) || (repoInfoRecord.get('status') & SC.Record.DESTROYED)) {
             repoInfoRecord = Chililog.store.createRecord(Chililog.RepositoryInfoRecord, {}, repoInfoAO.DocumentID);
+          }
+
+          // Find corresponding repository record
+          var query = SC.Query.local(Chililog.RepositoryRecord, 'name={name}', {name: repoInfoAO.Name});
+          var repoRecord = Chililog.store.find(query);
+          if (repoRecord.get('length') > 0) {
+            repoInfoRecord.set('repository', repoRecord.objectAt(0));
           }
           repoInfoRecord.fromApiObject(repoInfoAO);
         }
         Chililog.store.commitRecords();
       }
+
+      // Delete records that have not been returned
+      var records = Chililog.store.find(Chililog.RepositoryInfoRecord);
+      records.forEach(function(record) {
+        var doDelete = YES;
+        if (!SC.none(repoInfoAOArray) && SC.isArray(repoInfoAOArray)) {
+          for (var i = 0; i < repoInfoAOArray.length; i++) {
+            var repoInfoAO = repoInfoAOArray[i];
+            if (repoInfoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME] === record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+              doDelete = NO;
+              break;
+            }
+          }
+        }
+        if (doDelete) {
+          record.destroy()
+        }
+      });
+      Chililog.store.commitRecords();
+            
     }
     catch (err) {
       error = err;

@@ -22,7 +22,7 @@ Chililog.UserRecord = SC.Record.extend(
   emailAddress: SC.Record.attr(String),
   password: SC.Record.attr(String),
   roles: SC.Record.attr(Array),
-  status: SC.Record.attr(String),
+  currentStatus: SC.Record.attr(String),
   displayName: SC.Record.attr(String),
   gravatarMD5Hash: SC.Record.attr(String),
 
@@ -71,6 +71,18 @@ Chililog.UserRecord = SC.Record.extend(
   }.property('username').cacheable(),
 
   /**
+   * Green dot if online, Red if not
+   */
+  treeItemIcon: function() {
+    var currentStatus = this.getPath('currentStatus');
+    if (!SC.empty(currentStatus) && currentStatus === 'Enabled') {
+      return sc_static('images/bullet_green.png');
+    } else {
+      return sc_static('images/bullet_red.png');
+    }
+  }.property('currentStatus').cacheable(),
+
+  /**
    * Because there are no child items, there is no need to expand in a tree view
    */
   treeItemIsExpanded: NO,
@@ -94,7 +106,7 @@ Chililog.USER_RECORD_MAP = [
   ['emailAddress' ,'EmailAddress'],
   ['password' ,'Password'],
   ['roles' ,'Roles'],
-  ['status' ,'Status'],
+  ['currentStatus' ,'Status'],
   ['displayName' ,'DisplayName'],
   ['gravatarMD5Hash' ,'GravatarMD5Hash']
 ];

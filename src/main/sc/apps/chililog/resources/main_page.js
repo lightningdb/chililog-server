@@ -64,13 +64,26 @@ Chililog.mainPage = SC.Page.design({
 
     body: SC.ContainerView.design({
       layout: { top: 40, left: 0, right: 0, bottom: 0 }
-    })
-    
-  })  //mainPane
+    }),
+
+    /**
+     * For some reason, splitview goes after logout/login again. The splitter is right over the left hand edge and
+     * it looks like the left panel has disappeared.
+     *
+     * To make it redraw, we set the nowShowing to null.
+     */
+    keyPaneDidChange: function() {
+      var isKeyPane = this.get('isKeyPane');
+      if (!isKeyPane) {
+        var body = this.get('body');
+        body.set('nowShowing', null);
+      }
+    }.observes('isKeyPane')
+  }) //mainPane
 
 });
 
-Chililog.searchView = SC.LabelView.design( {
+Chililog.searchView = SC.LabelView.design({
   layout: { top: 0, left: 0, width: 200, height: 18 },
   textAlign: SC.ALIGN_CENTER,
   tagName: 'h1',
