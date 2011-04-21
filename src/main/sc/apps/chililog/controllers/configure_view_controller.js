@@ -21,17 +21,17 @@ Chililog.configureViewTreeController = SC.TreeController.create({
   populate: function() {
     var repositories = SC.Object.create({
       treeItemIsExpanded: YES,
-      treeItemName: 'Repositories',
+      treeItemLabel: 'Repositories',
       treeItemChildren: function() {
-        var repoQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
-        var repo = Chililog.store.find(repoQuery);
-        return repo;
+        var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
+        var repoInfo = Chililog.store.find(repoInfoQuery);
+        return repoInfo;
       }.property()
     });
 
     var users = SC.Object.create({
       treeItemIsExpanded: YES,
-      treeItemName: 'Users',
+      treeItemLabel: 'Users',
       treeItemChildren: function() {
         var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
         var users = Chililog.store.find(userQuery);
@@ -41,7 +41,7 @@ Chililog.configureViewTreeController = SC.TreeController.create({
 
     var rootNode = SC.Object.create({
       treeItemIsExpanded: YES,
-      treeItemName: 'Chililog',
+      treeItemLabel: 'Chililog',
       treeItemChildren: [repositories, users]
     });
     this.set('content', rootNode);

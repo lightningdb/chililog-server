@@ -39,10 +39,7 @@ Chililog.main = function main() {
     // Manually fire event of state change because bindings do not fire until main finishes
     Chililog.mainPaneController.get('stateDidChange').call(Chililog.mainPaneController);
 
-    // Sync data with server
-    Chililog.userDataController.synchronizeWithServer(null, null);
-
-    // Load initial views
+    // Hook up initial views
     Chililog.configureViewTreeController.populate();
   }
   catch (err) {

@@ -3,14 +3,15 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('controllers/server_api_mixin');
 
 /** @class
 
-  Manages user records and keeps them in sync with the server
+  Manages repository records and keeps them in sync with the server
 
  @extends SC.Object
  */
-Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin,
+Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerApiMixin,
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
@@ -34,7 +35,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
     }
 
     if (clearLocalData) {
-      var records = Chililog.store.find(Chililog.UserRecord);
+      var records = Chililog.store.find(Chililog.RepositoryRecord);
       records.forEach(function(record) {
         record.destroy()
       });
@@ -52,7 +53,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 
     // Get data
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-    var url = '/api/Users';
+    var url = '/api/repositories';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     request.notify(this, 'endSynchronizeWithServer', params).send();
   },
@@ -69,17 +70,17 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       this.checkResponse(response);
 
       // Set data
-      var userAOArray = response.get('body');
-      if (!SC.none(userAOArray) && SC.isArray(userAOArray)) {
-        for (var i = 0; i < userAOArray.length; i++) {
-          var userAO = userAOArray[i];
+      var repoAOArray = response.get('body');
+      if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
+        for (var i = 0; i < repoAOArray.length; i++) {
+          var repoAO = repoAOArray[i];
 
           // See if user record exists
-          var userRecord = Chililog.store.find(Chililog.UserRecord, userAO.DocumentID);
-          if (SC.none(userRecord)) {
-            userRecord = Chililog.store.createRecord(Chililog.UserRecord, {}, userAO.DocumentID);
+          var repoInfoRecord = Chililog.store.find(Chililog.RepositoryRecord, repoAO.DocumentID);
+          if (SC.none(repoInfoRecord)) {
+            repoInfoRecord = Chililog.store.createRecord(Chililog.RepositoryRecord, {}, repoAO.DocumentID);
           }
-          userRecord.fromApiObject(userAO);
+          repoInfoRecord.fromApiObject(repoAO);
         }
         Chililog.store.commitRecords();
       }

@@ -193,6 +193,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     this.set('authenticationToken', token);
     Chililog.localStoreController.setItem(Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
 
+    // Get data from server
+    this.synchronizeServerData(YES);
+
     // Return YES to signal handling of callback
     return YES;
   },
@@ -311,6 +314,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
       SC.Logger.error('endLogin: ' + err.message);
     }
 
+    // Get new data from server
+    this.synchronizeServerData(YES);
+
     // Callback
     if (!SC.none(params.callbackFunction)) {
       params.callbackFunction.call(params.callbackTarget, error);
@@ -362,6 +368,9 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     this.set('authenticationTokenExpiry', null);
     this.set('authenticationToken', null);
     this.notifyPropertyChange('authenticationToken');
+
+    // Clear local data
+    this.synchronizeServerData(YES);
 
     return;
   },
@@ -561,6 +570,17 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Synchornizes the data in the local store with that on the server
+   * 
+   * @param {Boolean} clearLoadData YES if we want to clear the store of local data
+   */
+  synchronizeServerData: function(clearLoadData) {
+    Chililog.userDataController.synchronizeWithServer(clearLoadData, null, null);
+    Chililog.repositoryInfoDataController.synchronizeWithServer(clearLoadData, null, null);
+    Chililog.repositoryDataController.synchronizeWithServer(clearLoadData, null, null);
   }
 
 });

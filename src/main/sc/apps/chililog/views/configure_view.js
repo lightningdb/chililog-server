@@ -31,7 +31,7 @@ Chililog.configureView = SC.View.design({
       contentView: SC.ListView.design({
         layout: { top: 0, bottom: 0, left: 0, right: 0 },
         rowHeight: 24,
-        contentValueKey: 'treeItemName',
+        contentValueKey: 'treeItemLabel',
         contentBinding: 'Chililog.configureViewTreeController.arrangedObjects',
         selectionBinding: 'Chililog.configureViewTreeController.selection'
       })
