@@ -36,11 +36,8 @@ Chililog.main = function main() {
     }
     Chililog.mainPaneController.set('state', startUpState);
 
-    // Manually fire event of state change because bindings do not fire until main finishes
-    Chililog.mainPaneController.get('stateDidChange').call(Chililog.mainPaneController);
-
     // Hook up initial views
-    Chililog.configureViewTreeController.populate();
+    Chililog.configureTreeViewController.populate();
   }
   catch (err) {
     // Show Error

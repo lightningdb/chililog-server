@@ -108,7 +108,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerAp
     }
     catch (err) {
       error = err;
-      SC.Logger.error('endSynchronizeWithServer: ' + err.message);
+      SC.Logger.error('repositoryDataController.endSynchronizeWithServer: ' + err.message);
     }
 
     // Finish sync'ing

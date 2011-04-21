@@ -5,7 +5,7 @@
 
 
 /**
- * States of the mainPane in the mainPage.
+ * States of the my account view
  */
 Chililog.myAccountViewStates = {
   UNLOADED: 'Unloaded',

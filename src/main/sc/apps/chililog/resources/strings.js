@@ -59,5 +59,8 @@ SC.stringsFor('English', {
 
   '_configureView.Title': 'Configure',
 
+  '_configureUserView.Title': 'User',
+  '_configureRepositoryView.Title': 'Repository',
+
   'end': 'end'
 });

@@ -26,7 +26,7 @@ Chililog.mainPaneController = SC.Object.create(
 
   /**
    * Determines the current visible 'body' view
-   * @type State
+   * @type String
    */
   state: '',
 
@@ -122,36 +122,7 @@ Chililog.mainPaneController = SC.Object.create(
    */
   showAbout: function() {
     this.set('state', Chililog.mainPaneStates.ABOUT);
-  },
-
-  /**
-   * When the state in the controller changes, we change this pane to reflect it
-   */
-  stateDidChange: function() {
-    var state = this.get('state');
-    var body = Chililog.mainPage.getPath('mainPane.body');
-    var nowShowing = body.get('nowShowing');
-
-    if (state === Chililog.mainPaneStates.SEARCH && nowShowing !== 'Chililog.searchView') {
-      body.set('nowShowing', 'Chililog.searchView');
-    }
-    else if (state === Chililog.mainPaneStates.ANALYSE && nowShowing !== 'Chililog.aboutView') {
-      body.set('nowShowing', 'Chililog.aboutView');
-    }
-    else if (state === Chililog.mainPaneStates.CONFIGURE && nowShowing !== 'Chililog.configureView') {
-      body.set('nowShowing', 'Chililog.configureView');
-    }
-    else if (state === Chililog.mainPaneStates.ABOUT && nowShowing !== 'Chililog.aboutView') {
-      body.set('nowShowing', 'Chililog.aboutView');
-    }
-    else if (state === Chililog.mainPaneStates.MY_ACCOUNT && nowShowing !== 'Chililog.myAccountView') {
-      body.set('nowShowing', 'Chililog.myAccountView');
-    }
-
-    // Make sure that we sync buttons with state just in case someone changes the state
-    Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', state);
-    Chililog.mainPage.setPath('mainPane.toolBar.myProfileButton.value', state === Chililog.mainPaneStates.MY_ACCOUNT);
-  }.observes('state')
+  }
 
 
 });
