@@ -4,7 +4,7 @@
 // ==========================================================================
 /*globals Chililog module test ok equals same stop start */
 
-module("Chililog.mainPaneController");
+module("Chililog.mainViewController");
 
 // TODO: Replace with real unit test for Chililog.mainPaneController
 test("test description", function() {

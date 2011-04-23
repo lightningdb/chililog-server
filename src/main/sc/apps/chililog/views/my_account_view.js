@@ -120,10 +120,7 @@ Chililog.myAccountView = SC.View.design({
     savingImage: Chililog.ImageView.design({
       layout: { top: 245, left: 220, width: 16, height: 16 },
       value: sc_static('images/working'),
-      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.state').oneWay().transform(
-        function(value, isForward) {
-          return value === Chililog.myAccountViewStates.SAVING;
-        }),
+      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.isSavingProfile').oneWay().bool(),
       useImageQueue: NO
     }),
        
@@ -229,10 +226,7 @@ Chililog.myAccountView = SC.View.design({
     changingPasswordImage: Chililog.ImageView.design({
       layout: { top: 245, left: 190, width: 16, height: 16 },
       value: sc_static('images/working'),
-      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.state').oneWay().transform(
-        function(value, isForward) {
-          return value === Chililog.myAccountViewStates.CHANGING_PASSWORD;
-        }),
+      isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.isChangingPassword').oneWay().bool(),
       useImageQueue: NO
     }),
 
@@ -281,7 +275,7 @@ Chililog.myAccountView = SC.View.design({
       }
     } else if (SC.instanceOf(result, SC.Error)) {
       // Error
-      var message = error.get('message');
+      var message = result.get('message');
       SC.AlertPane.error({ message: message });
 
       var label = result.get('label');

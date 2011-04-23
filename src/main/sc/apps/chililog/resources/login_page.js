@@ -41,8 +41,8 @@ Chililog.loginPage = SC.Page.design({
 
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
-          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
-          valueBinding: 'Chililog.loginPaneController.username'
+          isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
+          valueBinding: 'Chililog.loginViewController.username'
           // Set focus
           // http://groups.google.com/group/sproutcore/browse_thread/thread/7e72be97d0229689
           //isVisibleInWindowDidChange: function() {
@@ -66,8 +66,8 @@ Chililog.loginPage = SC.Page.design({
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
           isPassword: YES,
-          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
-          valueBinding: 'Chililog.loginPaneController.password'
+          isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
+          valueBinding: 'Chililog.loginViewController.password'
         })
       }),
 
@@ -79,8 +79,8 @@ Chililog.loginPage = SC.Page.design({
           layout: { top: 0, left: 0, right: 0, height: 20 },
           title: '_loginPane.RememberMe',
           localize: YES,
-          isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isEdit').oneWay().bool(),
-          valueBinding: 'Chililog.loginPaneController.rememberMe'
+          isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
+          valueBinding: 'Chililog.loginViewController.rememberMe'
         })
       }),
 
@@ -90,15 +90,15 @@ Chililog.loginPage = SC.Page.design({
         localize: YES,
         isDefault: YES,
         controlSize: SC.HUGE_CONTROL_SIZE,
-        isEnabledBinding: SC.Binding.from('Chililog.loginPaneController.isBusy').oneWay().not(),
-        target: 'Chililog.loginPaneController',
+        isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
+        target: 'Chililog.loginViewController',
         action: 'login'
       }),
 
       loadingImage: Chililog.ImageView.design({
         layout: { top: 235, right: 50, width: 16, height: 16 },
         value: sc_static('images/working'),
-        isVisibleBinding: SC.Binding.from('Chililog.loginPaneController.isBusy').oneWay().bool(),
+        isVisibleBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().bool(),
         useImageQueue: NO
       })
     }),  //boxView
@@ -107,7 +107,7 @@ Chililog.loginPage = SC.Page.design({
      * Displays error messages
      */
     errorDidChange: function() {
-      var error = Chililog.loginPaneController.get('error');
+      var error = Chililog.loginViewController.get('error');
       if (SC.none(error)) {
         return;
       }
@@ -132,7 +132,7 @@ Chililog.loginPage = SC.Page.design({
         SC.AlertPane.error(error);
       }
 
-    }.observes('Chililog.loginPaneController.error'),
+    }.observes('Chililog.loginViewController.error'),
 
     /**
      * Set focus on the username field when pane becomes active

@@ -13,16 +13,17 @@ Chililog.main = function main() {
       return;
     }
 
+    // Init state chart
+    Chililog.statechart.initStatechart();
+
     // See if we can load the session (ignore errors)
-    // Because binding do not work until after main(), we manually notify login page if user logged in or not
     Chililog.sessionDataController.load(NO);
-    Chililog.loginPaneController.isLoggedInDidChange();
 
     // Setup poller to check for session expiry
     Chililog.sessionDataController.checkExpiry();
 
     // Set startup state (can be defined in query string
-    var startUpState = Chililog.mainPaneStates.SEARCH;
+    var startState = 'loggedIn';
     if (!SC.empty(window.location.search)) {
       var a = window.location.search.substr(1).split('&');
       for (var i = 0; i < a.length; ++i) {
@@ -30,14 +31,18 @@ Chililog.main = function main() {
         var name = p[0];
         var value = p[1];
         if (name === 'StartState') {
-          startUpState = value;
+          startState = value;
         }
       }
     }
-    Chililog.mainPaneController.set('state', startUpState);
 
     // Hook up initial views
     Chililog.configureTreeViewController.populate();
+
+    // Now go to the correct state depending on if we are logged in or not
+    var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
+    Chililog.statechart.gotoState(isLoggedIn ? startState : 'loggedOut');
+    
   }
   catch (err) {
     // Show Error

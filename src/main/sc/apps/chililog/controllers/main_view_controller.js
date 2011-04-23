@@ -5,30 +5,12 @@
 
 
 /**
- * States of the mainPane in the mainPage.
- */
-Chililog.mainPaneStates = {
-  SEARCH: 'Search',
-  ANALYSE: 'Analyse',
-  MONITOR: 'Monitor',
-  CONFIGURE: 'Configure',
-  ABOUT: 'About',
-  MY_ACCOUNT: 'MyAccount'
-}
-
-/**
  * Controller that for the mainPane. Mainly handles menu selection option and login/logout
  *
  * @extends SC.Object
  */
-Chililog.mainPaneController = SC.Object.create(
+Chililog.mainViewController = SC.Object.create(
 /** @scope Chililog.mainPaneController.prototype */ {
-
-  /**
-   * Determines the current visible 'body' view
-   * @type String
-   */
-  state: '',
 
   /**
    * Array of menu options items
@@ -39,18 +21,18 @@ Chililog.mainPaneController = SC.Object.create(
   /**
    * Rebuild menu options if the logged in user changes
    */
-  loggedInUserDidChange: function() {
+  buildMenuOptions: function() {
     var values = [
-      { value: Chililog.mainPaneStates.SEARCH,
+      { value: 'search',
         title: '_mainPane.Search'.loc(),
         toolTip: '_mainPane.Search.ToolTip'.loc(),
-        target: Chililog.mainPaneController,
+        target: Chililog.mainViewController,
         action: 'showSearch'
       },
-      { value: Chililog.mainPaneStates.ANALYSE,
+      { value: 'analyse',
         title: '_mainPane.Analyse'.loc(),
         toolTip: '_mainPane.Analyse.ToolTip'.loc(),
-        target: Chililog.mainPaneController,
+        target: Chililog.mainViewController,
         action: 'showAnalysis'
       }
     ];
@@ -58,70 +40,73 @@ Chililog.mainPaneController = SC.Object.create(
     var isAdmin = Chililog.sessionDataController.get('isInAdministratorRole');
     if (isAdmin) {
       values.push({
-        value: Chililog.mainPaneStates.CONFIGURE,
+        value: 'configure',
         title: '_mainPane.Configure'.loc(),
         toolTip: '_mainPane.Configure.ToolTip'.loc(),
-        target: Chililog.mainPaneController,
+        target: Chililog.mainViewController,
         action: 'showConfigure'
       });
     }
 
     values.push({
-      value: Chililog.mainPaneStates.ABOUT,
+      value: 'about',
       title: '_mainPane.About'.loc(),
       toolTip: '_mainPane.About.ToolTip'.loc(),
-      target: Chililog.mainPaneController,
+      target: Chililog.mainViewController,
       action: 'showAbout'
     });
 
     // Set new menu options
     this.set('menuOptions', values);
-
-    // Make views react to changes in menu options because after logging out,
-    // menu option changes. So when the user logs back in, we have to select what was there before
-    this.notifyPropertyChange('state');
-  }.observes('Chililog.sessionDataController.loggedInUser'),
+  },
 
   /**
    * Show search view
    */
   showSearch: function() {
-    this.set('state', Chililog.mainPaneStates.SEARCH);
+    Chililog.statechart.sendEvent('showSearch');
   },
 
   /**
    * Show analysis view
    */
   showAnalysis: function() {
-    this.set('state', Chililog.mainPaneStates.ANALYSE);
+    Chililog.statechart.sendEvent('showAnalysis');
   },
 
   /**
    * Show monitors view
    */
   showMonitors: function() {
-    this.set('state', Chililog.mainPaneStates.MONITOR);
+    Chililog.statechart.sendEvent('showMonitors');
   },
 
   /**
    * Show configure views
    */
   showConfigure: function() {
-    this.set('state', Chililog.mainPaneStates.CONFIGURE);
+    Chililog.statechart.sendEvent('showConfigure');
   },
 
   /**
    * Show user account view
    */
   showMyAccount: function() {
-    this.set('state', Chililog.mainPaneStates.MY_ACCOUNT);
+    Chililog.statechart.sendEvent('showMyAccount');
   },
 
   /**
    * Show about view
    */
   showAbout: function() {
-    this.set('state', Chililog.mainPaneStates.ABOUT);
+    Chililog.statechart.sendEvent('showAbout');
+  },
+
+  /**
+   * Logout
+   */
+  logout: function() {
+    Chililog.statechart.sendEvent('logout');
   }
 
 
