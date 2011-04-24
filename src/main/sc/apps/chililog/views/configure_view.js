@@ -3,6 +3,8 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('views/image_view');
+
 /**
  * Configure view
  */
@@ -67,15 +69,15 @@ Chililog.ConfigureUserView = SC.View.design({
   body: SC.View.design({
     layout: { top: 35, left: 0, width: 400, height: 300 },
     classNames: ['edit-box'],
-    childViews: 'username'.w(),
+    childViews: 'username email displayName saveButton cancelButton savingImage successMessage'.w(),
 
     username: SC.View.design({
-      layout: {top: 50, left: 20, right: 20, height: 50 },
+      layout: {top: 20, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
         layout: { top: 0, left: 0, right: 0, height: 19 },
-        value: '_myAccountView.Username',
+        value: '_configureUserView.Username',
         localize: YES
       }),
 
@@ -83,7 +85,75 @@ Chililog.ConfigureUserView = SC.View.design({
         layout: { top: 20, left: 0, height: 25 },
         valueBinding: 'Chililog.configureUserViewController.username'
       })
+    }),
+
+    email: SC.View.design({
+      layout: {top: 80, left: 20, right: 20, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 19 },
+        value: '_configureUserView.EmailAddress',
+        localize: YES
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.configureUserViewController.emailAddress'
+      })
+    }),
+
+    displayName: SC.View.design({
+      layout: {top: 140, left: 20, right: 20, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 19 },
+        value: '_configureUserView.DisplayName',
+        localize: YES
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.configureUserViewController.displayName'
+      })
+    }),
+
+    saveButton: SC.ButtonView.design({
+      layout: {top: 200, left: 20, width: 90 },
+      title: '_save',
+      localize: YES,
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isDefault: YES,
+      isEnabledBinding: SC.Binding.from('Chililog.configureUserViewController.canSave').oneWay(),
+      target: 'Chililog.configureUserViewController',
+      action: 'save'
+    }),
+
+    cancelButton: SC.ButtonView.design({
+      layout: {top: 200, left: 120, width: 90 },
+      title: '_cancel',
+      localize: YES,
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isEnabledBinding: SC.Binding.from('Chililog.configureUserViewController.canSave').oneWay(),
+      target: 'Chililog.configureUserViewController',
+      action: 'discardChanges'
+    }),
+
+    savingImage: Chililog.ImageView.design({
+      layout: { top: 205, left: 220, width: 16, height: 16 },
+      value: sc_static('images/working'),
+      isVisibleBinding: SC.Binding.from('Chililog.configureUserViewController.isSaving').oneWay().bool(),
+      useImageQueue: NO
+    }),
+
+    successMessage: SC.LabelView.design({
+      layout: { top: 200, left: 220, width: 155, height: 25, opacity: 0 },
+      classNames: ['success'],
+      value: '_myAccountView.SaveProfileSuccess',
+      localize: YES
     })
+    
   })
 });
 
@@ -95,20 +165,42 @@ Chililog.configureUserView = Chililog.ConfigureUserView.create();
 /**
  * Repository details
  */
-Chililog.ConfigureRepositoryView = SC.View.design({
+Chililog.ConfigureRepositoryInfoView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
-  childViews: 'title'.w(),
+  childViews: 'title body'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 0, left: 0, width: 200, height: 30 },
     tagName: 'h1',
     controlSize: SC.HUGE_CONTROL_SIZE,
-    value: '_configureRepositoryView.Title',
+    value: '_configureRepositoryInfoView.Title',
     localize: YES
+  }),
+
+  body: SC.View.design({
+    layout: { top: 35, left: 0, width: 400, height: 300 },
+    classNames: ['edit-box'],
+    childViews: 'name'.w(),
+
+    name: SC.View.design({
+      layout: {top: 50, left: 20, right: 20, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 19 },
+        value: '_configureRepositoryInfoView.Name',
+        localize: YES
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, height: 25 },
+        valueBinding: 'Chililog.configureRepositoryInfoViewController.name'
+      })
+    })
   })
 });
 
 /**
  * Instance configure repository view
  */
-Chililog.configureRepositoryView = Chililog.ConfigureRepositoryView.create();
+Chililog.configureRepositoryInfoView = Chililog.ConfigureRepositoryInfoView.create();

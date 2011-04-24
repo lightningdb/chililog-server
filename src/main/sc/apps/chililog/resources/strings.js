@@ -57,10 +57,21 @@ SC.stringsFor('English', {
   '_sessionDataController.OldNewConfirmPasswordRequiredError': 'Old, new and confirm passwords are required.',
   '_sessionDataController.ConfirmPasswordError': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
 
-  '_configureView.Title': 'Configure',
+  '_userDataController.UsernameRequiredError': 'Username is required',
+  '_userDataController.PasswordRequiredError': 'Password is required',
+  '_userDataController.EmailAddressRequiredError': 'Email Address is required',
 
+  '_repositoryInfoDataController.NameRequiredError': 'Name is requried',
+  
+  '_configureView.Title': 'Configure',
   '_configureUserView.Title': 'User',
-  '_configureRepositoryView.Title': 'Repository',
+  '_configureUserView.Username': 'Username',
+  '_configureUserView.EmailAddress': 'Email Address',
+  '_configureUserView.DisplayName': 'Display Name',
+  '_configureRepositoryInfoView.Title': 'Repository',
+  '_configureRepositoryInfoView.Name': 'Name',
+  '_configureRepositoryInfoView.DisplayName': 'Display Name',
+  '_configureRepositoryInfoView.Description': 'Description',
 
   'end': 'end'
 });

@@ -19,13 +19,47 @@ Chililog.configureUserViewController = SC.ObjectController.create({
    */
   show: function() {
     Chililog.configureView.setPath('body.bottomRightView.contentView', Chililog.configureUserView);
+  },
+
+  /**
+   * Flag to indicate if the user's profile can be saved.
+   * Can only be saved if form is loaded and the data has changed
+   *
+   * @type Boolean
+   */
+  canSave: function() {
+    var recordStatus = this.getPath('content.status');
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+      return YES;
+    }
+    return NO;
+  }.property('content.status', 'isSaving').cacheable(),
+
+  /**
+   * Flag to indicate if we are in the middle of trying to save a profile
+   */
+  isSaving: NO,
+
+  /**
+   * Trigger event to save the user's profile
+   */
+  save: function() {
+    Chililog.statechart.sendEvent('save');
+  },
+
+  /**
+   * Trigger event to discard changes to the user's profile
+   */
+  discardChanges: function() {
+    Chililog.statechart.sendEvent('discardChanges');
   }
+  
 });
 
 /**
  * Controls the data when configuring repositories
  */
-Chililog.configureRepositoryViewController = SC.ObjectController.create({
+Chililog.configureRepositoryInfoViewController = SC.ObjectController.create({
 
   /**
    * Repository record to display
@@ -37,7 +71,7 @@ Chililog.configureRepositoryViewController = SC.ObjectController.create({
    * Show the repository details form
    */
   show: function() {
-    Chililog.configureView.setPath('body.bottomRightView.contentView', Chililog.configureRepositoryView);
+    Chililog.configureView.setPath('body.bottomRightView.contentView', Chililog.configureRepositoryInfoView);
   }
 });
 
@@ -107,7 +141,7 @@ Chililog.configureTreeViewController = SC.TreeController.create({
     if (SC.instanceOf(selectedItem, Chililog.UserRecord)) {
       Chililog.statechart.sendEvent('editUser', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
     } else if (SC.instanceOf(selectedItem, Chililog.RepositoryInfoRecord)) {
-      Chililog.statechart.sendEvent('editRepository', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
+      Chililog.statechart.sendEvent('editRepositoryInfo', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
     } 
   }.observes('selectedItem')
 

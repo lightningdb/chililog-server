@@ -8,7 +8,7 @@
  */
 Chililog.ConfigureState = SC.State.extend({
 
-  initialSubstate: 'viewingRepositories',
+  initialSubstate: 'viewingRepositoryInfo',
 
   /**
    * Show my profile page in the body
@@ -21,7 +21,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * List repositories in table view
    */
-  viewingRepositories: SC.State.design({
+  viewingRepositoryInfo: SC.State.design({
     enterState: function() {
     },
 
@@ -32,7 +32,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Blank repository details view for user to add
    */
-  addingRepository: SC.State.design({
+  addingRepositoryInfo: SC.State.design({
     enterState: function() {
     },
 
@@ -43,7 +43,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Load existing repository details view for user to edit
    */
-  editingRepository: SC.State.design({
+  editingRepositoryInfo: SC.State.design({
     /**
      * Load repository record via the data controller and put it in the view controller
      *
@@ -51,17 +51,19 @@ Chililog.ConfigureState = SC.State.extend({
      */
     enterState: function(context) {
       var record = Chililog.repositoryInfoDataController.editRecord(context.documentID);
-      Chililog.configureRepositoryViewController.set('content', record);
-      Chililog.configureRepositoryViewController.show();
+      Chililog.configureRepositoryInfoViewController.set('content', record);
+      Chililog.configureRepositoryInfoViewController.show();
     },
 
     /**
      * Discard changes unless we are saving
+     *
+     * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
      */
-    exitState: function() {
+    exitState: function(context) {
       var isSaving = !SC.none(context) && context['isSaving'];
       if (!isSaving) {
-        var record = Chililog.configureRepositoryViewController.get('content');
+        var record = Chililog.configureRepositoryInfoViewController.get('content');
         Chililog.repositoryInfoDataController.discardChanges(record);
       }
     }
@@ -70,7 +72,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Asynchronous call triggered to save repository details and wait for server to response
    */
-  savingRepository: SC.State.design({
+  savingRepositoryInfo: SC.State.design({
     enterState: function() {
     },
 
@@ -112,11 +114,14 @@ Chililog.ConfigureState = SC.State.extend({
     enterState: function(context) {
       var record = Chililog.userDataController.editRecord(context.documentID);
       Chililog.configureUserViewController.set('content', record);
+      Chililog.configureUserViewController.set('isSaving', NO);
       Chililog.configureUserViewController.show();
     },
 
     /**
      * Discard changes unless we are saving
+     *
+     * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
      */
     exitState: function(context) {
       var isSaving = !SC.none(context) && context['isSaving'];
@@ -124,6 +129,21 @@ Chililog.ConfigureState = SC.State.extend({
         var record = Chililog.configureUserViewController.get('content');
         Chililog.userDataController.discardChanges(record);
       }
+    },
+
+    /**
+     * Save changes
+     */
+    save: function() {
+      this.gotoState('savingUser', {isSaving: YES});
+    },
+
+    /**
+     * Discard changes and reload our data to the
+     */
+    discardChanges: function() {
+      var record = Chililog.configureUserViewController.get('content');
+      this.gotoState('editingUser', {documentID: record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)});
     }
   }),
 
@@ -139,12 +159,21 @@ Chililog.ConfigureState = SC.State.extend({
   }),
 
   /**
-   * Edit user event triggers flow to editing user state
+   * Event to start editing users
    * 
    * @param {String} documentID unique id for the user record
    */
   editUser: function(documentID) {
     this.gotoState('editingUser', {documentID: documentID});
-  }
+  },
 
+  /**
+   * Event to start editing repository info
+   *
+   * @param {String} documentID unique id for the user record
+   */
+  editRepositoryInfo: function(documentID) {
+    this.gotoState('editingRepositoryInfo', {documentID: documentID});
+  }
+  
 });

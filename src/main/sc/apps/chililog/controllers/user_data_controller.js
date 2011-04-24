@@ -128,9 +128,9 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    */
   createRecord: function(documentID) {
     var nestedStore = Chililog.store.chain();
-    userRecord = nestedStore.create(Chililog.UserRecord, {});
-    userRecord.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
-    return userRecord;
+    var record = nestedStore.create(Chililog.UserRecord, {});
+    record.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
+    return record;
   },
 
   /**
@@ -141,42 +141,42 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    */
   editRecord: function(documentID) {
     var nestedStore = Chililog.store.chain();
-    userRecord = nestedStore.find(Chililog.UserRecord, documentID);
-    return userRecord;
+    var record = nestedStore.find(Chililog.UserRecord, documentID);
+    return record;
   },
 
   /**
    * Saves the user record to the server
-   * @param {Chililog.UserRecord} userRecord record to save
+   * @param {Chililog.UserRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
-  saveRecord: function(userRecord, callbackTarget, callbackFunction) {
+  saveRecord: function(record, callbackTarget, callbackFunction) {
     // Get our data from the properties using the SC 'get' methods
     // Need to do this because these properties have been bound/observed.
-    if (SC.empty(userRecord.get('username'))) {
+    if (SC.empty(record.get('username'))) {
       throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
     }
 
-    if (SC.empty(userRecord.get('emailAddress'))) {
+    if (SC.empty(record.get('emailAddress'))) {
       throw Chililog.$error('_sessionDataController.EmailAddressRequiredError', null, 'emailAddress');
     }
 
-    if (SC.empty(userRecord.get('displayName'))) {
+    if (SC.empty(record.get('displayName'))) {
       throw Chililog.$error('_sessionDataController.DisplayNameRequiredError', null, 'displayName');
     }
 
-    var data = userRecord.toApiObject();
+    var data = record.toApiObject();
     var authToken = this.get('authenticationToken');
 
-    var documentVersion = userRecord.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     var isAdding = (!SC.none(documentVersion) && documentVersion >  0);
     var request;
     if (isAdding) {
       var url = '/api/users/';
       request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     } else {
-      var url = '/api/users/' + userRecord.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
+      var url = '/api/users/' + record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
     var params = { isAdding: isAdding, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
@@ -200,15 +200,15 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       this.checkResponse(response);
 
       // Save new authenticated user details
-      var userAO = response.get('body');
+      var apiObject = response.get('body');
 
-      var userRecord = null;
-      if (param.isAdding) {
-        userRecord = Chililog.store.createRecord(Chililog.UserRecord, {}, userAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+      var record = null;
+      if (params.isAdding) {
+        record = Chililog.store.createRecord(Chililog.UserRecord, {}, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
       } else {
-        userRecord = Chililog.store.find(Chililog.UserRecord, userAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+        record = Chililog.store.find(Chililog.UserRecord, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
       }
-      userRecord.fromApiObject(userAO);
+      record.fromApiObject(apiObject);
       Chililog.store.commitRecords();
     }
     catch (err) {
@@ -269,8 +269,8 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       // Check status
       this.checkResponse(response);
 
-      var userRecord = Chililog.store.find(Chililog.UserRecord, params.documentID);
-      userRecord.destroy();
+      var record = Chililog.store.find(Chililog.UserRecord, params.documentID);
+      record.destroy();
 
       Chililog.store.commitRecords();
     }
@@ -287,7 +287,5 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
     // Return YES to signal handling of callback
     return YES;
   }
-
-
 
 });
