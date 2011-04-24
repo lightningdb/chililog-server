@@ -36,9 +36,6 @@ Chililog.main = function main() {
       }
     }
 
-    // Hook up initial views
-    Chililog.configureTreeViewController.populate();
-
     // Now go to the correct state depending on if we are logged in or not
     var isLoggedIn = Chililog.sessionDataController.get('isLoggedIn');
     Chililog.statechart.gotoState(isLoggedIn ? startState : 'loggedOut');

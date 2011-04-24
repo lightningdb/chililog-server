@@ -8,7 +8,7 @@
  */
 Chililog.MyAccountState = SC.State.extend({
 
-  initialSubstate: 'myAccountLoaded',
+  initialSubstate: 'editingMyAccount',
 
   /**
    * Show my profile page in the body
@@ -18,9 +18,9 @@ Chililog.MyAccountState = SC.State.extend({
   },
 
   /**
-   * User's profile and password field cleared for user to fill in
+   * Load user's profile and password field cleared for user to edit
    */
-  myAccountLoaded: SC.State.design({
+  editingMyAccount: SC.State.design({
     /**
      * Loads our data if required.
      *
@@ -107,7 +107,7 @@ Chililog.MyAccountState = SC.State.extend({
       catch (error) {
         SC.Logger.error('savingMyAccountProfile.save: ' + error);
         ctrl.showSaveProfileError(error);
-        this.gotoState('myAccountLoaded', {loadData: NO});
+        this.gotoState('editingMyAccount', {loadData: NO});
       }
     },
 
@@ -121,11 +121,11 @@ Chililog.MyAccountState = SC.State.extend({
       if (SC.none(error)) {
         // Reload the data
         ctrl.showSaveProfileSuccess();
-        this.gotoState('myAccountLoaded', {loadData: YES});
+        this.gotoState('editingMyAccount', {loadData: YES});
       } else {
         // Show error
         ctrl.showSaveProfileError(error);
-        this.gotoState('myAccountLoaded', {loadData: NO});
+        this.gotoState('editingMyAccount', {loadData: NO});
       }
     }
   }),
@@ -156,7 +156,7 @@ Chililog.MyAccountState = SC.State.extend({
       catch (error) {
         SC.Logger.error('changingMyAccountPassword.changePassword: ' + error);
         ctrl.showChangePasswordError(error);
-        this.gotoState('myAccountLoaded', {loadData: NO});
+        this.gotoState('editingMyAccount', {loadData: NO});
       }
 
     },
@@ -172,12 +172,12 @@ Chililog.MyAccountState = SC.State.extend({
       if (SC.none(error)) {
         // Reload the data
         ctrl.showChangePasswordSuccess();
-        this.gotoState('myAccountLoaded', {loadData: YES});
+        this.gotoState('editingMyAccount', {loadData: YES});
       } else {
         // Show error
         error.set('label', 'oldPassword');
         ctrl.showChangePasswordError(error);
-        this.gotoState('myAccountLoaded', {loadData: NO});
+        this.gotoState('editingMyAccount', {loadData: NO});
       }
     }
   })

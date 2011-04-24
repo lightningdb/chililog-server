@@ -130,7 +130,6 @@ Chililog.mainViewController = SC.Object.create(
 
     Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', viewName);
     Chililog.mainPage.setPath('mainPane.toolBar.myProfileButton.value', (viewName === 'myAccount'));
-    
   },
 
   /**
@@ -154,7 +153,5 @@ Chililog.mainViewController = SC.Object.create(
     Chililog.getPath('mainPage.mainPane').remove();
   }
   
-
-
 });
 

@@ -130,11 +130,7 @@ Chililog.statechart = SC.Statechart.create({
         }
       }),
 
-      configure: SC.State.design({
-        enterState: function() {
-          Chililog.mainViewController.doShow('configure');
-        }
-      }),
+      configure: SC.State.plugin('Chililog.ConfigureState'),
 
       about: SC.State.design({
         enterState: function() {

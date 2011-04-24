@@ -40,33 +40,19 @@ Chililog.ConfigureView = SC.View.design({
 
     bottomRightView: SC.ContainerView.design({
     })
-  }),
-
-  /**
-   * When the state changes for the tree view, then show the right view in the details pane
-   */
-  treeViewStateDidChange: function() {
-    var state = Chililog.configureTreeViewController.get('state');
-    var rightPanel = this.getPath('body.bottomRightView');
-
-    if (state === Chililog.configureTreeViewStates.ADD_USER ||
-      state === Chililog.configureTreeViewStates.EDIT_USER) {
-      rightPanel.set('nowShowing', 'Chililog.configureUserView');
-    }
-    else if (state === Chililog.configureTreeViewStates.ADD_REPOSITORY ||
-      state === Chililog.configureTreeViewStates.EDIT_REPOSITORY) {
-      rightPanel.set('nowShowing', 'Chililog.configureRepositoryView');
-    }
-    else {
-      rightPanel.set('nowShowing', null);
-    }
-  }.observes('Chililog.configureTreeViewController.state')
+  })
 });
+
+/**
+ * Instance configure view
+ */
+Chililog.configureView = Chililog.ConfigureView.create();
+
 
 /**
  * User details
  */
-Chililog.configureUserView = SC.View.design({
+Chililog.ConfigureUserView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title body'.w(),
 
@@ -102,14 +88,14 @@ Chililog.configureUserView = SC.View.design({
 });
 
 /**
- * Instance configure view
+ * Instance configure user view
  */
-Chililog.configureView = Chililog.ConfigureView.create();
+Chililog.configureUserView = Chililog.ConfigureUserView.create();
 
 /**
  * Repository details
  */
-Chililog.configureRepositoryView = SC.View.design({
+Chililog.ConfigureRepositoryView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title'.w(),
 
@@ -121,3 +107,8 @@ Chililog.configureRepositoryView = SC.View.design({
     localize: YES
   })
 });
+
+/**
+ * Instance configure repository view
+ */
+Chililog.configureRepositoryView = Chililog.ConfigureRepositoryView.create();
