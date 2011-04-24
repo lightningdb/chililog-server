@@ -27,12 +27,12 @@ Chililog.statechart = SC.Statechart.create({
       enterState: function() {
         var ctrl = Chililog.loginViewController;
         ctrl.set('isLoggingIn', NO);
-
-        Chililog.getPath('loginPage.loginPane').append();
+        ctrl.showLoginPage();
       },
 
       exitState: function() {
-        Chililog.getPath('loginPage.loginPane').remove();
+        var ctrl = Chililog.loginViewController;
+        ctrl.hideLoginPage();
       },
 
       login: function() {
@@ -105,50 +105,40 @@ Chililog.statechart = SC.Statechart.create({
 
       enterState: function() {
         Chililog.mainViewController.buildMenuOptions();
-        Chililog.getPath('mainPage.mainPane').append();
+        Chililog.mainViewController.showMainPage();
       },
 
       exitState: function() {
-        Chililog.getPath('mainPage.mainPane').remove();
+        Chililog.mainViewController.hideMainPage();
       },
 
       search: SC.State.design({
         enterState: function() {
-          Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', 'search');
-          var body = Chililog.mainPage.getPath('mainPane.body');
-          body.set('nowShowing', 'Chililog.searchView');
+          Chililog.mainViewController.doShow('search');
         }
       }),
 
       analyse: SC.State.design({
         enterState: function() {
-          Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', 'analyse');
-          var body = Chililog.mainPage.getPath('mainPane.body');
-          body.set('nowShowing', 'Chililog.searchView');
+          Chililog.mainViewController.doShow('analyse');
         }
       }),
 
       monitor: SC.State.design({
         enterState: function() {
-          Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', 'monitor');
-          var body = Chililog.mainPage.getPath('mainPane.body');
-          body.set('nowShowing', 'Chililog.searchView');
+          Chililog.mainViewController.doShow('monitor');
         }
       }),
 
       configure: SC.State.design({
         enterState: function() {
-          Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', 'configure');
-          var body = Chililog.mainPage.getPath('mainPane.body');
-          body.set('nowShowing', 'Chililog.configureView');
+          Chililog.mainViewController.doShow('configure');
         }
       }),
 
       about: SC.State.design({
         enterState: function() {
-          Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', 'about');
-          var body = Chililog.mainPage.getPath('mainPane.body');
-          body.set('nowShowing', 'Chililog.aboutView');
+          Chililog.mainViewController.doShow('about');
         }
       }),
 
@@ -158,7 +148,7 @@ Chililog.statechart = SC.Statechart.create({
         this.gotoState('search');
       },
 
-      showAnalysis: function() {
+      showAnalyse: function() {
         this.gotoState('analyse');
       },
 

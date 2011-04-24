@@ -7,7 +7,7 @@
  * My profile view
  */
 
-Chililog.myAccountView = SC.View.design({
+Chililog.MyAccountView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title myProfile changePassword'.w(),
 
@@ -123,7 +123,7 @@ Chililog.myAccountView = SC.View.design({
       isVisibleBinding: SC.Binding.from('Chililog.myAccountViewController.isSavingProfile').oneWay().bool(),
       useImageQueue: NO
     }),
-       
+
     successMessage: SC.LabelView.design({
       layout: { top: 240, left: 220, width: 155, height: 25, opacity: 0 },
       classNames: ['success'],
@@ -236,78 +236,10 @@ Chililog.myAccountView = SC.View.design({
       value: '_myAccountView.ChangePasswordSuccess',
       localize: YES
     })
-  }),  // changePassword
-
-  /**
-   * Displays success or error messages when saving profile
-   *
-   * @param {Object} result YES if success, SC.Error if error, null if not set or executing.
-   * @param {String} subViewName 'myProfile' or 'changePassword'
-   */
-  processResult: function(result, subViewName) {
-    if (SC.none(result)) {
-      return;
-    }
-
-    if (result === YES) {
-      // Success
-      var view = null;
-      var field = null;
-      if (subViewName === 'myProfile') {
-        view = this.getPath('myProfile.successMessage');
-        field = this.getPath('myProfile.username.field');
-      } else if (subViewName === 'changePassword') {
-        view = this.getPath('changePassword.successMessage');
-        field = this.getPath('changePassword.oldPassword.field');
-      }
-
-      if (!SC.none(view)) {
-        // Have to invokeLater because of webkit
-        // http://groups.google.com/group/sproutcore/browse_thread/thread/482740f497d80462/cba903f9cc6aadf8?lnk=gst&q=animate#cba903f9cc6aadf8
-        view.adjust("opacity", 1);
-        this.invokeLater(function() {
-          view.animate("opacity", 0, { duration: 2, timing:'ease-in' });
-          }, 10);
-      }
-
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else if (SC.instanceOf(result, SC.Error)) {
-      // Error
-      var message = result.get('message');
-      SC.AlertPane.error({ message: message });
-
-      var label = result.get('label');
-      if (SC.empty(label)) {
-        label = 'username';
-      }
-
-      var fieldPath = '%@.%@.field'.fmt(subViewName, label);
-      var field = this.getPath(fieldPath);
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else {
-      // Assume error message string
-      SC.AlertPane.error(result);
-    }
-  },
-
-  /**
-   * Displays success or error messages when saving profile
-   */
-  saveProfileResultDidChange: function() {
-    var result = Chililog.myAccountViewController.get('saveProfileResult');
-    this.processResult(result, 'myProfile');
-  }.observes('Chililog.myAccountViewController.saveProfileResult'),
-
-  /**
-   * Displays success or error messages when saving profile
-   */
-  changePasswordResultDidChange: function() {
-    var result = Chililog.myAccountViewController.get('changePasswordResult');
-    this.processResult(result, 'changePassword');
-  }.observes('Chililog.myAccountViewController.changePasswordResult')
-
+  })  // changePassword
 });
+
+/**
+ * Instance the view
+ */
+Chililog.myAccountView = Chililog.MyAccountView.create();

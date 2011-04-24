@@ -6,17 +6,28 @@
 /**
  * About view
  */
-Chililog.aboutView = SC.TemplateView.design({
+Chililog.AboutView = SC.TemplateView.design({
   layout: { top: 0, left: 0, width: 300, height: 300 },
   templateName: 'about'
 });
 
-Chililog.aboutVersionView = SC.TemplateView.extend({
+/**
+ * Instanced about view
+ */
+Chililog.aboutView = Chililog.AboutView.create();
+
+/**
+ * Template binding for app version
+ */
+Chililog.AboutVersionView = SC.TemplateView.extend({
   classNames: ['inline'],
   valueBinding: 'Chililog.sessionDataController.chililogVersion'
 });
 
-Chililog.aboutBuildTimestampView = SC.TemplateView.extend({
+/**
+ * Template binding for app build timetsamp
+ */
+Chililog.AboutBuildTimestampView = SC.TemplateView.extend({
   classNames: ['inline'],
   valueBinding: 'Chililog.sessionDataController.chililogBuildTimestamp'
 });

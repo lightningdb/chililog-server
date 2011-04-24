@@ -3,6 +3,9 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+/**
+ * State chart for my account screens
+ */
 Chililog.MyAccountState = SC.State.extend({
 
   initialSubstate: 'myAccountLoaded',
@@ -11,17 +14,7 @@ Chililog.MyAccountState = SC.State.extend({
    * Show my profile page in the body
    */
   enterState: function() {
-    Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', '');
-    Chililog.mainPage.setPath('mainPane.toolBar.myProfileButton.value', YES);
-    var body = Chililog.mainPage.getPath('mainPane.body');
-    body.set('nowShowing', 'Chililog.myAccountView');
-  },
-
-  /**
-   * Make sure the toggle button for my profile is not on
-   */
-  exitState: function() {
-    Chililog.mainPage.setPath('mainPane.toolBar.myProfileButton.value', NO);
+    Chililog.mainViewController.doShow('myAccount');
   },
 
   /**
@@ -105,18 +98,15 @@ Chililog.MyAccountState = SC.State.extend({
 
     /**
      * Saves the user's details
-     *
-     * @returns {Boolean} YES if ok, NO if error. Error object set to the 'error' property
      */
     save: function() {
       var ctrl = Chililog.myAccountViewController;
       try {
         Chililog.sessionDataController.saveProfile(ctrl.get('content'), this, this.endSave);
-        ctrl.set('saveProfileResult', null);
       }
-      catch (err) {
-        SC.Logger.error('savingMyAccountProfile.save: ' + err);
-        ctrl.set('saveProfileResult', err);
+      catch (error) {
+        SC.Logger.error('savingMyAccountProfile.save: ' + error);
+        ctrl.showSaveProfileError(error);
         this.gotoState('myAccountLoaded', {loadData: NO});
       }
     },
@@ -130,11 +120,11 @@ Chililog.MyAccountState = SC.State.extend({
       var ctrl = Chililog.myAccountViewController;
       if (SC.none(error)) {
         // Reload the data
-        ctrl.set('saveProfileResult', YES);
+        ctrl.showSaveProfileSuccess();
         this.gotoState('myAccountLoaded', {loadData: YES});
       } else {
         // Show error
-        ctrl.set('saveProfileResult', error);
+        ctrl.showSaveProfileError(error);
         this.gotoState('myAccountLoaded', {loadData: NO});
       }
     }
@@ -162,19 +152,17 @@ Chililog.MyAccountState = SC.State.extend({
       try {
         Chililog.sessionDataController.changePassword(ctrl.get('oldPassword'), ctrl.get('newPassword'),
           ctrl.get('confirmNewPassword'), this, this.endChangePassword);
-
-        this.set('changePasswordResult', null);
       }
-      catch (err) {
-        SC.Logger.error('changingMyAccountPassword.changePassword: ' + err);
-        this.set('changePasswordResult', err);
+      catch (error) {
+        SC.Logger.error('changingMyAccountPassword.changePassword: ' + error);
+        ctrl.showChangePasswordError(error);
         this.gotoState('myAccountLoaded', {loadData: NO});
       }
 
     },
 
     /**
-     * Callback from login() after we get a response from the server to process
+     * Callback from changePassword() after we get a response from the server to process
      * the returned login info.
      *
      * @param {SC.Error} error Error object or null if no error.
@@ -183,12 +171,12 @@ Chililog.MyAccountState = SC.State.extend({
       var ctrl = Chililog.myAccountViewController;
       if (SC.none(error)) {
         // Reload the data
-        ctrl.set('changePasswordResult', YES);
+        ctrl.showChangePasswordSuccess();
         this.gotoState('myAccountLoaded', {loadData: YES});
       } else {
         // Show error
         error.set('label', 'oldPassword');
-        ctrl.set('changePasswordResult', error);
+        ctrl.showChangePasswordError(error);
         this.gotoState('myAccountLoaded', {loadData: NO});
       }
     }

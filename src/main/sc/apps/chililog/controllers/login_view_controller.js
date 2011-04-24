@@ -51,7 +51,16 @@ Chililog.loginViewController = SC.ObjectController.create(
    */
   login: function() {
     Chililog.statechart.sendEvent('login');
+  },
+
+  showLoginPage: function () {
+    Chililog.getPath('loginPage.loginPane').append();
+  },
+
+  hideLoginPage: function () {
+    Chililog.getPath('loginPage.loginPane').remove();
   }
+
 
 });
 

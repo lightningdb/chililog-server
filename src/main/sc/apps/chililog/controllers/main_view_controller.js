@@ -33,7 +33,7 @@ Chililog.mainViewController = SC.Object.create(
         title: '_mainPane.Analyse'.loc(),
         toolTip: '_mainPane.Analyse.ToolTip'.loc(),
         target: Chililog.mainViewController,
-        action: 'showAnalysis'
+        action: 'showAnalyse'
       }
     ];
 
@@ -68,17 +68,17 @@ Chililog.mainViewController = SC.Object.create(
   },
 
   /**
-   * Show analysis view
+   * Show analyse view
    */
-  showAnalysis: function() {
-    Chililog.statechart.sendEvent('showAnalysis');
+  showAnalyse: function() {
+    Chililog.statechart.sendEvent('showAnalyse');
   },
 
   /**
-   * Show monitors view
+   * Show monitor view
    */
-  showMonitors: function() {
-    Chililog.statechart.sendEvent('showMonitors');
+  showMonitor: function() {
+    Chililog.statechart.sendEvent('showMonitor');
   },
 
   /**
@@ -103,11 +103,57 @@ Chililog.mainViewController = SC.Object.create(
   },
 
   /**
+   * Set the body of the main page to the required view
+   */
+  doShow: function(viewName) {
+    var view = null;
+    if (viewName === 'search') {
+      view = Chililog.searchView;
+    }
+    else if (viewName === 'analyse') {
+      view = Chililog.searchView;
+    }
+    else if (viewName === 'monitor') {
+      view = Chililog.searchView;
+    }
+    else if (viewName === 'configure') {
+      view = Chililog.configureView;
+    }
+    else if (viewName === 'about') {
+      view = Chililog.aboutView;
+    }
+    else if (viewName === 'myAccount') {
+      view = Chililog.myAccountView;
+    }
+    var body = Chililog.mainPage.getPath('mainPane.body');
+    body.set('contentView', view);
+
+    Chililog.mainPage.setPath('mainPane.toolBar.menuOptions.value', viewName);
+    Chililog.mainPage.setPath('mainPane.toolBar.myProfileButton.value', (viewName === 'myAccount'));
+    
+  },
+
+  /**
    * Logout
    */
   logout: function() {
     Chililog.statechart.sendEvent('logout');
+  },
+
+  /**
+   * Show main page upon login
+   */
+  showMainPage: function () {
+    Chililog.getPath('mainPage.mainPane').append();
+  },
+
+  /**
+   * Hide main page upon logout
+   */
+  hideMainPage: function () {
+    Chililog.getPath('mainPage.mainPane').remove();
   }
+  
 
 
 });

@@ -6,8 +6,7 @@
 /**
  * Configure view
  */
-
-Chililog.configureView = SC.View.design({
+Chililog.ConfigureView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title body'.w(),
 
@@ -103,6 +102,11 @@ Chililog.configureUserView = SC.View.design({
 });
 
 /**
+ * Instance configure view
+ */
+Chililog.configureView = Chililog.ConfigureView.create();
+
+/**
  * Repository details
  */
 Chililog.configureRepositoryView = SC.View.design({
@@ -117,4 +121,3 @@ Chililog.configureRepositoryView = SC.View.design({
     localize: YES
   })
 });
-

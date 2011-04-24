@@ -65,11 +65,11 @@ Chililog.mainPage = SC.Page.design({
 
 });
 
-Chililog.searchView = SC.LabelView.design({
+Chililog.SearchView = SC.LabelView.design({
   layout: { top: 0, left: 0, width: 200, height: 18 },
   textAlign: SC.ALIGN_CENTER,
   tagName: 'h1',
   value: 'Welcome to Search!'
 });
 
-
+Chililog.searchView = Chililog.SearchView.create();
