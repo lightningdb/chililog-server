@@ -50,7 +50,7 @@ Chililog.ConfigureState = SC.State.extend({
      * @param {Hash} context Data hash with 'documentID' set to the document id f the repository to edit
      */
     enterState: function(context) {
-      var record = Chililog.repositoryInfoDataController.editRecord(context.documentID);
+      var record = Chililog.repositoryInfoDataController.edit(context.documentID);
       Chililog.configureRepositoryInfoViewController.set('content', record);
       Chililog.configureRepositoryInfoViewController.show();
     },
@@ -109,23 +109,29 @@ Chililog.ConfigureState = SC.State.extend({
     /**
      * Load user record via the data controller and put it in the view controller
      *
-     * @param {Hash} context Data hash with 'documentID' set to the document id f the user to edit
+     * @param {Hash} context Data hash with 'documentID' set to the document id f the user to edit. Alternatively,
+     *  set 'reedit' to YES, then data will be left as is.
+     *
      */
     enterState: function(context) {
-      var record = Chililog.userDataController.editRecord(context.documentID);
-      Chililog.configureUserViewController.set('content', record);
-      Chililog.configureUserViewController.set('isSaving', NO);
-      Chililog.configureUserViewController.show();
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isReedit) {
+        var record = Chililog.userDataController.edit(context['documentID']);
+        Chililog.configureUserViewController.set('content', record);
+        Chililog.configureUserViewController.set('isSaving', NO);
+        Chililog.configureUserViewController.show();
+      }
     },
 
     /**
-     * Discard changes unless we are saving
+     * Discard changes unless we are saving or re-editing
      *
      * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
      */
     exitState: function(context) {
       var isSaving = !SC.none(context) && context['isSaving'];
-      if (isSaving) {
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isSaving && !isReedit) {
         var record = Chililog.configureUserViewController.get('content');
         Chililog.userDataController.discardChanges(record);
       }
@@ -152,9 +158,46 @@ Chililog.ConfigureState = SC.State.extend({
    */
   savingUser: SC.State.design({
     enterState: function() {
+      Chililog.configureUserViewController.set('isSaving', YES);
+      this.save();
     },
 
     exitState: function() {
+      Chililog.configureUserViewController.set('isSaving', NO);
+    },
+
+    /**
+     * Saves the user's details
+     */
+    save: function() {
+      var ctrl = Chililog.configureUserViewController;
+      try {
+        Chililog.userDataController.save(ctrl.get('content'), this, this.endSave);
+      }
+      catch (error) {
+        SC.Logger.error('savingUser.save: ' + error);
+        ctrl.showSaveError(error);
+        this.gotoState('editingUser', {reedit: YES});
+      }
+    },
+
+    /**
+     * Callback from save() after we get a response from the server to process the returned info.
+     *
+     * @param {String} document id of the saved record. Null if error.
+     * @param {SC.Error} error Error object or null if no error.
+     */
+    endSave: function(documentID, error) {
+      var ctrl = Chililog.configureUserViewController;
+      if (SC.none(error)) {
+        // Reload the data
+        ctrl.showSaveSuccess();
+        this.gotoState('editingUser', {documentID: documentID});
+      } else {
+        // Show error
+        ctrl.showSaveError(error);
+        this.gotoState('editingUser', {reedit: YES});
+      }
     }
   }),
 

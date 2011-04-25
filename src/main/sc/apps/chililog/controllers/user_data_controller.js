@@ -126,7 +126,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    *
    * @returns {Chililog.UserRecord}
    */
-  createRecord: function(documentID) {
+  create: function(documentID) {
     var nestedStore = Chililog.store.chain();
     var record = nestedStore.create(Chililog.UserRecord, {});
     record.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
@@ -139,7 +139,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {String} documentID Document ID of the user record to edit
    * @returns {Chililog.UserRecord}
    */
-  editRecord: function(documentID) {
+  edit: function(documentID) {
     var nestedStore = Chililog.store.chain();
     var record = nestedStore.find(Chililog.UserRecord, documentID);
     return record;
@@ -149,9 +149,9 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * Saves the user record to the server
    * @param {Chililog.UserRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
    */
-  saveRecord: function(record, callbackTarget, callbackFunction) {
+  save: function(record, callbackTarget, callbackFunction) {
     // Get our data from the properties using the SC 'get' methods
     // Need to do this because these properties have been bound/observed.
     if (SC.empty(record.get('username'))) {
@@ -167,10 +167,10 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
     }
 
     var data = record.toApiObject();
-    var authToken = this.get('authenticationToken');
+    var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
-    var isAdding = (!SC.none(documentVersion) && documentVersion >  0);
+    var isAdding = (SC.none(documentVersion) || documentVersion ===  0);
     var request;
     if (isAdding) {
       var url = '/api/users/';
@@ -180,7 +180,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
     var params = { isAdding: isAdding, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-    request.notify(this, 'endSaveRecord', params).send(data);
+    request.notify(this, 'endSave', params).send(data);
 
     return;
   },
@@ -193,23 +193,31 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {Hash} params Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
-  endSaveRecord: function(response, params) {
+  endSave: function(response, params) {
     var error = null;
+    var documentID = null;
     try {
       // Check status
       this.checkResponse(response);
 
       // Save new authenticated user details
       var apiObject = response.get('body');
+      documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
 
       var record = null;
       if (params.isAdding) {
-        record = Chililog.store.createRecord(Chililog.UserRecord, {}, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+        record = Chililog.store.createRecord(Chililog.UserRecord, {}, documentID);
       } else {
-        record = Chililog.store.find(Chililog.UserRecord, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+        record = Chililog.store.find(Chililog.UserRecord, documentID);
       }
       record.fromApiObject(apiObject);
       Chililog.store.commitRecords();
+
+      // If we are editing the logged in user, then we better update the session data
+      if (record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME) ===
+          Chililog.sessionDataController.get('loggedInUser').get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+
+      }
     }
     catch (err) {
       error = err;
@@ -218,7 +226,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, documentID, error);
     }
 
     // Return YES to signal handling of callback
@@ -244,13 +252,13 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
-  deleteRecord: function(documentID, callbackTarget, callbackFunction) {
-    var authToken = this.get('authenticationToken');
+  'delete': function(documentID, callbackTarget, callbackFunction) {
+    var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var url = '/api/users/' + documentID;
     var request = SC.Request.deleteUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-    request.notify(this, 'endDeleteRecord', params).send(data);
+    request.notify(this, 'endDelete', params).send(data);
 
     return;
   },
@@ -263,7 +271,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {Hash} params Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
-  endDeleteRecord: function(response, params) {
+  endDelete: function(response, params) {
     var error = null;
     try {
       // Check status

@@ -417,7 +417,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
     var url = '/api/Authentication?action=update_profile';
     var authToken = this.get('authenticationToken');
     var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    ;
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     request.notify(this, 'endSaveProfile', params).send(postData);
 

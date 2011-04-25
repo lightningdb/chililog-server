@@ -52,7 +52,52 @@ Chililog.configureUserViewController = SC.ObjectController.create({
    */
   discardChanges: function() {
     Chililog.statechart.sendEvent('discardChanges');
-  }
+  },
+
+  /**
+   * Show success message when profile successfully saved
+   */
+  showSaveSuccess: function() {
+    var view = Chililog.configureUserView.getPath('body.successMessage');
+    var field = Chililog.configureUserView.getPath('body.username.field');
+
+    if (!SC.none(view)) {
+      // Have to invokeLater because of webkit
+      // http://groups.google.com/group/sproutcore/browse_thread/thread/482740f497d80462/cba903f9cc6aadf8?lnk=gst&q=animate#cba903f9cc6aadf8
+      view.adjust("opacity", 1);
+      this.invokeLater(function() {
+        view.animate("opacity", 0, { duration: 2, timing:'ease-in' });
+      }, 10);
+    }
+
+    field.becomeFirstResponder();
+  },
+
+  /**
+   * Show error message when error happened why trying to save profile
+   * @param {SC.Error} error
+   */
+  showSaveError: function(error) {
+    if (SC.instanceOf(error, SC.Error)) {
+      // Error
+      var message = error.get('message');
+      SC.AlertPane.error({ message: message });
+
+      var label = error.get('label');
+      if (SC.empty(label)) {
+        label = 'username';
+      }
+
+      var fieldPath = 'body.%@.field'.fmt(label);
+      var field = Chililog.configureUserView.getPath(fieldPath);
+      if (!SC.none(field)) {
+        field.becomeFirstResponder();
+      }
+    } else {
+      // Assume error message string
+      SC.AlertPane.error(error);
+    }
+  }  
   
 });
 
