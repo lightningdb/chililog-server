@@ -177,7 +177,7 @@ Chililog.ConfigureState = SC.State.extend({
       catch (error) {
         SC.Logger.error('savingUser.save: ' + error);
         ctrl.showSaveError(error);
-        this.gotoState('editingUser', {reedit: YES});
+        this.gotoState('editingUser', {isReedit: YES});
       }
     },
 
@@ -196,7 +196,7 @@ Chililog.ConfigureState = SC.State.extend({
       } else {
         // Show error
         ctrl.showSaveError(error);
-        this.gotoState('editingUser', {reedit: YES});
+        this.gotoState('editingUser', {isReedit: YES});
       }
     }
   }),

@@ -68,6 +68,7 @@ SC.stringsFor('English', {
   '_configureUserView.Username': 'Username',
   '_configureUserView.EmailAddress': 'Email Address',
   '_configureUserView.DisplayName': 'Display Name',
+  '_configureUserView.CurrentStatus': 'Status',
   '_configureRepositoryInfoView.Title': 'Repository',
   '_configureRepositoryInfoView.Name': 'Name',
   '_configureRepositoryInfoView.DisplayName': 'Display Name',

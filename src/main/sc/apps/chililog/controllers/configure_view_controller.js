@@ -15,6 +15,39 @@ Chililog.configureUserViewController = SC.ObjectController.create({
   content: null,
 
   /**
+   * Flag to indicate if we are creating 
+   */
+  isAdding: function() {
+    var record = this.get('content');
+    if (!SC.none(record) && record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME) === 0) {
+      return YES;
+    }
+    return NO;
+  }.property('content').cacheable(),
+
+  /**
+   * Adjust height of body box depending on if we are adding or not
+   */
+  bodyLayout: function() {
+    if (this.get('isAdding')) {
+      return { top: 35, left: 0, width: 400, height: 400 };
+    } else {
+      return { top: 35, left: 0, width: 400, height: 330 };
+    }
+  }.property('isAdding').cacheable(),
+
+  /**
+   * Adjust height of buttons depending on if we are adding or not
+   */
+  buttonsLayout: function() {
+    if (this.get('isAdding')) {
+      return {top: 350, left: 20, right: 20, height: 50 };
+    } else {
+      return {top: 270, left: 20, right: 20, height: 50 };
+    }
+  }.property('isAdding').cacheable(),
+
+  /**
    * Show the user details form
    */
   show: function() {
