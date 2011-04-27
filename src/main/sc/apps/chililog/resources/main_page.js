@@ -29,7 +29,7 @@ Chililog.mainPage = SC.Page.design({
       }),
 
       myProfileButton: SC.ButtonView.design({
-        layout: { top: 5, right: 100, width: 150 },
+        layout: { top: 5, right: 120, width: 150 },
         classNames: ['bold'],
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
@@ -49,7 +49,7 @@ Chililog.mainPage = SC.Page.design({
       }),
 
       logoutButton: SC.ButtonView.design({
-        layout: { top: 5, right: 8, width: 80 },
+        layout: { top: 5, right: 8, width: 100 },
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
         title: '_mainPane.Logout'.loc(),

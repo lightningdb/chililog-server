@@ -126,10 +126,11 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    *
    * @returns {Chililog.UserRecord}
    */
-  create: function(documentID) {
+  create: function() {
     var nestedStore = Chililog.store.chain();
-    var record = nestedStore.create(Chililog.UserRecord, {});
+    var record = nestedStore.createRecord(Chililog.UserRecord, {});
     record.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
+    record.set('currentStatus', 'Enabled');
     return record;
   },
 
@@ -152,34 +153,40 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
    */
   save: function(record, callbackTarget, callbackFunction) {
+    var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    var isCreating = (SC.none(documentVersion) || documentVersion ===  0);
+
     // Get our data from the properties using the SC 'get' methods
     // Need to do this because these properties have been bound/observed.
     if (SC.empty(record.get('username'))) {
-      throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
+      throw Chililog.$error('_userDataController.UsernameRequiredError', null, 'username');
     }
 
     if (SC.empty(record.get('emailAddress'))) {
-      throw Chililog.$error('_sessionDataController.EmailAddressRequiredError', null, 'emailAddress');
+      throw Chililog.$error('_userDataController.EmailAddressRequiredError', null, 'emailAddress');
     }
 
-    if (SC.empty(record.get('displayName'))) {
-      throw Chililog.$error('_sessionDataController.DisplayNameRequiredError', null, 'displayName');
+    if (isCreating) {
+      if (SC.empty(record.get('password'))) {
+        throw Chililog.$error('_userDataController.PasswordRequiredError', null, 'password');
+      }
+      if (record.get('password') !== record.get('confirmPassword')) {
+        throw Chililog.$error('_userDataController.ConfirmPasswordError', null, 'password');
+      }
     }
 
     var data = record.toApiObject();
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
-    var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
-    var isAdding = (SC.none(documentVersion) || documentVersion ===  0);
     var request;
-    if (isAdding) {
+    if (isCreating) {
       var url = '/api/users/';
       request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     } else {
       var url = '/api/users/' + record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
-    var params = { isAdding: isAdding, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { record: record, isCreating: isCreating, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
     request.notify(this, 'endSave', params).send(data);
 
     return;
@@ -200,12 +207,15 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
       // Check status
       this.checkResponse(response);
 
-      // Save new authenticated user details
+      // Remove temp record while creating/editing
+      this.discardChanges(params.record);
+
+      // Save user details returns from server
       var apiObject = response.get('body');
       documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
 
       var record = null;
-      if (params.isAdding) {
+      if (params.isCreating) {
         record = Chililog.store.createRecord(Chililog.UserRecord, {}, documentID);
       } else {
         record = Chililog.store.find(Chililog.UserRecord, documentID);
@@ -234,13 +244,14 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
   },
 
   /**
-   * Discard changes
-   * @param userRecord record to discard
+   * Discard changes by removing nested store
+   * 
+   * @param {Chililog.UserRecord} record User record to discard
    */
-  discardChanges: function(userRecord) {
-    if (!SC.none(userRecord)) {
-      var nestedStore = userRecord.get('store');
-      nestedStore.destroy();
+  discardChanges: function(record) {
+    if (!SC.none(record)) {
+      var store = record.get('store');
+      store.destroy();
     }
     return;
   },
@@ -252,26 +263,28 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
-  'delete': function(documentID, callbackTarget, callbackFunction) {
+  erase: function(documentID, callbackTarget, callbackFunction) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var url = '/api/users/' + documentID;
     var request = SC.Request.deleteUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-    request.notify(this, 'endDelete', params).send(data);
+
+    // For some reason, sc-server needs content otherwise Content-Length is not set to 0
+    request.notify(this, 'endErase', params).send({dummy: 'data'});
 
     return;
   },
 
   /**
-   * Callback from save() after we get a response from the server to process
+   * Callback from erase() after we get a response from the server to process
    * the returned info.
    *
    * @param {SC.Response} response The HTTP response
    * @param {Hash} params Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
-  endDelete: function(response, params) {
+  endErase: function(response, params) {
     var error = null;
     try {
       // Check status

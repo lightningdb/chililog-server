@@ -23,6 +23,7 @@ Chililog.ConfigureState = SC.State.extend({
    */
   viewingRepositoryInfo: SC.State.design({
     enterState: function() {
+      Chililog.configureView.setPath('body.bottomRightView.contentView', null);
     },
 
     exitState: function() {
@@ -32,7 +33,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Blank repository details view for user to add
    */
-  addingRepositoryInfo: SC.State.design({
+  creatingRepositoryInfo: SC.State.design({
     enterState: function() {
     },
 
@@ -85,6 +86,7 @@ Chililog.ConfigureState = SC.State.extend({
    */
   viewingUsers: SC.State.design({
     enterState: function() {
+      Chililog.configureView.setPath('body.bottomRightView.contentView', null);
     },
 
     exitState: function() {
@@ -94,11 +96,52 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Show blank user details page for adding a new user
    */
-  addingUser: SC.State.design({
-    enterState: function() {
+  creatingUser: SC.State.design({
+    /**
+     * Load user record via the data controller and put it in the view controller
+     *
+     * @param {Hash} context Data hash with 'documentID' set to the document id f the user to edit. Alternatively,
+     *  set 'reedit' to YES, then data will be left as is.
+     *
+     */
+    enterState: function(context) {
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isReedit) {
+        var record = Chililog.userDataController.create();
+        Chililog.configureUserViewController.set('content', record);
+        Chililog.configureUserViewController.set('isSaving', NO);
+        Chililog.configureUserViewController.show();
+        Chililog.configureTreeViewController.clearSelection();
+      }
     },
 
-    exitState: function() {
+    /**
+     * Discard changes unless we are saving or re-editing
+     *
+     * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
+     */
+    exitState: function(context) {
+      var isSaving = !SC.none(context) && context['isSaving'];
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isSaving && !isReedit) {
+        var record = Chililog.configureUserViewController.get('content');
+        Chililog.userDataController.discardChanges(record);
+      }
+    },
+
+    /**
+     * Save changes
+     */
+    save: function() {
+      this.gotoState('savingUser', {isSaving: YES});
+    },
+
+    /**
+     * Discard changes and reload our data to the
+     */
+    discardChanges: function() {
+      var record = Chililog.configureUserViewController.get('content');
+      this.gotoState('creatingUser');
     }
   }),
 
@@ -177,7 +220,8 @@ Chililog.ConfigureState = SC.State.extend({
       catch (error) {
         SC.Logger.error('savingUser.save: ' + error);
         ctrl.showSaveError(error);
-        this.gotoState('editingUser', {isReedit: YES});
+        var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
+        this.gotoState(stateToGoTo, {isReedit: YES});
       }
     },
 
@@ -190,16 +234,84 @@ Chililog.ConfigureState = SC.State.extend({
     endSave: function(documentID, error) {
       var ctrl = Chililog.configureUserViewController;
       if (SC.none(error)) {
-        // Reload the data
+        // Show saved record
         ctrl.showSaveSuccess();
         this.gotoState('editingUser', {documentID: documentID});
       } else {
         // Show error
         ctrl.showSaveError(error);
-        this.gotoState('editingUser', {isReedit: YES});
+        var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
+        this.gotoState(stateToGoTo, {isReedit: YES});
       }
     }
   }),
+
+  /**
+   * Asynchronous call triggered to delete the user
+   */
+  erasingUser: SC.State.design({
+    enterState: function(context) {
+      Chililog.configureUserViewController.set('isErasing', YES);
+      this.erase(context);
+    },
+
+    exitState: function() {
+      Chililog.configureUserViewController.set('isErasing', NO);
+    },
+
+    /**
+     * Delete the user
+     */
+    erase: function(context) {
+      var ctrl = Chililog.configureUserViewController;
+      try {
+        Chililog.userDataController.erase(context['documentID'], this, this.endErase);
+      }
+      catch (error) {
+        SC.Logger.error('erasingUser.erase: ' + error);
+        ctrl.showSaveError(error);
+        this.gotoState('editingUser', {documentID: context['documentID']});
+      }
+    },
+
+    /**
+     * Callback from save() after we get a response from the server to process the returned info.
+     *
+     * @param {String} document id of the saved record. Null if error.
+     * @param {SC.Error} error Error object or null if no error.
+     */
+    endErase: function(documentID, error) {
+      var ctrl = Chililog.configureUserViewController;
+      if (SC.none(error)) {
+        Chililog.configureTreeViewController.selectUsersNode();
+      } else {
+        // Show error
+        ctrl.showSaveError(error);
+        this.gotoState('editingUser', {documentID: documentID});
+      }
+    }
+  }),
+
+  /**
+   * Event to view repositories
+   */
+  viewRepositoryInfo: function() {
+    this.gotoState('viewingRepositoryInfo');
+  },
+
+  /**
+   * Event to view users
+   */
+  viewUsers: function() {
+    this.gotoState('viewingUsers');
+  },
+
+  /**
+   * Event to start adding a new user
+   */
+  createUser: function() {
+    this.gotoState('creatingUser');
+  },
 
   /**
    * Event to start editing users
@@ -208,6 +320,15 @@ Chililog.ConfigureState = SC.State.extend({
    */
   editUser: function(documentID) {
     this.gotoState('editingUser', {documentID: documentID});
+  },
+
+  /**
+   * Event to start deleting user
+   *
+   * @param {String} documentID unique id for the user record
+   */
+  eraseUser: function(documentID) {
+    this.gotoState('erasingUser', {documentID: documentID});
   },
 
   /**

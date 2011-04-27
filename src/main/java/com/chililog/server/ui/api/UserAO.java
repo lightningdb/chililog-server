@@ -131,9 +131,12 @@ public class UserAO extends AO
         }
 
         userBO.removeAllRoles();
-        for (String role : _roles)
+        if (_roles != null)
         {
-            userBO.addRole(role);
+            for (String role : _roles)
+            {
+                userBO.addRole(role);
+            }
         }
 
         userBO.setStatus(_status);

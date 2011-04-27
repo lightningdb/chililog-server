@@ -10,7 +10,7 @@ sc_require('views/image_view');
  */
 Chililog.ConfigureView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
-  childViews: 'title body'.w(),
+  childViews: 'title menu body'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 0, left: 0, width: 200, height: 30 },
@@ -18,6 +18,31 @@ Chililog.ConfigureView = SC.View.design({
     controlSize: SC.HUGE_CONTROL_SIZE,
     value: '_configureView.Title',
     localize: YES
+  }),
+
+  menu: SC.PopupButtonView.design({
+    layout: { top: 0, right: 0, width: 100, height: 30 },
+    classNames: ['button'],
+    title: '_new',
+    localize: YES,
+    controlSize: SC.HUGE_CONTROL_SIZE,
+    menu: SC.MenuPane.design({
+      layout: { width: 200 },
+      items: [
+        {
+          title: '_configureView.NewRepository',
+          disableMenuFlash: NO,
+          target: 'Chililog.configureRepositoryViewController',
+          action: 'create'
+        },
+        {
+          title: '_configureView.NewUser',
+          disableMenuFlash: NO,
+          target: 'Chililog.configureUserViewController',
+          action: 'create'
+        }
+      ]
+    })
   }),
 
   body: SC.SplitView.design({
@@ -55,7 +80,7 @@ Chililog.configureView = Chililog.ConfigureView.create();
  */
 Chililog.ConfigureUserView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
-  childViews: 'title body'.w(),
+  childViews: 'title deleteButton body'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 0, left: 0, width: 200, height: 30 },
@@ -65,10 +90,20 @@ Chililog.ConfigureUserView = SC.View.design({
     localize: YES
   }),
 
+  deleteButton: SC.ButtonView.design({
+    layout: {top: 0, left: 360, width: 40 },
+    title: 'D',
+    localize: YES,
+    controlSize: SC.HUGE_CONTROL_SIZE,
+    isVisibleBinding: SC.Binding.from('Chililog.configureUserViewController.canSave').oneWay().not(),
+    target: Chililog.configureUserViewController,
+    action: 'confirmErase'
+  }),
+
   body: SC.View.design({
     layoutBinding: 'Chililog.configureUserViewController.bodyLayout',
     classNames: ['edit-box'],
-    childViews: 'username email displayName currentStatus passwords buttons'.w(),
+    childViews: 'username emailAddress displayName currentStatus passwords buttons'.w(),
 
     username: SC.View.design({
       layout: {top: 20, left: 20, right: 20, height: 50 },
@@ -86,7 +121,7 @@ Chililog.ConfigureUserView = SC.View.design({
       })
     }),
 
-    email: SC.View.design({
+    emailAddress: SC.View.design({
       layout: {top: 80, left: 20, right: 20, height: 50 },
       childViews: 'label field'.w(),
 
@@ -143,17 +178,17 @@ Chililog.ConfigureUserView = SC.View.design({
     }),
 
     passwords: SC.View.design({
-      layout: {top: 260, left: 20, right: 20, height: 50 },
+      layout: {top: 260, left: 20, right: 20, height: 120 },
       childViews: 'password confirmPassword'.w(),
-      isVisibleBinding: SC.Binding.from('Chililog.configureUserViewController.isAdding').oneWay(),
+      isVisibleBinding: SC.Binding.from('Chililog.configureUserViewController.isCreating').oneWay(),
 
       password: SC.View.design({
-        layout: {top: 20, left: 20, right: 20, height: 50 },
+        layout: {top: 0, left: 0, right: 0, height: 50 },
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
           layout: { top: 0, left: 0, right: 0, height: 19 },
-          value: '_configureUserView.Username',
+          value: '_configureUserView.Password',
           localize: YES
         }),
 
@@ -163,14 +198,14 @@ Chililog.ConfigureUserView = SC.View.design({
           valueBinding: 'Chililog.configureUserViewController.password'
         })
       }),
-      
+
       confirmPassword: SC.View.design({
-        layout: {top: 20, left: 20, right: 20, height: 50 },
+        layout: {top: 60, left: 0, right: 0, height: 50 },
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
           layout: { top: 0, left: 0, right: 0, height: 19 },
-          value: '_configureUserView.Username',
+          value: '_configureUserView.ConfirmPassword',
           localize: YES
         }),
 

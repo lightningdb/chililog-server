@@ -21,6 +21,8 @@ package com.chililog.server.ui.api;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.chililog.server.common.ChiliLogException;
 
 /**
@@ -67,6 +69,10 @@ public class ErrorAO extends AO
     public ErrorAO(Throwable ex)
     {
         _message = ex.getMessage();
+        if (StringUtils.isBlank(_message)) 
+        {
+            _message = ex.toString();
+        }
 
         if (ex instanceof ChiliLogException)
         {

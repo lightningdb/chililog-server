@@ -17,7 +17,7 @@ Chililog.configureUserViewController = SC.ObjectController.create({
   /**
    * Flag to indicate if we are creating 
    */
-  isAdding: function() {
+  isCreating: function() {
     var record = this.get('content');
     if (!SC.none(record) && record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME) === 0) {
       return YES;
@@ -29,29 +29,31 @@ Chililog.configureUserViewController = SC.ObjectController.create({
    * Adjust height of body box depending on if we are adding or not
    */
   bodyLayout: function() {
-    if (this.get('isAdding')) {
-      return { top: 35, left: 0, width: 400, height: 400 };
+    if (this.get('isCreating')) {
+      return { top: 35, left: 0, width: 400, height: 450 };
     } else {
       return { top: 35, left: 0, width: 400, height: 330 };
     }
-  }.property('isAdding').cacheable(),
+  }.property('isCreating').cacheable(),
 
   /**
    * Adjust height of buttons depending on if we are adding or not
    */
   buttonsLayout: function() {
-    if (this.get('isAdding')) {
-      return {top: 350, left: 20, right: 20, height: 50 };
+    if (this.get('isCreating')) {
+      return {top: 390, left: 20, right: 20, height: 50 };
     } else {
       return {top: 270, left: 20, right: 20, height: 50 };
     }
-  }.property('isAdding').cacheable(),
+  }.property('isCreating').cacheable(),
 
   /**
    * Show the user details form
    */
   show: function() {
     Chililog.configureView.setPath('body.bottomRightView.contentView', Chililog.configureUserView);
+    var field = Chililog.configureUserView.getPath('body.username.field');
+    field.becomeFirstResponder();
   },
 
   /**
@@ -74,10 +76,43 @@ Chililog.configureUserViewController = SC.ObjectController.create({
   isSaving: NO,
 
   /**
+   * Trigger event to create a new user
+   */
+  create: function() {
+    Chililog.statechart.sendEvent('createUser');
+  },
+
+  /**
    * Trigger event to save the user's profile
    */
   save: function() {
     Chililog.statechart.sendEvent('save');
+  },
+
+  /**
+   * Confirm erase
+   */
+  confirmErase: function() {
+    SC.AlertPane.warn({
+      message: '_configureUserView.ConfirmDelete'.loc(this.getPath('content.username')),
+      buttons: [
+        {
+          title: '_delete'.loc(),
+          action: this.erase
+        },
+        {
+          title: '_cancel'.loc()
+        }
+      ]
+    });
+  },
+
+  /**
+   * Trigger event to delete the user. This is called back from confirmErase
+   */
+  erase: function() {
+    var record = Chililog.configureUserViewController.get('content');
+    Chililog.statechart.sendEvent('eraseUser', record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
   },
 
   /**
@@ -122,6 +157,9 @@ Chililog.configureUserViewController = SC.ObjectController.create({
       }
 
       var fieldPath = 'body.%@.field'.fmt(label);
+      if (label === 'password' || label === 'confirmPassword') {
+        fieldPath = 'body.passwords.%@.field'.fmt(label);
+      }
       var field = Chililog.configureUserView.getPath(fieldPath);
       if (!SC.none(field)) {
         field.becomeFirstResponder();
@@ -154,43 +192,45 @@ Chililog.configureRepositoryInfoViewController = SC.ObjectController.create({
 });
 
 /**
- * Controller that for the mainPane. Mainly handles menu selection option and login/logout
+ * Controller for the tree view on configure page
  *
  * @extends SC.Object
  */
 Chililog.configureTreeViewController = SC.TreeController.create({
 
+  repositoriesNode: SC.Object.create({
+    isRepositories: YES,
+    treeItemIsExpanded: YES,
+    treeItemLabel: 'Repositories',
+    treeItemIcon: sc_static('images/repositories.png'),
+    treeItemChildren: function() {
+      var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
+      var repoInfo = Chililog.store.find(repoInfoQuery);
+      return repoInfo;
+    }.property()
+  }),
+
+  usersNode: SC.Object.create({
+    isUsers: YES,
+    treeItemIsExpanded: YES,
+    treeItemLabel: 'Users',
+    treeItemIcon: sc_static('images/users.png'),
+    treeItemChildren: function() {
+      var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
+      var users = Chililog.store.find(userQuery);
+      return users;
+    }.property()
+  }),  
+
   /**
    * Poplulate our tree
    */
   populate: function() {
-    var repositories = SC.Object.create({
-      treeItemIsExpanded: YES,
-      treeItemLabel: 'Repositories',
-      treeItemIcon: sc_static('images/repositories.png'),
-      treeItemChildren: function() {
-        var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
-        var repoInfo = Chililog.store.find(repoInfoQuery);
-        return repoInfo;
-      }.property()
-    });
-
-    var users = SC.Object.create({
-      treeItemIsExpanded: YES,
-      treeItemLabel: 'Users',
-      treeItemIcon: sc_static('images/users.png'),
-      treeItemChildren: function() {
-        var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
-        var users = Chililog.store.find(userQuery);
-        return users;
-      }.property()
-    });
-
     var rootNode = SC.Object.create({
       treeItemIsExpanded: YES,
       treeItemLabel: 'Chililog',
       treeItemIcon: null,
-      treeItemChildren: [repositories, users]
+      treeItemChildren: [this.get('repositoriesNode'), this.get('usersNode')]
     });
     this.set('content', rootNode);
   },
@@ -220,8 +260,31 @@ Chililog.configureTreeViewController = SC.TreeController.create({
       Chililog.statechart.sendEvent('editUser', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
     } else if (SC.instanceOf(selectedItem, Chililog.RepositoryInfoRecord)) {
       Chililog.statechart.sendEvent('editRepositoryInfo', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
-    } 
-  }.observes('selectedItem')
+    } else if (!SC.none(selectedItem.get('isUsers')) && selectedItem.get('isUsers')) {
+      Chililog.statechart.sendEvent('viewUsers');
+    } else if (!SC.none(selectedItem.get('isRepositories')) && selectedItem.get('isRepositories')) {
+      Chililog.statechart.sendEvent('viewRepositoryInfo');
+    }
+  }.observes('selectedItem'),
 
+  /**
+   * Clear selection so that no item in the tree view is selected
+   */
+  clearSelection: function() {
+    this.set('selection', SC.SelectionSet.EMPTY);
+  },
+
+  /**
+   * Select the users node
+   */
+  selectUsersNode: function() {
+    this.selectObject(this.get('usersNode'), NO);
+  },
+
+  /**
+   * Select the repositories node
+   */
+  selectRepositoriesNode: function() {
+    this.selectObject(this.get('repositoriesNode'), NO);
+  }
 });
-

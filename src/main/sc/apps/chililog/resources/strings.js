@@ -11,10 +11,11 @@
 //
 
 SC.stringsFor('English', {
+  '_new': ' New ...',
   '_save': 'Save',
   '_cancel': 'Cancel',
+  '_delete': 'Delete',
   '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
-  '_illegalStateError': 'Illegal state "%@".',
 
   '_mainPane.Search': 'Search',
   '_mainPane.Search.ToolTip': 'Search for log entries',
@@ -59,16 +60,22 @@ SC.stringsFor('English', {
 
   '_userDataController.UsernameRequiredError': 'Username is required',
   '_userDataController.PasswordRequiredError': 'Password is required',
+  '_userDataController.ConfirmPasswordRequiredError': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
   '_userDataController.EmailAddressRequiredError': 'Email Address is required',
 
   '_repositoryInfoDataController.NameRequiredError': 'Name is requried',
   
   '_configureView.Title': 'Configure',
+  '_configureView.NewRepository': 'New Repository',
+  '_configureView.NewUser': 'New User',
   '_configureUserView.Title': 'User',
   '_configureUserView.Username': 'Username',
   '_configureUserView.EmailAddress': 'Email Address',
   '_configureUserView.DisplayName': 'Display Name',
   '_configureUserView.CurrentStatus': 'Status',
+  '_configureUserView.Password': 'Password',
+  '_configureUserView.ConfirmPassword': 'Confirm Password',
+  '_configureUserView.ConfirmDelete': 'Delete user "%@"?',
   '_configureRepositoryInfoView.Title': 'Repository',
   '_configureRepositoryInfoView.Name': 'Name',
   '_configureRepositoryInfoView.DisplayName': 'Display Name',
