@@ -13,9 +13,6 @@ SC.TableHeaderView = SC.TableRowView.extend({
   /** @private */
   classNames: ['sc-table-header'],
   
-  isResizable: YES,
-  isResizableBinding: '*column.isResizable',
-  
   exampleView: SC.TableHeaderCellView,
   
   thumbView: Endash.ThumbView.extend({
@@ -23,7 +20,7 @@ SC.TableHeaderView = SC.TableRowView.extend({
       top: 0, bottom: 0, right: 0, width: 15
     },
     ownerBinding: '.parentView',
-    isEnabledBinding: 'owner.isResizable'
+    isEnabledBinding: '.owner*column.isResizable'
   }),
   
   widthsDidChange: function(object, key, value) {
