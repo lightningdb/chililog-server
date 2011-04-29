@@ -6,8 +6,7 @@
 # This is your Buildfile, which sets build settings for your project.
 # For example, this tells SproutCore's build tools that your requires
 # the SproutCore framework.
-config :all, :required => :sproutcore
-
+config :all, :required => [:sproutcore]
 
 # See options at https://github.com/sproutcore/abbot/blob/master/lib/Buildfile
 

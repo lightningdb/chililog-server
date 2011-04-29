@@ -74,7 +74,7 @@ Chililog.configureView = Chililog.ConfigureView.create();
  */
 Chililog.ConfigureUserSceneView = SC.SceneView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  scenes: ['Chililog.configureUserListView', 'Chililog.configureUserView']
+  scenes: ['Chililog.configureUserListView', 'Chililog.configureUserDetailView']
 });
 
 Chililog.configureUserSceneView = Chililog.ConfigureUserSceneView.create();
@@ -84,7 +84,7 @@ Chililog.configureUserSceneView = Chililog.ConfigureUserSceneView.create();
  */
 Chililog.ConfigureUserListView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title createButton moreButton'.w(),
+  childViews: 'title createButton moreButton table'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -113,6 +113,43 @@ Chililog.ConfigureUserListView = SC.View.design({
         }
       ]
     })
+  }),
+
+  table: SC.TableView.design({
+    layout: { top: 80, left: 10, right: 10, bottom: 10 },
+    classNames: ['table-box'],
+    contentBinding: 'Chililog.configureUserListViewController.arrangedObjects',
+    selectionBinding: 'Chililog.configureUserListViewController.selection',
+    useHeaders: YES,
+    isEditable: NO,
+    columns:[
+      SC.TableColumn.create({
+        key:   'username',
+        title: '_configureUserView.Username'.loc(),
+        width: 150,
+        isReorderable: NO   //Bug with reorder when switching with other configure options
+      }),
+      SC.TableColumn.create({
+        key:   'emailAddress',
+        title: '_configureUserView.EmailAddress'.loc(),
+        width: 250,
+        isReorderable: NO
+      }),
+      SC.TableColumn.create({
+        key:   'displayName',
+        title: '_configureUserView.DisplayName'.loc(),
+        width: 250,
+        isReorderable: NO
+      }),
+      SC.TableColumn.create({
+        key:   'currentStatus',
+        title: '_configureUserView.CurrentStatus'.loc(),
+        width: 100,
+        isReorderable: NO
+      })
+    ],
+    target: Chililog.configureUserListViewController,
+    action: 'edit'
   })
 
 });

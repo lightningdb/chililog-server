@@ -14,5 +14,5 @@ config :chililog,
 
 :css_theme => 'ace.chililog',
 
-:required => [:sproutcore, 'sproutcore/statechart']
+:required => [:sproutcore, 'sproutcore/statechart', 'endash/table']
 
