@@ -1,3 +1,0 @@
-SC.CollectionDisplayDelegate = {
-  isCollectionDisplayDelegate: YES
-}

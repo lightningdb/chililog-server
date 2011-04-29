@@ -3,10 +3,14 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+/**********************************************************************************************************************
+ * Users
+ **********************************************************************************************************************/
+
 /**
  * Controls the data when configuring users
  */
-Chililog.configureUserViewController = SC.ObjectController.create({
+Chililog.configureUserDetailViewController = SC.ObjectController.create({
 
   /**
    * User record to display
@@ -172,10 +176,14 @@ Chililog.configureUserViewController = SC.ObjectController.create({
   
 });
 
+/**********************************************************************************************************************
+ * Repositories
+ **********************************************************************************************************************/
+
 /**
  * Controls the data when configuring repositories
  */
-Chililog.configureRepositoryInfoViewController = SC.ObjectController.create({
+Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.create({
 
   /**
    * Repository record to display
@@ -191,100 +199,72 @@ Chililog.configureRepositoryInfoViewController = SC.ObjectController.create({
   }
 });
 
+/**********************************************************************************************************************
+ * Main
+ **********************************************************************************************************************/
+
 /**
- * Controller for the tree view on configure page
- *
- * @extends SC.Object
+ * Controls the data when configuring repositories
  */
-Chililog.configureTreeViewController = SC.TreeController.create({
+Chililog.configureViewController = SC.Object.create({
 
-  repositoriesNode: SC.Object.create({
-    isRepositories: YES,
-    treeItemIsExpanded: YES,
-    treeItemLabel: 'Repositories',
-    treeItemIcon: sc_static('images/repositories.png'),
-    treeItemChildren: function() {
-      var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
-      var repoInfo = Chililog.store.find(repoInfoQuery);
-      return repoInfo;
-    }.property()
-  }),
-
-  usersNode: SC.Object.create({
-    isUsers: YES,
-    treeItemIsExpanded: YES,
-    treeItemLabel: 'Users',
-    treeItemIcon: sc_static('images/users.png'),
-    treeItemChildren: function() {
-      var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
-      var users = Chililog.store.find(userQuery);
-      return users;
-    }.property()
-  }),  
-
-  /**
-   * Poplulate our tree
-   */
-  populate: function() {
-    var rootNode = SC.Object.create({
-      treeItemIsExpanded: YES,
-      treeItemLabel: 'Chililog',
-      treeItemIcon: null,
-      treeItemChildren: [this.get('repositoriesNode'), this.get('usersNode')]
-    });
-    this.set('content', rootNode);
-  },
-
-  /**
-   * Returns the selected item
-   */
-  selectedItem: function() {
-    var selectionSet = this.get('selection');
+  onSelect: function() {
+    var selectionSet = Chililog.configureView.getPath('left.contentView.selection');
     if (SC.none(selectionSet) || selectionSet.get('length') === 0) {
       return null;
     }
     var selection = selectionSet.get('firstObject');
-    return selection;
-  }.property('selection').cacheable(),
-
-  /**
-   * When selection changes, then we send an event
-   */
-  selectionDidChange: function() {
-    var selectedItem = this.get('selectedItem');
-    if (SC.none(selectedItem)) {
-      return;
-    }
-
-    if (SC.instanceOf(selectedItem, Chililog.UserRecord)) {
-      Chililog.statechart.sendEvent('editUser', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
-    } else if (SC.instanceOf(selectedItem, Chililog.RepositoryInfoRecord)) {
-      Chililog.statechart.sendEvent('editRepositoryInfo', selectedItem.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
-    } else if (!SC.none(selectedItem.get('isUsers')) && selectedItem.get('isUsers')) {
+    var id = selection['id'];
+    if (id === 'Users') {
       Chililog.statechart.sendEvent('viewUsers');
-    } else if (!SC.none(selectedItem.get('isRepositories')) && selectedItem.get('isRepositories')) {
+    } else if (id === 'Repositories') {
       Chililog.statechart.sendEvent('viewRepositoryInfo');
     }
-  }.observes('selectedItem'),
 
-  /**
-   * Clear selection so that no item in the tree view is selected
-   */
-  clearSelection: function() {
-    this.set('selection', SC.SelectionSet.EMPTY);
+    return;
   },
 
   /**
-   * Select the users node
+   * Show list of repositories in the right hand side details pane
    */
-  selectUsersNode: function() {
-    this.selectObject(this.get('usersNode'), NO);
+  showRepositoryInfoList: function() {
+    Chililog.configureView.setPath('right.contentView', Chililog.configureRepositoryInfoSceneView);
+    Chililog.configureRepositoryInfoSceneView.set('nowShowing', 'Chililog.configureRepositoryInfoListView');
+    return;
   },
 
   /**
-   * Select the repositories node
+   * Show list of repositories in the right hand side details pane
    */
-  selectRepositoriesNode: function() {
-    this.selectObject(this.get('repositoriesNode'), NO);
+  showRepositoryInfoDetail: function() {
+    var currentView = Chililog.configureView.getPath('right.contentView');
+    if (currentView !== Chililog.configureRepositoryInfoSceneView) {
+      Chililog.configureView.setPath('right.contentView', Chililog.configureRepositoryInfoSceneView);
+    }
+    Chililog.configureRepositoryInfoSceneView.set('nowShowing', 'Chililog.configureRepositoryInfoDetailView');
+    return;
+  },
+
+  /**
+   * Show list of users in the right hand side details pane
+   */
+  showUserList: function() {
+    Chililog.configureView.setPath('right.contentView', Chililog.configureUserSceneView);
+    Chililog.configureUserSceneView.set('nowShowing', 'Chililog.configureUserListView');
+    return;
+  },
+
+  /**
+   * Show list of users in the right hand side details pane
+   */
+  showUserDetail: function() {
+    var currentView = Chililog.configureView.getPath('right.contentView');
+    if (currentView !== Chililog.configureUserSceneView) {
+      Chililog.configureView.setPath('right.contentView', Chililog.configureUserSceneView);
+    }
+    Chililog.configureUserSceneView.set('nowShowing', 'Chililog.configureUserDetailView');
+    return;
   }
+
 });
+

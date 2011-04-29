@@ -37,6 +37,16 @@
   color: #222;
 }
 
+.sc-view.list-box {
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #222;
+}
+
+.sc-view.list-box .sc-outline {
+  border-bottom: 1px solid #eee;
+}
+
 .sc-label-view.success {
   font-size: 12px;
   height: 26px;

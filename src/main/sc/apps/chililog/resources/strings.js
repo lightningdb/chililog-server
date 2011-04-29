@@ -11,10 +11,11 @@
 //
 
 SC.stringsFor('English', {
-  '_new': ' New ...',
   '_save': 'Save',
   '_cancel': 'Cancel',
   '_delete': 'Delete',
+  '_deleteSelected': 'Delete Selected',
+  '_moreActions': 'More Actions',
   '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
 
   '_mainPane.Search': 'Search',
@@ -66,8 +67,12 @@ SC.stringsFor('English', {
   '_repositoryInfoDataController.NameRequiredError': 'Name is requried',
   
   '_configureView.Title': 'Configure',
+  '_configureView.Repositories': 'Repositories',
+  '_configureView.Users': 'Users',
   '_configureView.NewRepository': 'New Repository',
   '_configureView.NewUser': 'New User',
+  '_configureUserListView.Title': 'Users',
+  '_configureUserListView.Create': 'Create a New User',
   '_configureUserView.Title': 'User',
   '_configureUserView.Username': 'Username',
   '_configureUserView.EmailAddress': 'Email Address',
@@ -76,6 +81,8 @@ SC.stringsFor('English', {
   '_configureUserView.Password': 'Password',
   '_configureUserView.ConfirmPassword': 'Confirm Password',
   '_configureUserView.ConfirmDelete': 'Delete user "%@"?',
+  '_configureRepositoryInfoListView.Title': 'Repositories',
+  '_configureRepositoryInfoListView.Create': 'Create a New Repository',
   '_configureRepositoryInfoView.Title': 'Repository',
   '_configureRepositoryInfoView.Name': 'Name',
   '_configureRepositoryInfoView.DisplayName': 'Display Name',

@@ -5,12 +5,16 @@
 
 sc_require('views/image_view');
 
+/**********************************************************************************************************************
+ * Main
+ **********************************************************************************************************************/
+
 /**
  * Configure view
  */
 Chililog.ConfigureView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
-  childViews: 'title menu body'.w(),
+  childViews: 'title left right'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 0, left: 0, width: 200, height: 30 },
@@ -20,54 +24,40 @@ Chililog.ConfigureView = SC.View.design({
     localize: YES
   }),
 
-  menu: SC.PopupButtonView.design({
-    layout: { top: 0, right: 0, width: 100, height: 30 },
-    classNames: ['button'],
-    title: '_new',
-    localize: YES,
-    controlSize: SC.HUGE_CONTROL_SIZE,
-    menu: SC.MenuPane.design({
-      layout: { width: 200 },
-      items: [
+  left: SC.ScrollView.design({
+    layout: { top: 35, left: 0, bottom: 0, width: 200 },
+    classNames: ['list-box'],
+
+    contentView: SC.ListView.design({
+      layout: { top: 0, bottom: 0, left: 0, right: 0 },
+      rowHeight: 40,
+      isEditable: NO,
+      actOnSelect: YES,
+      hasContentIcon: YES,
+      contentValueKey: 'label',
+      contentIconKey: 'icon',
+      content: [
         {
-          title: '_configureView.NewRepository',
-          disableMenuFlash: NO,
-          target: 'Chililog.configureRepositoryViewController',
-          action: 'create'
+          id: 'Repositories',
+          label: '_configureView.Repositories'.loc(),
+          icon: sc_static('images/repositories.png')
         },
         {
-          title: '_configureView.NewUser',
-          disableMenuFlash: NO,
-          target: 'Chililog.configureUserViewController',
-          action: 'create'
+          id: 'Users',
+          label: '_configureView.Users'.loc(),
+          icon: sc_static('images/users.png')
         }
-      ]
+      ],
+      target: Chililog.configureViewController,
+      action: 'onSelect'
     })
   }),
 
-  body: SC.SplitView.design({
-    layout: { top: 35, left: 0, right: 0, bottom: 0 },
-    classNames: ['edit-box'],
-    defaultThickness: 0.2,
-
-    topLeftView: SC.ScrollView.design({
-      layout: { top: 0, bottom: 0, left: 0, right: 0 },
-      hasHorizontalScroller: NO,
-
-      contentView: SC.ListView.design({
-        layout: { top: 0, bottom: 0, left: 0, right: 0 },
-        rowHeight: 24,
-        hasContentIcon: YES,
-        contentValueKey: 'treeItemLabel',
-        contentIconKey: 'treeItemIcon',
-        contentBinding: 'Chililog.configureTreeViewController.arrangedObjects',
-        selectionBinding: 'Chililog.configureTreeViewController.selection'
-      })
-    }),
-
-    bottomRightView: SC.ContainerView.design({
-    })
+  right: SC.ContainerView.design({
+    layout: { top: 35, bottom: 0, left: 208, right: 0 },
+    classNames: ['edit-box']
   })
+
 });
 
 /**
@@ -75,10 +65,64 @@ Chililog.ConfigureView = SC.View.design({
  */
 Chililog.configureView = Chililog.ConfigureView.create();
 
+
+/**********************************************************************************************************************
+ * Users
+ **********************************************************************************************************************/
+/**
+ * User Scene
+ */
+Chililog.ConfigureUserSceneView = SC.SceneView.design({
+  layout: { top: 0, left: 0, bottom: 0, right: 0 },
+  scenes: ['Chililog.configureUserListView', 'Chililog.configureUserView']
+});
+
+Chililog.configureUserSceneView = Chililog.ConfigureUserSceneView.create();
+
+/**
+ * User List
+ */
+Chililog.ConfigureUserListView = SC.View.design({
+  layout: { top: 0, left: 0, bottom: 0, right: 0 },
+  childViews: 'title createButton moreButton'.w(),
+
+  title: SC.LabelView.design({
+    layout: { top: 5, left: 10, width: 200, height: 30 },
+    tagName: 'h1',
+    controlSize: SC.HUGE_CONTROL_SIZE,
+    value: '_configureUserListView.Title',
+    localize: YES
+  }),
+
+  createButton: SC.ButtonView.design({
+    layout: { top: 40, left: 10, width: 130 },
+    title: '_configureUserListView.Create',
+    localize: YES
+  }),
+
+  moreButton: SC.PopupButtonView.design({
+    layout: { top: 40, left: 150, width: 130, height: 30 },
+    classNames: ['button'],
+    title: '_moreActions',
+    localize: YES,
+    menu: SC.MenuPane.design({
+      layout: { width: 200 },
+      items: [
+        {
+          title: '_deleteSelected'
+        }
+      ]
+    })
+  })
+
+});
+
+Chililog.configureUserListView = Chililog.ConfigureUserListView.create();
+
 /**
  * User details
  */
-Chililog.ConfigureUserView = SC.View.design({
+Chililog.ConfigureUserDetailView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title deleteButton body'.w(),
 
@@ -263,12 +307,68 @@ Chililog.ConfigureUserView = SC.View.design({
 /**
  * Instance configure user view
  */
-Chililog.configureUserView = Chililog.ConfigureUserView.create();
+Chililog.configureUserDetailView = Chililog.ConfigureUserDetailView.create();
+
+
+/**********************************************************************************************************************
+ * Repositories
+ **********************************************************************************************************************/
+/**
+ * Repositories Scene
+ */
+Chililog.ConfigureRepositoryInfoSceneView = SC.SceneView.design({
+  layout: { top: 0, left: 0, bottom: 0, right: 0 },
+  scenes: ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoView']
+});
+
+Chililog.configureRepositoryInfoSceneView = Chililog.ConfigureRepositoryInfoSceneView.create();
+
+
+/**
+ * Repositories Listing
+ */
+Chililog.ConfigureRepositoryInfoListView = SC.View.design({
+  layout: { top: 0, left: 0, bottom: 0, right: 0 },
+  childViews: 'title createButton moreButton'.w(),
+
+  title: SC.LabelView.design({
+    layout: { top: 5, left: 10, width: 200, height: 30 },
+    tagName: 'h1',
+    controlSize: SC.HUGE_CONTROL_SIZE,
+    value: '_configureRepositoryInfoListView.Title',
+    localize: YES
+  }),
+
+  createButton: SC.ButtonView.design({
+    layout: { top: 40, left: 10, width: 170 },
+    title: '_configureRepositoryInfoListView.Create',
+    localize: YES
+  }),
+
+  moreButton: SC.PopupButtonView.design({
+    layout: { top: 40, left: 190, width: 130, height: 30 },
+    classNames: ['button'],
+    title: '_moreActions',
+    localize: YES,
+    menu: SC.MenuPane.design({
+      layout: { width: 200 },
+      items: [
+        {
+          title: '_deleteSelected'
+        }
+      ]
+    })
+  })
+
+});
+
+Chililog.configureRepositoryInfoListView = Chililog.ConfigureRepositoryInfoListView.create();
+
 
 /**
  * Repository details
  */
-Chililog.ConfigureRepositoryInfoView = SC.View.design({
+Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
   childViews: 'title body'.w(),
 
@@ -306,4 +406,4 @@ Chililog.ConfigureRepositoryInfoView = SC.View.design({
 /**
  * Instance configure repository view
  */
-Chililog.configureRepositoryInfoView = Chililog.ConfigureRepositoryInfoView.create();
+Chililog.configureRepositoryInfoDetailView = Chililog.ConfigureRepositoryInfoDetailView.create();
