@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 /target
 /data
 /.settings
 /.classpath
 /.project
+=======
+/mixins/.DS_Store
+/.DS_Store
+.DS_Store
+>>>>>>> 315713a63c5eba096e1d15926001869cc4086d20
