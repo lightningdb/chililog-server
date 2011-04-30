@@ -268,7 +268,6 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           itemValueKey: 'value',
           valueBinding: 'Chililog.configureUserDetailViewController.currentStatus'
         })
-        
       }),
 
       password: SC.View.design({
@@ -397,7 +396,6 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
       ]
     })
   })
-
 });
 
 Chililog.configureRepositoryInfoListView = Chililog.ConfigureRepositoryInfoListView.create();

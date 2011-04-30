@@ -27,6 +27,30 @@
 }
 
 /*******************************************
+ * Focus borders and other attributes
+ *******************************************/
+.sc-view .sc-button-view.focus .sc-button-label {
+  font-weight: bold;
+}
+
+.safari .sc-view .sc-button-view.sc-checkbox-view.focus .button {
+  outline: auto 1px -webkit-focus-ring-color;
+  outline-offset: 0px;
+  margin: 1px;
+}
+
+.mozilla .sc-view .sc-button-view.sc-checkbox-view.focus .button {
+  outline-color:-moz-mac-focusring;
+  outline-offset:-5px;
+  outline-style:solid;
+  outline-width:3px;
+}
+
+.msie .sc-view .sc-button-view.sc-checkbox-view.focus .button {
+  outline: 1px dotted;
+}
+
+/*******************************************
  * Table
  *******************************************/
 .sc-view.table {

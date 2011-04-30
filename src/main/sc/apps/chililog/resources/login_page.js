@@ -75,7 +75,7 @@ Chililog.loginPage = SC.Page.design({
         layout: {top: 190, left: 20, right: 20, height: 20 },
         childViews: 'field'.w(),
 
-        field: SC.CheckboxView.design({
+        field: Chililog.CheckboxView.design({
           layout: { top: 0, left: 0, right: 0, height: 20 },
           title: '_loginPane.RememberMe',
           localize: YES,
@@ -85,7 +85,7 @@ Chililog.loginPage = SC.Page.design({
       }),
 
       loginButton: SC.ButtonView.design({
-        layout: {top: 230, width: 100, centerX: 0 },
+        layout: {top: 230, width: 100, height: 35, centerX: 0 },
         title: '_loginPane.Login',
         localize: YES,
         isDefault: YES,
