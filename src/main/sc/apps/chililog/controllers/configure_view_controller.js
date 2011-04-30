@@ -15,8 +15,8 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
    * Show list of users in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView', Chililog.configureUserSceneView);
-    Chililog.configureUserSceneView.set('nowShowing', 'Chililog.configureUserListView');
+    Chililog.configureView.setPath('right.scenes', ['Chililog.configureUserListView', 'Chililog.configureUserDetailView']);
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserListView');
     return;
   },
 
@@ -30,7 +30,7 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
     }
     var selection = selectionSet.get('firstObject');
     var id = selection.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
-    Chililog.statechart.sendEvent('editUser', {documentID: id});
+    Chililog.statechart.sendEvent('editUser', id);
   }
 });
 
@@ -44,6 +44,18 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    * @type Chililog.UserRecord
    */
   content: null,
+
+  /**
+   * Flag to indicate if we are creating
+   */
+  title: function() {
+    var record = this.get('content');
+    if (!SC.none(record)) {
+      var s =  '_configureUserDetailView.Title'.loc(record.get('username'));
+      return s;
+    }
+    return '';
+  }.property('content'),
 
   /**
    * Flag to indicate if we are creating 
@@ -61,9 +73,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   bodyLayout: function() {
     if (this.get('isCreating')) {
-      return { top: 35, left: 0, width: 400, height: 450 };
+      return { top: 0, left: 0, right: 0, height: 450 };
     } else {
-      return { top: 35, left: 0, width: 400, height: 330 };
+      return { top: 0, left: 0, right: 0, height: 330 };
     }
   }.property('isCreating').cacheable(),
 
@@ -72,9 +84,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   buttonsLayout: function() {
     if (this.get('isCreating')) {
-      return {top: 390, left: 20, right: 20, height: 50 };
+      return {top: 300, left: 0, right: 0, height: 50 };
     } else {
-      return {top: 270, left: 20, right: 20, height: 50 };
+      return {top: 200, left: 0, right: 0, height: 50 };
     }
   }.property('isCreating').cacheable(),
 
@@ -82,9 +94,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    * Show the user details form
    */
   show: function() {
-    Chililog.configureUserSceneView.set('nowShowing', 'Chililog.configureUserDetailView');
-    var field = Chililog.configureUserDetailView.getPath('body.username.field');
-    field.becomeFirstResponder();
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserDetailView');
+    //var field = Chililog.configureUserDetailView.getPath('body.username.field');
+    //field.becomeFirstResponder();
   },
 
   /**
@@ -154,18 +166,6 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
   },
 
   /**
-   * Show user details
-   */
-  show: function() {
-    var currentView = Chililog.configureView.getPath('right.contentView');
-    if (currentView !== Chililog.configureUserSceneView) {
-      Chililog.configureView.setPath('right.contentView', Chililog.configureUserSceneView);
-    }
-    Chililog.configureUserSceneView.set('nowShowing', 'Chililog.configureUserDetailView');
-    return;
-  },
-
-  /**
    * Show success message when profile successfully saved
    */
   showSaveSuccess: function() {
@@ -228,8 +228,8 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create({
    * Show list of repositories in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView', Chililog.configureRepositoryInfoSceneView);
-    Chililog.configureRepositoryInfoSceneView.set('nowShowing', 'Chililog.configureRepositoryInfoListView');
+    Chililog.configureView.setPath('right.scenes', ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoView']);
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoListView');
     return;
   }
 });

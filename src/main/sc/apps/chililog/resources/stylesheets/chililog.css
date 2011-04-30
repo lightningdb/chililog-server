@@ -53,6 +53,14 @@
   border-bottom: 1px solid #eee;
 }
 
+.sc-view.data-box {
+  border-bottom: 1px solid #999;
+}
+
+.sc-view.data-box .label {
+  font-weight: bold;
+}
+
 .sc-label-view.success {
   font-size: 12px;
   height: 26px;
