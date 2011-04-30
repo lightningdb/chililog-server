@@ -21,6 +21,13 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
   },
 
   /**
+   * Trigger event to create a new user
+   */
+  create: function() {
+    Chililog.statechart.sendEvent('createUser');
+  },
+
+  /**
    * User double clicked on record so edit it
    */
   edit: function() {
@@ -50,11 +57,14 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   title: function() {
     var record = this.get('content');
-    if (!SC.none(record)) {
-      var s =  '_configureUserDetailView.Title'.loc(record.get('username'));
-      return s;
+    if (SC.none(record)) {
+      return '';
     }
-    return '';
+    if (record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME) === 0) {
+      return '_configureUserDetailView.CreateTitle'.loc();
+    } else {
+      return '_configureUserDetailView.EditTitle'.loc(record.get('username'));
+    }
   }.property('content'),
 
   /**
@@ -75,7 +85,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
     if (this.get('isCreating')) {
       return { top: 0, left: 0, right: 0, height: 450 };
     } else {
-      return { top: 0, left: 0, right: 0, height: 330 };
+      return { top: 0, left: 0, right: 0, height: 350 };
     }
   }.property('isCreating').cacheable(),
 
@@ -84,9 +94,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   buttonsLayout: function() {
     if (this.get('isCreating')) {
-      return {top: 300, left: 0, right: 0, height: 50 };
+      return {top: 370, left: 0, right: 0, height: 50 };
     } else {
-      return {top: 200, left: 0, right: 0, height: 50 };
+      return {top: 270, left: 0, right: 0, height: 50 };
     }
   }.property('isCreating').cacheable(),
 
@@ -119,13 +129,6 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
   isSaving: NO,
 
   /**
-   * Trigger event to create a new user
-   */
-  create: function() {
-    Chililog.statechart.sendEvent('createUser');
-  },
-
-  /**
    * Trigger event to save the user's profile
    */
   save: function() {
@@ -137,7 +140,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   confirmErase: function() {
     SC.AlertPane.warn({
-      message: '_configureUserView.ConfirmDelete'.loc(this.getPath('content.username')),
+      message: '_configureUserDetailView.ConfirmDelete'.loc(this.getPath('content.username')),
       buttons: [
         {
           title: '_delete'.loc(),
@@ -154,7 +157,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    * Trigger event to delete the user. This is called back from confirmErase
    */
   erase: function() {
-    var record = Chililog.configureUserViewController.get('content');
+    var record = Chililog.configureUserDetailViewController.get('content');
     Chililog.statechart.sendEvent('eraseUser', record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
   },
 
@@ -169,15 +172,15 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    * Show success message when profile successfully saved
    */
   showSaveSuccess: function() {
-    var view = Chililog.configureUserView.getPath('body.successMessage');
-    var field = Chililog.configureUserView.getPath('body.username.field');
+    var view = Chililog.configureUserDetailView.getPath('body.contentView.buttons.successMessage');
+    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
 
     if (!SC.none(view)) {
       // Have to invokeLater because of webkit
       // http://groups.google.com/group/sproutcore/browse_thread/thread/482740f497d80462/cba903f9cc6aadf8?lnk=gst&q=animate#cba903f9cc6aadf8
       view.adjust("opacity", 1);
       this.invokeLater(function() {
-        view.animate("opacity", 0, { duration: 2, timing:'ease-in' });
+        view.animate("opacity", 0, { duration: 4, timing:'ease-in' });
       }, 10);
     }
 
@@ -199,11 +202,8 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
         label = 'username';
       }
 
-      var fieldPath = 'body.%@.field'.fmt(label);
-      if (label === 'password' || label === 'confirmPassword') {
-        fieldPath = 'body.passwords.%@.field'.fmt(label);
-      }
-      var field = Chililog.configureUserView.getPath(fieldPath);
+      var fieldPath = 'body.contentView.%@.field'.fmt(label);
+      var field = Chililog.configureUserDetailView.getPath(fieldPath);
       if (!SC.none(field)) {
         field.becomeFirstResponder();
       }

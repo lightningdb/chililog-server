@@ -12,10 +12,6 @@
 	line-height: 30px;
 }
 
-.sc-view.box {
-  border: 1px solid #999;
-}
-
 .safari .sc-text-field-view .border {
   -webkit-appearance: none;  /*override default value 'textfield'*/
   border: 1px solid #999;
@@ -26,41 +22,78 @@
 	line-height: 19px;
 }
 
-.sc-view select, .sc-view input, .sc-view textarea, .sc-view button
-{
+.sc-view select, .sc-view input, .sc-view textarea, .sc-view button {
   font-size: 14px;
 }
 
-.sc-view.table-box {
+/*******************************************
+ * Table
+ *******************************************/
+.sc-view.table {
   border: 1px solid #999;
   background-color: #fff;
   color: #222;
 }
 
-.sc-view.edit-box {
-  border: 1px solid #999;
-  background-color: #fff;
-  color: #222;
-}
-
-.sc-view.list-box {
-  border: 1px solid #999;
-  background-color: #fff;
-  color: #222;
-}
-
-.sc-view.list-box .sc-outline {
-  border-bottom: 1px solid #eee;
-}
-
-.sc-view.data-box {
-  border-bottom: 1px solid #999;
-}
-
-.sc-view.data-box .label {
+.sc-view.table .sc-table-header label {
   font-weight: bold;
 }
 
+/*******************************************
+ * Generic box around a div
+ *******************************************/
+.sc-view.box {
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #222;
+}
+
+/*******************************************
+ * List box is a list view for menu
+ *******************************************/
+.sc-view.list-menu {
+  border: 1px solid #999;
+  background-color: #fff;
+  color: #222;
+}
+
+.sc-view.list-menu .sc-outline {
+  border-bottom: 1px solid #eee;
+}
+
+/*******************************************
+ * Data item is a label-field combo.
+ *******************************************/
+.sc-view.data-item {
+  border-bottom: 1px solid #999;
+}
+
+.sc-view.data-item .label {
+  font-weight: bold;
+}
+
+.sc-view.data-item .label.help {
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 16px;
+}
+
+.sc-view.data-item .radio .sc-button-label {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 16px;
+  padding-left: 4px;
+}
+
+.sc-view.data-item .radio .sc-button-label .help {
+  font-size: 10px;
+  font-weight: normal;
+  line-height: 16px;
+}
+
+/*******************************************
+ * Success message when records saved
+ *******************************************/
 .sc-label-view.success {
   font-size: 12px;
   height: 26px;
@@ -101,7 +134,7 @@
   margin: 10px;
 }
 
-.sc-view .about .edit-box {
+.sc-view .about .box {
   padding: 20px;
   border: 1px solid #999;
 }

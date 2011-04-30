@@ -21,7 +21,7 @@ Chililog.MyAccountView = SC.View.design({
 
   myProfile: SC.View.design({
     layout: { top: 35, left: 0, width: 400, height: 300 },
-    classNames: ['edit-box'],
+    classNames: ['box'],
     childViews: 'title username email displayName saveButton cancelButton savingImage successMessage'.w(),
 
     /**
@@ -134,7 +134,7 @@ Chililog.MyAccountView = SC.View.design({
 
   changePassword: SC.View.design({
     layout: { top: 35, left: 410, width: 400, height: 300 },
-    classNames: ['edit-box'],
+    classNames: ['box'],
     childViews: 'title oldPassword newPassword confirmNewPassword changePasswordButton changingPasswordImage successMessage'.w(),
 
     /**

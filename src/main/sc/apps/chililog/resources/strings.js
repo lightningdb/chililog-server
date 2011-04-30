@@ -17,6 +17,7 @@ SC.stringsFor('English', {
   '_deleteSelected': 'Delete Selected',
   '_back': '\< Back',
   '_moreActions': 'More Actions',
+  '_saveSuccess': 'Changes successfully saved',
   '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
 
   '_mainPane.Search': 'Search',
@@ -74,7 +75,8 @@ SC.stringsFor('English', {
   '_configureView.NewUser': 'New User',
   '_configureUserListView.Title': 'Users',
   '_configureUserListView.Create': 'Create a New User',
-  '_configureUserDetailView.Title': 'User: %@',
+  '_configureUserDetailView.EditTitle': 'User: %@',
+  '_configureUserDetailView.CreateTitle': 'New User',
   '_configureUserDetailView.Username': 'Username',
   '_configureUserDetailView.EmailAddress': 'Email Address',
   '_configureUserDetailView.DisplayName': 'Display Name',

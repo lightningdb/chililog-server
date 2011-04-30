@@ -54,10 +54,9 @@ Chililog.ConfigureState = SC.State.extend({
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
         var record = Chililog.userDataController.create();
-        Chililog.configureUserViewController.set('content', record);
-        Chililog.configureUserViewController.set('isSaving', NO);
-        Chililog.configureUserViewController.show();
-        Chililog.configureTreeViewController.clearSelection();
+        Chililog.configureUserDetailViewController.set('content', record);
+        Chililog.configureUserDetailViewController.set('isSaving', NO);
+        Chililog.configureUserDetailViewController.show();
       }
     },
 
@@ -70,7 +69,7 @@ Chililog.ConfigureState = SC.State.extend({
       var isSaving = !SC.none(context) && context['isSaving'];
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isSaving && !isReedit) {
-        var record = Chililog.configureUserViewController.get('content');
+        var record = Chililog.configureUserDetailViewController.get('content');
         Chililog.userDataController.discardChanges(record);
       }
     },
@@ -86,8 +85,8 @@ Chililog.ConfigureState = SC.State.extend({
      * Discard changes and reload our data to the
      */
     discardChanges: function() {
-      var record = Chililog.configureUserViewController.get('content');
-      this.gotoState('creatingUser');
+      var record = Chililog.configureUserDetailViewController.get('content');
+      this.gotoState('viewingUsers');
     }
   }),
 

@@ -26,7 +26,7 @@ Chililog.ConfigureView = SC.View.design({
 
   left: SC.ScrollView.design({
     layout: { top: 35, left: 0, bottom: 0, width: 200 },
-    classNames: ['list-box'],
+    classNames: ['list-menu'],
 
     contentView: SC.ListView.design({
       layout: { top: 0, bottom: 0, left: 0, right: 0 },
@@ -55,7 +55,7 @@ Chililog.ConfigureView = SC.View.design({
 
   right: SC.SceneView.design({
     layout: { top: 35, bottom: 0, left: 208, right: 0 },
-    classNames: ['edit-box']
+    classNames: ['box']
   })
 
 });
@@ -88,7 +88,9 @@ Chililog.ConfigureUserListView = SC.View.design({
   createButton: SC.ButtonView.design({
     layout: { top: 40, left: 10, width: 130 },
     title: '_configureUserListView.Create',
-    localize: YES
+    localize: YES,
+    target: Chililog.configureUserListViewController,
+    action: 'create'
   }),
 
   moreButton: SC.PopupButtonView.design({
@@ -108,7 +110,7 @@ Chililog.ConfigureUserListView = SC.View.design({
 
   table: SC.TableView.design({
     layout: { top: 80, left: 10, right: 10, bottom: 10 },
-    classNames: ['table-box'],
+    classNames: ['table'],
     contentBinding: 'Chililog.configureUserListViewController.arrangedObjects',
     selectionBinding: 'Chililog.configureUserListViewController.selection',
     useHeaders: YES,
@@ -181,14 +183,14 @@ Chililog.ConfigureUserDetailView = SC.View.design({
 
   body: SC.ScrollView.design({
     layout: { top: 80, left: 10, bottom: 10, right: 10 },
-    classNames: ['edit-box'],
+    classNames: ['box'],
     contentView: SC.View.design({
       layoutBinding: SC.Binding.from('Chililog.configureUserDetailViewController.bodyLayout').oneWay(),
       childViews: 'username emailAddress displayName currentStatus password confirmPassword buttons'.w(),
 
       username: SC.View.design({
         layout: {top: 0, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
+        classNames: ['data-item'],
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
@@ -198,14 +200,14 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         }),
 
         field: SC.TextFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
+          layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.username'
         })
       }),
 
       emailAddress: SC.View.design({
         layout: {top: 50, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
+        classNames: ['data-item'],
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
@@ -215,31 +217,38 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         }),
 
         field: SC.TextFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
+          layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.emailAddress'
         })
       }),
 
       displayName: SC.View.design({
-        layout: {top: 100, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
-        childViews: 'label field'.w(),
+        layout: {top: 100, left: 0, right: 0, height: 80 },
+        classNames: ['data-item'],
+        childViews: 'label help field'.w(),
 
         label: SC.LabelView.design({
-          layout: { top: 15, left: 10, width: 200, height: 30 },
+          layout: { top: 15, left: 10, width: 200, height: 20 },
           value: '_configureUserDetailView.DisplayName',
           localize: YES
         }),
 
+        help: SC.LabelView.design({
+          classNames: ['help'],
+          layout: { top: 35, left: 10, width: 170, height: 50 },
+          value: '(Optional name or nickname to display instead of the username)',
+          localize: YES
+        }),
+
         field: SC.TextFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
+          layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.displayName'
         })
       }),
 
       currentStatus: SC.View.design({
-        layout: {top: 150, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
+        layout: {top: 180, left: 0, right: 0, height: 90 },
+        classNames: ['data-item'],
         childViews: 'label field'.w(),
 
         label: SC.LabelView.design({
@@ -248,23 +257,23 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           localize: YES
         }),
 
-        field: SC.SelectFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
-          objects: [
-            { name: 'Enabled', value: 'Enabled'},
-            { name: 'Disabled', value: 'Disabled'},
-            { name: 'Locked', value: 'Locked'}
+        field: SC.RadioView.design({
+          layout: { top: 15, left: 210, width: 500, height: 80 },
+          items: [
+            { title: 'Enabled. <span class="help">User can login.</span>', value: 'Enabled'},
+            { title: 'Disabled. <span class="help">User cannot login.</span>', value: 'Disabled'},
+            { title: 'Locked. <span class="help">User failed to login too many times. Password must be reset.</span>', value: 'Locked'}
           ],
-          nameKey: 'name',
-          valueKey: 'value',
-          disableSort: YES,
+          itemTitleKey: 'title',
+          itemValueKey: 'value',
           valueBinding: 'Chililog.configureUserDetailViewController.currentStatus'
         })
+        
       }),
 
       password: SC.View.design({
-        layout: {top: 200, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
+        layout: {top: 270, left: 0, right: 0, height: 50 },
+        classNames: ['data-item'],
         childViews: 'label field'.w(),
         isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').oneWay(),
 
@@ -275,15 +284,15 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         }),
 
         field: SC.TextFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
+          layout: { top: 10, left: 210, width: 300, height: 30 },
           isPassword: YES,
           valueBinding: 'Chililog.configureUserDetailViewController.password'
         })
       }),
 
       confirmPassword: SC.View.design({
-        layout: {top: 250, left: 0, right: 0, height: 50 },
-        classNames: ['data-box'],
+        layout: {top: 320, left: 0, right: 0, height: 50 },
+        classNames: ['data-item'],
         childViews: 'label field'.w(),
         isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').oneWay(),
 
@@ -294,7 +303,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         }),
 
         field: SC.TextFieldView.design({
-          layout: { top: 10, left: 200, width: 300, height: 30 },
+          layout: { top: 10, left: 210, width: 300, height: 30 },
           isPassword: YES,
           valueBinding: 'Chililog.configureUserDetailViewController.confirmPassword'
         })
@@ -333,9 +342,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         }),
 
         successMessage: SC.LabelView.design({
-          layout: { top: 10, left: 210, width: 155, height: 25, opacity: 0 },
+          layout: { top: 10, left: 210, width: 200, height: 25, opacity: 0 },
           classNames: ['success'],
-          value: '_myAccountView.SaveProfileSuccess',
+          value: '_saveSuccess',
           localize: YES
         })
       })
@@ -411,7 +420,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
   body: SC.View.design({
     layout: { top: 35, left: 0, width: 400, height: 300 },
-    classNames: ['edit-box'],
+    classNames: ['box'],
     childViews: 'name'.w(),
 
     name: SC.View.design({
