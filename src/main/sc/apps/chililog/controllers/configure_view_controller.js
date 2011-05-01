@@ -105,8 +105,11 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   show: function() {
     Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserDetailView');
-    //var field = Chililog.configureUserDetailView.getPath('body.username.field');
-    //field.becomeFirstResponder();
+    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
+    // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
+    this.invokeLater(function() {
+        field.becomeFirstResponder();
+      }, 400);
   },
 
   /**

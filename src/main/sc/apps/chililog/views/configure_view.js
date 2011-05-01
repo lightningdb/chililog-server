@@ -4,6 +4,7 @@
 // ==========================================================================
 
 sc_require('views/image_view');
+sc_require('views/radio_view');
 
 /**********************************************************************************************************************
  * Main
@@ -257,7 +258,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           localize: YES
         }),
 
-        field: SC.RadioView.design({
+        field: Chililog.RadioView.design({
           layout: { top: 15, left: 210, width: 500, height: 80 },
           items: [
             { title: 'Enabled. <span class="help">User can login.</span>', value: 'Enabled'},

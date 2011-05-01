@@ -29,25 +29,44 @@
 /*******************************************
  * Focus borders and other attributes
  *******************************************/
+
+/* Textbox */
+.mozilla .sc-view .sc-text-field-view.focus {
+  outline: solid 2px #ffd700;
+  outline-offset:-1px;
+  margin: 1px;
+}
+
+/* Button */
 .sc-view .sc-button-view.focus .sc-button-label {
   font-weight: bold;
 }
 
+/* Checkbox */
 .safari .sc-view .sc-button-view.sc-checkbox-view.focus .button {
   outline: auto 1px -webkit-focus-ring-color;
   outline-offset: 0px;
   margin: 1px;
 }
-
 .mozilla .sc-view .sc-button-view.sc-checkbox-view.focus .button {
-  outline-color:-moz-mac-focusring;
-  outline-offset:-5px;
-  outline-style:solid;
-  outline-width:3px;
+  outline: solid 1px #ffd700;
+  outline-offset: 0px;
+  margin: 1px;
 }
-
 .msie .sc-view .sc-button-view.sc-checkbox-view.focus .button {
   outline: 1px dotted;
+}
+
+/* Radio */
+.safari .sc-view .sc-radio-view.focus .sel .button {
+  outline: auto 1px -webkit-focus-ring-color;
+  outline-offset: 0px;
+  margin: 1px;
+}
+.mozilla .sc-view .sc-radio-view.focus .sel .button {
+  outline: solid 1px #ffd700;
+  outline-offset: 0px;
+  margin: 1px;
 }
 
 /*******************************************
