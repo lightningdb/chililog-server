@@ -73,8 +73,8 @@ Chililog.myAccountViewController = SC.ObjectController.create(
    * Show success message when profile successfully saved
    */
   showSaveProfileSuccess: function() {
-    var view = Chililog.myAccountView.getPath('myProfile.successMessage');
-    var field = Chililog.myAccountView.getPath('myProfile.username.field');
+    var view = Chililog.myProfileView.getPath('successMessage');
+    var field = Chililog.myProfileView.getPath('username.field');
 
     if (!SC.none(view)) {
       // Have to invokeLater because of webkit
@@ -103,8 +103,8 @@ Chililog.myAccountViewController = SC.ObjectController.create(
         label = 'username';
       }
 
-      var fieldPath = 'myProfile.%@.field'.fmt(label);
-      var field = Chililog.myAccountView.getPath(fieldPath);
+      var fieldPath = '%@.field'.fmt(label);
+      var field = Chililog.myProfileView.getPath(fieldPath);
       if (!SC.none(field)) {
         field.becomeFirstResponder();
       }
@@ -144,8 +144,8 @@ Chililog.myAccountViewController = SC.ObjectController.create(
    * Show success message when password changed
    */
   showChangePasswordSuccess: function() {
-    var view = Chililog.myAccountView.getPath('changePassword.successMessage');
-    var field = Chililog.myAccountView.getPath('changePassword.oldPassword.field');
+    var view = Chililog.changePasswordView.getPath('successMessage');
+    var field = Chililog.changePasswordView.getPath('oldPassword.field');
 
     if (!SC.none(view)) {
       // Have to invokeLater because of webkit
@@ -174,8 +174,8 @@ Chililog.myAccountViewController = SC.ObjectController.create(
         label = 'oldPassword';
       }
 
-      var fieldPath = 'changePassword.%@.field'.fmt(label);
-      var field = Chililog.myAccountView.getPath(fieldPath);
+      var fieldPath = '%@.field'.fmt(label);
+      var field = Chililog.changePasswordView.getPath(fieldPath);
       if (!SC.none(field)) {
         field.becomeFirstResponder();
       }

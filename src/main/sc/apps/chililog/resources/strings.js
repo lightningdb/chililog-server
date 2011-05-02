@@ -11,6 +11,9 @@
 //
 
 SC.stringsFor('English', {
+  // ********************************************************
+  // General
+  // ********************************************************
   '_save': 'Save',
   '_cancel': 'Cancel',
   '_delete': 'Delete',
@@ -20,6 +23,9 @@ SC.stringsFor('English', {
   '_saveSuccess': 'Changes successfully saved',
   '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
 
+  // ********************************************************
+  // Views
+  // ********************************************************
   '_mainPane.Search': 'Search',
   '_mainPane.Search.ToolTip': 'Search for log entries',
   '_mainPane.Analyse': 'Analyse',
@@ -44,12 +50,40 @@ SC.stringsFor('English', {
   '_myAccountView.Username': 'Username',
   '_myAccountView.EmailAddress': 'Email Address',
   '_myAccountView.DisplayName': 'Display Name',
+  '_myAccountView.DisplayNameHelp': '(Optional name or nickname to display instead of the username)',
   '_myAccountView.ChangePassword': 'Change My Password',
   '_myAccountView.OldPassword': 'Old Password',
   '_myAccountView.NewPassword': 'New Password',
   '_myAccountView.ConfirmPassword': 'Confirm New Password',
   '_myAccountView.ChangePasswordSuccess': 'Password changed',
-  '_myAccountView.SaveProfileSuccess': 'Profile saved',
+
+  '_configureView.Title': 'Configure',
+  '_configureView.Repositories': 'Repositories',
+  '_configureView.Users': 'Users',
+  '_configureView.NewRepository': 'New Repository',
+  '_configureView.NewUser': 'New User',
+  '_configureUserListView.Title': 'Users',
+  '_configureUserListView.Create': 'Create a New User',
+  '_configureUserDetailView.EditTitle': 'User: %@',
+  '_configureUserDetailView.CreateTitle': 'New User',
+  '_configureUserDetailView.Username': 'Username',
+  '_configureUserDetailView.EmailAddress': 'Email Address',
+  '_configureUserDetailView.DisplayName': 'Display Name',
+  '_configureUserDetailView.DisplayNameHelp': '(Optional name or nickname to display instead of the username)',
+  '_configureUserDetailView.CurrentStatus': 'Status',
+  '_configureUserDetailView.Password': 'Password',
+  '_configureUserDetailView.ConfirmPassword': 'Confirm Password',
+  '_configureUserDetailView.ConfirmDelete': 'Delete user "%@"?',
+  '_configureRepositoryInfoListView.Title': 'Repositories',
+  '_configureRepositoryInfoListView.Create': 'Create a New Repository',
+  '_configureRepositoryInfoDetailView.Title': 'Repository',
+  '_configureRepositoryInfoDetailView.Name': 'Name',
+  '_configureRepositoryInfoDetailView.DisplayName': 'Display Name',
+  '_configureRepositoryInfoDetailView.Description': 'Description',
+
+  // ********************************************************
+  // Data controllers
+  // ********************************************************
 
   '_sessionDataController.UsernameRequiredError': 'Username is required',
   '_sessionDataController.PasswordRequiredError': 'Password is required',
@@ -67,29 +101,7 @@ SC.stringsFor('English', {
   '_userDataController.EmailAddressRequiredError': 'Email Address is required',
 
   '_repositoryInfoDataController.NameRequiredError': 'Name is requried',
-  
-  '_configureView.Title': 'Configure',
-  '_configureView.Repositories': 'Repositories',
-  '_configureView.Users': 'Users',
-  '_configureView.NewRepository': 'New Repository',
-  '_configureView.NewUser': 'New User',
-  '_configureUserListView.Title': 'Users',
-  '_configureUserListView.Create': 'Create a New User',
-  '_configureUserDetailView.EditTitle': 'User: %@',
-  '_configureUserDetailView.CreateTitle': 'New User',
-  '_configureUserDetailView.Username': 'Username',
-  '_configureUserDetailView.EmailAddress': 'Email Address',
-  '_configureUserDetailView.DisplayName': 'Display Name',
-  '_configureUserDetailView.CurrentStatus': 'Status',
-  '_configureUserDetailView.Password': 'Password',
-  '_configureUserDetailView.ConfirmPassword': 'Confirm Password',
-  '_configureUserDetailView.ConfirmDelete': 'Delete user "%@"?',
-  '_configureRepositoryInfoListView.Title': 'Repositories',
-  '_configureRepositoryInfoListView.Create': 'Create a New Repository',
-  '_configureRepositoryInfoDetailView.Title': 'Repository',
-  '_configureRepositoryInfoDetailView.Name': 'Name',
-  '_configureRepositoryInfoDetailView.DisplayName': 'Display Name',
-  '_configureRepositoryInfoDetailView.Description': 'Description',
 
+  
   'end': 'end'
 });

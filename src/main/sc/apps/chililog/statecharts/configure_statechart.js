@@ -85,7 +85,6 @@ Chililog.ConfigureState = SC.State.extend({
      * Discard changes and reload our data to the
      */
     discardChanges: function() {
-      var record = Chililog.configureUserDetailViewController.get('content');
       this.gotoState('viewingUsers');
     }
   }),
@@ -136,8 +135,9 @@ Chililog.ConfigureState = SC.State.extend({
      * Discard changes and reload our data to the
      */
     discardChanges: function() {
-      var record = Chililog.configureUserDetailViewController.get('content');
-      this.gotoState('editingUser', {documentID: record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)});
+      this.gotoState('viewingUsers');
+      //var record = Chililog.configureUserDetailViewController.get('content');
+      //this.gotoState('editingUser', {documentID: record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)});
     }
   }),
 

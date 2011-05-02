@@ -169,6 +169,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
     layout: { top: 40, left: 10, width: 80 },
     title: '_back',
     localize: YES,
+    isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
     target: Chililog.configureUserListViewController,
     action: 'show'
   }),
@@ -177,7 +178,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
     layout: {top: 40, left: 100, width: 80 },
     title: '_delete',
     localize: YES,
-    isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
+    isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
     target: Chililog.configureUserDetailViewController,
     action: 'confirmErase'
   }),
@@ -237,7 +238,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         help: SC.LabelView.design({
           classNames: ['help'],
           layout: { top: 35, left: 10, width: 170, height: 50 },
-          value: '(Optional name or nickname to display instead of the username)',
+          value: '_configureUserDetailView.DisplayNameHelp',
           localize: YES
         }),
 

@@ -31,8 +31,6 @@ Chililog.statechart = SC.Statechart.create({
       },
 
       exitState: function() {
-        var ctrl = Chililog.loginViewController;
-        ctrl.hideLoginPage();
       },
 
       login: function() {
@@ -104,6 +102,7 @@ Chililog.statechart = SC.Statechart.create({
       initialSubstate: 'search',
 
       enterState: function() {
+        Chililog.loginViewController.hideLoginPage();
         Chililog.mainViewController.buildMenuOptions();
         Chililog.mainViewController.showMainPage();
       },
