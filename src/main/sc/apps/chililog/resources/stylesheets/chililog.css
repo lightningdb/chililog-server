@@ -107,6 +107,10 @@
 /*******************************************
  * Data item is a label-field combo.
  *******************************************/
+.sc-view.data-group {
+  border-bottom: 1px solid #999;
+}
+
 .sc-view.data-item {
   border-bottom: 1px solid #999;
 }

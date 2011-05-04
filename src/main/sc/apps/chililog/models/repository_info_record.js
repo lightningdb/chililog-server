@@ -37,6 +37,16 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   repository: SC.Record.toOne('Chililog.RepositoryRecord'),
 
+  currentStatus: function() {
+    var s = this.getPath('repository.currentStatus')
+    if (s === 'ONLINE') {
+      s = '_configureRepositoryInfoDetailView.Status.Online'.loc();
+    } else if (s === 'OFFLINE') {
+      s = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
+    }
+    return s;
+  }.property('repository'),
+
   /**
    * Maps server api data into this record
    *

@@ -47,4 +47,7 @@ Chililog.isRunningTests = function() {
     Chililog._isRunningTests = window.location.hash.toString().match('test');
   }
   return Chililog._isRunningTests;
-}
+};
+
+
+

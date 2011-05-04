@@ -5,6 +5,7 @@
 
 sc_require('views/image_view');
 sc_require('views/radio_view');
+sc_require('views/validators');
 
 /**********************************************************************************************************************
  * Main
@@ -207,7 +208,8 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         field: SC.TextFieldView.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.username',
-          maxLength: 100
+          maxLength: 100,
+          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[A-Za-z0-9_\-\.'@]/ })
         })
       }),
 
@@ -225,7 +227,8 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         field: SC.TextFieldView.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.emailAddress',
-          maxLength: 200
+          maxLength: 200,
+          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[A-Za-z0-9_\-\.'@]/ })
         })
       }),
 
@@ -268,9 +271,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         field: Chililog.RadioView.design({
           layout: { top: 15, left: 210, width: 500, height: 80 },
           items: [
-            { title: 'Enabled. <span class="help">User can login.</span>', value: 'Enabled'},
-            { title: 'Disabled. <span class="help">User cannot login.</span>', value: 'Disabled'},
-            { title: 'Locked. <span class="help">User failed to login too many times. Password must be reset.</span>', value: 'Locked'}
+            { title: '_configureUserDetailView.CurrentStatus.Enabled'.loc(), value: 'Enabled'},
+            { title: '_configureUserDetailView.CurrentStatus.Disabled'.loc(), value: 'Disabled'},
+            { title: '_configureUserDetailView.CurrentStatus.Locked'.loc(), value: 'Locked'}
           ],
           itemTitleKey: 'title',
           itemValueKey: 'value',
@@ -419,8 +422,8 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
       }),
       SC.TableColumn.create({
         key:   'currentStatus',
-        title: '_configureRepositoryInfoDetailView.Status'.loc(),
-        width: 100,
+        title: '_configureRepositoryInfoDetailView.CurrentStatus'.loc(),
+        width: 120,
         isReorderable: NO
       }),
       SC.TableColumn.create({
@@ -479,8 +482,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
     layout: { top: 80, left: 10, bottom: 10, right: 10 },
     classNames: ['box'],
     contentView: SC.View.design({
-      layout: { top: 0, left: 0, right: 0, height: 2000 },
-      childViews: 'name displayName description writeQueueAttributes readQueueAttributes buttons'.w(),
+      layout: { top: 0, left: 0, right: 0, height: 1300 },
+      childViews: 'name displayName description currentStatus startupStatus writeQueueAttributes readQueueAttributes buttons'.w(),
 
       name: SC.View.design({
         layout: {top: 0, left: 0, right: 0, height: 50 },
@@ -496,20 +499,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         field: SC.TextFieldView.design({
           layout: { top: 10, left: 210, width: 200, height: 30 },
           valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.name',
-          maxLength: 100,
-          /**
-           * Only allow a-z, 0-9, _ and non printable characters
-           * @param evt
-           */
-          keyDown: function(evt) {
-            var charCode = evt.charCode;
-            if ((charCode ===0) || (charCode >= 97 && charCode <= 122) || (charCode >= 48 && charCode <= 57) || (charCode === 95)) {
-              return sc_super();
-            } else {
-              evt.preventDefault();
-              return YES;
-            }
-          }
+          maxLength: 50,
+          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[a-z0-9_]/  }) //Only allow a-z, 0-9, _
         }),
 
         help: SC.LabelView.design({
@@ -519,7 +510,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           localize: YES
         })
       }),
-      
+
       displayName: SC.View.design({
         layout: {top: 50, left: 0, right: 0, height: 49 },
         classNames: ['data-item'],
@@ -556,8 +547,50 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         })
       }),
 
+      currentStatus: SC.View.design({
+        layout: {top: 200, left: 0, right: 0, height: 49 },
+        classNames: ['data-item'],
+        childViews: 'label label2'.w(),
+
+        label: SC.LabelView.design({
+          layout: { top: 15, left: 10, width: 200, height: 30 },
+          value: '_configureRepositoryInfoDetailView.CurrentStatus',
+          localize: YES
+        }),
+
+        label2: SC.LabelView.design({
+          layout: { top: 10, left: 210, width: 300, height: 30 },
+          classNames: ['readonly'],
+          valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.currentStatus'
+        })
+      }),
+
+      startupStatus: SC.View.design({
+        layout: {top: 250, left: 0, right: 0, height: 69 },
+        classNames: ['data-item'],
+        childViews: 'label field'.w(),
+
+        label: SC.LabelView.design({
+          layout: { top: 15, left: 10, width: 200, height: 30 },
+          value: '_configureRepositoryInfoDetailView.StartupStatus',
+          localize: YES
+        }),
+
+        field: Chililog.RadioView.design({
+          layout: { top: 15, left: 210, width: 500, height: 80 },
+          items: [
+            { title: '_configureRepositoryInfoDetailView.StartupStatus.Online'.loc(), value: 'ONLINE' },
+            { title: '_configureRepositoryInfoDetailView.StartupStatus.Offline'.loc(), value: 'OFFLINE' }
+          ],
+          itemTitleKey: 'title',
+          itemValueKey: 'value',
+          valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.startupStatus'
+        })
+      }),
+
       writeQueueAttributes: SC.View.design({
-        layout: {top: 200, left: 0, right: 0, height: 619 },
+        layout: {top: 320, left: 0, right: 0, height: 609 },
+        classNames: ['data-group'],
         childViews: ('writeDivider writeQueueAddress writeQueueUsername writeQueuePassword writeQueueDurable ' +
           'maxKeywords writeQueueWorkerCount writeQueueMaxMemory writeQueueMaxMemoryPolicy writeQueuePageSize ' +
           'writeQueuePageCountCache').w(),
@@ -637,8 +670,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: Chililog.RadioView.design({
             layout: { top: 15, left: 210, width: 500, height: 80 },
             items: [
-              { title: 'Yes. <span class="help">Queued data saved to disk to prevent loss of data if server goes down.</span>', value: YES },
-              { title: 'No. <span class="help">Queued data not saved to disk to improve throughput.</span>', value: NO }
+              { title: '_configureRepositoryInfoDetailView.WriteQueueDurable.Yes'.loc(), value: YES },
+              { title: '_configureRepositoryInfoDetailView.WriteQueueDurable.No'.loc(), value: NO }
             ],
             itemTitleKey: 'title',
             itemValueKey: 'value',
@@ -661,19 +694,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxKeywords',
             maxLength: 3,
-            /**
-             * Only allow 0-9 and non printable characters like backspace,delete and tabs
-             * @param evt
-             */
-            keyDown: function(evt) {
-              var charCode = evt.charCode;
-              if ((charCode ===0) || (charCode >= 48 && charCode <= 57)) {
-                return sc_super();
-              } else {
-                evt.preventDefault();
-                return YES;
-              }
-            }
+            validator: Chililog.PositiveIntegerValidator.extend({})
           }),
 
           help: SC.LabelView.design({
@@ -699,19 +720,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueWorkerCount',
             maxLength: 2,
-            /**
-             * Only allow 0-9 and non printable characters like backspace,delete and tabs
-             * @param evt
-             */
-            keyDown: function(evt) {
-              var charCode = evt.charCode;
-              if ((charCode ===0) || (charCode >= 48 && charCode <= 57)) {
-                return sc_super();
-              } else {
-                evt.preventDefault();
-                return YES;
-              }
-            }
+            validator: Chililog.PositiveIntegerValidator.extend({})
           }),
 
           help: SC.LabelView.design({
@@ -719,7 +728,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCountHelp',
             localize: YES
-          })          
+          })
         }),
 
         writeQueueMaxMemory: SC.View.design({
@@ -737,19 +746,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueMaxMemory',
             maxLength: 10,
-            /**
-             * Only allow 0-9 and non printable characters like backspace,delete and tabs
-             * @param evt
-             */
-            keyDown: function(evt) {
-              var charCode = evt.charCode;
-              if ((charCode ===0) || (charCode >= 48 && charCode <= 57)) {
-                return sc_super();
-              } else {
-                evt.preventDefault();
-                return YES;
-              }
-            }
+            validator: Chililog.PositiveIntegerValidator.extend({})
           }),
 
           help: SC.LabelView.design({
@@ -774,9 +771,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: Chililog.RadioView.design({
             layout: { top: 15, left: 210, width: 600, height: 70 },
             items: [
-              { title: 'Page. <span class="help">When maximum memory is reached, new messages will be saved into page files.</span>', value: 'PAGE'},
-              { title: 'Drop. <span class="help">When maximum memory is reached, new messages will be dropped and not processed.</span>', value: 'DROP'},
-              { title: 'Block. <span class="help">When maximum memory is reached, force producers to wait before new messages can be sent.</span>', value: 'BLOCK'}
+              { title: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryPolicy.Page'.loc(), value: 'PAGE'},
+              { title: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryPolicy.Drop'.loc(), value: 'DROP'},
+              { title: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryPolicy.Block'.loc(), value: 'BLOCK'}
             ],
             itemTitleKey: 'title',
             itemValueKey: 'value',
@@ -798,19 +795,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageSize',
-            /**
-             * Only allow 0-9 and non printable characters like backspace,delete and tabs
-             * @param evt
-             */
-            keyDown: function(evt) {
-              var charCode = evt.charCode;
-              if ((charCode ===0) || (charCode >= 48 && charCode <= 57)) {
-                return sc_super();
-              } else {
-                evt.preventDefault();
-                return YES;
-              }
-            }
+            validator: Chililog.PositiveIntegerValidator.extend({})
           }),
 
           help: SC.LabelView.design({
@@ -835,19 +820,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageCountCache',
-            /**
-             * Only allow 0-9 and non printable characters like backspace,delete and tabs
-             * @param evt
-             */
-            keyDown: function(evt) {
-              var charCode = evt.charCode;
-              if ((charCode ===0) || (charCode >= 48 && charCode <= 57)) {
-                return sc_super();
-              } else {
-                evt.preventDefault();
-                return YES;
-              }
-            }
+            validator: Chililog.PositiveIntegerValidator.extend({})
           }),
 
           help: SC.LabelView.design({
@@ -857,11 +830,10 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             localize: YES
           })
         })
-
       }),
 
       readQueueAttributes: SC.View.design({
-        layout: {top: 810, left: 0, right: 0, height: 269 },
+        layout: {top: 930, left: 0, right: 0, height: 269 },
         childViews: 'readDivider readQueueAddress readQueueUsername readQueuePassword readQueueDurable'.w(),
 
         readDivider: SC.LabelView.design({
@@ -938,8 +910,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: Chililog.RadioView.design({
             layout: { top: 15, left: 210, width: 500, height: 80 },
             items: [
-              { title: 'Yes. <span class="help">Queued data saved to disk to prevent loss of data if server goes down.</span>', value: YES },
-              { title: 'No. <span class="help">Queued data not saved to disk to improve throughput.</span>', value: NO }
+              { title: '_configureRepositoryInfoDetailView.ReadQueueDurable.Yes'.loc(), value: YES },
+              { title: '_configureRepositoryInfoDetailView.ReadQueueDurable.No'.loc(), value: NO }
             ],
             itemTitleKey: 'title',
             itemValueKey: 'value',
@@ -949,7 +921,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
       }),
 
       buttons: SC.View.design({
-        layout: {top: 1080, left: 0, right: 0, height: 50 },
+        layout: {top: 1200, left: 0, right: 0, height: 50 },
         childViews: 'saveButton cancelButton savingImage successMessage'.w(),
 
         saveButton: SC.ButtonView.design({
@@ -986,8 +958,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           value: '_saveSuccess',
           localize: YES
         })
-      })      
-      
+      })
+
     })
   })
 
