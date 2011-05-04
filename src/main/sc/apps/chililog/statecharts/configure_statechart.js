@@ -8,7 +8,7 @@
  */
 Chililog.ConfigureState = SC.State.extend({
 
-  initialSubstate: 'viewingUsers',
+  initialSubstate: 'viewingRepositoryInfo',
 
   /**
    * Show my profile page in the body
@@ -262,11 +262,51 @@ Chililog.ConfigureState = SC.State.extend({
    * Blank repository details view for user to add
    */
   creatingRepositoryInfo: SC.State.design({
-    enterState: function() {
+    /**
+     * Load repository info record via the data controller and put it in the view controller
+     *
+     * @param {Hash} context Data hash with 'documentID' set to the document id f the user to edit. Alternatively,
+     *  set 'reedit' to YES, then data will be left as is.
+     *
+     */
+    enterState: function(context) {
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isReedit) {
+        var record = Chililog.repositoryInfoDataController.create();
+        Chililog.configureRepositoryInfoDetailViewController.set('content', record);
+        Chililog.configureRepositoryInfoDetailViewController.set('isSaving', NO);
+        Chililog.configureRepositoryInfoDetailViewController.show();
+      }
     },
 
-    exitState: function() {
-    }
+    /**
+     * Discard changes unless we are saving or re-editing
+     *
+     * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
+     */
+    exitState: function(context) {
+      var isSaving = !SC.none(context) && context['isSaving'];
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isSaving && !isReedit) {
+        var record = Chililog.configureRepositoryInfoDetailViewController.get('content');
+        Chililog.repositoryInfoDataController.discardChanges(record);
+      }
+    },
+
+    /**
+      * Save changes
+      */
+     save: function() {
+       this.gotoState('savingRepositoryInfo', {isSaving: YES});
+     },
+
+     /**
+      * Discard changes and reload our data to the
+      */
+     discardChanges: function() {
+       this.gotoState('viewingRepositoryInfo');
+     }
+    
   }),
 
   /**
@@ -274,27 +314,48 @@ Chililog.ConfigureState = SC.State.extend({
    */
   editingRepositoryInfo: SC.State.design({
     /**
-     * Load repository record via the data controller and put it in the view controller
+     * Load repository info record via the data controller and put it in the view controller
      *
-     * @param {Hash} context Data hash with 'documentID' set to the document id f the repository to edit
+     * @param {Hash} context Data hash with 'documentID' set to the document id f the user to edit. Alternatively,
+     *  set 'reedit' to YES, then data will be left as is.
+     *
      */
     enterState: function(context) {
-      var record = Chililog.repositoryInfoDataController.edit(context.documentID);
-      Chililog.configureRepositoryInfoViewController.set('content', record);
-      Chililog.configureRepositoryInfoViewController.show();
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isReedit) {
+        var record = Chililog.repositoryInfoDataController.edit(context['documentID']);
+        Chililog.configureRepositoryInfoDetailViewController.set('content', record);
+        Chililog.configureRepositoryInfoDetailViewController.set('isSaving', NO);
+        Chililog.configureRepositoryInfoDetailViewController.show();
+      }
     },
 
     /**
-     * Discard changes unless we are saving
+     * Discard changes unless we are saving or re-editing
      *
      * @param {Hash} context Data hash with 'isSaving' flag to indicate if we are moving to the save
      */
     exitState: function(context) {
       var isSaving = !SC.none(context) && context['isSaving'];
-      if (!isSaving) {
-        var record = Chililog.configureRepositoryInfoViewController.get('content');
+      var isReedit = !SC.none(context) && context['isReedit'];
+      if (!isSaving && !isReedit) {
+        var record = Chililog.configureRepositoryInfoDetailViewController.get('content');
         Chililog.repositoryInfoDataController.discardChanges(record);
       }
+    },
+
+    /**
+     * Save changes
+     */
+    save: function() {
+      this.gotoState('savingRepositoryInfo', {isSaving: YES});
+    },
+
+    /**
+     * Discard changes and reload our data to the
+     */
+    discardChanges: function() {
+      this.gotoState('viewingRepositoryInfo');
     }
   }),
 
@@ -303,22 +364,100 @@ Chililog.ConfigureState = SC.State.extend({
    */
   savingRepositoryInfo: SC.State.design({
     enterState: function() {
+      Chililog.configureRepositoryInfoDetailViewController.set('isSaving', YES);
+      this.save();
     },
 
     exitState: function() {
+      Chililog.configureRepositoryInfoDetailViewController.set('isSaving', NO);
+    },
+
+    /**
+     * Saves the repository's details
+     */
+    save: function() {
+      var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+      try {
+        Chililog.repositoryInfoDataController.save(ctrl.get('content'), this, this.endSave);
+      }
+      catch (error) {
+        SC.Logger.error('savingRepositoryInfo.save: ' + error);
+        ctrl.showSaveError(error);
+        var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
+        this.gotoState(stateToGoTo, {isReedit: YES});
+      }
+    },
+
+    /**
+     * Callback from save() after we get a response from the server to process the returned info.
+     *
+     * @param {String} document id of the saved record. Null if error.
+     * @param {SC.Error} error Error object or null if no error.
+     */
+    endSave: function(documentID, error) {
+      var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+      if (SC.none(error)) {
+        // Show saved record
+        ctrl.showSaveSuccess();
+        this.gotoState('editingRepositoryInfo', {documentID: documentID});
+      } else {
+        // Show error
+        ctrl.showSaveError(error);
+        var stateToGoTo = ctrl.get('isCreating') ? 'creatingRepositoryInfo' : 'editingRepositoryInfo';
+        this.gotoState(stateToGoTo, {isReedit: YES});
+      }
     }
   }),
 
+  /**
+   * Asynchronous call triggered to delete the repository
+   */
+  erasingUser: SC.State.design({
+    enterState: function(context) {
+      Chililog.configureRepositoryInfoDetailViewController.set('isErasing', YES);
+      this.erase(context);
+    },
+
+    exitState: function() {
+      Chililog.configureRepositoryInfoDetailViewController.set('isErasing', NO);
+    },
+
+    /**
+     * Delete the repository
+     */
+    erase: function(context) {
+      var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+      try {
+        Chililog.repositoryInfoDataController.erase(context['documentID'], this, this.endErase);
+      }
+      catch (error) {
+        SC.Logger.error('erasingRepositoryInfo.erase: ' + error);
+        ctrl.showSaveError(error);
+        this.gotoState('editingRepositoryInfo', {documentID: context['documentID']});
+      }
+    },
+
+    /**
+     * Callback from save() after we get a response from the server to process the returned info.
+     *
+     * @param {String} document id of the saved record. Null if error.
+     * @param {SC.Error} error Error object or null if no error.
+     */
+    endErase: function(documentID, error) {
+      var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+      if (SC.none(error)) {
+        this.gotoState('viewingRepositoryInfo');
+      } else {
+        // Show error
+        ctrl.showSaveError(error);
+        this.gotoState('editingRepositoryInfo', {documentID: documentID});
+      }
+    }
+  }),
+  
 /*********************************************************************************************************************
  * Events
  ********************************************************************************************************************/
-  /**
-   * Event to view repositories
-   */
-  viewRepositoryInfo: function() {
-    this.gotoState('viewingRepositoryInfo');
-  },
-
   /**
    * Event to view users
    */
@@ -352,12 +491,36 @@ Chililog.ConfigureState = SC.State.extend({
   },
 
   /**
+   * Event to view repositories
+   */
+  viewRepositoryInfo: function() {
+    this.gotoState('viewingRepositoryInfo');
+  },
+
+  /**
+   * Event to create repositories
+   */
+  createRepositoryInfo: function() {
+    this.gotoState('creatingRepositoryInfo');
+  },
+
+  /**
    * Event to start editing repository info
    *
    * @param {String} documentID unique id for the user record
    */
   editRepositoryInfo: function(documentID) {
     this.gotoState('editingRepositoryInfo', {documentID: documentID});
+  },
+
+  /**
+   * Event to start delete repository info
+   *
+   * @param {String} documentID unique id for the user record
+   */
+  eraseRepositoryInfo: function(documentID) {
+    this.gotoState('erasingRepositoryInfo', {documentID: documentID});
   }
+
 
 });

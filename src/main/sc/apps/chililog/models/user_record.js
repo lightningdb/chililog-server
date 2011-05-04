@@ -61,38 +61,7 @@ Chililog.UserRecord = SC.Record.extend(
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
     }
     return apiObject;
-  },
-
-  /**
-   * Item display name in a tree view.  Just show the username
-   */
-  treeItemLabel: function() {
-    return this.get('username');
-  }.property('username').cacheable(),
-
-  /**
-   * Green dot if online, Red if not
-   */
-  treeItemIcon: function() {
-    var currentStatus = this.getPath('currentStatus');
-    if (!SC.empty(currentStatus) && currentStatus === 'Enabled') {
-      return sc_static('images/bullet_green.png');
-    } else {
-      return sc_static('images/bullet_red.png');
-    }
-  }.property('currentStatus').cacheable(),
-
-  /**
-   * Because there are no child items, there is no need to expand in a tree view
-   */
-  treeItemIsExpanded: NO,
-
-  /**
-   * There are no child items for display in a tree view under users
-   */
-  treeItemChildren: function(){
-     return null;
-  }.property().cacheable()
+  }
    
 });
 

@@ -121,6 +121,15 @@
   line-height: 16px;
 }
 
+.sc-view.data-item .label {
+  font-weight: bold;
+}
+
+.sc-view.data-item .label.readonly {
+  font-weight: normal;
+  line-height: 29px;
+}
+
 .sc-view.data-item .radio .sc-button-label {
   font-size: 14px;
   font-weight: bold;
@@ -133,6 +142,16 @@
   font-weight: normal;
   line-height: 16px;
 }
+
+.sc-view.data-divider {
+  background-color: #eee;
+  border-bottom: 1px solid #999;
+  font-weight: bold;
+  line-height: 49px;
+  vertical-align: middle;
+  padding-left: 10px;
+}
+
 
 /*******************************************
  * Success message when records saved

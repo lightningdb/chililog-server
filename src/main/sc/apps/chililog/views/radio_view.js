@@ -22,6 +22,23 @@ Chililog.RadioView = SC.RadioView.extend(
   },
 
   /**
+   * Handle tabs to go to next/previous fields
+   * @param evt
+   */
+  keyDown: function(evt) {
+    var which = evt.which, keyCode = evt.keyCode;
+    if ((which === SC.Event.KEY_TAB || keyCode === SC.Event.KEY_TAB)) {
+      var view = evt.shiftKey ? this.get('previousValidKeyView') : this.get('nextValidKeyView');
+      if (view) {
+        view.becomeFirstResponder();
+      } else {
+        evt.allowDefault();
+      }
+      return YES ; // handled
+    }
+  },
+  
+  /**
    * Allow up/down arrow to change selection
    * @param evt
    */

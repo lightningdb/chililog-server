@@ -34,8 +34,8 @@ Chililog.RepositoryRecord = SC.Record.extend(
       return;
     }
 
-    for (var i = 0; i < Chililog.REPOSITORY_INFO_RECORD_MAP.length; i++) {
-      var map = Chililog.REPOSITORY_INFO_RECORD_MAP[i];
+    for (var i = 0; i < Chililog.REPOSITORY_RECORD_MAP.length; i++) {
+      var map = Chililog.REPOSITORY_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       this.set(recordPropertyName, repoInfoAO[apiObjectPropertyName]);
@@ -49,40 +49,21 @@ Chililog.RepositoryRecord = SC.Record.extend(
    */
   toApiObject: function() {
     var apiObject = new Object();
-    for (var i = 0; i < Chililog.REPOSITORY_INFO_RECORD_MAP.length; i++) {
-      var map = Chililog.REPOSITORY_INFO_RECORD_MAP[i];
+    for (var i = 0; i < Chililog.REPOSITORY_RECORD_MAP.length; i++) {
+      var map = Chililog.REPOSITORY_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
     }
     return apiObject;
-  },
-
-  /**
-   * Item display name in a tree view.  Just show the username
-   */
-  treeItemLabel: function() {
-    return this.get('name');
-  }.property('name').cacheable(),
-
-  /**
-   * Because there are no child items, there is no need to expand in a tree view
-   */
-  treeItemIsExpanded: NO,
-
-  /**
-   * There are no child items for display in a tree view under users
-   */
-  treeItemChildren: function(){
-     return null;
-  }.property().cacheable()
+  }
    
 });
 
 /**
  * Maps Chililog.UserRecord property names to property names used by the server API objects
  */
-Chililog.REPOSITORY_INFO_RECORD_MAP = [
+Chililog.REPOSITORY_RECORD_MAP = [
   [Chililog.DOCUMENT_ID_RECORD_FIELD_NAME, Chililog.DOCUMENT_ID_AO_FIELD_NAME ],
   [Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME, Chililog.DOCUMENT_VERSION_AO_FIELD_NAME],
   ['name' ,'Name'],
