@@ -138,8 +138,13 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
    */
   create: function(documentID) {
     var nestedStore = Chililog.store.chain();
-    var record = nestedStore.create(Chililog.RepositoryInfoRecord, {});
+    var record = nestedStore.createRecord(Chililog.RepositoryInfoRecord, {});
     record.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
+    record.set('maxKeywords', 20);
+    record.set('writeQueueWorkerCount',  1);
+    record.set('writeQueueMaxMemory',  10485760); //10MB
+    record.set('writeQueuePageSize',  10485760);  //10MB
+    record.set('writeQueuePageCountCache', 3);
     return record;
   },
 
@@ -248,13 +253,13 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
-  'delete': function(documentID, callbackTarget, callbackFunction) {
+  erase: function(documentID, callbackTarget, callbackFunction) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var url = '/api/repository_info/' + documentID;
     var request = SC.Request.deleteUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
-    request.notify(this, 'endDelete', params).send(data);
+    request.notify(this, 'endErase', params).send({dummy: 'data'});
 
     return;
   },
@@ -267,7 +272,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
    * @param {Hash} params Hash of parameters passed into SC.Request.notify()
    * @returns {Boolean} YES if successful
    */
-  endDelete: function(response, params) {
+  endErase: function(response, params) {
     var error = null;
     try {
       // Check status
@@ -280,7 +285,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoDataController.endDeleteRecord: ' + err);
+      SC.Logger.error('repositoryInfoDataController.endErase: ' + err);
     }
 
     // Callback

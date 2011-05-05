@@ -17,19 +17,19 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   documentID: SC.Record.attr(String),
   documentVersion: SC.Record.attr(Number),
-  name: SC.Record.attr(String),
+  name: SC.Record.attr(String, { defaultValue: '', isRequired: YES }),
   displayName: SC.Record.attr(String),
   description: SC.Record.attr(String),
-  startupStatus: SC.Record.attr(String),
+  startupStatus: SC.Record.attr(String, { defaultValue: 'ONLINE', isRequired: YES }),
 
-  readQueueDurable: SC.Record.attr(Boolean),
-  readQueuePassword: SC.Record.attr(String),
+  readQueueDurable: SC.Record.attr(Boolean, { defaultValue: NO }),
+  readQueuePassword: SC.Record.attr(String, { defaultValue: '' }),
 
-  writeQueueDurable: SC.Record.attr(Boolean),
+  writeQueueDurable: SC.Record.attr(Boolean, { defaultValue: NO }),
   writeQueuePassword: SC.Record.attr(String),
   writeQueueWorkerCount: SC.Record.attr(Number),
   writeQueueMaxMemory: SC.Record.attr(Number),
-  writeQueueMaxMemoryPolicy: SC.Record.attr(String),
+  writeQueueMaxMemoryPolicy: SC.Record.attr(String, { defaultValue: 'DROP' }),
   writeQueuePageSize: SC.Record.attr(Number),
   writeQueuePageCountCache: SC.Record.attr(Number),
 
@@ -39,7 +39,11 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   currentStatus: function() {
     var s = this.getPath('repository.currentStatus')
-    if (s === 'ONLINE') {
+    if (SC.empty(s)) {
+      // Assume offline
+      s = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
+    }
+    else if (s === 'ONLINE') {
       s = '_configureRepositoryInfoDetailView.Status.Online'.loc();
     } else if (s === 'OFFLINE') {
       s = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
@@ -108,5 +112,5 @@ Chililog.REPOSITORY_INFO_RECORD_MAP = [
   ['writeQueuePageSize' ,'WriteQueuePageSize'],
   ['writeQueuePageCountCache' ,'WriteQueuePageCountCache'],
   ['maxKeywords' ,'MaxKeywords']
-  
+
 ];

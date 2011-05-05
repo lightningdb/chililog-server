@@ -474,7 +474,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
     title: '_delete',
     localize: YES,
     isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureRepositoryInfoListViewController,
+    target: Chililog.configureRepositoryInfoDetailViewController,
     action: 'confirmErase'
   }),
 
@@ -504,7 +504,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         }),
 
         help: SC.LabelView.design({
-          layout: { top: 17, left: 420, width: 400, height: 30 },
+          layout: { top: 17, left: 420, right: 10, height: 30 },
           classNames: ['help'],
           value: '_configureRepositoryInfoDetailView.NameHelp',
           localize: YES
@@ -614,7 +614,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           }),
 
           label2: SC.LabelView.design({
-            layout: { top: 10, left: 210, width: 300, height: 30 },
+            layout: { top: 10, left: 210, right: 10, height: 30 },
             classNames: ['readonly'],
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueAddress'
           })
@@ -632,7 +632,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           }),
 
           label2: SC.LabelView.design({
-            layout: { top: 10, left: 210, width: 300, height: 30 },
+            layout: { top: 10, left: 210, right: 10, height: 30 },
             classNames: ['readonly'],
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.name'
           })
@@ -694,11 +694,11 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxKeywords',
             maxLength: 3,
-            validator: Chililog.PositiveIntegerValidator.extend({})
+            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
           }),
 
           help: SC.LabelView.design({
-            layout: { top: 17, left: 270, width: 500, height: 30 },
+            layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.MaxKeywordsHelp',
             localize: YES
@@ -720,11 +720,11 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueWorkerCount',
             maxLength: 2,
-            validator: Chililog.PositiveIntegerValidator.extend({})
+            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
           }),
 
           help: SC.LabelView.design({
-            layout: { top: 17, left: 270, width: 500, height: 30 },
+            layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCountHelp',
             localize: YES
@@ -746,11 +746,11 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueMaxMemory',
             maxLength: 10,
-            validator: Chililog.PositiveIntegerValidator.extend({})
+            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
           }),
 
           help: SC.LabelView.design({
-            layout: { top: 17, left: 320, width: 500, height: 30 },
+            layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryHelp',
             localize: YES
@@ -795,11 +795,11 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageSize',
-            validator: Chililog.PositiveIntegerValidator.extend({})
+            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
           }),
 
           help: SC.LabelView.design({
-            layout: { top: 17, left: 320, width: 500, height: 30 },
+            layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.WriteQueuePageSizeHelp',
             localize: YES
@@ -820,11 +820,11 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageCountCache',
-            validator: Chililog.PositiveIntegerValidator.extend({})
+            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
           }),
 
           help: SC.LabelView.design({
-            layout: { top: 17, left: 270, width: 500, height: 30 },
+            layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
             value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCacheHelp',
             localize: YES

@@ -21,6 +21,7 @@ SC.stringsFor('English', {
   '_back': '\< Back',
   '_moreActions': 'More Actions',
   '_saveSuccess': 'Changes successfully saved',
+  '_thousandSeparator': ',',
   '_testError': 'Test Error param1=%@, param2=%@, param3=%@',
 
   // ********************************************************
@@ -120,6 +121,7 @@ SC.stringsFor('English', {
   '_configureRepositoryInfoDetailView.ReadQueueDurable.No' : 'No. <span class="help">Queued data not saved to disk to improve throughput.</span>',
   '_configureRepositoryInfoDetailView.Status.Online': 'Online',
   '_configureRepositoryInfoDetailView.Status.Offline': 'Offline',
+  '_configureRepositoryInfoDetailView.ConfirmDelete': 'Delete repository "%@"?',
 
 
   // ********************************************************

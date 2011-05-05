@@ -391,7 +391,7 @@ Chililog.ConfigureState = SC.State.extend({
     /**
      * Callback from save() after we get a response from the server to process the returned info.
      *
-     * @param {String} document id of the saved record. Null if error.
+     * @param {String} documentID of the saved record. Null if error.
      * @param {SC.Error} error Error object or null if no error.
      */
     endSave: function(documentID, error) {
@@ -412,7 +412,7 @@ Chililog.ConfigureState = SC.State.extend({
   /**
    * Asynchronous call triggered to delete the repository
    */
-  erasingUser: SC.State.design({
+  erasingRepositoryInfo: SC.State.design({
     enterState: function(context) {
       Chililog.configureRepositoryInfoDetailViewController.set('isErasing', YES);
       this.erase(context);

@@ -105,8 +105,12 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    */
   show: function() {
     Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserDetailView');
-    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
+
+    // Set scroller to top of page
+    Chililog.configureUserDetailView.setPath('body.verticalScrollOffset', 0);
+
     // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
+    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
     this.invokeLater(function() {
       field.becomeFirstResponder();
     }, 400);
@@ -323,12 +327,16 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   }.property('content').cacheable(),
 
   /**
-   * Show the user details form
+   * Show the details form
    */
   show: function() {
     Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoDetailView');
-    var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
+
+    // Set scroller to top of page
+    Chililog.configureRepositoryInfoDetailView.setPath('body.verticalScrollOffset', 0);
+    
     // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
+    var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
     this.invokeLater(function() {
       field.becomeFirstResponder();
     }, 400);
@@ -382,7 +390,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Trigger event to delete the user. This is called back from confirmErase
    */
   erase: function() {
-    var record = Chililog.configureRepositoryInfoDetailView.get('content');
+    var record = Chililog.configureRepositoryInfoDetailViewController.get('content');
     Chililog.statechart.sendEvent('eraseRepositoryInfo', record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME));
   },
 

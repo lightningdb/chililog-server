@@ -129,7 +129,7 @@ var chililogRepoInfo = {
 	write_queue_max_memory_policy: "DROP",
 	write_queue_page_size: new NumberLong(1),
 	write_queue_page_count_cache: new NumberLong(1),
-	max_keywords: new NumberLong(-1),
+	max_keywords: new NumberLong(50),
 	c_ver: new NumberLong(1)
 };
 db.repositories_info.insert(chililogRepoInfo);
@@ -150,7 +150,7 @@ var sandpitRepoInfo = {
 	write_queue_max_memory_policy: "PAGE",
 	write_queue_page_size: new NumberLong(1024 * 1024 * 10),	// 10 MB
 	write_queue_page_count_cache: new NumberLong(3),
-	max_keywords: new NumberLong(20),
+	max_keywords: new NumberLong(50),
 	c_ver: new NumberLong(1)
 };
 db.repositories_info.insert(sandpitRepoInfo);

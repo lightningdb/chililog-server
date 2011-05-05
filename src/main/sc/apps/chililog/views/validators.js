@@ -20,6 +20,15 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
   defaultValue: null,
 
   /**
+   * Format number of thousand separators for display
+   *
+   * @property
+   * @type Boolean
+   * @default NO
+   */
+  formatNumber: NO,
+
+  /**
    * Converts Number to string for display
    * 
    * @param {Number} object The object to transform
@@ -28,16 +37,41 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
    * @returns {Number} a string suitable for display
    */
   fieldValueForObject: function(object, form, field) {
+    var ret = '';
     switch (SC.typeOf(object)) {
       case SC.T_NUMBER:
-        object = object.toFixed(0);
+        ret = object.toFixed(0);
         break;
       case SC.T_NULL:
       case SC.T_UNDEFINED:
-        object = this.get('defaultValue');
+        ret = this.get('defaultValue');
+        if (SC.none(ret)) {
+          ret = '';
+        }
         break;
     }
-    return object;
+
+    if (this.get('formatNumber')) {
+      ret = this.addThousandSeparator(ret);
+    }
+
+    return ret;
+  },
+
+  /**
+   * Adds thousands separator to the number
+   * @param nStr
+   */
+  addThousandSeparator: function (nStr) {
+    nStr += '';
+    var x = nStr.split('.');
+    var x1 = x[0];
+    var x2 = x.length > 1 ? '.' + x[1] : '';
+    var rgx = Chililog.positiveIntegerValidatorConfig.thousandGroupingRegExp;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, '$1' + Chililog.positiveIntegerValidatorConfig.thousandSeparator + '$2');
+    }
+    return x1 + x2;
   },
 
   /**
@@ -49,25 +83,28 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
    * @returns {Number} A number suitable for consumption by the app.
    */
   objectForFieldValue: function(value, form, field) {
+    var ret;
+
     // strip out commas
-    value = value.replace(/,/g, '');
+    value = value.replace(Chililog.positiveIntegerValidatorConfig.thousandSeparatorRegExp, '');
+
     switch (SC.typeOf(value)) {
       case SC.T_STRING:
         if (value.length === 0) {
-          value = this.get('defaultValue');
+          ret = this.get('defaultValue');
         } else {
-          value = parseInt(value, 0);
+          ret = parseInt(value, 0);
         }
         break;
       case SC.T_NULL:
       case SC.T_UNDEFINED:
-        value = this.get('defaultValue');
+        ret = this.get('defaultValue');
         break;
     }
     if (isNaN(value)) {
-      return this.get('defaultValue');
+      ret = this.get('defaultValue');
     }
-    return value;
+    return ret;
   },
 
   /**
@@ -95,22 +132,30 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
   },
 
   /**
-   * Allow only numbers
+   Allow only numbers
    */
   validateKeyDown: function(form, field, charStr) {
     if (charStr.length === 0) {
       return true;
     }
-    var result = charStr.match(Chililog.positiveIntegerValidatorRegExp);
+    var result = charStr.match(Chililog.positiveIntegerValidatorConfig.keyDownRegExp);
     return !SC.none(result);
   }
 });
 
 /**
- * Singleton regular expression to improve performance so we don't have to parse it everytime
+ * Singleton cache of regular expression and other settings
  */
-Chililog.positiveIntegerValidatorRegExp = /^[0-9\0]$/;
+Chililog.positiveIntegerValidatorConfig = {
 
+  keyDownRegExp: /^[0-9\0]$/,
+
+  thousandSeparator: '_thousandSeparator'.loc(),
+
+  thousandSeparatorRegExp: new RegExp('_thousandSeparator'.loc(), 'g'),
+
+  thousandGroupingRegExp: /(\d+)(\d{3})/
+};
 
 /**
  * Handles parsing and validating of user specified regular expressions.
@@ -130,23 +175,13 @@ Chililog.RegExpValidator = SC.Validator.extend(
   defaultValue: null,
 
   /**
-   * Regular expression pattern to use for checking the entire field. Set to null for not checking.
+   * Regular expression pattern to use for checking
    *
    * @property
    * @type RegExp
    * @default null
    */
-  fieldRegExp: null,
-
-  /**
-   * Regular expression pattern to use for checking a keydown event. i.e. regexp for the valid letters or digits.
-   * Set to null for no checking.
-   *
-   * @property
-   * @type RegExp
-   * @default null
-   */
-  keyDownRegExp: null,
+  regexp: null,
 
   /**
    * No conversion required because field and object are assumed to be of type string
@@ -181,17 +216,7 @@ Chililog.RegExpValidator = SC.Validator.extend(
    */
   validate: function(form, field) {
     var value = field.get('fieldValue');
-    if (SC.empty(value)) {
-      return true;
-    }
-    
-    var regexp = this.get('fieldRegExp');
-    if (SC.none(regexp)) {
-      return true;
-    }
-
-    var result = value.match(regexp);
-    return !SC.none(result);
+    return (value === '') || !isNaN(value);
   },
 
   /**
@@ -207,14 +232,14 @@ Chililog.RegExpValidator = SC.Validator.extend(
   },
 
   /**
-   * Allow only regular expression keys
+   * Allow only regular
    */
   validateKeyDown: function(form, field, charStr) {
     if (charStr.length === 0) {
       return true;
     }
 
-    var regexp = this.get('keyDownRegExp');
+    var regexp = this.get('regexp');
     if (SC.none(regexp)) {
       return true;
     }
