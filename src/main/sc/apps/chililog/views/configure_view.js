@@ -209,7 +209,12 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.username',
           maxLength: 100,
-          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[A-Za-z0-9_\-\.'@]/ })
+          validator: Chililog.RegExpValidator.extend({
+            keyDownRegExp: /[A-Za-z0-9_\-\.'@]/,
+            fieldRegExp: /^[A-Za-z0-9_\-\.'@]+$/,
+            invalidFieldErrorMessage: '_configureUserDetailView.Username.Invalid',
+            requiredFieldErrorMessage: '_configureUserDetailView.Username.Required'
+          })
         })
       }),
 
@@ -228,7 +233,10 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           valueBinding: 'Chililog.configureUserDetailViewController.emailAddress',
           maxLength: 200,
-          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[A-Za-z0-9_\-\.'@]/ })
+          validator: Chililog.EmailAddressValidator.extend({
+            invalidFieldErrorMessage: '_configureUserDetailView.EmailAddress.Invalid',
+            requiredFieldErrorMessage: '_configureUserDetailView.EmailAddress.Required'
+          })
         })
       }),
 
@@ -246,7 +254,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         help: SC.LabelView.design({
           classNames: ['help'],
           layout: { top: 35, left: 10, width: 170, height: 50 },
-          value: '_configureUserDetailView.DisplayNameHelp',
+          value: '_configureUserDetailView.DisplayName.Help',
           localize: YES
         }),
 
@@ -297,7 +305,12 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           isPassword: YES,
           valueBinding: 'Chililog.configureUserDetailViewController.password',
-          maxLength: 100
+          maxLength: 100,
+          validator: Chililog.RegExpValidator.extend({
+            fieldRegExp: /^(?=.{8,}$)(?=(?:.*?\d){1})(?=(?:.*?[A-Za-z]){1})(?=(?:.*?\W){1})/,
+            invalidFieldErrorMessage: '_configureUserDetailView.Password.Invalid',
+            requiredFieldErrorMessage: '_configureUserDetailView.Password.Required'
+          })
         })
       }),
 
@@ -317,7 +330,10 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           isPassword: YES,
           valueBinding: 'Chililog.configureUserDetailViewController.confirmPassword',
-          maxLength: 100
+          maxLength: 100,
+          validator: Chililog.NotEmptyValidator.extend({
+            requiredFieldErrorMessage: '_configureUserDetailView.ConfirmPassword.Required'
+          })
         })
       }),
 
@@ -500,13 +516,18 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           layout: { top: 10, left: 210, width: 200, height: 30 },
           valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.name',
           maxLength: 50,
-          validator: Chililog.RegExpValidator.extend({ keyDownRegExp: /[a-z0-9_]/  }) //Only allow a-z, 0-9, _
+          validator: Chililog.RegExpValidator.extend({
+            keyDownRegExp: /[a-z0-9_]/, //Only allow a-z, 0-9, _
+            fieldRegExp: /^[a-z0-9_]+$/,
+            invalidFieldErrorMessage: '_configureRepositoryInfoDetailView.Name.Invalid',
+            requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.Name.Required'
+          })
         }),
 
         help: SC.LabelView.design({
           layout: { top: 17, left: 420, right: 10, height: 30 },
           classNames: ['help'],
-          value: '_configureRepositoryInfoDetailView.NameHelp',
+          value: '_configureRepositoryInfoDetailView.Name.Help',
           localize: YES
         })
       }),
@@ -694,13 +715,16 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxKeywords',
             maxLength: 3,
-            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
+            validator: Chililog.PositiveIntegerValidator.extend({
+              formatNumber: YES,
+              requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.MaxKeywords.Required'
+            })
           }),
 
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.MaxKeywordsHelp',
+            value: '_configureRepositoryInfoDetailView.MaxKeywords.Help',
             localize: YES
           })
         }),
@@ -720,13 +744,16 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueWorkerCount',
             maxLength: 2,
-            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
+            validator: Chililog.PositiveIntegerValidator.extend({
+              formatNumber: YES,
+              requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount.Required'
+            })
           }),
 
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCountHelp',
+            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount.Help',
             localize: YES
           })
         }),
@@ -746,13 +773,16 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueueMaxMemory',
             maxLength: 10,
-            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
+            validator: Chililog.PositiveIntegerValidator.extend({
+              formatNumber: YES,
+              requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory.Required'
+            })
           }),
 
           help: SC.LabelView.design({
             layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryHelp',
+            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory.Help',
             localize: YES
           })
         }),
@@ -795,13 +825,16 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 100, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageSize',
-            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
+            validator: Chililog.PositiveIntegerValidator.extend({
+              formatNumber: YES,
+              requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.WriteQueuePageSize.Required'
+            })
           }),
 
           help: SC.LabelView.design({
             layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageSizeHelp',
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageSize.Help',
             localize: YES
           })
         }),
@@ -820,13 +853,16 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           field: SC.TextFieldView.design({
             layout: { top: 10, left: 210, width: 50, height: 30 },
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.writeQueuePageCountCache',
-            validator: Chililog.PositiveIntegerValidator.extend({ formatNumber: YES })
+            validator: Chililog.PositiveIntegerValidator.extend({
+              formatNumber: YES,
+              requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Required'
+            })
           }),
 
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCacheHelp',
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Help',
             localize: YES
           })
         })

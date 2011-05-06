@@ -3,12 +3,14 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('controllers/view_controller_mixin');
+
 /**
  * Controller that for the mainPane. Mainly handles menu selection option and login/logout
  *
  * @extends SC.Object
  */
-Chililog.myAccountViewController = SC.ObjectController.create(
+Chililog.myAccountViewController = SC.ObjectController.create(Chililog.ViewControllerMixin,
 /** @scope Chililog.mainPaneController.prototype */ {
 
   /**
@@ -59,6 +61,13 @@ Chililog.myAccountViewController = SC.ObjectController.create(
    * Trigger event to save the user's profile
    */
   saveProfile: function() {
+    // Check field values
+    var rootView = Chililog.myProfileView;
+    var result = this.findFieldAndValidate(rootView);
+    if (result !== SC.VALIDATE_OK) {
+      this.showError(result);
+      return;
+    }
     Chililog.statechart.sendEvent('saveProfile');
   },
 
@@ -89,32 +98,6 @@ Chililog.myAccountViewController = SC.ObjectController.create(
   },
 
   /**
-   * Show error message when error happened why trying to save profile
-   * @param {SC.Error} error
-   */
-  showSaveProfileError: function(error) {
-    if (SC.instanceOf(error, SC.Error)) {
-      // Error
-      var message = error.get('message');
-      SC.AlertPane.error({ message: message });
-
-      var label = error.get('label');
-      if (SC.empty(label)) {
-        label = 'username';
-      }
-
-      var fieldPath = '%@.field'.fmt(label);
-      var field = Chililog.myProfileView.getPath(fieldPath);
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else {
-      // Assume error message string
-      SC.AlertPane.error(error);
-    }
-  },
-
-  /**
    * Flag to indicate if the user is able to change password
    * Only valid if old, new and confirm passwords have been entered
    *
@@ -137,6 +120,22 @@ Chililog.myAccountViewController = SC.ObjectController.create(
    * Trigger event to change the user's password
    */
   changePassword: function() {
+    // Check field values
+    var rootView = Chililog.changePasswordView;
+    var result = this.findFieldAndValidate(rootView);
+
+    // Special cross field checks here
+    if (result === SC.VALIDATE_OK) {
+      if (this.get('newPassword') !== this.get('confirmNewPassword')) {
+        result = Chililog.$error('_myAccountView.ConfirmNewPassword.Invalid'.loc(), null,
+          Chililog.changePasswordView.getPath('password.field'));
+      }
+    }
+
+    if (result !== SC.VALIDATE_OK) {
+      this.showError(result);
+      return;
+    }
     Chililog.statechart.sendEvent('changePassword');
   },
 
@@ -156,33 +155,7 @@ Chililog.myAccountViewController = SC.ObjectController.create(
       }, 10);
     }
 
-    field.becomeFirstResponder();
-  },
-
-  /**
-   * Show error if change password failed
-   * @param {SC.Error} error
-   */
-  showChangePasswordError: function(error) {
-    if (SC.instanceOf(error, SC.Error)) {
-      // Error
-      var message = error.get('message');
-      SC.AlertPane.error({ message: message });
-
-      var label = error.get('label');
-      if (SC.empty(label)) {
-        label = 'oldPassword';
-      }
-
-      var fieldPath = '%@.field'.fmt(label);
-      var field = Chililog.changePasswordView.getPath(fieldPath);
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else {
-      // Assume error message string
-      SC.AlertPane.error(error);
-    }
+    this.setFocusOnField(field);
   }
 
 });

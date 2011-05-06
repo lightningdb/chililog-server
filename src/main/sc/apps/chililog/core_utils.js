@@ -7,13 +7,11 @@
  * Shortcut for creating an SC.Error object using the errorCode as the lookup for localised error messages
  *
  * @param {String} errorCode Unique error code that doubles up as the code for the localised error message
- * @param {Array} params Optional array of parameter substitutes for the localised string
- * @param {String} label Optional human readable name of the item with the error
- * @param {Object} errorValue Optional value the error represents.  This is used when wrapping a value inside of an error
- * to represent the validation failure.
+ * @param {Array} [params] Optional array of parameter substitutes for the localised string
+ * @param {SC.View} [field] Optional field where the error occurred.
  * @returns {SC.Error} Error object
  */
-Chililog.$error = function(errorCode, params, label, errorValue) {
+Chililog.$error = function(errorCode, params, field) {
   // Get localized string
   // Copied from SC.String.loc() because that function did a fmt with arguments and we need to pass in array
   if (!SC.Locale.currentLocale) {
@@ -29,7 +27,12 @@ Chililog.$error = function(errorCode, params, label, errorValue) {
     message = SC.String.fmt(localized, params);
   }
 
-  return SC.$error(message, label, errorValue, errorCode);
+  var err = SC.$error(message, null, null, errorCode);
+  if (!SC.none(field)) {
+    err.set('errorField', field);
+  }
+  
+  return err;
 };
 
 /**

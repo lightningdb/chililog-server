@@ -42,8 +42,10 @@ Chililog.loginPage = SC.Page.design({
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
           isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
-          valueBinding: 'Chililog.loginViewController.username'
-          // Set focus
+          valueBinding: 'Chililog.loginViewController.username',
+          validator: Chililog.NotEmptyValidator.extend({
+            requiredFieldErrorMessage: '_loginPane.Username.Required'
+          })          // Set focus
           // http://groups.google.com/group/sproutcore/browse_thread/thread/7e72be97d0229689
           //isVisibleInWindowDidChange: function() {
           //  if(this.get('isVisibleInWindow')) {
@@ -67,7 +69,10 @@ Chililog.loginPage = SC.Page.design({
           layout: { top: 20, left: 0, right: 0, height: 25 },
           isPassword: YES,
           isEnabledBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().not(),
-          valueBinding: 'Chililog.loginViewController.password'
+          valueBinding: 'Chililog.loginViewController.password',
+          validator: Chililog.NotEmptyValidator.extend({
+            requiredFieldErrorMessage: '_loginPane.Password.Required'
+          })          // Set focus
         })
       }),
 
@@ -101,49 +106,7 @@ Chililog.loginPage = SC.Page.design({
         isVisibleBinding: SC.Binding.from('Chililog.loginViewController.isLoggingIn').oneWay().bool(),
         useImageQueue: NO
       })
-    }),  //boxView
-
-    /**
-     * Displays error messages
-     */
-    errorDidChange: function() {
-      var error = Chililog.loginViewController.get('error');
-      if (SC.none(error)) {
-        return;
-      }
-      
-      if (SC.instanceOf(error, SC.Error)) {
-        var message = error.get('message');
-        if (SC.empty(message)) {
-          return;
-        }
-        SC.AlertPane.error({ message: message });
-
-        var label = error.get('label');
-        if (SC.empty(label)) {
-          label = 'username';
-        }
-        var fieldPath = 'boxView.%@.field'.fmt(label);
-        var field = this.getPath(fieldPath);
-        if (!SC.none(field)) {
-          field.becomeFirstResponder();
-        }
-      } else {
-        SC.AlertPane.error(error);
-      }
-
-    }.observes('Chililog.loginViewController.error'),
-
-    /**
-     * Set focus on the username field when pane becomes active
-     */
-    keyPaneDidChange: function() {
-      var isKeyPane = this.get('isKeyPane');
-      if (isKeyPane) {
-        var field = this.getPath('boxView.username.field');
-        field.becomeFirstResponder();
-      }
-    }.observes('isKeyPane')
+    })  //boxView
 
   })  //loginPane
 });

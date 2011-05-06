@@ -12,7 +12,7 @@ sc_require('controllers/server_api_mixin');
 
  @extends SC.Object
  */
-Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.ServerApiMixin,
+Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.DataControllerMixin,
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
@@ -167,12 +167,6 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Serv
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
    */
   save: function(record, callbackTarget, callbackFunction) {
-    // Get our data from the properties using the SC 'get' methods
-    // Need to do this because these properties have been bound/observed.
-    if (SC.empty(record.get('name'))) {
-      throw Chililog.$error('_repositoryInfoDataController.NameRequiredError', null, 'username');
-    }
-
     var data = record.toApiObject();
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 

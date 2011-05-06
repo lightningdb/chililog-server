@@ -3,13 +3,14 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('controllers/view_controller_mixin');
 
 /**
  * Controller that for the mainPane. Mainly handles menu selection option and login/logout
  *
  * @extends SC.Object
  */
-Chililog.loginViewController = SC.ObjectController.create(
+Chililog.loginViewController = SC.ObjectController.create(Chililog.ViewControllerMixin, 
 /** @scope Chililog.loginPaneController.prototype */ {
 
   /**
@@ -50,11 +51,22 @@ Chililog.loginViewController = SC.ObjectController.create(
    * Handles the login action
    */
   login: function() {
+    // Check field values
+    var rootView = Chililog.loginPage.getPath('loginPane.boxView');
+    var result = this.findFieldAndValidate(rootView);
+    if (result !== SC.VALIDATE_OK) {
+      this.showError(result);
+      return;
+    }
+    
     Chililog.statechart.sendEvent('login');
   },
 
   showLoginPage: function () {
     Chililog.getPath('loginPage.loginPane').append();
+
+    var field = Chililog.getPath('loginPage.loginPane.boxView.username.field');
+    this.setFocusOnField(field, 200);
   },
 
   hideLoginPage: function () {

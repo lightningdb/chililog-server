@@ -13,7 +13,7 @@ Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'ChiliLog.AuthenticationToken';
  *
  * @extends SC.Object
  */
-Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
+Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
 /** @scope Chililog.sessionDataController.prototype */ {
 
   /**
@@ -212,16 +212,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    *
    */
   login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction) {
-    // Get our data from the properties using the SC 'get' methods
-    // Need to do this because these properties have been bound/observed.
-    if (SC.empty(username)) {
-      throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
-    }
-
-    if (SC.empty(password)) {
-      throw Chililog.$error('_sessionDataController.PasswordRequiredError', null, 'password');
-    }
-
     if (SC.none(rememberMe)) {
       rememberMe = NO;
     }
@@ -398,20 +388,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
   saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction) {
-    // Get our data from the properties using the SC 'get' methods
-    // Need to do this because these properties have been bound/observed.
-    if (SC.empty(authenticatedUserRecord.get('username'))) {
-      throw Chililog.$error('_sessionDataController.UsernameRequiredError', null, 'username');
-    }
-
-    if (SC.empty(authenticatedUserRecord.get('emailAddress'))) {
-      throw Chililog.$error('_sessionDataController.EmailAddressRequiredError', null, 'emailAddress');
-    }
-
-    if (SC.empty(authenticatedUserRecord.get('displayName'))) {
-      throw Chililog.$error('_sessionDataController.DisplayNameRequiredError', null, 'displayName');
-    }
-
     var postData = authenticatedUserRecord.toApiObject();
 
     var url = '/api/Authentication?action=update_profile';
@@ -492,24 +468,6 @@ Chililog.sessionDataController = SC.Object.create(Chililog.ServerApiMixin,
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
   changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction) {
-    // Get our data from the properties using the SC 'get' methods
-    // Need to do this because these properties have been bound/observed.
-    if (SC.empty(oldPassword)) {
-      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'oldPassword');
-    }
-
-    if (SC.empty(newPassword)) {
-      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'newPassword');
-    }
-
-    if (SC.empty(confirmNewPassword)) {
-      throw Chililog.$error('_sessionDataController.OldNewConfirmPasswordRequiredError', null, 'confirmNewPassword');
-    }
-
-    if (newPassword !== confirmNewPassword) {
-      throw Chililog.$error('_sessionDataController.ConfirmPasswordError', null, 'newPassword');
-    }
-
     var postData = {
       'DocumentID': this.getPath('loggedInUser.documentID'),
       'OldPassword': oldPassword,

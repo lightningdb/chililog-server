@@ -85,7 +85,7 @@ Chililog.statechart = SC.Statechart.create({
           this.gotoState('loggedIn');
         } else {
           // Show error
-          ctrl.set('error', error);
+          ctrl.showError(error);
 
           // Go back to logged out
           this.gotoState('loggedOut');

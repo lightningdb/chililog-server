@@ -29,6 +29,15 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
   formatNumber: NO,
 
   /**
+   * If the field is required, then set this error message
+   *
+   * @property
+   * @type Boolean
+   * @default null Field is not required.
+   */
+  requiredFieldErrorMessage: null,
+
+  /**
    * Converts Number to string for display
    * 
    * @param {Number} object The object to transform
@@ -108,27 +117,28 @@ Chililog.PositiveIntegerValidator = SC.Validator.extend(
   },
 
   /**
-   * Validate the field value.
-   * 
-   * @param {SC.FormView} form the form this view belongs to
-   * @param {SC.View} field the field to validate.  Responds to fieldValue.
-   * @returns {Boolean} YES if field is valid.
-   */
-  validate: function(form, field) {
-    var value = field.get('fieldValue');
-    return (value === '') || !isNaN(value);
-  },
-
-  /**
-   * Returns an error object if the field is invalid.
+   * Invoked just before the form is submitted.
    *
-   * @param {SC.FormView} form the form this view belongs to
-   * @param {SC.View} field the field to validate.  Responds to fieldValue.
-   * @returns {SC.Error} an error object
+   * @param {SC.FormView} form the form for the field
+   * @param {SC.View} field the field to validate
+   * @returns SC.VALIDATE_OK or an error object.
    */
-  validateError: function(form, field) {
-    var label = field.get('errorLabel') || 'Field';
-    return SC.$error(SC.String.loc("Invalid.Number(%@)", label), label);
+  validateSubmit: function(form, field) {
+    var value = field.get('fieldValue');
+
+    var requiredErrorMessage = this.get('requiredFieldErrorMessage');
+    if (SC.empty(value)) {
+      if (SC.none(requiredErrorMessage)) {
+        return SC.VALIDATE_OK;
+      } else {
+        if (requiredErrorMessage.indexOf('_') === 0) {
+          requiredErrorMessage = requiredErrorMessage.loc();
+        }
+        return Chililog.$error(requiredErrorMessage, [ field.get('fieldValue') ], field);
+      }
+    }
+
+    return SC.VALIDATE_OK;
   },
 
   /**
@@ -165,28 +175,44 @@ Chililog.RegExpValidator = SC.Validator.extend(
 /** @scope SC.Validator.PositiveInteger.prototype */ {
 
   /**
-   * Default Value to be displayed. If the value in the text field is null,
-   * undefined or an empty string, it will be replaced by this value.
-   *
-   * @property
-   * @type String
-   * @default null
-   */
-  defaultValue: null,
-
-  /**
-   * Regular expression pattern to use for checking
+   * Regular expression pattern to use for checking a character on keyDown
    *
    * @property
    * @type RegExp
-   * @default null
+   * @default null No keyDown checking is performed
    */
-  regexp: null,
+  keyDownRegExp: null,
+
+  /**
+   * Regular expression pattern to use for checking the entire field
+   *
+   * @property
+   * @type RegExp
+   * @default null no field validation is performed
+   */
+  fieldRegExp: null,
+
+  /**
+   * If the field is required, then set this error message
+   *
+   * @property
+   * @type Boolean
+   * @default null Field is not required.
+   */
+  requiredFieldErrorMessage: null,
+
+  /**
+   * Message to use in errors
+   *
+   * @property
+   * @type String "Data Item Name" is invalid
+   */
+  invalidFieldErrorMessage: '"%@" is invalid.',
 
   /**
    * No conversion required because field and object are assumed to be of type string
    *
-   * @param {Number} object The object to transform
+   * @param {String} object The object to transform
    * @param {SC.FormView} form The form this field belongs to. (optional)
    * @param {SC.View} view The view the value is required for.
    * @returns {String} string that was passed in
@@ -208,43 +234,137 @@ Chililog.RegExpValidator = SC.Validator.extend(
   },
 
   /**
-   * Validate the field value.
+   * Invoked just before the form is submitted.
    *
-   * @param {SC.FormView} form the form this view belongs to
-   * @param {SC.View} field the field to validate.  Responds to fieldValue.
-   * @returns {Boolean} YES if field is valid.
+   * @param {SC.FormView} form the form for the field
+   * @param {SC.View} field the field to validate
+   * @returns SC.VALIDATE_OK or an error object.
    */
-  validate: function(form, field) {
+  validateSubmit: function(form, field) {
     var value = field.get('fieldValue');
-    return (value === '') || !isNaN(value);
+    
+    var requiredErrorMessage = this.get('requiredFieldErrorMessage');
+    if (SC.empty(value)) {
+      if (SC.none(requiredErrorMessage)) {
+        return SC.VALIDATE_OK;
+      } else {
+        if (requiredErrorMessage.indexOf('_') === 0) {
+          requiredErrorMessage = requiredErrorMessage.loc();
+        }
+        return Chililog.$error(requiredErrorMessage, [ field.get('fieldValue') ], field);
+      }
+    }
+
+    var regexp = this.get('fieldRegExp');
+    var result = value.match(regexp);
+    if (!result) {
+      var invalidErrorMessage = this.get('invalidFieldErrorMessage');
+      if (invalidErrorMessage.indexOf('_') === 0) {
+        invalidErrorMessage = invalidErrorMessage.loc();
+      }
+      return Chililog.$error(invalidErrorMessage, [field.get('fieldValue')], field);
+    }
+
+    return SC.VALIDATE_OK;
   },
 
   /**
-   * Returns an error object if the field is invalid.
-   *
-   * @param {SC.FormView} form the form this view belongs to
-   * @param {SC.View} field the field to validate.  Responds to fieldValue.
-   * @returns {SC.Error} an error object
-   */
-  validateError: function(form, field) {
-    var label = field.get('errorLabel') || 'Field';
-    return SC.$error(SC.String.loc("Invalid value (%@)", label), label);
-  },
-
-  /**
-   * Allow only regular
+   * Validate when the user presses a key
    */
   validateKeyDown: function(form, field, charStr) {
     if (charStr.length === 0) {
-      return true;
+      return YES;
     }
 
-    var regexp = this.get('regexp');
+    var regexp = this.get('keyDownRegExp');
     if (SC.none(regexp)) {
-      return true;
+      return YES;
     }
 
     var result = charStr.match(regexp);
     return !SC.none(result);
+  }
+});
+
+/**
+ * Handles parsing and validating of email addresses
+ * Assumes a string object
+ */
+Chililog.EmailAddressValidator = Chililog.RegExpValidator.extend({
+
+  keyDownRegExp: /[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~@\.\:]/i,
+
+  // Good enough algorithm from. Perfect match is too slow.
+  // http://fightingforalostcause.net/misc/2006/compare-email-regex.php
+  fieldRegExp: /^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$/i,
+
+  requiredFieldErrorMessage: null,
+
+  invalidFieldErrorMessage: 'Email Address "%@" is invalid.'
+});
+
+/**
+ * Handles validating of required string fields with no format checks
+ * Assumes a string
+ */
+Chililog.NotEmptyValidator = SC.Validator.extend(
+/** @scope SC.Validator.PositiveInteger.prototype */ {
+
+  /**
+   * If the field is required, then set this error message
+   *
+   * @property
+   * @type Boolean
+   * @default null Field is not required.
+   */
+  requiredFieldErrorMessage: null,
+
+  /**
+   * No conversion required because field and object are assumed to be of type string
+   *
+   * @param {String} object The object to transform
+   * @param {SC.FormView} form The form this field belongs to. (optional)
+   * @param {SC.View} view The view the value is required for.
+   * @returns {String} string that was passed in
+   */
+  fieldValueForObject: function(object, form, field) {
+    return object;
+  },
+
+  /**
+   * No conversion required because field and object are assumed to be of type string
+   *
+   * @param {String} value the field value.  (Usually a String).
+   * @param {SC.FormView} form The form this field belongs to. (optional)
+   * @param {SC.View} view The view this value was pulled from.
+   * @returns {String} string that was passed in
+   */
+  objectForFieldValue: function(value, form, field) {
+    return value;
+  },
+
+  /**
+   * Invoked just before the form is submitted.
+   *
+   * @param {SC.FormView} form the form for the field
+   * @param {SC.View} field the field to validate
+   * @returns SC.VALIDATE_OK or an error object.
+   */
+  validateSubmit: function(form, field) {
+    var value = field.get('fieldValue');
+
+    var requiredErrorMessage = this.get('requiredFieldErrorMessage');
+    if (SC.empty(value)) {
+      if (SC.none(requiredErrorMessage)) {
+        return SC.VALIDATE_OK;
+      } else {
+        if (requiredErrorMessage.indexOf('_') === 0) {
+          requiredErrorMessage = requiredErrorMessage.loc();
+        }
+        return Chililog.$error(requiredErrorMessage, [ field.get('fieldValue') ], field);
+      }
+    }
+    
+    return SC.VALIDATE_OK;
   }
 });

@@ -10,7 +10,7 @@
 
  @extends SC.Object
  */
-Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin,
+Chililog.userDataController = SC.ObjectController.create(Chililog.DataControllerMixin,
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
@@ -155,25 +155,6 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.ServerApiMixin
   save: function(record, callbackTarget, callbackFunction) {
     var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     var isCreating = (SC.none(documentVersion) || documentVersion ===  0);
-
-    // Get our data from the properties using the SC 'get' methods
-    // Need to do this because these properties have been bound/observed.
-    if (SC.empty(record.get('username'))) {
-      throw Chililog.$error('_userDataController.UsernameRequiredError', null, 'username');
-    }
-
-    if (SC.empty(record.get('emailAddress'))) {
-      throw Chililog.$error('_userDataController.EmailAddressRequiredError', null, 'emailAddress');
-    }
-
-    if (isCreating) {
-      if (SC.empty(record.get('password'))) {
-        throw Chililog.$error('_userDataController.PasswordRequiredError', null, 'password');
-      }
-      if (record.get('password') !== record.get('confirmPassword')) {
-        throw Chililog.$error('_userDataController.ConfirmPasswordError', null, 'password');
-      }
-    }
 
     var data = record.toApiObject();
     var authToken = Chililog.sessionDataController.get('authenticationToken');

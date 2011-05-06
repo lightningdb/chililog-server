@@ -3,6 +3,8 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('controllers/view_controller_mixin');
+
 /**********************************************************************************************************************
  * Users
  **********************************************************************************************************************/
@@ -44,7 +46,7 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
 /**
  * Controls the data when configuring users
  */
-Chililog.configureUserDetailViewController = SC.ObjectController.create({
+Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog.ViewControllerMixin, {
 
   /**
    * User record to display
@@ -139,6 +141,25 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
    * Trigger event to save the user's profile
    */
   save: function() {
+    // Check field values
+    var rootView = Chililog.configureUserDetailView.getPath('body.contentView');
+    var result = this.findFieldAndValidate(rootView);
+
+    // Special cross field checks here
+    if (result === SC.VALIDATE_OK) {
+      if (this.get('isCreating')) {
+        if (this.get('password') !== this.get('confirmPassword')) {
+          result = Chililog.$error('_configureUserDetailView.ConfirmPassword.Invalid'.loc(), null,
+            Chililog.configureUserDetailView.getPath('body.contentView.password.field'));
+        }
+      }
+    }
+
+    if (result !== SC.VALIDATE_OK) {
+      this.showError(result);
+      return;
+    }
+
     Chililog.statechart.sendEvent('save');
   },
 
@@ -191,33 +212,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create({
       }, 10);
     }
 
-    field.becomeFirstResponder();
-  },
-
-  /**
-   * Show error message when error happened why trying to save profile
-   * @param {SC.Error} error
-   */
-  showSaveError: function(error) {
-    if (SC.instanceOf(error, SC.Error)) {
-      // Error
-      var message = error.get('message');
-      SC.AlertPane.error({ message: message });
-
-      var label = error.get('label');
-      if (SC.empty(label)) {
-        label = 'username';
-      }
-
-      var fieldPath = 'body.contentView.%@.field'.fmt(label);
-      var field = Chililog.configureUserDetailView.getPath(fieldPath);
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else {
-      // Assume error message string
-      SC.AlertPane.error(error);
-    }
+    this.setFocusOnField(field);
   }
 
 });
@@ -264,7 +259,7 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create({
 /**
  * Controls the data when configuring repositories
  */
-Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.create({
+Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.create(Chililog.ViewControllerMixin, {
 
   /**
    * Repository record to display
@@ -336,10 +331,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
     Chililog.configureRepositoryInfoDetailView.setPath('body.verticalScrollOffset', 0);
     
     // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
-    var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
-    this.invokeLater(function() {
-      field.becomeFirstResponder();
-    }, 400);
+    this.setFocusOnField(Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field'), 400);
   },
 
   /**
@@ -365,6 +357,14 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Trigger event to save the user's profile
    */
   save: function() {
+    // Check field values
+    var rootView = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView');
+    var result = this.findFieldAndValidate(rootView);
+    if (result !== SC.VALIDATE_OK) {
+      this.showError(result);
+      return;
+    }
+
     Chililog.statechart.sendEvent('save');
   },
 
@@ -417,33 +417,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
       }, 10);
     }
 
-    field.becomeFirstResponder();
-  },
-
-  /**
-   * Show error message when error happened why trying to save profile
-   * @param {SC.Error} error
-   */
-  showSaveError: function(error) {
-    if (SC.instanceOf(error, SC.Error)) {
-      // Error
-      var message = error.get('message');
-      SC.AlertPane.error({ message: message });
-
-      var label = error.get('label');
-      if (SC.empty(label)) {
-        label = 'name';
-      }
-
-      var fieldPath = 'body.contentView.%@.field'.fmt(label);
-      var field = Chililog.configureRepositoryInfoDetailView.getPath(fieldPath);
-      if (!SC.none(field)) {
-        field.becomeFirstResponder();
-      }
-    } else {
-      // Assume error message string
-      SC.AlertPane.error(error);
-    }
+    this.setFocusOnField(field);
   }
 });
 

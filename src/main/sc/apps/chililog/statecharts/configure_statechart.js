@@ -164,7 +164,7 @@ Chililog.ConfigureState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('savingUser.save: ' + error);
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
         this.gotoState(stateToGoTo, {isReedit: YES});
       }
@@ -184,7 +184,7 @@ Chililog.ConfigureState = SC.State.extend({
         this.gotoState('editingUser', {documentID: documentID});
       } else {
         // Show error
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
         this.gotoState(stateToGoTo, {isReedit: YES});
       }
@@ -214,7 +214,7 @@ Chililog.ConfigureState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('erasingUser.erase: ' + error);
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         this.gotoState('editingUser', {documentID: context['documentID']});
       }
     },
@@ -231,7 +231,7 @@ Chililog.ConfigureState = SC.State.extend({
         this.gotoState('viewingUsers');
       } else {
         // Show error
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         this.gotoState('editingUser', {documentID: documentID});
       }
     }
@@ -382,7 +382,7 @@ Chililog.ConfigureState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('savingRepositoryInfo.save: ' + error);
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         var stateToGoTo = ctrl.get('isCreating') ? 'creatingUser' : 'editingUser';
         this.gotoState(stateToGoTo, {isReedit: YES});
       }
@@ -402,7 +402,7 @@ Chililog.ConfigureState = SC.State.extend({
         this.gotoState('editingRepositoryInfo', {documentID: documentID});
       } else {
         // Show error
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         var stateToGoTo = ctrl.get('isCreating') ? 'creatingRepositoryInfo' : 'editingRepositoryInfo';
         this.gotoState(stateToGoTo, {isReedit: YES});
       }
@@ -432,7 +432,7 @@ Chililog.ConfigureState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('erasingRepositoryInfo.erase: ' + error);
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         this.gotoState('editingRepositoryInfo', {documentID: context['documentID']});
       }
     },
@@ -449,7 +449,7 @@ Chililog.ConfigureState = SC.State.extend({
         this.gotoState('viewingRepositoryInfo');
       } else {
         // Show error
-        ctrl.showSaveError(error);
+        ctrl.showError(error);
         this.gotoState('editingRepositoryInfo', {documentID: documentID});
       }
     }

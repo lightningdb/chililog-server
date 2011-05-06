@@ -43,7 +43,14 @@ Chililog.MyProfileView = SC.View.design({
 
     field: SC.TextFieldView.design({
       layout: { top: 10, left: 210, width: 300, height: 30 },
-      valueBinding: 'Chililog.myAccountViewController.username'
+      valueBinding: 'Chililog.myAccountViewController.username',
+      maxLength: 100,
+      validator: Chililog.RegExpValidator.extend({
+        keyDownRegExp: /[A-Za-z0-9_\-\.'@]/,
+        fieldRegExp: /^[A-Za-z0-9_\-\.'@]+$/,
+        invalidFieldErrorMessage: '_myAccountView.Username.Invalid',
+        requiredFieldErrorMessage: '_myAccountView.Username.Required'
+      })
     })
   }),
 
@@ -60,7 +67,12 @@ Chililog.MyProfileView = SC.View.design({
 
     field: SC.TextFieldView.design({
       layout: { top: 10, left: 210, width: 300, height: 30 },
-      valueBinding: 'Chililog.myAccountViewController.emailAddress'
+      valueBinding: 'Chililog.myAccountViewController.emailAddress',
+      maxLength: 200,
+      validator: Chililog.EmailAddressValidator.extend({
+        invalidFieldErrorMessage: '_myAccountView.EmailAddress.Invalid',
+        requiredFieldErrorMessage: '_myAccountView.EmailAddress.Required'
+      })
     })
   }),
 
@@ -78,7 +90,7 @@ Chililog.MyProfileView = SC.View.design({
     help: SC.LabelView.design({
       classNames: ['help'],
       layout: { top: 35, left: 10, width: 170, height: 50 },
-      value: '_myAccountView.DisplayNameHelp',
+      value: '_myAccountView.DisplayName.Help',
       localize: YES
     }),
 
@@ -189,7 +201,13 @@ Chililog.ChangePasswordView = SC.View.design({
     field: SC.TextFieldView.design({
       layout: { top: 10, left: 210, width: 300, height: 30 },
       isPassword: YES,
-      valueBinding: 'Chililog.myAccountViewController.newPassword'
+      valueBinding: 'Chililog.myAccountViewController.newPassword',
+      maxLength: 100,
+      validator: Chililog.RegExpValidator.extend({
+        fieldRegExp: /^(?=.{8,}$)(?=(?:.*?\d){1})(?=(?:.*?[A-Za-z]){1})(?=(?:.*?\W){1})/,
+        invalidFieldErrorMessage: '_myAccountView.NewPassword.Invalid',
+        requiredFieldErrorMessage: '_myAccountView.NewPassword.Required'
+      })
     })
   }),
 
@@ -200,14 +218,18 @@ Chililog.ChangePasswordView = SC.View.design({
 
     label: SC.LabelView.design({
       layout: { top: 15, left: 10, width: 200, height: 20 },
-      value: '_myAccountView.ConfirmPassword',
+      value: '_myAccountView.ConfirmNewPassword',
       localize: YES
     }),
 
     field: SC.TextFieldView.design({
       layout: { top: 10, left: 210, width: 300, height: 30 },
       isPassword: YES,
-      valueBinding: 'Chililog.myAccountViewController.confirmNewPassword'
+      valueBinding: 'Chililog.myAccountViewController.confirmNewPassword',
+      maxLength: 100,
+      validator: Chililog.NotEmptyValidator.extend({
+        requiredFieldErrorMessage: '_myAccountView.ConfirmNewPassword.Required'
+      })
     })
   }),
 
@@ -232,7 +254,7 @@ Chililog.ChangePasswordView = SC.View.design({
   successMessage: SC.LabelView.design({
     layout: { top: 160, left: 180, width: 185, height: 25, opacity: 0 },
     classNames: ['success'],
-    value: '_myAccountView.ChangePasswordSuccess',
+    value: '_myAccountView.ChangePassword.Success',
     localize: YES
   })
 });

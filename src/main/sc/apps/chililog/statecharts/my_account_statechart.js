@@ -106,7 +106,7 @@ Chililog.MyAccountState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('savingMyAccountProfile.save: ' + error);
-        ctrl.showSaveProfileError(error);
+        ctrl.showError(error);
         this.gotoState('editingMyAccount', {loadData: NO});
       }
     },
@@ -124,7 +124,7 @@ Chililog.MyAccountState = SC.State.extend({
         this.gotoState('editingMyAccount', {loadData: YES});
       } else {
         // Show error
-        ctrl.showSaveProfileError(error);
+        ctrl.showError(error);
         this.gotoState('editingMyAccount', {loadData: NO});
       }
     }
@@ -155,7 +155,7 @@ Chililog.MyAccountState = SC.State.extend({
       }
       catch (error) {
         SC.Logger.error('changingMyAccountPassword.changePassword: ' + error);
-        ctrl.showChangePasswordError(error);
+        ctrl.showError(error);
         this.gotoState('editingMyAccount', {loadData: NO});
       }
 
@@ -176,7 +176,7 @@ Chililog.MyAccountState = SC.State.extend({
       } else {
         // Show error
         error.set('label', 'oldPassword');
-        ctrl.showChangePasswordError(error);
+        ctrl.showError(error);
         this.gotoState('editingMyAccount', {loadData: NO});
       }
     }

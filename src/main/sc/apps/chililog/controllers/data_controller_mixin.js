@@ -47,7 +47,7 @@ Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME = 'documentVersion';
 /**
  * Mixin for heaping with server API comms
  */
-Chililog.ServerApiMixin = {
+Chililog.DataControllerMixin = {
 
   /**
    * Checks the return information from the server. Throws error if

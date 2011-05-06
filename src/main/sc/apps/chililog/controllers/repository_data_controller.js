@@ -11,7 +11,7 @@ sc_require('controllers/server_api_mixin');
 
  @extends SC.Object
  */
-Chililog.repositoryDataController = SC.ObjectController.create(Chililog.ServerApiMixin,
+Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataControllerMixin,
 /** @scope Chililog.userDataController.prototype */ {
 
   /**
