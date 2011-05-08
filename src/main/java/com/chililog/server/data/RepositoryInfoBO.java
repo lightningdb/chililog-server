@@ -159,6 +159,12 @@ public class RepositoryInfoBO extends BO implements Serializable
             throw new ChiliLogException(Strings.REPO_INFO_NAME_FORMAT_ERROR, _name);
         }
 
+        // Check that page file size is less than max memory
+        if (_writeQueuePageSize > _writeQueueMaxMemory) 
+        {
+            throw new ChiliLogException(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, _writeQueuePageSize, _writeQueueMaxMemory);
+        }
+        
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
         MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString(), true);

@@ -40,7 +40,28 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
     var selection = selectionSet.get('firstObject');
     var id = selection.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     Chililog.statechart.sendEvent('editUser', id);
+  },
+
+  /**
+   * Flag to indicate if we are in the process of refreshing
+   */
+  isRefreshing: NO,
+
+  /**
+   * Since this is a simple async call, skip the statechart and directly call the data controller
+   */
+  refresh: function() {
+    Chililog.userDataController.synchronizeWithServer(NO, this, this.endRefresh);
+    this.set('isRefreshing', YES);
+  },
+
+  /**
+   * Finish refreshing
+   */
+  endRefresh: function() {
+    this.set('isRefreshing', NO);
   }
+
 });
 
 /**
@@ -200,7 +221,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    * Show success message when profile successfully saved
    */
   showSaveSuccess: function() {
-    var view = Chililog.configureUserDetailView.getPath('body.contentView.buttons.successMessage');
+    var view = Chililog.configureUserDetailView.get('successMessage');
     var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
 
     if (!SC.none(view)) {
@@ -253,7 +274,27 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create({
     var selection = selectionSet.get('firstObject');
     var id = selection.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     Chililog.statechart.sendEvent('editRepositoryInfo', id);
-  }
+  },
+
+  /**
+   * Flag to indicate if we are in the process of refreshing
+   */
+  isRefreshing: NO,
+
+  /**
+   * Since this is a simple async call, skip the statechart and directly call the data controller
+   */
+  refresh: function() {
+    Chililog.repositoryDataController.synchronizeWithServer(NO, YES, this, this.endRefresh);
+    this.set('isRefreshing', YES);
+  },
+
+  /**
+   * Finish refreshing
+   */
+  endRefresh: function() {
+    this.set('isRefreshing', NO);
+  }  
 });
 
 /**
@@ -365,6 +406,14 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
       return;
     }
 
+    // Check that page file size < max memory
+    if (this.get('writeQueuePageSize') > this.get('writeQueueMaxMemory')) {
+      this.showError(Chililog.$error('_configureRepositoryInfoDetailView.WriteQueuePageSize.InvalidSize',
+        [this.get('writeQueuePageSize'), this.get('writeQueueMaxMemory')],
+        Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.writeQueueAttributes.writeQueuePageSize.field')));
+      return;
+    }
+
     Chililog.statechart.sendEvent('save');
   },
 
@@ -405,7 +454,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Show success message when profile successfully saved
    */
   showSaveSuccess: function() {
-    var view = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.buttons.successMessage');
+    var view = Chililog.configureRepositoryInfoDetailView.get('successMessage');
     var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
 
     if (!SC.none(view)) {

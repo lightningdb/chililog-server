@@ -103,7 +103,7 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueDurable(true);
         repoInfo.setWriteQueuePassword("def");
         repoInfo.setWriteQueueWorkerCount(10);
-        repoInfo.setWriteQueueMaxMemory(1);
+        repoInfo.setWriteQueueMaxMemory(100);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
         repoInfo.setWriteQueuePageSize(2);
         repoInfo.setWriteQueuePageCountCache(1);
@@ -160,7 +160,7 @@ public class RepositoryInfoTest
         assertEquals(true, repoInfo2.isWriteQueueDurable());
         assertEquals("def", repoInfo2.getWriteQueuePassword());
         assertEquals(10, repoInfo2.getWriteQueueWorkerCount());
-        assertEquals(1, repoInfo2.getWriteQueueMaxMemory());
+        assertEquals(100, repoInfo2.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.BLOCK, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, repoInfo2.getWriteQueuePageSize());
         assertEquals(1, repoInfo2.getWriteQueuePageCountCache());
@@ -221,7 +221,7 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueDurable(false);
         repoInfo.setWriteQueuePassword("uvw");
         repoInfo.setWriteQueueWorkerCount(100);
-        repoInfo.setWriteQueueMaxMemory(21);
+        repoInfo.setWriteQueueMaxMemory(210);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.DROP);
         repoInfo.setWriteQueuePageSize(22);
         repoInfo.setWriteQueuePageCountCache(10);
@@ -258,7 +258,7 @@ public class RepositoryInfoTest
         assertEquals(false, repoInfo2.isWriteQueueDurable());
         assertEquals("uvw", repoInfo2.getWriteQueuePassword());
         assertEquals(100, repoInfo2.getWriteQueueWorkerCount());
-        assertEquals(21, repoInfo2.getWriteQueueMaxMemory());
+        assertEquals(210, repoInfo2.getWriteQueueMaxMemory());
         assertEquals(QueueMaxMemoryPolicy.DROP, repoInfo2.getWriteQueueMaxMemoryPolicy());
         assertEquals(22, repoInfo2.getWriteQueuePageSize());
         assertEquals(10, repoInfo2.getWriteQueuePageCountCache());
@@ -466,6 +466,26 @@ public class RepositoryInfoTest
         }
     }
  
+    @Test
+    public void testBadPageFileSize() throws ChiliLogException
+    {
+        try
+        {
+            RepositoryInfoBO repoInfo = new RepositoryInfoBO();
+            repoInfo.setName("badfilesize");
+            repoInfo.setWriteQueueMaxMemory(1);
+            repoInfo.setWriteQueuePageSize(2);
+            RepositoryInfoController.getInstance().save(_db, repoInfo);
+
+            fail("Exception expected");
+        }
+        catch (ChiliLogException ex)
+        {
+            assertEquals(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, ex.getErrorCode());
+        }
+    }
+
+    
     @Test
     public void testList() throws ChiliLogException
     {

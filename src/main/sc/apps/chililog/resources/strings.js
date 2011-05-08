@@ -16,6 +16,7 @@ SC.stringsFor('English', {
   // ********************************************************
   '_save': 'Save',
   '_cancel': 'Cancel',
+  '_refresh': 'Refresh',
   '_delete': 'Delete',
   '_deleteSelected': 'Delete Selected',
   '_back': '\< Back',
@@ -136,6 +137,7 @@ SC.stringsFor('English', {
   '_configureRepositoryInfoDetailView.WriteQueuePageSize' : 'Page File Size',
   '_configureRepositoryInfoDetailView.WriteQueuePageSize.Help' : 'The size of each page file. Only applicable for Paging Mode.',
   '_configureRepositoryInfoDetailView.WriteQueuePageSize.Required' : 'Page File Size is required.',
+  '_configureRepositoryInfoDetailView.WriteQueuePageSize.InvalidSize' : 'Page File Size (%@) must be less than Maximum Memory (%@).',
   '_configureRepositoryInfoDetailView.WriteQueuePageCountCache' : 'Page File Cache',
   '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Help' : 'Number of page files to keep in memory. The more files, the faster the performance.',
   '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Required' : 'Page File Cache is required.',

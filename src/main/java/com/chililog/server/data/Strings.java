@@ -47,6 +47,7 @@ public class Strings
     public static final String REPO_INFO_DUPLICATE_FIELD_NAME_ERROR = PREFIX + "RepoInfo.DuplicateFieldNameError";
     public static final String REPO_INFO_NOT_FOUND_ERROR = PREFIX + "RepoInfo.NotFoundError";
     public static final String REPO_INFO_FIELD_PROPERTIES_ERROR = PREFIX + "RepoInfo.FieldPropertiesError";
+    public static final String REPO_INFO_PAGE_FILE_SIZE_ERROR = PREFIX + "RepoInfo.PageFileSizeError";
     
     public static final String REPO_NAME_NOT_SET_ERROR = PREFIX + "Repo.NameNotSetError";
 

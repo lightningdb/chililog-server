@@ -441,7 +441,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
     }
 
     // Sync user data
-    Chililog.userDataController.synchronizeWithServer();
+    Chililog.userDataController.synchronizeWithServer(NO);
 
     // Return YES to signal handling of callback
     return YES;
@@ -538,7 +538,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
     Chililog.userDataController.synchronizeWithServer(clearLoadData, null, null);
 
     // repositoryDataController will call repositoryInfoDataController
-    Chililog.repositoryDataController.synchronizeWithServer(clearLoadData, null, null);
+    Chililog.repositoryDataController.synchronizeWithServer(clearLoadData, YES, null, null);
   }
 
 });

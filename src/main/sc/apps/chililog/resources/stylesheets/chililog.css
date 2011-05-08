@@ -208,3 +208,14 @@
 .sc-view .about .inline {
   display: inline;
 }
+
+/*******************************************
+ * Configure
+ *******************************************/
+.repository-offline {
+  color: #880000;
+}
+
+.repository-online {
+
+}

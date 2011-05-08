@@ -24,10 +24,12 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    * Synchronize data in the store with the data on the server
    *
    * @param {Boolean} clearLocalData YES will delete data from local store before loading.
+   * @param {Boolean} synchronizeRepositoryInfo YES will chain a repository info refresh after this sync has finished.
+   * In this event, callback will only be called after synchronization with RepositoryInfo has finished.
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
    */
-  synchronizeWithServer: function(clearLocalData, callbackTarget, callbackFunction) {
+  synchronizeWithServer: function(clearLocalData, synchronizeRepositoryInfo, callbackTarget, callbackFunction) {
     // If operation already under way, just exit
     var isSynchronizingWithServer = this.get('isSynchronizingWithServer');
     if (isSynchronizingWithServer) {
@@ -53,7 +55,10 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     this.set('isSynchronizingWithServer', YES);
 
     // Get data
-    var params = { clearLocalData: clearLocalData, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = {
+      clearLocalData: clearLocalData, synchronizeRepositoryInfo: synchronizeRepositoryInfo,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction
+    };
     var url = '/api/repositories';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     request.notify(this, 'endSynchronizeWithServer', params).send();
@@ -114,12 +119,15 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     // Finish sync'ing
     this.set('isSynchronizingWithServer', NO);
 
-    // Synch repo info
-    Chililog.repositoryInfoDataController.synchronizeWithServer(params.clearLocalData);
-
-    // Callback
-    if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+    // Chain sync or not
+    if (SC.none(params.synchronizeRepositoryInfo)) {
+      // Callback
+      if (!SC.none(params.callbackFunction)) {
+        params.callbackFunction.call(params.callbackTarget, error);
+      }
+    } else {
+      // Chain sync
+      Chililog.repositoryInfoDataController.synchronizeWithServer(params.clearLocalData, params.callbackTarget, params.callbackFunction);
     }
 
     // Return YES to signal handling of callback

@@ -77,7 +77,7 @@ Chililog.configureView = Chililog.ConfigureView.create();
  */
 Chililog.ConfigureUserListView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title createButton table'.w(),
+  childViews: 'title createButton refreshButton table'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -93,6 +93,15 @@ Chililog.ConfigureUserListView = SC.View.design({
     localize: YES,
     target: Chililog.configureUserListViewController,
     action: 'create'
+  }),
+
+  refreshButton: SC.ButtonView.design({
+    layout: { top: 40, left: 150, width: 130 },
+    title: '_refresh',
+    localize: YES,
+    isEnabledBinding: SC.Binding.from('Chililog.configureUserListViewController.isRefreshing').oneWay().not(),
+    target: Chililog.configureUserListViewController,
+    action: 'refresh'
   }),
 
   moreButton: SC.PopupButtonView.design({
@@ -159,7 +168,7 @@ Chililog.configureUserListView = Chililog.ConfigureUserListView.create();
  */
 Chililog.ConfigureUserDetailView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title backButton deleteButton body'.w(),
+  childViews: 'title backButton deleteButton successMessage body'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, right: 10, height: 30 },
@@ -185,6 +194,13 @@ Chililog.ConfigureUserDetailView = SC.View.design({
     isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
     target: Chililog.configureUserDetailViewController,
     action: 'confirmErase'
+  }),
+
+  successMessage: SC.LabelView.design({
+    layout: { top: 40, centerX: 0, width: 200, height: 25, opacity: 0 },
+    classNames: ['success'],
+    value: '_saveSuccess',
+    localize: YES
   }),
 
   body: SC.ScrollView.design({
@@ -339,7 +355,7 @@ Chililog.ConfigureUserDetailView = SC.View.design({
 
       buttons: SC.View.design({
         layoutBinding: 'Chililog.configureUserDetailViewController.buttonsLayout',
-        childViews: 'saveButton cancelButton savingImage successMessage'.w(),
+        childViews: 'saveButton cancelButton savingImage'.w(),
 
         saveButton: SC.ButtonView.design({
           layout: {top: 10, left: 10, width: 90 },
@@ -367,13 +383,6 @@ Chililog.ConfigureUserDetailView = SC.View.design({
           value: sc_static('images/working'),
           isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isSaving').oneWay().bool(),
           useImageQueue: NO
-        }),
-
-        successMessage: SC.LabelView.design({
-          layout: { top: 10, left: 210, width: 200, height: 25, opacity: 0 },
-          classNames: ['success'],
-          value: '_saveSuccess',
-          localize: YES
         })
       })
     })
@@ -395,7 +404,7 @@ Chililog.configureUserDetailView = Chililog.ConfigureUserDetailView.create();
  */
 Chililog.ConfigureRepositoryInfoListView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title createButton table'.w(),
+  childViews: 'title createButton refreshButton table'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -411,6 +420,15 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
     localize: YES,
     target: Chililog.configureRepositoryInfoListViewController,
     action: 'create'
+  }),
+
+  refreshButton: SC.ButtonView.design({
+    layout: { top: 40, left: 190, width: 130 },
+    title: '_refresh',
+    localize: YES,
+    isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoListViewController.isRefreshing').oneWay().not(),
+    target: Chililog.configureRepositoryInfoListViewController,
+    action: 'refresh'
   }),
 
   table: SC.TableView.design({
@@ -466,7 +484,7 @@ Chililog.configureRepositoryInfoListView = Chililog.ConfigureRepositoryInfoListV
  */
 Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
   layout: { top: 10, left: 10, bottom: 10, right: 10 },
-  childViews: 'title backButton deleteButton body'.w(),
+  childViews: 'title backButton deleteButton successMessage body'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, right: 10, height: 30 },
@@ -492,6 +510,13 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
     isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
     target: Chililog.configureRepositoryInfoDetailViewController,
     action: 'confirmErase'
+  }),
+
+  successMessage: SC.LabelView.design({
+    layout: { top: 40, centerX: 0, width: 200, height: 25, opacity: 0 },
+    classNames: ['success'],
+    value: '_saveSuccess',
+    localize: YES
   }),
 
   body: SC.ScrollView.design({
@@ -958,7 +983,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
       buttons: SC.View.design({
         layout: {top: 1200, left: 0, right: 0, height: 50 },
-        childViews: 'saveButton cancelButton savingImage successMessage'.w(),
+        childViews: 'saveButton cancelButton savingImage'.w(),
 
         saveButton: SC.ButtonView.design({
           layout: {top: 10, left: 10, width: 90 },
@@ -986,13 +1011,6 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           value: sc_static('images/working'),
           isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.isSaving').oneWay().bool(),
           useImageQueue: NO
-        }),
-
-        successMessage: SC.LabelView.design({
-          layout: { top: 10, left: 210, width: 200, height: 25, opacity: 0 },
-          classNames: ['success'],
-          value: '_saveSuccess',
-          localize: YES
         })
       })
 
