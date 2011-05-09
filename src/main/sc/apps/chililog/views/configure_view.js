@@ -153,7 +153,30 @@ Chililog.ConfigureUserListView = SC.View.design({
         key:   'currentStatus',
         title: '_configureUserDetailView.CurrentStatus'.loc(),
         width: 100,
-        isReorderable: NO
+        isReorderable: NO,
+
+        /**
+         * Special view for hi-lighting user status
+         */
+        exampleView: SC.LabelView.extend({
+          layout: {left: 10, right: 10},
+          isPoolable: YES,
+          layerIsCacheable: YES,
+
+          contentValueKeyBinding: '*column.key',
+          contentValueKeyDidChange: function() {
+            this.updatePropertyFromContent('value', '*', 'contentValueKey');
+          }.observes('contentValueKey'),
+
+          render: function(context, firstTime) {
+            if(firstTime) {
+              var classArray = [];
+              classArray.push('user-status-' + (this.get('value').toLowerCase()));
+              context.addClass(classArray);
+            }
+            sc_super();
+          }
+        })
       })
     ],
     target: Chililog.configureUserListViewController,
@@ -452,7 +475,30 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
         key:   'currentStatus',
         title: '_configureRepositoryInfoDetailView.CurrentStatus'.loc(),
         width: 120,
-        isReorderable: NO
+        isReorderable: NO,
+
+        /**
+         * Special view for hi-lighting Offline repositories on RED
+         */
+        exampleView: SC.LabelView.extend({
+          layout: {left: 10, right: 10},
+          isPoolable: YES,
+          layerIsCacheable: YES,
+
+          contentValueKeyBinding: '*column.key',
+          contentValueKeyDidChange: function() {
+            this.updatePropertyFromContent('value', '*', 'contentValueKey');
+          }.observes('contentValueKey'),
+
+          render: function(context, firstTime) {
+            if(firstTime) {
+              var classArray = [];
+              classArray.push('repository-status-' + (this.get('value').toLowerCase()));
+              context.addClass(classArray);
+            }
+            sc_super();
+          }          
+        })
       }),
       SC.TableColumn.create({
         key:   'description',

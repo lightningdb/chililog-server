@@ -212,10 +212,16 @@
 /*******************************************
  * Configure
  *******************************************/
-.repository-offline {
-  color: #880000;
+.sc-table-data-view .table-cell .sc-label-view.repository-status-offline {
+  color: #FF0000;
+}
+.sc-table-data-view .table-cell .sc-label-view.repository-status-online {
+
 }
 
-.repository-online {
-
+.sc-table-data-view .table-cell .sc-label-view.user-status-disabled {
+  color: #FF0000;
+}
+.sc-table-data-view .table-cell .sc-label-view.user-status-locked {
+  color: #FF0000;
 }
