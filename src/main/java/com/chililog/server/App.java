@@ -95,7 +95,7 @@ public class App
         _logger.info("Current Directory: " + new File(".").getCanonicalPath());
 
         MqManager.getInstance().start();
-        RepositoryManager.getInstance().start();
+        RepositoryManager.getInstance().start(true);
         WebServerManager.getInstance().start();
 
         Thread.sleep(2000);

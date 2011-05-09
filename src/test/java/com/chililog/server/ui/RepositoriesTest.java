@@ -498,14 +498,14 @@ public class RepositoriesTest
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Stop all
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=stop", HttpMethod.POST,
                 _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // GET all - check that all repositories have stopped
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
@@ -526,14 +526,14 @@ public class RepositoriesTest
                 _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Start all
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
@@ -553,7 +553,7 @@ public class RepositoriesTest
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // GET all - check that only our repository have stopped
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
@@ -580,7 +580,7 @@ public class RepositoriesTest
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
@@ -600,7 +600,7 @@ public class RepositoriesTest
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
     }
 
     /**
@@ -621,8 +621,15 @@ public class RepositoriesTest
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
+        RepositoryAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryAO[].class);
+        for (RepositoryAO r : getListResponseAO)
+        {
+            assertEquals(Status.ONLINE, r.getStatus());
+        }
+        
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
                 _systemAdminAuthToken);
@@ -630,8 +637,7 @@ public class RepositoriesTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        RepositoryAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
-                RepositoryAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryAO[].class);
         for (RepositoryAO r : getListResponseAO)
         {
             assertEquals(Status.ONLINE, r.getStatus());
@@ -642,7 +648,11 @@ public class RepositoriesTest
                 HttpMethod.POST, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+        
+        RepositoryAO repoAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryAO.class);
+        assertEquals(_repoInfoId, repoAO.getDocumentID());
+        assertEquals(Status.OFFLINE, repoAO.getStatus());
 
         // GET all - check that only our repository have stopped
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
@@ -669,8 +679,12 @@ public class RepositoriesTest
                 HttpMethod.POST, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check204NoContentResponse(responseCode.toString(), headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
+        repoAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryAO.class);
+        assertEquals(_repoInfoId, repoAO.getDocumentID());
+        assertEquals(Status.ONLINE, repoAO.getStatus());
+        
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
                 _systemAdminAuthToken);

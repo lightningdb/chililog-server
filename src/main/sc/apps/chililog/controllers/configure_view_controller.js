@@ -309,6 +309,11 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   content: null,
 
   /**
+   * Text to show in the success message text box
+   */
+  successMessage: null,
+
+  /**
    * Address of the write queue
    */
   writeQueueAddress: function() {
@@ -456,6 +461,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   showSaveSuccess: function() {
     var view = Chililog.configureRepositoryInfoDetailView.get('successMessage');
     var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
+    this.set('successMessage', '_successMessage'.loc());
 
     if (!SC.none(view)) {
       // Have to invokeLater because of webkit
@@ -468,6 +474,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
 
     this.setFocusOnField(field);
   }
+
 });
 
 /**********************************************************************************************************************

@@ -96,14 +96,26 @@ public class RepositoryManager
      * Should be called once at the start of the application
      * </p>
      */
-    public synchronized void start() throws ChiliLogException
+    public synchronized void start(boolean isStartUp) throws ChiliLogException
     {
         loadRepositories();
         for (Repository repo : _repositories)
         {
-            if (repo.getRepoInfo().getStartupStatus() == Status.ONLINE && repo.getStatus() != Status.ONLINE)
+            if (isStartUp)
             {
-                repo.start();
+                // If startup, be ruled by the startup status
+                if (repo.getRepoInfo().getStartupStatus() == Status.ONLINE && repo.getStatus() != Status.ONLINE)
+                {
+                    repo.start();
+                }
+            }
+            else
+            {
+                // If not startup, then start up everything that is not started
+                if (repo.getStatus() != Status.ONLINE)
+                {
+                    repo.start();
+                }
             }
         }
         return;

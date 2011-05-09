@@ -121,6 +121,8 @@ public class RepositoriesWorker extends Worker
         {
             UserBO user = this.getAuthenticatedUser();
             String action = this.getUriQueryStringParameter(ACTION_URI_QUERYSTRING_PARAMETER_NAME, false);
+            Object responseContent = null;
+
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
                 // Start/Stop/Reload all
@@ -134,7 +136,7 @@ public class RepositoriesWorker extends Worker
 
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
-                    RepositoryManager.getInstance().start();
+                    RepositoryManager.getInstance().start(false);
                 }
                 else if (action.equalsIgnoreCase(STOP_OPERATION))
                 {
@@ -148,6 +150,21 @@ public class RepositoriesWorker extends Worker
                 {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
+
+                Repository[] list = RepositoryManager.getInstance().getRepositories();
+                if (list != null && list.length > 0)
+                {
+                    ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
+                    for (Repository repo : list)
+                    {
+                        aoList.add(new RepositoryAO(repo));
+                    }
+
+                    if (!aoList.isEmpty())
+                    {
+                        responseContent = aoList.toArray(new RepositoryAO[] {});
+                    }
+                }
             }
             else
             {
@@ -156,8 +173,7 @@ public class RepositoriesWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
 
-                if (!user.isSystemAdministrator()
-                        && !user.hasRole(repo.getRepoInfo().getUIAdministratorUserRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoInfo().getUIAdministratorUserRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
@@ -175,10 +191,13 @@ public class RepositoriesWorker extends Worker
                 {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
+
+                // Return the status of the repository on which the action was performed
+                responseContent = new RepositoryAO(repo);
             }
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), null, null);
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
         catch (Exception ex)
         {
@@ -247,7 +266,7 @@ public class RepositoriesWorker extends Worker
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryManager.getInstance().getRepository(id);                
+                Repository repo = RepositoryManager.getInstance().getRepository(id);
                 if (repo == null)
                 {
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);

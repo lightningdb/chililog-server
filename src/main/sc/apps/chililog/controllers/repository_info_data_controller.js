@@ -85,9 +85,9 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
 
           // Find corresponding repository record
           var query = SC.Query.local(Chililog.RepositoryRecord, 'name={name}', {name: repoInfoAO.Name});
-          var repoRecord = Chililog.store.find(query);
-          if (repoRecord.get('length') > 0) {
-            repoInfoRecord.set('repository', repoRecord.objectAt(0));
+          var repoRecords = Chililog.store.find(query);
+          if (repoRecords.get('length') > 0) {
+            repoInfoRecord.set('repository', repoRecords.objectAt(0));
           }
           repoInfoRecord.fromApiObject(repoInfoAO);
         }

@@ -373,7 +373,7 @@ public class RepositoryTest
         MqManager.getInstance().start();
         
         // Start
-        RepositoryManager.getInstance().start();
+        RepositoryManager.getInstance().start(true);
         Repository[] repos = RepositoryManager.getInstance().getRepositories();
         for (Repository r : repos)
         {
@@ -388,7 +388,7 @@ public class RepositoryTest
         }
 
         // Start again - should not error
-        RepositoryManager.getInstance().start();
+        RepositoryManager.getInstance().start(true);
         Repository[] repos2 = RepositoryManager.getInstance().getRepositories();
         for (Repository r : repos2)
         {

@@ -97,7 +97,7 @@ Chililog.ConfigureUserListView = SC.View.design({
   }),
 
   refreshButton: SC.ButtonView.design({
-    layout: { top: 40, left: 150, width: 130 },
+    layout: { top: 40, left: 150, width: 80 },
     title: '_refresh',
     localize: YES,
     isEnabledBinding: SC.Binding.from('Chililog.configureUserListViewController.isRefreshing').oneWay().not(),
@@ -440,7 +440,7 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
   }),
 
   refreshButton: SC.ButtonView.design({
-    layout: { top: 40, left: 190, width: 130 },
+    layout: { top: 40, left: 190, width: 80 },
     title: '_refresh',
     localize: YES,
     isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoListViewController.isRefreshing').oneWay().not(),
@@ -555,8 +555,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
   successMessage: SC.LabelView.design({
     layout: { top: 40, centerX: 0, width: 200, height: 25, opacity: 0 },
     classNames: ['success'],
-    value: '_saveSuccess',
-    localize: YES
+    value: '_saveSuccess'.loc()
   }),
 
   body: SC.ScrollView.design({
