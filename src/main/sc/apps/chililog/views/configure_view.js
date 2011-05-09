@@ -6,6 +6,7 @@
 sc_require('views/image_view');
 sc_require('views/radio_view');
 sc_require('views/validators');
+sc_require('views/label_mixin');
 
 /**********************************************************************************************************************
  * Main
@@ -215,10 +216,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         classNames: ['data-item'],
         childViews: 'label field'.w(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureUserDetailView.Username',
-          localize: YES
+          value: '_configureUserDetailView.Username'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -239,10 +239,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         classNames: ['data-item'],
         childViews: 'label field'.w(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureUserDetailView.EmailAddress',
-          localize: YES
+          value: '_configureUserDetailView.EmailAddress'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -263,15 +262,13 @@ Chililog.ConfigureUserDetailView = SC.View.design({
 
         label: SC.LabelView.design({
           layout: { top: 15, left: 10, width: 200, height: 20 },
-          value: '_configureUserDetailView.DisplayName',
-          localize: YES
+          value: '_configureUserDetailView.DisplayName'.loc()
         }),
 
         help: SC.LabelView.design({
           classNames: ['help'],
           layout: { top: 35, left: 10, width: 170, height: 50 },
-          value: '_configureUserDetailView.DisplayName.Help',
-          localize: YES
+          value: '_configureUserDetailView.DisplayName.Help'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -286,10 +283,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         classNames: ['data-item'],
         childViews: 'label field'.w(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureUserDetailView.CurrentStatus',
-          localize: YES
+          value: '_configureUserDetailView.CurrentStatus'.loc()
         }),
 
         field: Chililog.RadioView.design({
@@ -311,10 +307,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         childViews: 'label field'.w(),
         isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').oneWay(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureUserDetailView.Password',
-          localize: YES
+          value: '_configureUserDetailView.Password'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -336,10 +331,9 @@ Chililog.ConfigureUserDetailView = SC.View.design({
         childViews: 'label field'.w(),
         isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').oneWay(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureUserDetailView.ConfirmPassword',
-          localize: YES
+          value: '_configureUserDetailView.ConfirmPassword'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -531,10 +525,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         classNames: ['data-item'],
         childViews: 'label field help'.w(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureRepositoryInfoDetailView.Name',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.Name'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -552,8 +545,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         help: SC.LabelView.design({
           layout: { top: 17, left: 420, right: 10, height: 30 },
           classNames: ['help'],
-          value: '_configureRepositoryInfoDetailView.Name.Help',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.Name.Help'.loc()
         })
       }),
 
@@ -564,8 +556,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
         label: SC.LabelView.design({
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureRepositoryInfoDetailView.DisplayName',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.DisplayName'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -582,8 +573,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
         label: SC.LabelView.design({
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureRepositoryInfoDetailView.Description',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.Description'.loc()
         }),
 
         field: SC.TextFieldView.design({
@@ -600,8 +590,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
         label: SC.LabelView.design({
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureRepositoryInfoDetailView.CurrentStatus',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.CurrentStatus'.loc()
         }),
 
         label2: SC.LabelView.design({
@@ -616,10 +605,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         classNames: ['data-item'],
         childViews: 'label field'.w(),
 
-        label: SC.LabelView.design({
+        label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
           layout: { top: 15, left: 10, width: 200, height: 30 },
-          value: '_configureRepositoryInfoDetailView.StartupStatus',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.StartupStatus'.loc()
         }),
 
         field: Chililog.RadioView.design({
@@ -644,8 +632,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         writeDivider: SC.LabelView.design({
           layout: { top: 0, left: 0, right: 0, height: 49 },
           classNames: ['data-divider'],
-          value: '_configureRepositoryInfoDetailView.WriteDivider',
-          localize: YES
+          value: '_configureRepositoryInfoDetailView.WriteDivider'.loc()
         }),
 
         writeQueueAddress: SC.View.design({
@@ -655,8 +642,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueAddress',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueAddress'.loc()
           }),
 
           label2: SC.LabelView.design({
@@ -673,8 +659,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueUsername',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueUsername'.loc()
           }),
 
           label2: SC.LabelView.design({
@@ -691,8 +676,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueuePassword',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueuePassword'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -709,11 +693,10 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueDurable',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueDurable'.loc()
           }),
 
-          field: Chililog.RadioView.design({
+          field: Chililog.RadioView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 210, width: 500, height: 80 },
             items: [
               { title: '_configureRepositoryInfoDetailView.WriteQueueDurable.Yes'.loc(), value: YES },
@@ -730,10 +713,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field help'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.MaxKeywords',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.MaxKeywords'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -749,8 +731,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.MaxKeywords.Help',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.MaxKeywords.Help'.loc()
           })
         }),
 
@@ -759,10 +740,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field help'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -778,8 +758,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount.Help',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueWorkerCount.Help'.loc()
           })
         }),
 
@@ -788,10 +767,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field help'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -807,8 +785,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           help: SC.LabelView.design({
             layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory.Help',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemory.Help'.loc()
           })
         }),
 
@@ -817,10 +794,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryPolicy',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueueMaxMemoryPolicy'.loc()
           }),
 
           field: Chililog.RadioView.design({
@@ -841,10 +817,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field help'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageSize',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageSize'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -859,8 +834,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           help: SC.LabelView.design({
             layout: { top: 17, left: 320, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageSize.Help',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageSize.Help'.loc()
           })
         }),
 
@@ -869,10 +843,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           classNames: ['data-item'],
           childViews: 'label field help'.w(),
 
-          label: SC.LabelView.design({
+          label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -887,8 +860,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
           help: SC.LabelView.design({
             layout: { top: 17, left: 270, right: 10, height: 30 },
             classNames: ['help'],
-            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Help',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.WriteQueuePageCountCache.Help'.loc()
           })
         })
       }),
@@ -911,8 +883,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.ReadQueueAddress',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.ReadQueueAddress'.loc()
           }),
 
           label2: SC.LabelView.design({
@@ -929,8 +900,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.ReadQueueUsername',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.ReadQueueUsername'.loc()
           }),
 
           label2: SC.LabelView.design({
@@ -947,8 +917,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.ReadQueuePassword',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.ReadQueuePassword'.loc()
           }),
 
           field: SC.TextFieldView.design({
@@ -964,8 +933,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
 
           label: SC.LabelView.design({
             layout: { top: 15, left: 10, width: 200, height: 30 },
-            value: '_configureRepositoryInfoDetailView.ReadQueueDurable',
-            localize: YES
+            value: '_configureRepositoryInfoDetailView.ReadQueueDurable'.loc()
           }),
 
           field: Chililog.RadioView.design({

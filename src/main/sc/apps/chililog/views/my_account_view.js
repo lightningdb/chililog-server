@@ -3,6 +3,8 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+sc_require('views/label_mixin');
+
 // *********************************************************************************************************************
 // My Profile
 // *********************************************************************************************************************
@@ -35,10 +37,9 @@ Chililog.MyProfileView = SC.View.design({
     classNames: ['data-item'],
     childViews: 'label field'.w(),
 
-    label: SC.LabelView.design({
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_myAccountView.Username',
-      localize: YES
+      value: '_myAccountView.Username'.loc()
     }),
 
     field: SC.TextFieldView.design({
@@ -59,10 +60,9 @@ Chililog.MyProfileView = SC.View.design({
     classNames: ['data-item'],
     childViews: 'label field'.w(),
 
-    label: SC.LabelView.design({
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin,{
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_myAccountView.EmailAddress',
-      localize: YES
+      value: '_myAccountView.EmailAddress'.loc()
     }),
 
     field: SC.TextFieldView.design({
@@ -83,15 +83,13 @@ Chililog.MyProfileView = SC.View.design({
 
     label: SC.LabelView.design({
       layout: { top: 15, left: 10, width: 200, height: 20 },
-      value: '_myAccountView.DisplayName',
-      localize: YES
+      value: '_myAccountView.DisplayName'.loc()
     }),
 
     help: SC.LabelView.design({
       classNames: ['help'],
       layout: { top: 35, left: 10, width: 170, height: 50 },
-      value: '_myAccountView.DisplayName.Help',
-      localize: YES
+      value: '_myAccountView.DisplayName.Help'.loc()
     }),
 
     field: SC.TextFieldView.design({
@@ -174,10 +172,9 @@ Chililog.ChangePasswordView = SC.View.design({
     classNames: ['data-item'],
     childViews: 'label field'.w(),
 
-    label: SC.LabelView.design({
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin,{
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_myAccountView.OldPassword',
-      localize: YES
+      value: '_myAccountView.OldPassword'.loc()
     }),
 
     field: SC.TextFieldView.design({
@@ -192,10 +189,9 @@ Chililog.ChangePasswordView = SC.View.design({
     classNames: ['data-item'],
     childViews: 'label field'.w(),
 
-    label: SC.LabelView.design({
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin,{
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_myAccountView.NewPassword',
-      localize: YES
+      value: '_myAccountView.NewPassword'.loc()
     }),
 
     field: SC.TextFieldView.design({
@@ -216,10 +212,9 @@ Chililog.ChangePasswordView = SC.View.design({
     classNames: ['data-item'],
     childViews: 'label field'.w(),
 
-    label: SC.LabelView.design({
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin,{
       layout: { top: 15, left: 10, width: 200, height: 20 },
-      value: '_myAccountView.ConfirmNewPassword',
-      localize: YES
+      value: '_myAccountView.ConfirmNewPassword'.loc()
     }),
 
     field: SC.TextFieldView.design({

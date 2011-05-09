@@ -3,7 +3,7 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
-sc_require('controllers/server_api_mixin');
+sc_require('controllers/data_controller_mixin');
 
 /** @class
 

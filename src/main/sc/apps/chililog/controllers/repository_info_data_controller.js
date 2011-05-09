@@ -3,7 +3,7 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
-sc_require('controllers/server_api_mixin');
+sc_require('controllers/data_controller_mixin');
 
 
 /** @class
@@ -142,8 +142,8 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
     record.set(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME,  0);
     record.set('maxKeywords', 20);
     record.set('writeQueueWorkerCount',  1);
-    record.set('writeQueueMaxMemory',  10485760); //10MB
-    record.set('writeQueuePageSize',  10485760);  //10MB
+    record.set('writeQueueMaxMemory',  20971520); //20MB
+    record.set('writeQueuePageSize',  4194304);  //4MB
     record.set('writeQueuePageCountCache', 3);
     return record;
   },
