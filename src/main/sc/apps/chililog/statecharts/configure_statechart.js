@@ -26,6 +26,9 @@ Chililog.ConfigureState = SC.State.extend({
    * List users in table view
    */
   viewingUsers: SC.State.design({
+
+    initialSubstate: 'viewingUsers_Idle',
+
     enterState: function() {
       var ctrl = Chililog.configureUserListViewController;
       if (SC.none(ctrl.get('content'))) {
@@ -37,7 +40,56 @@ Chililog.ConfigureState = SC.State.extend({
     },
 
     exitState: function() {
+      return;
+    },
+
+    /**
+     * Let the user browser repositories
+     */
+    viewingUsers_Idle: SC.State.design({
+      enterState: function() {
+        return;
+      },
+      exitState: function() {
+        return;
+      }
+    }),
+
+    /**
+     * Trigger refreshing of repository data
+     */
+    viewingUsers_Refreshing: SC.State.design({
+      enterState: function() {
+        this.doRefresh();
+      },
+
+      exitState: function() {
+      },
+
+      doRefresh: function() {
+        Chililog.progressPane.show('_refreshing'.loc());
+        Chililog.userDataController.synchronizeWithServer(NO, this, this.endRefresh);
+      },
+
+      endRefresh: function(params, error) {
+        var ctrl = Chililog.configureUserListViewController;
+        if (SC.none(error)) {
+          Chililog.progressPane.hideWithoutFlashing();
+        } else {
+          Chililog.progressPane.hide();
+          ctrl.showError(error);
+        }
+        this.gotoState('viewingUsers_Idle');
+      }
+    }),
+
+    /**
+     * Refresh event
+     */
+    refresh: function() {
+      this.gotoState('viewingUsers_Refreshing');
     }
+
   }),
 
   /**
@@ -250,6 +302,7 @@ Chililog.ConfigureState = SC.State.extend({
    * List repositories in table view
    */
   viewingRepositoryInfo: SC.State.design({
+
     initialSubstate: 'viewingRepositoryInfo_Idle',
 
     enterState: function() {
@@ -300,7 +353,65 @@ Chililog.ConfigureState = SC.State.extend({
           Chililog.progressPane.hideWithoutFlashing();
         } else {
           Chililog.progressPane.hide();
-          ctrl.showError(error)
+          ctrl.showError(error);
+        }
+        this.gotoState('viewingRepositoryInfo_Idle');
+      }
+    }),
+
+    /**
+     * Trigger starting a repository
+     */
+    viewingRepositoryInfo_Starting: SC.State.design({
+      enterState: function(context) {
+        var documentID = context['documentID'];
+        this.doStart(documentID);
+      },
+
+      exitState: function() {
+      },
+
+      doStart: function(documentID) {
+        Chililog.progressPane.show('_starting'.loc());
+        Chililog.repositoryDataController.start(documentID, this, this.endStart);
+      },
+
+      endStart: function(documentID, params, error) {
+        var ctrl = Chililog.configureRepositoryInfoListViewController;
+        if (SC.none(error)) {
+          Chililog.progressPane.hideWithoutFlashing();
+        } else {
+          Chililog.progressPane.hide();
+          ctrl.showError(error);
+        }
+        this.gotoState('viewingRepositoryInfo_Idle');
+      }
+    }),
+
+    /**
+     * Trigger stopping a repository
+     */
+    viewingRepositoryInfo_Stopping: SC.State.design({
+      enterState: function(context) {
+        var documentID = context['documentID'];
+        this.doStop(documentID);
+      },
+
+      exitState: function() {
+      },
+
+      doStop: function(documentID) {
+        Chililog.progressPane.show('_stopping'.loc());
+        Chililog.repositoryDataController.stop(documentID, this, this.endStop);
+      },
+
+      endStop: function(documentID, params, error) {
+        var ctrl = Chililog.configureRepositoryInfoListViewController;
+        if (SC.none(error)) {
+          Chililog.progressPane.hideWithoutFlashing();
+        } else {
+          Chililog.progressPane.hide();
+          ctrl.showError(error);
         }
         this.gotoState('viewingRepositoryInfo_Idle');
       }
@@ -311,6 +422,24 @@ Chililog.ConfigureState = SC.State.extend({
      */
     refresh: function() {
       this.gotoState('viewingRepositoryInfo_Refreshing');
+    },
+
+    /**
+     * Start repository event
+     *
+     * @param {String} documentID id of repository to start
+     */
+    start: function(documentID) {
+      this.gotoState('viewingRepositoryInfo_Starting', {documentID: documentID});
+    },
+
+    /**
+     * Start repository event
+     *
+     * @param {String} documentID id of repository to start
+     */
+    stop: function(documentID) {
+      this.gotoState('viewingRepositoryInfo_Stopping', {documentID: documentID});
     }
 
   }),

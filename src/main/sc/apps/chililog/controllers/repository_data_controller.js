@@ -153,7 +153,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       var query = SC.Query.local(Chililog.RepositoryRecord, 'name={name}', {name: repoInfoRecord.get('name')});
       var repoRecords = Chililog.store.find(query);
       if (repoRecords.get('length') > 0) {
-        repoInfoRecord.set('repository', repoRecords.objectAt(0));
+        repoInfoRecord.updateStatus(repoRecords.objectAt(0));
       }
     });
     Chililog.store.commitRecords();
@@ -185,7 +185,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
-    var url = '/api/repository/' + documentID + '?action=start';
+    var url = '/api/repositories/' + documentID + '?action=start';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget,
       callbackFunction: callbackFunction, callbackParams: callbackParams 
@@ -253,7 +253,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
-    var url = '/api/repository/' + documentID + '?action=stop';
+    var url = '/api/repositories/' + documentID + '?action=stop';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget,
       callbackFunction: callbackFunction, callbackParams: callbackParams 
@@ -319,7 +319,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
-    var url = '/api/repository?action=start';
+    var url = '/api/repositories?action=start';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endStartAll', params).send({dummy: 'data'});
@@ -378,7 +378,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
-    var url = '/api/repository?action=stop';
+    var url = '/api/repositories?action=stop';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endStopAll', params).send({dummy: 'data'});

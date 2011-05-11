@@ -35,21 +35,42 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   maxKeywords: SC.Record.attr(Number),
 
-  repository: SC.Record.toOne('Chililog.RepositoryRecord'),
+  /**
+   * Flag to indicate if this repository is online or not
+   * This is set during the SYNC and is not sent to the server for saving.
+   * @type boolean
+   */
+  isOnline: SC.Record.attr(Boolean),
 
-  currentStatus: function() {
-    var s = this.getPath('repository.currentStatus')
-    if (SC.empty(s)) {
-      // Assume offline
-      s = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
+  /**
+   * Current status code: ONLINE or OFFLINE
+   * This is set during the SYNC and is not sent to the server for saving.
+   * @type String
+   */
+  currentStatus: SC.Record.attr(String),
+
+  /**
+   * Localized text description of the status
+   * This is set during the SYNC and is not sent to the server for saving.
+   * @type String
+   */
+  currentStatusText: SC.Record.attr(String),
+
+  /**
+   * Function called to update the status using the repository record returned from the server
+   * @param {Chililog.RepositoryRecord} repositoryRecord
+   */
+  updateStatus: function(repositoryRecord) {
+    var s = repositoryRecord.get('currentStatus');
+    this.set('isOnline', s === 'ONLINE');
+    this.set('currentStatus', s);
+
+    var text = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
+    if (!SC.empty(s) && s === 'ONLINE') {
+      text = '_configureRepositoryInfoDetailView.Status.Online'.loc();
     }
-    else if (s === 'ONLINE') {
-      s = '_configureRepositoryInfoDetailView.Status.Online'.loc();
-    } else if (s === 'OFFLINE') {
-      s = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
-    }
-    return s;
-  }.property('repository'),
+    this.set('currentStatusText', text);
+  },
 
   /**
    * Maps server api data into this record

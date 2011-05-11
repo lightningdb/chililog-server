@@ -24,7 +24,9 @@ SC.stringsFor('English', {
   '_moreActions': 'More Actions',
   '_saveSuccess': 'Changes successfully saved',
   '_start': 'Start',
+  '_starting': 'Starting ...',
   '_stop': 'Stop',
+  '_stopping': 'Stopping ...',
 
   '_thousandSeparator': ',',
 

@@ -20,20 +20,14 @@ Chililog.RepositoryRecord = SC.Record.extend(
   name: SC.Record.attr(String),
   currentStatus: SC.Record.attr(String),
 
-
   /**
    * Maps server api data into this record
    *
    * @param {Object} repoInfoAO
    */
   fromApiObject: function(repoInfoAO) {
-    // If version has not changed, then there's nothing to update
-    var recordVersion = this.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
-    var apiObjectVersion = repoInfoAO[Chililog.DOCUMENT_VERSION_AO_FIELD_NAME ];
-    if (recordVersion === apiObjectVersion) {
-      return;
-    }
-
+    // Ignore version check because this is a status update. We always want the latest status.
+    // The documentID and documentVersion is that of the repo info record
     for (var i = 0; i < Chililog.REPOSITORY_RECORD_MAP.length; i++) {
       var map = Chililog.REPOSITORY_RECORD_MAP[i];
       var recordPropertyName = map[0];

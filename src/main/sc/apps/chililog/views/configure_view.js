@@ -421,7 +421,7 @@ Chililog.configureUserDetailView = Chililog.ConfigureUserDetailView.create();
  */
 Chililog.ConfigureRepositoryInfoListView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title createButton refreshButton table'.w(),
+  childViews: 'title createButton refreshButton toggleStartStopButton table'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -448,6 +448,14 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
     action: 'refresh'
   }),
 
+  toggleStartStopButton: SC.ButtonView.design({
+    layout: { top: 40, left: 280, width: 80 },
+    titleBinding: 'Chililog.configureRepositoryInfoListViewController.toggleStartStopButtonTitle',
+    isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoListViewController.selectedRecord').oneWay().bool(),
+    target: Chililog.configureRepositoryInfoListViewController,
+    action: 'toggleStartStop'
+  }),
+
   table: SC.TableView.design({
     layout: { top: 80, left: 10, right: 10, bottom: 10 },
     classNames: ['table'],
@@ -465,7 +473,7 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
       SC.TableColumn.create({
         key:   'displayName',
         title: '_configureRepositoryInfoDetailView.DisplayName'.loc(),
-        width: 250,
+  selectionSet      width: 250,
         isReorderable: NO,
         formatter:  function(v) {
           return SC.none(v) ? '' : v;
@@ -476,9 +484,14 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
         title: '_configureRepositoryInfoDetailView.CurrentStatus'.loc(),
         width: 120,
         isReorderable: NO,
-
+        formatter:  function(v) {
+          return v === 'ONLINE' ? '_configureRepositoryInfoDetailView.Status.Online'.loc() : '_configureRepositoryInfoDetailView.Status.Offline'.loc();
+        },
+        
         /**
          * Special view for hi-lighting Offline repositories on RED
+         * Note that we bind to the status code and not text so that we can standardise on the user of the
+         * status code in the CSS class name.
          */
         exampleView: SC.LabelView.extend({
           layout: {left: 10, right: 10},
@@ -491,11 +504,11 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
           }.observes('contentValueKey'),
 
           render: function(context, firstTime) {
-            if (firstTime) {
-              var classArray = [];
-              classArray.push('repository-status-' + (this.get('value').toLowerCase()));
-              context.addClass(classArray);
+            if (!firstTime) {
+              context.removeClass('repository-status-online');
+              context.removeClass('repository-status-offline');
             }
+            context.addClass('repository-status-' + (this.get('value').toLowerCase()));
             sc_super();
           }
         })
@@ -641,7 +654,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
         label2: SC.LabelView.design({
           layout: { top: 10, left: 210, width: 300, height: 30 },
           classNames: ['readonly'],
-          valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.currentStatus'
+          valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.currentStatusText'
         })
       }),
 
