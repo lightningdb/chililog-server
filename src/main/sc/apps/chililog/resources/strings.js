@@ -17,6 +17,7 @@ SC.stringsFor('English', {
   '_save': 'Save',
   '_cancel': 'Cancel',
   '_refresh': 'Refresh',
+  '_refreshing': 'Refreshing ...',
   '_delete': 'Delete',
   '_deleteSelected': 'Delete Selected',
   '_back': '\< Back',
@@ -161,11 +162,12 @@ SC.stringsFor('English', {
   // ********************************************************
   // Data controllers
   // ********************************************************
+  '_documentIDError': 'Expected document id "%@" but received "%@" from server.',
+
   '_sessionDataController.TokenNotFoundInResponseError': 'Token not found in authentication response',
   '_sessionDataController.VersionNotFoundInResponseError': 'Version number not found in authentication response',
   '_sessionDataController.BuildTimestampNotFoundInResponseError': 'Build timestamp not found in authentication response',
 
-  '_repositoryDataController.DocumentIDError': 'Expected document id "%@" but received "%@" from server.',
 
   'end': 'end'
 });

@@ -27,9 +27,12 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
    *
    * @param {Boolean} clearLocalData YES will delete data from local store before loading.
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  synchronizeWithServer: function(clearLocalData, callbackTarget, callbackFunction) {
+  synchronizeWithServer: function(clearLocalData, callbackTarget, callbackFunction, callbackParams) {
     // If operation already under way, just exit
     var isSynchronizingWithServer = this.get('isSynchronizingWithServer');
     if (isSynchronizingWithServer) {
@@ -54,7 +57,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
     this.set('isSynchronizingWithServer', YES);
 
     // Get data
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     var url = '/api/repository_info';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     request.notify(this, 'endSynchronizeWithServer', params).send();
@@ -124,7 +127,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -164,23 +167,32 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
    * Saves the user record to the server
    * @param {Chililog.RepositoryInfoRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was saved
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  save: function(record, callbackTarget, callbackFunction) {
+  save: function(record, callbackTarget, callbackFunction, callbackParams) {
     var data = record.toApiObject();
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
+    var documentID = record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     var isAdding = (SC.none(documentVersion) || documentVersion ===  0);
     var request;
+
     if (isAdding) {
       var url = '/api/repository_info/';
       request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     } else {
-      var url = '/api/repository_info/' + record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
+      var url = '/api/repository_info/' + documentID;
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
-    var params = { isAdding: isAdding, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { isAdding: isAdding, documentID: documentID,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    }
+      ;
     request.notify(this, 'endSave', params).send(data);
 
     return;
@@ -196,20 +208,21 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
    */
   endSave: function(response, params) {
     var error = null;
-    var documentID = null;
     try {
       // Check status
       this.checkResponse(response);
 
       // Save new authenticated user details
       var apiObject = response.get('body');
-      documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
+      if (params.documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw Chililog.$error('_documentIDError', [ params.documentID, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
+      }      
 
       var record = null;
       if (params.isAdding) {
-        record = Chililog.store.createRecord(Chililog.RepositoryInfoRecord, {}, documentID);
+        record = Chililog.store.createRecord(Chililog.RepositoryInfoRecord, {}, params.documentID);
       } else {
-        record = Chililog.store.find(Chililog.RepositoryInfoRecord, documentID);
+        record = Chililog.store.find(Chililog.RepositoryInfoRecord, params.documentID);
       }
       record.fromApiObject(apiObject);
       Chililog.store.commitRecords();
@@ -221,7 +234,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, documentID, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -245,14 +258,18 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
    *
    * @param {String} documentID id of record to delete
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was saved
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  erase: function(documentID, callbackTarget, callbackFunction) {
+  erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var url = '/api/repository_info/' + documentID;
     var request = SC.Request.deleteUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endErase', params).send({dummy: 'data'});
 
     return;
@@ -284,7 +301,7 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

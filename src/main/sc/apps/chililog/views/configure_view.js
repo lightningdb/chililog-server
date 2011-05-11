@@ -1,5 +1,5 @@
 // ==========================================================================
-// Project:   Chililog - mainPage
+// Project:   Chililog
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
@@ -169,7 +169,7 @@ Chililog.ConfigureUserListView = SC.View.design({
           }.observes('contentValueKey'),
 
           render: function(context, firstTime) {
-            if(firstTime) {
+            if (firstTime) {
               var classArray = [];
               classArray.push('user-status-' + (this.get('value').toLowerCase()));
               context.addClass(classArray);
@@ -207,8 +207,8 @@ Chililog.ConfigureUserDetailView = SC.View.design({
     title: '_back',
     localize: YES,
     isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureUserListViewController,
-    action: 'show'
+    target: Chililog.configureUserDetailViewController,
+    action: 'back'
   }),
 
   deleteButton: SC.ButtonView.design({
@@ -491,13 +491,13 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
           }.observes('contentValueKey'),
 
           render: function(context, firstTime) {
-            if(firstTime) {
+            if (firstTime) {
               var classArray = [];
               classArray.push('repository-status-' + (this.get('value').toLowerCase()));
               context.addClass(classArray);
             }
             sc_super();
-          }          
+          }
         })
       }),
       SC.TableColumn.create({
@@ -539,8 +539,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
     title: '_back',
     localize: YES,
     isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureRepositoryInfoListViewController,
-    action: 'show'
+    target: Chililog.configureRepositoryInfoDetailViewController,
+    action: 'back'
   }),
 
   deleteButton: SC.ButtonView.design({
@@ -1036,3 +1036,5 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
  * Instance configure repository view
  */
 Chililog.configureRepositoryInfoDetailView = Chililog.ConfigureRepositoryInfoDetailView.create();
+
+

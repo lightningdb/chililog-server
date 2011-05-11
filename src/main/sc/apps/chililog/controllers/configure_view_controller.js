@@ -211,9 +211,16 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   },
 
   /**
-   * Trigger event to discard changes to the user's profile
+   * Trigger event to prompt to discard changes
    */
   discardChanges: function() {
+    Chililog.statechart.sendEvent('discardChanges');
+  },
+
+  /**
+   * Trigger event to discard changes and go back to the view page
+   */
+  back: function() {
     Chililog.statechart.sendEvent('discardChanges');
   },
 
@@ -245,7 +252,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
 /**
  * Controls the data when configuring users
  */
-Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create({
+Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create(Chililog.ViewControllerMixin, {
 
   /**
    * Show list of repositories in the right hand side details pane
@@ -285,16 +292,8 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create({
    * Since this is a simple async call, skip the statechart and directly call the data controller
    */
   refresh: function() {
-    Chililog.repositoryDataController.synchronizeWithServer(NO, YES, this, this.endRefresh);
-    this.set('isRefreshing', YES);
-  },
-
-  /**
-   * Finish refreshing
-   */
-  endRefresh: function() {
-    this.set('isRefreshing', NO);
-  }  
+    Chililog.statechart.sendEvent('refresh');
+  }
 });
 
 /**
@@ -449,9 +448,16 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   },
 
   /**
-   * Trigger event to discard changes to the user's profile
+   * Trigger event to prompt to discard changes
    */
   discardChanges: function() {
+    Chililog.statechart.sendEvent('discardChanges');
+  },
+
+  /**
+   * Trigger event to discard changes and go back to the view page
+   */
+  back: function() {
     Chililog.statechart.sendEvent('discardChanges');
   },
 

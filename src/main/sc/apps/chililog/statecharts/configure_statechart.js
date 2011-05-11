@@ -27,12 +27,13 @@ Chililog.ConfigureState = SC.State.extend({
    */
   viewingUsers: SC.State.design({
     enterState: function() {
-      if (SC.none(Chililog.configureUserListViewController.get('content'))){
+      var ctrl = Chililog.configureUserListViewController;
+      if (SC.none(ctrl.get('content'))) {
         var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
         var users = Chililog.store.find(userQuery);
-        Chililog.configureUserListViewController.set('content', users);
+        ctrl.set('content', users);
       }
-      Chililog.configureUserListViewController.show();
+      ctrl.show();
     },
 
     exitState: function() {
@@ -54,9 +55,10 @@ Chililog.ConfigureState = SC.State.extend({
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
         var record = Chililog.userDataController.create();
-        Chililog.configureUserDetailViewController.set('content', record);
-        Chililog.configureUserDetailViewController.set('isSaving', NO);
-        Chililog.configureUserDetailViewController.show();
+        var ctrl = Chililog.configureUserDetailViewController;
+        ctrl.set('content', record);
+        ctrl.set('isSaving', NO);
+        ctrl.show();
       }
     },
 
@@ -104,9 +106,10 @@ Chililog.ConfigureState = SC.State.extend({
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
         var record = Chililog.userDataController.edit(context['documentID']);
-        Chililog.configureUserDetailViewController.set('content', record);
-        Chililog.configureUserDetailViewController.set('isSaving', NO);
-        Chililog.configureUserDetailViewController.show();
+        var ctrl = Chililog.configureUserDetailViewController;
+        ctrl.set('content', record);
+        ctrl.set('isSaving', NO);
+        ctrl.show();
       }
     },
 
@@ -174,9 +177,10 @@ Chililog.ConfigureState = SC.State.extend({
      * Callback from save() after we get a response from the server to process the returned info.
      *
      * @param {String} document id of the saved record. Null if error.
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endSave: function(documentID, error) {
+    endSave: function(documentID, params, error) {
       var ctrl = Chililog.configureUserDetailViewController;
       if (SC.none(error)) {
         // Show saved record
@@ -223,9 +227,10 @@ Chililog.ConfigureState = SC.State.extend({
      * Callback from save() after we get a response from the server to process the returned info.
      *
      * @param {String} document id of the saved record. Null if error.
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endErase: function(documentID, error) {
+    endErase: function(documentID, params, error) {
       var ctrl = Chililog.configureUserDetailViewController;
       if (SC.none(error)) {
         this.gotoState('viewingUsers');
@@ -245,17 +250,69 @@ Chililog.ConfigureState = SC.State.extend({
    * List repositories in table view
    */
   viewingRepositoryInfo: SC.State.design({
+    initialSubstate: 'viewingRepositoryInfo_Idle',
+
     enterState: function() {
-      if (SC.none(Chililog.configureRepositoryInfoListViewController.get('content'))){
+      var ctrl = Chililog.configureRepositoryInfoListViewController;
+      if (SC.none(ctrl.get('content'))) {
         var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
         var repoInfo = Chililog.store.find(repoInfoQuery);
-        Chililog.configureRepositoryInfoListViewController.set('content', repoInfo);
+        ctrl.set('content', repoInfo);
       }
-      Chililog.configureRepositoryInfoListViewController.show();
+      ctrl.show();
     },
 
     exitState: function() {
+      return;
+    },
+
+    /**
+     * Let the user browser repositories
+     */
+    viewingRepositoryInfo_Idle: SC.State.design({
+      enterState: function() {
+        return;
+      },
+      exitState: function() {
+        return;
+      }
+    }),
+
+    /**
+     * Trigger refreshing of repository data
+     */
+    viewingRepositoryInfo_Refreshing: SC.State.design({
+      enterState: function() {
+        this.doRefresh();
+      },
+
+      exitState: function() {
+      },
+
+      doRefresh: function() {
+        Chililog.progressPane.show('_refreshing'.loc());
+        Chililog.repositoryDataController.synchronizeWithServer(NO, YES, this, this.endRefresh);
+      },
+
+      endRefresh: function(params, error) {
+        var ctrl = Chililog.configureRepositoryInfoListViewController;
+        if (SC.none(error)) {
+          Chililog.progressPane.hideWithoutFlashing();
+        } else {
+          Chililog.progressPane.hide();
+          ctrl.showError(error)
+        }
+        this.gotoState('viewingRepositoryInfo_Idle');
+      }
+    }),
+
+    /**
+     * Refresh event
+     */
+    refresh: function() {
+      this.gotoState('viewingRepositoryInfo_Refreshing');
     }
+
   }),
 
   /**
@@ -273,9 +330,10 @@ Chililog.ConfigureState = SC.State.extend({
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
         var record = Chililog.repositoryInfoDataController.create();
-        Chililog.configureRepositoryInfoDetailViewController.set('content', record);
-        Chililog.configureRepositoryInfoDetailViewController.set('isSaving', NO);
-        Chililog.configureRepositoryInfoDetailViewController.show();
+        var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+        ctrl.set('content', record);
+        ctrl.set('isSaving', NO);
+        ctrl.show();
       }
     },
 
@@ -294,19 +352,19 @@ Chililog.ConfigureState = SC.State.extend({
     },
 
     /**
-      * Save changes
-      */
-     save: function() {
-       this.gotoState('savingRepositoryInfo', {isSaving: YES});
-     },
+     * Save changes
+     */
+    save: function() {
+      this.gotoState('savingRepositoryInfo', {isSaving: YES});
+    },
 
-     /**
-      * Discard changes and reload our data to the
-      */
-     discardChanges: function() {
-       this.gotoState('viewingRepositoryInfo');
-     }
-    
+    /**
+     * Discard changes and reload our data to the
+     */
+    discardChanges: function() {
+      this.gotoState('viewingRepositoryInfo');
+    }
+
   }),
 
   /**
@@ -324,9 +382,10 @@ Chililog.ConfigureState = SC.State.extend({
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
         var record = Chililog.repositoryInfoDataController.edit(context['documentID']);
-        Chililog.configureRepositoryInfoDetailViewController.set('content', record);
-        Chililog.configureRepositoryInfoDetailViewController.set('isSaving', NO);
-        Chililog.configureRepositoryInfoDetailViewController.show();
+        var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+        ctrl.set('content', record);
+        ctrl.set('isSaving', NO);
+        ctrl.show();
       }
     },
 
@@ -392,9 +451,10 @@ Chililog.ConfigureState = SC.State.extend({
      * Callback from save() after we get a response from the server to process the returned info.
      *
      * @param {String} documentID of the saved record. Null if error.
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endSave: function(documentID, error) {
+    endSave: function(documentID, params, error) {
       var ctrl = Chililog.configureRepositoryInfoDetailViewController;
       if (SC.none(error)) {
         // Show saved record
@@ -441,9 +501,10 @@ Chililog.ConfigureState = SC.State.extend({
      * Callback from save() after we get a response from the server to process the returned info.
      *
      * @param {String} document id of the saved record. Null if error.
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endErase: function(documentID, error) {
+    endErase: function(documentID, params, error) {
       var ctrl = Chililog.configureRepositoryInfoDetailViewController;
       if (SC.none(error)) {
         this.gotoState('viewingRepositoryInfo');
@@ -454,7 +515,7 @@ Chililog.ConfigureState = SC.State.extend({
       }
     }
   }),
-  
+
 /*********************************************************************************************************************
  * Events
  ********************************************************************************************************************/

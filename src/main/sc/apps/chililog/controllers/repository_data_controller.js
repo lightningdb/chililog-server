@@ -27,9 +27,12 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    * @param {Boolean} synchronizeRepositoryInfo YES will chain a repository info refresh after this sync has finished.
    * In this event, callback will only be called after synchronization with RepositoryInfo has finished.
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  synchronizeWithServer: function(clearLocalData, synchronizeRepositoryInfo, callbackTarget, callbackFunction) {
+  synchronizeWithServer: function(clearLocalData, synchronizeRepositoryInfo, callbackTarget, callbackFunction, callbackParams) {
     // If operation already under way, just exit
     var isSynchronizingWithServer = this.get('isSynchronizingWithServer');
     if (isSynchronizingWithServer) {
@@ -57,7 +60,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     // Get data
     var params = {
       clearLocalData: clearLocalData, synchronizeRepositoryInfo: synchronizeRepositoryInfo,
-      callbackTarget: callbackTarget, callbackFunction: callbackFunction
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
     };
     var url = '/api/repositories';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
@@ -91,11 +94,12 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     if (SC.none(params.synchronizeRepositoryInfo)) {
       // Callback
       if (!SC.none(params.callbackFunction)) {
-        params.callbackFunction.call(params.callbackTarget, error);
+        params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
       }
     } else {
       // Chain sync
-      Chililog.repositoryInfoDataController.synchronizeWithServer(params.clearLocalData, params.callbackTarget, params.callbackFunction);
+      Chililog.repositoryInfoDataController.synchronizeWithServer(params.clearLocalData, params.callbackTarget,
+        params.callbackFunction, params.callbackParams);
     }
 
     // Return YES to signal handling of callback
@@ -166,9 +170,13 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    * Starts a specific repository
    * @param {String} documentID record to start
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was to be started.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  start: function(documentID, callbackTarget, callbackFunction) {
+  start: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     // Don't run if we are doing stuff
     if (this.get('isStartingOrStopping')) {
       return;
@@ -179,7 +187,9 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var url = '/api/repository/' + documentID + '?action=start';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { documentID: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams 
+    };
     request.notify(this, 'endStart', params).send({dummy: 'data'});
 
     return;
@@ -202,7 +212,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       // Get and check data
       var repoAO = response.get('body');
       if (params.documentID !== repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw Chililog.$error('_repositoryDataController.DocumentIDError', [ params.documentID, repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
+        throw Chililog.$error('_documentIDError', [ params.documentID, repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
       }
 
       // Process response
@@ -217,7 +227,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, params.documentID, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -228,9 +238,13 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    * Stops a specific repository
    * @param {String} documentID record to stop
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the repository to be stopped.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  stop: function(documentID, callbackTarget, callbackFunction) {
+  stop: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     // Don't run if we are doing stuff
     if (this.get('isStartingOrStopping')) {
       return;
@@ -241,7 +255,9 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var url = '/api/repository/' + documentID + '?action=stop';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { documentID: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams 
+    };
     request.notify(this, 'endStop', params).send({dummy: 'data'});
 
     return;
@@ -264,7 +280,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       // Get and check data
       var repoAO = response.get('body');
       if (params.documentID !== repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw Chililog.$error('_repositoryDataController.DocumentIDError', [ params.documentID, repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
+        throw Chililog.$error('_documentIDError', [ params.documentID, repoAO[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
       }
 
       // Merge the data
@@ -279,7 +295,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, params.documentID, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -289,9 +305,12 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
   /**
    * Starts all repositories
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  startAll: function(callbackTarget, callbackFunction) {
+  startAll: function(callbackTarget, callbackFunction, callbackParams) {
     // Don't run if we are doing stuff
     if (this.get('isStartingOrStopping')) {
       return;
@@ -302,7 +321,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var url = '/api/repository?action=start';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endStartAll', params).send({dummy: 'data'});
 
     return;
@@ -335,7 +354,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -345,9 +364,12 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
   /**
    * Stops all repositories
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  stopAll: function(callbackTarget, callbackFunction) {
+  stopAll: function(callbackTarget, callbackFunction, callbackParams) {
     // Don't run if we are doing stuff
     if (this.get('isStartingOrStopping')) {
       return;
@@ -358,7 +380,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     var url = '/api/repository?action=stop';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endStopAll', params).send({dummy: 'data'});
 
     return;
@@ -391,7 +413,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

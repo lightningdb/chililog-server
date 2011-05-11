@@ -114,9 +114,10 @@ Chililog.MyAccountState = SC.State.extend({
     /**
      * Callback from save() after we get a response from the server to process the returned info.
      *
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endSave: function(error) {
+    endSave: function(params, error) {
       var ctrl = Chililog.myAccountViewController;
       if (SC.none(error)) {
         // Reload the data
@@ -165,9 +166,10 @@ Chililog.MyAccountState = SC.State.extend({
      * Callback from changePassword() after we get a response from the server to process
      * the returned login info.
      *
+     * @param {Hash} params callback function parameters
      * @param {SC.Error} error Error object or null if no error.
      */
-    endChangePassword: function(error) {
+    endChangePassword: function(params, error) {
       var ctrl = Chililog.myAccountViewController;
       if (SC.none(error)) {
         // Reload the data

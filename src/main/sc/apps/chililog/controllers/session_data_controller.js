@@ -208,10 +208,12 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
    * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
    * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
-   *
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction) {
+  login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction, callbackParams) {
     if (SC.none(rememberMe)) {
       rememberMe = NO;
     }
@@ -233,7 +235,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
     // Call server
     var url = '/api/Authentication';
     var request = SC.Request.postUrl(url).async(isAsync).json(YES);
-    var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     if (isAsync) {
       request.notify(this, 'endLogin', params).send(postData);
     } else {
@@ -309,7 +311,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, parms.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -385,15 +387,18 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
    * Saves a profile to the server
    * @param authenticatedUserRecord record to save
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction) {
+  saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction, callbackParams) {
     var postData = authenticatedUserRecord.toApiObject();
 
     var url = '/api/Authentication?action=update_profile';
     var authToken = this.get('authenticationToken');
     var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endSaveProfile', params).send(postData);
 
     return;
@@ -437,7 +442,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Sync user data
@@ -465,9 +470,12 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
    * @param newPassword
    * @param confirmNewPassword
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction) {
+  changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction, callbackParams) {
     var postData = {
       'DocumentID': this.getPath('loggedInUser.documentID'),
       'OldPassword': oldPassword,
@@ -478,7 +486,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
     var url = '/api/Authentication?action=change_password';
     var authToken = this.get('authenticationToken');
     var request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     request.notify(this, 'endChangePassword', params).send(postData);
 
     return;
@@ -522,7 +530,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

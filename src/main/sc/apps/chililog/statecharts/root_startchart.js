@@ -70,7 +70,7 @@ Chililog.statechart = SC.Statechart.create({
         }
       },
 
-      endLogin: function(error) {
+      endLogin: function(params, error) {
         var ctrl = Chililog.loginViewController;
 
         // Finish login

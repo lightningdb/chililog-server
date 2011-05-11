@@ -24,9 +24,12 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
    *
    * @param {Boolean} clearLocalData YES will delete data from local store before loading.
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  synchronizeWithServer: function(clearLocalData, callbackTarget, callbackFunction) {
+  synchronizeWithServer: function(clearLocalData, callbackTarget, callbackFunction, callbackParams) {
     // If operation already under way, just exit
     var isSynchronizingWithServer = this.get('isSynchronizingWithServer');
     if (isSynchronizingWithServer) {
@@ -51,7 +54,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
     this.set('isSynchronizingWithServer', YES);
 
     // Get data
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     var url = '/api/Users';
     var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     request.notify(this, 'endSynchronizeWithServer', params).send();
@@ -114,7 +117,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -150,9 +153,14 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
    * Saves the user record to the server
    * @param {Chililog.UserRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(documentID, error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * The documentID will be set to the document ID of the saved record.
+   * If there is no error, error will be set to null. 
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  save: function(record, callbackTarget, callbackFunction) {
+  save: function(record, callbackTarget, callbackFunction, callbackParams) {
+    var documentID = record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     var isCreating = (SC.none(documentVersion) || documentVersion ===  0);
 
@@ -164,10 +172,12 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
       var url = '/api/users/';
       request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     } else {
-      var url = '/api/users/' + record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
+      var url = '/api/users/' + documentID;
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
-    var params = { record: record, isCreating: isCreating, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { documentID: documentID, isCreating: isCreating,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams 
+    };
     request.notify(this, 'endSave', params).send(data);
 
     return;
@@ -183,7 +193,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
    */
   endSave: function(response, params) {
     var error = null;
-    var documentID = null;
+    var documentID = params.documentID;
     try {
       // Check status
       this.checkResponse(response);
@@ -193,7 +203,9 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
       // Save user details returns from server
       var apiObject = response.get('body');
-      documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
+      if (documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw Chililog.$error('_documentIDError', documentID, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+      }
 
       var record = null;
       if (params.isCreating) {
@@ -207,7 +219,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
       // If we are editing the logged in user, then we better update the session data
       if (record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME) ===
           Chililog.sessionDataController.get('loggedInUser').get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME)) {
-
+        //TODO
       }
     }
     catch (err) {
@@ -217,7 +229,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, documentID, error);
+      params.callbackFunction.call(params.callbackTarget, documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -242,14 +254,20 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
    *
    * @param {String} documentID id of record to delete
    * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object. Signature is: function(error) {}.
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentId is set to the id of the user to be deleted.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  erase: function(documentID, callbackTarget, callbackFunction) {
+  erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var url = '/api/users/' + documentID;
     var request = SC.Request.deleteUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction };
+    var params = { documentID: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams 
+    };
 
     // For some reason, sc-server needs content otherwise Content-Length is not set to 0
     request.notify(this, 'endErase', params).send({dummy: 'data'});
@@ -283,7 +301,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
