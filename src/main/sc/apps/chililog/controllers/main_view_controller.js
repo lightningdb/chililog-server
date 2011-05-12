@@ -108,13 +108,13 @@ Chililog.mainViewController = SC.Object.create(
   doShow: function(viewName) {
     var view = null;
     if (viewName === 'search') {
-      view = Chililog.searchView;
+      view = Chililog.searchListView;
     }
     else if (viewName === 'analyse') {
-      view = Chililog.searchView;
+      view = Chililog.searchListView;
     }
     else if (viewName === 'monitor') {
-      view = Chililog.searchView;
+      view = Chililog.searchListView;
     }
     else if (viewName === 'configure') {
       view = Chililog.configureView;

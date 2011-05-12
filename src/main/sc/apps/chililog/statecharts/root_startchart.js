@@ -111,11 +111,7 @@ Chililog.statechart = SC.Statechart.create({
         Chililog.mainViewController.hideMainPage();
       },
 
-      search: SC.State.design({
-        enterState: function() {
-          Chililog.mainViewController.doShow('search');
-        }
-      }),
+      search: SC.State.plugin('Chililog.SearchState'),
 
       analyse: SC.State.design({
         enterState: function() {

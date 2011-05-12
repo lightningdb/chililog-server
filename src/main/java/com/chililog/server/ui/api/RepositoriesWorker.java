@@ -278,9 +278,10 @@ public class RepositoriesWorker extends Worker
                 }
 
                 // Load criteria
-                QueryType queryType = Enum.valueOf(QueryType.class,
-                        this.getUriQueryStringParameter(ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME, false)
-                                .toUpperCase());
+                QueryType queryType = Enum.valueOf(
+                        QueryType.class,
+                        this.getQueryStringOrHeaderValue(ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME,
+                                ENTRY_QUERY_TYPE_HEADER_NAME, false).toUpperCase());
                 RepositoryListCriteria criteria = loadCriteria();
 
                 // Convert to JSON ourselves because this is not a simple AO object.
@@ -349,52 +350,47 @@ public class RepositoriesWorker extends Worker
      */
     private RepositoryListCriteria loadCriteria() throws ChiliLogException
     {
-        HttpRequest request = this.getRequest();
         String s;
 
         RepositoryListCriteria criteria = new RepositoryListCriteria();
         this.loadBaseListCriteriaParameters(criteria);
 
-        criteria.setFields(this.getUriQueryStringParameter(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME, true));
-        s = request.getHeader(ENTRY_QUERY_FIELDS_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_FIELDS_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setFields(s);
         }
 
-        criteria.setConditions(this.getUriQueryStringParameter(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
-                true));
-        s = request.getHeader(ENTRY_QUERY_CONDITIONS_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setConditions(s);
         }
 
-        criteria.setOrderBy(this.getUriQueryStringParameter(ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME, true));
-        s = request.getHeader(ENTRY_QUERY_ORDER_BY_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_ORDER_BY_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setOrderBy(s);
         }
 
-        criteria.setInitial(this.getUriQueryStringParameter(ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME, true));
-        s = request.getHeader(ENTRY_QUERY_INITIAL_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_INITIAL_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setInitial(s);
         }
 
-        criteria.setReduceFunction(this.getUriQueryStringParameter(ENTRY_QUERY_REDUCE_URI_QUERYSTRING_PARAMETER_NAME,
-                true));
-        s = request.getHeader(ENTRY_QUERY_REDUCE_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_HEADER_NAME, ENTRY_QUERY_REDUCE_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setReduceFunction(s);
         }
 
-        criteria.setFinalizeFunction(this.getUriQueryStringParameter(
-                ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME, true));
-        s = request.getHeader(ENTRY_QUERY_FINALIZE_HEADER_NAME);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_FINALIZE_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
             criteria.setFinalizeFunction(s);

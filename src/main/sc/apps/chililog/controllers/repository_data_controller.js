@@ -188,7 +188,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     var url = '/api/repositories/' + documentID + '?action=start';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget,
-      callbackFunction: callbackFunction, callbackParams: callbackParams 
+      callbackFunction: callbackFunction, callbackParams: callbackParams
     };
     request.notify(this, 'endStart', params).send({dummy: 'data'});
 
@@ -256,7 +256,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     var url = '/api/repositories/' + documentID + '?action=stop';
     var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     var params = { documentID: documentID, callbackTarget: callbackTarget,
-      callbackFunction: callbackFunction, callbackParams: callbackParams 
+      callbackFunction: callbackFunction, callbackParams: callbackParams
     };
     request.notify(this, 'endStop', params).send({dummy: 'data'});
 
@@ -414,6 +414,77 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     // Callback
     if (!SC.none(params.callbackFunction)) {
       params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Find entries in the specified repository
+   *
+   * @param {String} documentID of repository info to find entries in
+   * @param {Hash} criteria filters for entries
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentId, callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  find: function(documentID, criteria, startPage, recordsPerPage, callbackTarget, callbackFunction, callbackParams) {
+    var authToken = Chililog.sessionDataController.get('authenticationToken');
+    var url = '/api/repositories/' + documentId + '/entries';
+    var criteriaJson = SC.json.encode(criteria);
+
+    var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
+    request = request.header('X-Chililog-StartPage', startPage + '');
+    request = request.header('X-Chililog-RecordsPerPage', recordsPerPage + '');
+    request = request.header('X-Chililog-QueryType', 'Find');
+    request = request.header('X-Chililog-Conditions', criteriaJson);
+
+    var params = { documentId: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+    request.notify(this, 'endFind', params).send({dummy: 'data'});
+
+    return;
+  },
+
+  endFind: function(response, params) {
+    var error = null;
+    try {
+      // Check status
+      this.checkResponse(response);
+
+      // Delete existing records
+      var records = Chililog.store.find(Chililog.RepositoryEntryRecord);
+      records.forEach(function(record) {
+        record.destroy()
+      });
+      Chililog.store.commitRecords();
+
+      // Fill with new data
+      var repoEntriesAO = response.get('body');
+      var repoEntryAOArray = repoEntriesAO['find'];
+
+      if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
+        // Add record
+        for (var i = 0; i < repoEntryAOArray.length; i++) {
+          var repoEntryAO = repoEntryAOArray[i];
+          var repoEntryRecord = Chililog.store.createRecord(Chililog.RepositoryEntryRecord, {}, repoEntryAO['_id']);
+          repoEntryRecord.fromApiObject(repoEntryAO, params.documentID);
+        }
+        Chililog.store.commitRecords();
+      }
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryDataController.endFind: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(params.callbackFunction)) {
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

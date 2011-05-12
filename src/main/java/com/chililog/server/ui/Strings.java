@@ -30,6 +30,8 @@ public class Strings
     public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFoundError";
     public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameterError";
     public static final String URI_QUERY_STRING_PARAMETER_ERROR = PREFIX + "UriQueryStringParameterError";
+    public static final String URI_QUERY_STRING_PARAMETER_OR_HEADER_ERROR = PREFIX + "UriQueryStringParameterOrHeaderError";
+    
     public static final String REQUIRED_CONTENT_ERROR = PREFIX + "RequiredContentError";
     public static final String REQUIRED_FIELD_ERROR = PREFIX + "RequiredFieldError";
     public static final String OPTIMISTIC_LOCKING_ERROR = PREFIX + "OptimisticLockingError";

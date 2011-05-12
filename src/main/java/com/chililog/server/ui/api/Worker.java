@@ -75,6 +75,10 @@ public abstract class Worker
     public static final String START_PAGE_URI_QUERYSTRING_PARAMETER_NAME = "start_page";
     public static final String DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME = "do_page_count";
 
+    public static final String RECORDS_PER_PAGE_HEADER_NAME = "X-Chililog-RecordsPerPage";
+    public static final String START_PAGE_HEADER_NAME = "X-Chililog-StartPage";
+    public static final String DO_PAGE_COUNT_HEADER_NAME = "X-Chililog-DoPageCount";
+
     public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
     public static final String AUTHENTICATION_SERVER_VERSION = "X-ChiliLog-Version";
     public static final String AUTHENTICATION_SERVER_BUILD_TIMESTAMP = "X-ChiliLog-Build-Timestamp";
@@ -221,23 +225,55 @@ public abstract class Worker
      */
     protected void loadBaseListCriteriaParameters(ListCriteria listCritiera) throws ChiliLogException
     {
-        String recordsPerPage = this.getUriQueryStringParameter(RECORDS_PER_PAGE_URI_QUERYSTRING_PARAMETER_NAME, true);
+        String recordsPerPage = this.getQueryStringOrHeaderValue(RECORDS_PER_PAGE_URI_QUERYSTRING_PARAMETER_NAME,
+                RECORDS_PER_PAGE_HEADER_NAME, true);
         if (!StringUtils.isBlank(recordsPerPage))
         {
             listCritiera.setRecordsPerPage(Integer.parseInt(recordsPerPage));
         }
 
-        String startPage = this.getUriQueryStringParameter(START_PAGE_URI_QUERYSTRING_PARAMETER_NAME, true);
+        String startPage = this.getQueryStringOrHeaderValue(START_PAGE_URI_QUERYSTRING_PARAMETER_NAME,
+                START_PAGE_HEADER_NAME, true);
         if (!StringUtils.isBlank(startPage))
         {
             listCritiera.setStartPage(Integer.parseInt(startPage));
         }
 
-        String doPageCount = this.getUriQueryStringParameter(DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME, true);
+        String doPageCount = this.getQueryStringOrHeaderValue(DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME,
+                DO_PAGE_COUNT_HEADER_NAME, true);
         if (!StringUtils.isBlank(doPageCount))
         {
             listCritiera.setDoPageCount(doPageCount.equalsIgnoreCase("true"));
         }
+    }
+
+    /**
+     * Looks for a value in the query string parameter or the header
+     * 
+     * @param queryStringParameterName
+     *            Name of query string parameter
+     * @param headerName
+     *            Name in the header
+     * @param isOptional
+     *            If not optional, then error thrown if value is blank.
+     * @return String value
+     * @throws ChiliLogException
+     */
+    protected String getQueryStringOrHeaderValue(String queryStringParameterName, String headerName, boolean isOptional)
+            throws ChiliLogException
+    {
+        String s = this.getUriQueryStringParameter(queryStringParameterName, true);
+        if (StringUtils.isBlank(s))
+        {
+            s = _request.getHeader(headerName);
+            if (StringUtils.isBlank(s) && !isOptional)
+            {
+                throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_OR_HEADER_ERROR,
+                        queryStringParameterName, headerName, _request.getUri());
+            }
+        }
+
+        return StringUtils.isBlank(s) ? null : s;
     }
 
     /**
@@ -279,7 +315,7 @@ public abstract class Worker
     protected String[] getAuthenticatedUserAllowedRepository()
     {
         ArrayList<String> l = new ArrayList<String>();
-        for(String role :_authenticatedUser.getRoles())
+        for (String role : _authenticatedUser.getRoles())
         {
             String repoName = RepositoryInfoBO.getNameFromWorkBenchRoleName(role);
             if (!StringUtils.isBlank(repoName) && !l.contains(repoName))

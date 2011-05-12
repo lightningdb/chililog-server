@@ -160,6 +160,14 @@ SC.stringsFor('English', {
   '_configureRepositoryInfoDetailView.Status.Offline': 'Offline',
   '_configureRepositoryInfoDetailView.ConfirmDelete': 'Delete repository "%@"?',
 
+  '_searchListView.Title': 'Search',
+  '_searchListView.Search': 'Search',
+  '_searchListView.Timestamp': 'Timestamp',
+  '_searchListView.Source': 'Source',
+  '_searchListView.Host': 'Host',
+  '_searchListView.Severity': 'Severity',
+  '_searchListView.Message': 'Message',
+
 
   // ********************************************************
   // Data controllers
