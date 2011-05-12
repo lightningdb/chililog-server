@@ -20,6 +20,10 @@ Chililog.ConfigureState = SC.State.extend({
     Chililog.mainViewController.doShow('configure');
   },
 
+  exitState: function() {
+    return;
+  },
+
   /**
    * States for listing and CRUD of users
    */

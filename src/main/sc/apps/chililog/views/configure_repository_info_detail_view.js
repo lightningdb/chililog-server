@@ -12,7 +12,7 @@ sc_require('views/label_mixin');
  * Repository details
  */
 Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
-  layout: { top: 10, left: 10, bottom: 10, right: 10 },
+  layout: { top: 0, left: 0, bottom: 0, right: 0 },
   childViews: 'title backButton deleteButton successMessage body'.w(),
 
   title: SC.LabelView.design({

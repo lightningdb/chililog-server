@@ -45,14 +45,13 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create(C
       return '';
     }
     this.set ('toggleStartStopButtonTitle', record.get('isOnline') ? '_stop'.loc() : '_start'.loc());
-  }.observes('*selectedRecord.repository.currentStatus').cacheable(),
+  }.observes('*selectedRecord.currentStatus').cacheable(),
 
   /**
    * Show list of repositories in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.scenes', ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoDetailView']);
-    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoListView');
+    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureRepositoryInfoListView');
     return;
   },
 

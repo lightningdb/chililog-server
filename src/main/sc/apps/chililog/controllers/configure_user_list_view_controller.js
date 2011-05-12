@@ -35,8 +35,7 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
    * Show list of users in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.scenes', ['Chililog.configureUserListView', 'Chililog.configureUserDetailView']);
-    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserListView');
+    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureUserListView');
     return;
   },
 

@@ -17,7 +17,7 @@ Chililog.SearchListView = SC.LabelView.design({
 
   keywords: SC.TextFieldView.design({
     layout: { top: 40, left: 10, width: 500, height: 30 },
-    valueBinding: 'Chililog.searchViewController.keywords',
+    valueBinding: 'Chililog.searchListViewController.keywords',
     maxLength: 300
   }),
 
@@ -26,7 +26,7 @@ Chililog.SearchListView = SC.LabelView.design({
     title: '_searchListView.Search',
     localize: YES,
     controlSize: SC.HUGE_CONTROL_SIZE,
-    target: Chililog.searchViewController,
+    target: Chililog.searchListViewController,
     action: 'search'
   }),
 

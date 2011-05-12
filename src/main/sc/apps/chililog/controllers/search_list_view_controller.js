@@ -34,15 +34,6 @@ Chililog.searchListViewController = SC.ArrayController.create({
   }.property('selection').cacheable(),
 
   /**
-   * Show list of repositories in the right hand side details pane
-   */
-  show: function() {
-    Chililog.configureView.setPath('right.scenes', ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoDetailView']);
-    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoListView');
-    return;
-  },
-
-  /**
    * Since this is a simple async call, skip the statechart and directly call the data controller
    */
   search: function() {

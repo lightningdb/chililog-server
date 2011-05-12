@@ -311,7 +311,7 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, parms.callbackParams, error);
+      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

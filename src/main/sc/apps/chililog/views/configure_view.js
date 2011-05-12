@@ -32,9 +32,6 @@ Chililog.ConfigureView = SC.View.design({
       rowHeight: 40,
       isEditable: NO,
       actOnSelect: YES,
-      hasContentIcon: YES,
-      contentValueKey: 'label',
-      contentIconKey: 'icon',
       content: [
         {
           id: 'Repositories',
@@ -47,12 +44,15 @@ Chililog.ConfigureView = SC.View.design({
           icon: sc_static('images/users.png')
         }
       ],
+      hasContentIcon: YES,
+      contentValueKey: 'label',
+      contentIconKey: 'icon',
       target: Chililog.configureViewController,
       action: 'onSelect'
     })
   }),
 
-  right: SC.SceneView.design({
+  right: SC.ContainerView.design({
     layout: { top: 35, bottom: 0, left: 208, right: 0 },
     classNames: ['box']
   })
@@ -64,4 +64,18 @@ Chililog.ConfigureView = SC.View.design({
  */
 Chililog.configureView = Chililog.ConfigureView.create();
 
+/**
+ * Scene views
+ * We cannot reuse just the 1 scene view because we get funny overlap issues after navigating away and then back
+ */
+Chililog.ConfigureRepositoryInfoSceneView = SC.SceneView.design({
+  layout: { top: 0, bottom: 0, left: 0, right: 0 },
+  scenes: ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoDetailView']
+});
+Chililog.configureRepositoryInfoSceneView = Chililog.ConfigureRepositoryInfoSceneView.create();
 
+Chililog.ConfigureUserSceneView = SC.SceneView.design({
+  layout: { top: 0, bottom: 0, left: 0, right: 0 },
+  scenes: ['Chililog.configureUserListView', 'Chililog.configureUserDetailView']
+});
+Chililog.configureUserSceneView = Chililog.ConfigureUserSceneView.create();

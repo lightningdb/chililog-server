@@ -103,7 +103,7 @@ Chililog.mainViewController = SC.Object.create(
   },
 
   /**
-   * Set the body of the main page to the required view
+   * Handle the displaying of the correct
    */
   doShow: function(viewName) {
     var view = null;

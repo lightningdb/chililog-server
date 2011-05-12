@@ -58,16 +58,12 @@ Chililog.SearchState = SC.State.extend({
       },
 
       doSearch: function() {
-        Chililog.progressPane.show('_refreshing'.loc());
-        Chililog.repositoryDataController.synchronizeWithServer(NO, this, this.endSearch);
+        Chililog.repositoryDataController.find(NO, this, this.endSearch);
       },
 
       endSearch: function(params, error) {
-        var ctrl = Chililog.configureUserListViewController;
-        if (SC.none(error)) {
-          Chililog.progressPane.hideWithoutFlashing();
-        } else {
-          Chililog.progressPane.hide();
+        var ctrl = Chililog.searchListViewController;
+        if (!SC.none(error)) {
           ctrl.showError(error);
         }
         this.gotoState('viewingSearchResults_Idle');
