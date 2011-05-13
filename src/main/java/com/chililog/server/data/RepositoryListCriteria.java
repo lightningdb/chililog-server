@@ -18,11 +18,14 @@
 
 package com.chililog.server.data;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.chililog.server.common.TextTokenizer;
 import com.mongodb.BasicDBObject;
 
 /**
@@ -37,6 +40,8 @@ public class RepositoryListCriteria extends ListCriteria
     private Date _to = null;
     private String _fields = null;
     private String _conditions = null;
+    private String _keywords = null;
+    private KeywordUsage _keywordUsage = KeywordUsage.All;
     private String _orderBy = null;
     private String _initial = null;
     private String _reduceFunction = null;
@@ -148,9 +153,40 @@ public class RepositoryListCriteria extends ListCriteria
     }
 
     /**
-     * Returns the conditions as DBObject
+     * <p>
+     * The keywords to append to the conditions property (if any). Keywords are parsed and normalized via
+     * </p>    
      */
-    public BasicDBObject getConditionsDbObject()
+    public String getKeywords()
+    {
+        return _keywords;
+    }
+
+    public void setKeywords(String keywords)
+    {
+        _keywords = keywords;
+    }
+    
+    /**
+     * <p>
+     * How the keywords are to be used in the search criteria.  All or any keywords are to be used
+     * </p> 
+     */
+    public KeywordUsage getKeywordUsage()
+    {
+        return _keywordUsage;
+    }
+
+    public void setKeywordUsage(KeywordUsage keywordUsage)
+    {
+        _keywordUsage = keywordUsage;
+    }
+
+    /**
+     * Returns the conditions as DBObject
+     * @throws IOException 
+     */
+    public BasicDBObject getConditionsDbObject() throws IOException
     {
         BasicDBObject o = null;
 
@@ -171,6 +207,12 @@ public class RepositoryListCriteria extends ListCriteria
         if (_to != null)
         {
             o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
+        }
+        if (!StringUtils.isBlank(_keywords)) 
+        {
+            String operator = _keywordUsage == KeywordUsage.All ? "$all" : "$in";
+            ArrayList<String> l = TextTokenizer.getInstance().tokenize(_keywords, 200);
+            o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject(operator, l));
         }
 
         return o;
@@ -400,5 +442,23 @@ public class RepositoryListCriteria extends ListCriteria
          * </p>
          */
         GROUP
+    }
+    
+    /**
+     * How the keywords are to be used as conditions 
+     * @author vibul
+     *
+     */
+    public static enum KeywordUsage
+    {
+        /**
+         * Any (one or more) keywords must exist
+         */
+        Any,
+
+        /**
+         * All keywords must exist
+         */
+        All
     }
 }

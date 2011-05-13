@@ -162,6 +162,17 @@ SC.stringsFor('English', {
 
   '_searchListView.Title': 'Search',
   '_searchListView.Search': 'Search',
+  '_searchListView.Repository': 'In Repository',
+  '_searchListView.TimeSpan': 'In The Past',
+  '_searchListView.TimeSpan.5': '5 minutes',
+  '_searchListView.TimeSpan.15': '15 minutes',
+  '_searchListView.TimeSpan.30': '30 minutes',
+  '_searchListView.TimeSpan.60': '60 minutes',
+  '_searchListView.TimeSpan.1440': '24 hours',
+  '_searchListView.TimeSpan.10080': '7 days',
+  '_searchListView.TimeSpan.20160': '14 days',
+  '_searchListView.TimeSpan.43200': '30 days',
+  '_searchListView.Keywords': 'Keywords',
   '_searchListView.Timestamp': 'Timestamp',
   '_searchListView.Source': 'Source',
   '_searchListView.Host': 'Host',
@@ -178,6 +189,17 @@ SC.stringsFor('English', {
   '_sessionDataController.VersionNotFoundInResponseError': 'Version number not found in authentication response',
   '_sessionDataController.BuildTimestampNotFoundInResponseError': 'Build timestamp not found in authentication response',
 
+  // ********************************************************
+  // Records
+  // ********************************************************
+  '_repositoryEntryRecord.Severity.Emergency': 'Emergency',
+  '_repositoryEntryRecord.Severity.Action': 'Action',
+  '_repositoryEntryRecord.Severity.Critical': 'Critical',
+  '_repositoryEntryRecord.Severity.Error': 'Error',
+  '_repositoryEntryRecord.Severity.Warning': 'Warning',
+  '_repositoryEntryRecord.Severity.Notice': 'Notice',
+  '_repositoryEntryRecord.Severity.Information': 'Information',
+  '_repositoryEntryRecord.Severity.Debug': 'Debug',
 
   'end': 'end'
 });

@@ -75,9 +75,9 @@ public abstract class Worker
     public static final String START_PAGE_URI_QUERYSTRING_PARAMETER_NAME = "start_page";
     public static final String DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME = "do_page_count";
 
-    public static final String RECORDS_PER_PAGE_HEADER_NAME = "X-Chililog-RecordsPerPage";
-    public static final String START_PAGE_HEADER_NAME = "X-Chililog-StartPage";
-    public static final String DO_PAGE_COUNT_HEADER_NAME = "X-Chililog-DoPageCount";
+    public static final String RECORDS_PER_PAGE_HEADER_NAME = "X-Chililog-Records-Per-Page";
+    public static final String START_PAGE_HEADER_NAME = "X-Chililog-Start-Page";
+    public static final String DO_PAGE_COUNT_HEADER_NAME = "X-Chililog-Do-Page-Count";
 
     public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
     public static final String AUTHENTICATION_SERVER_VERSION = "X-ChiliLog-Version";

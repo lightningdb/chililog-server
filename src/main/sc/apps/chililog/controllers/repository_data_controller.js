@@ -423,26 +423,35 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
   /**
    * Find entries in the specified repository
    *
-   * @param {String} documentID of repository info to find entries in
-   * @param {Hash} criteria filters for entries
+   * @param {Hash} criteria Hash containing the following values
+   *  - documentID: unique id of repository info to find entries in
+   *  - keywordUsage: 'All' to match entries with all of the listed keywords; or 'Any' to match entries with any of the listed keywords
+   *  - keywords: list of keywords to entries must contain
+   *  - conditions: hash of mongodb criteria
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(documentId, callbackParams, error) {}.
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  find: function(documentID, criteria, startPage, recordsPerPage, callbackTarget, callbackFunction, callbackParams) {
+  find: function(criteria, callbackTarget, callbackFunction, callbackParams) {
     var authToken = Chililog.sessionDataController.get('authenticationToken');
-    var url = '/api/repositories/' + documentId + '/entries';
-    var criteriaJson = SC.json.encode(criteria);
+    var url = '/api/repositories/' + criteria.documentID + '/entries';
+    var conditionsJson = '';
+    if (!SC.empty(criteria.conditions)) {
+      conditionsJson = SC.json.encode(criteria.conditions);
+    }
 
-    var request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
-    request = request.header('X-Chililog-StartPage', startPage + '');
-    request = request.header('X-Chililog-RecordsPerPage', recordsPerPage + '');
-    request = request.header('X-Chililog-QueryType', 'Find');
-    request = request.header('X-Chililog-Conditions', criteriaJson);
+    var request = SC.Request.getUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
+    request = request.header('X-Chililog-Query-Type', 'Find');
+    request = request.header('X-Chililog-Conditions', conditionsJson);
+    request = request.header('X-Chililog-Keywords-Usage', criteria.keywordUsage);
+    request = request.header('X-Chililog-Keywords', criteria.keywords);
+    request = request.header('X-Chililog-Start-Page', criteria.startPage + '');
+    request = request.header('X-Chililog-Records-Per-Page', criteria.recordsPerPage + '');
+    request = request.header('X-Chililog-Do-Page-Count', 'false');
 
-    var params = { documentId: documentID, callbackTarget: callbackTarget,
+    var params = { documentID: criteria.documentID, callbackTarget: callbackTarget,
       callbackFunction: callbackFunction, callbackParams: callbackParams
     };
     request.notify(this, 'endFind', params).send({dummy: 'data'});

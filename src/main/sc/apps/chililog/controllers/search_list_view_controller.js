@@ -6,11 +6,9 @@
 sc_require('controllers/view_controller_mixin');
 
 /**
- * Search listing
+ * Controller for searching for repository entries
  */
 Chililog.searchListViewController = SC.ArrayController.create({
-
-  keywords: '',
 
   /**
    * Selection set. Null if nothing selected
@@ -34,10 +32,34 @@ Chililog.searchListViewController = SC.ArrayController.create({
   }.property('selection').cacheable(),
 
   /**
+   * Array of repostiry name-value pairs to display in the drop down list
+   * @type Array
+   */
+  repositories: null,
+
+  /**
+   * Keywords to use in the basic search
+   * @type String
+   */
+  basicKeywords: '',
+
+  /**
+   * Repository to look in for basic search
+   * @type String
+   */
+  basicRepository: '',
+
+  /**
+   * Number of past minutes to limit basic search
+   * @type String
+   */
+  basicTimeSpan: '',
+
+  /**
    * Since this is a simple async call, skip the statechart and directly call the data controller
    */
-  search: function() {
-    Chililog.statechart.sendEvent('search');
+  basicSearch: function() {
+    Chililog.statechart.sendEvent('basicSearch');
   }
 
 });

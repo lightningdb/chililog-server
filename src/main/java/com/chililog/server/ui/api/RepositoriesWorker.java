@@ -66,16 +66,20 @@ public class RepositoriesWorker extends Worker
 
     public static final String ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME = "query_type";
     public static final String ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME = "fields";
+    public static final String ENTRY_QUERY_KEYWORD_USAGE_URI_QUERYSTRING_PARAMETER_NAME = "keyword_usage";
+    public static final String ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME = "keywords";
     public static final String ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME = "conditions";
     public static final String ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME = "orderBy";
     public static final String ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME = "initial";
     public static final String ENTRY_QUERY_REDUCE_URI_QUERYSTRING_PARAMETER_NAME = "reduce";
     public static final String ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME = "finalize";
 
-    public static final String ENTRY_QUERY_TYPE_HEADER_NAME = "X-ChiliLog-QueryType";
+    public static final String ENTRY_QUERY_TYPE_HEADER_NAME = "X-ChiliLog-Query-Type";
     public static final String ENTRY_QUERY_FIELDS_HEADER_NAME = "X-ChiliLog-Fields";
+    public static final String ENTRY_QUERY_KEYWORDS_HEADER_NAME = "X-ChiliLog-Keywords";
+    public static final String ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME = "X-ChiliLog-Keywords-Usage";
     public static final String ENTRY_QUERY_CONDITIONS_HEADER_NAME = "X-ChiliLog-Conditions";
-    public static final String ENTRY_QUERY_ORDER_BY_HEADER_NAME = "X-ChiliLog-OrderBy";
+    public static final String ENTRY_QUERY_ORDER_BY_HEADER_NAME = "X-ChiliLog-Order-By";
     public static final String ENTRY_QUERY_INITIAL_HEADER_NAME = "X-ChiliLog-Initial";
     public static final String ENTRY_QUERY_REDUCE_HEADER_NAME = "X-ChiliLog-Reduce";
     public static final String ENTRY_QUERY_FINALIZE_HEADER_NAME = "X-ChiliLog-Finalize";
@@ -360,6 +364,27 @@ public class RepositoriesWorker extends Worker
         if (!StringUtils.isBlank(s))
         {
             criteria.setFields(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setConditions(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORD_USAGE_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setKeywordUsage(Enum.valueOf(RepositoryListCriteria.KeywordUsage.class, s));
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_KEYWORDS_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s))
+        {
+            criteria.setKeywords(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,

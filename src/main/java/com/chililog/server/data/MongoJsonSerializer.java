@@ -196,7 +196,7 @@ public class MongoJsonSerializer
         if (o instanceof Date)
         {
             Date d = (Date) o;
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             format.setCalendar(new GregorianCalendar(new SimpleTimeZone(0, "GMT")));
             //serialize(new BasicDBObject("$date", format.format(d)), buf);
             string(buf, format.format(d));

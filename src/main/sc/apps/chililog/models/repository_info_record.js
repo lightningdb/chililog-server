@@ -35,6 +35,14 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
 
   maxKeywords: SC.Record.attr(Number),
 
+  displayNameOrName: function() {
+    var displayName = this.get('displayName');
+    if (SC.none(displayName)) {
+      displayName = this.get('name');
+    }
+    return displayName;
+  }.property('name', 'displayName').cacheable(),
+
   /**
    * Flag to indicate if this repository is online or not
    * This is set during the SYNC and is not sent to the server for saving.

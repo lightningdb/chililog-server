@@ -147,7 +147,7 @@ public class RepositoryEntryController extends Controller
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
-    
+
     /**
      * Returns a list of matching entries
      * 
@@ -183,41 +183,48 @@ public class RepositoryEntryController extends Controller
      *            query parameters
      * @return List of matching entries
      */
-    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryListCriteria criteria)
+    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
     {
-        if (db == null)
+        try
         {
-            throw new NullArgumentException("db");
+            if (db == null)
+            {
+                throw new NullArgumentException("db");
+            }
+            if (criteria == null)
+            {
+                throw new NullArgumentException("criteria");
+            }
+
+            DBCollection coll = db.getCollection(this.getDBCollectionName());
+            int recordsPerPage = criteria.getRecordsPerPage();
+            int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
+
+            DBObject fields = criteria.getFieldsDbObject();
+            DBObject conditions = criteria.getConditionsDbObject();
+            DBObject orderBy = criteria.getOrderByDbObject();
+
+            DBCursor cur = coll.find(conditions, fields).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
+            ArrayList<DBObject> list = new ArrayList<DBObject>();
+            while (cur.hasNext())
+            {
+                DBObject dbo = cur.next();
+                list.add(dbo);
+            }
+
+            // Do page count by executing query again
+            if (criteria.getDoPageCount())
+            {
+                int documentCount = coll.find(conditions).count();
+                criteria.calculatePageCount(documentCount);
+            }
+
+            return list;
         }
-        if (criteria == null)
+        catch (Exception ex)
         {
-            throw new NullArgumentException("criteria");
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
-
-        DBCollection coll = db.getCollection(this.getDBCollectionName());
-        int recordsPerPage = criteria.getRecordsPerPage();
-        int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
-
-        DBObject fields = criteria.getFieldsDbObject();
-        DBObject conditions = criteria.getConditionsDbObject();
-        DBObject orderBy = criteria.getOrderByDbObject();
-
-        DBCursor cur = coll.find(conditions, fields).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
-        ArrayList<DBObject> list = new ArrayList<DBObject>();
-        while (cur.hasNext())
-        {
-            DBObject dbo = cur.next();
-            list.add(dbo);
-        }
-
-        // Do page count by executing query again
-        if (criteria.getDoPageCount())
-        {
-            int documentCount = coll.find(conditions).count();
-            criteria.calculatePageCount(documentCount);
-        }
-
-        return list;
     }
 
     /**
@@ -231,22 +238,29 @@ public class RepositoryEntryController extends Controller
      *            query parameters
      * @return Number of matching entries
      */
-    public int executeCountQuery(DB db, RepositoryListCriteria criteria)
+    public int executeCountQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
     {
-        if (db == null)
+        try
         {
-            throw new NullArgumentException("db");
+            if (db == null)
+            {
+                throw new NullArgumentException("db");
+            }
+            if (criteria == null)
+            {
+                throw new NullArgumentException("criteria");
+            }
+
+            DBCollection coll = db.getCollection(this.getDBCollectionName());
+
+            DBObject conditions = criteria.getConditionsDbObject();
+
+            return coll.find(conditions).count();
         }
-        if (criteria == null)
+        catch (Exception ex)
         {
-            throw new NullArgumentException("criteria");
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
-
-        DBCollection coll = db.getCollection(this.getDBCollectionName());
-
-        DBObject conditions = criteria.getConditionsDbObject();
-
-        return coll.find(conditions).count();
     }
 
     /**
@@ -259,35 +273,42 @@ public class RepositoryEntryController extends Controller
      * @return List of distinct values for the nominated field.
      */
     @SuppressWarnings("rawtypes")
-    public List executeDistinctQuery(DB db, RepositoryListCriteria criteria)
+    public List executeDistinctQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
     {
-        if (db == null)
+        try
         {
-            throw new NullArgumentException("db");
+            if (db == null)
+            {
+                throw new NullArgumentException("db");
+            }
+            if (criteria == null)
+            {
+                throw new NullArgumentException("criteria");
+            }
+
+            DBCollection coll = db.getCollection(this.getDBCollectionName());
+
+            DBObject fields = criteria.getFieldsDbObject();
+            if (fields == null || fields.keySet().isEmpty())
+            {
+                throw new IllegalArgumentException("Field is required for a 'distinct' query.");
+            }
+
+            String fieldName = null;
+            for (String n : fields.keySet())
+            {
+                fieldName = n;
+                break;
+            }
+
+            DBObject conditions = criteria.getConditionsDbObject();
+
+            return coll.distinct(fieldName, conditions);
         }
-        if (criteria == null)
+        catch (Exception ex)
         {
-            throw new NullArgumentException("criteria");
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
-
-        DBCollection coll = db.getCollection(this.getDBCollectionName());
-
-        DBObject fields = criteria.getFieldsDbObject();
-        if (fields == null || fields.keySet().isEmpty())
-        {
-            throw new IllegalArgumentException("Field is required for a 'distinct' query.");
-        }
-
-        String fieldName = null;
-        for (String n : fields.keySet())
-        {
-            fieldName = n;
-            break;
-        }
-
-        DBObject conditions = criteria.getConditionsDbObject();
-
-        return coll.distinct(fieldName, conditions);
     }
 
     /**
@@ -300,24 +321,32 @@ public class RepositoryEntryController extends Controller
      *            used.
      * @return Specified fields and aggregation counter.
      */
-    public DBObject executeGroupQuery(DB db, RepositoryListCriteria criteria)
+    public DBObject executeGroupQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
     {
-        if (db == null)
+        try
         {
-            throw new NullArgumentException("db");
+            if (db == null)
+            {
+                throw new NullArgumentException("db");
+            }
+            if (criteria == null)
+            {
+                throw new NullArgumentException("criteria");
+            }
+
+            DBCollection coll = db.getCollection(this.getDBCollectionName());
+
+            DBObject fields = criteria.getFieldsDbObject();
+            DBObject conditions = criteria.getConditionsDbObject();
+            DBObject initial = criteria.getIntialDbObject();
+
+            return coll
+                    .group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
         }
-        if (criteria == null)
+        catch (Exception ex)
         {
-            throw new NullArgumentException("criteria");
+            throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
-
-        DBCollection coll = db.getCollection(this.getDBCollectionName());
-
-        DBObject fields = criteria.getFieldsDbObject();
-        DBObject conditions = criteria.getConditionsDbObject();
-        DBObject initial = criteria.getIntialDbObject();
-
-        return coll.group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
     }
 
     /**

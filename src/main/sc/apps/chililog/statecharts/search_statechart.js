@@ -22,11 +22,20 @@ Chililog.SearchState = SC.State.extend({
     initialSubstate: 'viewingSearchResults_Idle',
 
     enterState: function() {
+      // Set binding on table
       var ctrl = Chililog.searchListViewController;
       if (SC.none(ctrl.get('content'))) {
         var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestamp' });
         var repoEntries = Chililog.store.find(repoEntryQuery);
         ctrl.set('content', repoEntries);
+      }
+
+      // Update repository drop down
+      var nameValueArray = [];
+      if (SC.none(ctrl.get('repositories'))) {
+        var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
+        var repoInfoArray = Chililog.store.find(repoInfoQuery);
+        ctrl.set('repositories', repoInfoArray);
       }
     },
 
@@ -50,18 +59,32 @@ Chililog.SearchState = SC.State.extend({
      * Trigger refreshing of repository data
      */
     viewingSearchResults_Searching: SC.State.design({
-      enterState: function() {
-        this.doSearch();
+      enterState: function(context) {
+        if (context.serachType == 'basic') {
+          this.doBasicSearch();
+        }
       },
 
       exitState: function() {
       },
 
-      doSearch: function() {
-        Chililog.repositoryDataController.find(NO, this, this.endSearch);
+      doBasicSearch: function() {
+        var viewCtrl = Chililog.searchListViewController;
+        var criteria = {
+          documentID: viewCtrl.get('basicRepository'),
+          conditions: '',
+          keywordUsage: 'All',
+          keywords: viewCtrl.get('basicKeywords'),
+          startPage: 1,
+          recordsPerPage: 100,
+          doPageCount: 'false'
+        };
+        var repositoryDocumentID = viewCtrl.get('basicRepository');
+        var conditions = '';
+        Chililog.repositoryDataController.find(criteria, this, this.endBasicSearch);
       },
 
-      endSearch: function(params, error) {
+      endBasicSearch: function(params, error) {
         var ctrl = Chililog.searchListViewController;
         if (!SC.none(error)) {
           ctrl.showError(error);
@@ -72,10 +95,13 @@ Chililog.SearchState = SC.State.extend({
 
     /**
      * Search event
+     * @param {Hash} params Data hash of parameters.
+     * 
      */
-    search: function() {
-      this.gotoState('viewingSearchResults_Searching');
+    basicSearch: function(params) {
+      this.gotoState('viewingSearchResults_Searching', {serachType: 'basic'});
     }
+    
   })
   
 });
