@@ -28,7 +28,7 @@
   </appender>
 
   <root>
-    <priority value="debug" />
+    <priority value="${log4j.priority}" />
     <appender-ref ref="async" />
   </root>
 

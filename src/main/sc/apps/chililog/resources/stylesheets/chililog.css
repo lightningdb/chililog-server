@@ -69,6 +69,17 @@
   margin: 1px;
 }
 
+/* Select */
+.mozilla .sc-select-field-view {
+ padding-top: 2px;    /* vertically align text */
+}
+.safari .sc-view .sc-select-field-view.focus {
+  outline: auto 1px -webkit-focus-ring-color;
+}
+.sc-view .sc-select-field-view.focus {
+  font-weight: bold;
+}
+
 /*******************************************
  * Table
  *******************************************/

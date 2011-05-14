@@ -17,6 +17,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
 
   documentID: SC.Record.attr(String),
   repositoryInfoDocumentID: SC.Record.attr(String),
+  timestampString: SC.Record.attr(String),
   timestamp: SC.Record.attr(SC.DateTime, { format: '%Y-%m-%dT%H:%M:%S.%s%Z' }),
   savedTimestamp: SC.Record.attr(SC.DateTime, { format:'%Y-%m-%dT%H:%M:%S.%s%Z' }),
   source: SC.Record.attr(String),
@@ -39,7 +40,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
       var apiObjectPropertyName = map[1];
 
       var apiObjectValue = repoEntryAO[apiObjectPropertyName];
-      if (i == 1 || i == 2) {
+      if (recordPropertyName === 'timestamp' || recordPropertyName === 'savedTimestamp') {
         apiObjectValue = SC.DateTime.parse(apiObjectValue, '%Y-%m-%dT%H:%M:%S.%s%Z');
       }
       this.set(recordPropertyName, apiObjectValue);
@@ -72,6 +73,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
  */
 Chililog.REPOSITORY_ENTRY_RECORD_MAP = [
   [Chililog.DOCUMENT_ID_RECORD_FIELD_NAME, '_id' ],
+  ['timestampString' ,'c_ts'],
   ['timestamp' ,'c_ts'],
   ['savedTimestamp' ,'c_saved_ts'],
   ['source' ,'c_source'],

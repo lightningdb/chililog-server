@@ -22,7 +22,7 @@ Chililog.SearchState = SC.State.extend({
     initialSubstate: 'viewingSearchResults_Idle',
 
     enterState: function() {
-      // Update repository drop down
+      // Update repository drop down content if it has not been set
       var ctrl = Chililog.searchListViewController;
       var nameValueArray = [];
       if (SC.none(ctrl.get('repositories'))) {
@@ -30,9 +30,6 @@ Chililog.SearchState = SC.State.extend({
         var repoInfoArray = Chililog.store.find(repoInfoQuery);
         ctrl.set('repositories', repoInfoArray);
       }
-
-      // Have to set this to make sure that SelectFieldList renders the drop downs
-      //cpDidChange
     },
 
     exitState: function() {
@@ -47,7 +44,7 @@ Chililog.SearchState = SC.State.extend({
         // Set content for table if there isn't any - 1st time in or after search
         var ctrl = Chililog.searchListViewController;
         if (SC.none(ctrl.get('content'))) {
-          var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestamp' });
+          var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestampString' });
           var repoEntries = Chililog.store.find(repoEntryQuery);
           ctrl.set('content', repoEntries);
         }
@@ -90,7 +87,7 @@ Chililog.SearchState = SC.State.extend({
         Chililog.repositoryDataController.find(criteria, this, this.endBasicSearch);
 
         // Clear table to signal to the user that we are searching
-        ctrl.set('content', null);
+        //ctrl.set('content', null);
       },
 
       endBasicSearch: function(params, error) {

@@ -35,6 +35,7 @@ Chililog.SearchListView = SC.LabelView.design({
     classNames: ['box'],
     childViews: 'repositories timespan keywords searchButton searchingImage'.w(),
 
+
     repositories: SC.View.design({
       layout: { top: 10, left: 15, bottom: 10, width: 150 },
       childViews: 'label field'.w(),
@@ -104,7 +105,6 @@ Chililog.SearchListView = SC.LabelView.design({
       layout: { top: 30, left: 845, width: 80 },
       title: '_searchListView.Search',
       localize: YES,
-      isDefault: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
       isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().not(),
       target: Chililog.searchListViewController,
