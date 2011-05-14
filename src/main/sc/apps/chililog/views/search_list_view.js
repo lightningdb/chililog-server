@@ -33,7 +33,7 @@ Chililog.SearchListView = SC.LabelView.design({
   basicSearch: SC.View.design({
     layout: { top: 40, left: 10, right: 10, height: 75 },
     classNames: ['box'],
-    childViews: 'repositories timespan keywords searchButton'.w(),
+    childViews: 'repositories timespan keywords searchButton searchingImage'.w(),
 
     repositories: SC.View.design({
       layout: { top: 10, left: 15, bottom: 10, width: 150 },
@@ -41,7 +41,7 @@ Chililog.SearchListView = SC.LabelView.design({
 
       label: SC.LabelView.design({
         layout: { top: 0, left: 0, right: 0, height: 20 },
-        fontWeight: SC.BOLD_WEIGHT, 
+        fontWeight: SC.BOLD_WEIGHT,
         value: '_searchListView.Repository'.loc()
       }),
 
@@ -104,12 +104,20 @@ Chililog.SearchListView = SC.LabelView.design({
       layout: { top: 30, left: 845, width: 80 },
       title: '_searchListView.Search',
       localize: YES,
+      isDefault: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
+      isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().not(),
       target: Chililog.searchListViewController,
       action: 'basicSearch'
+    }),
+
+    searchingImage: Chililog.ImageView.design({
+      layout: { top: 35, left: 935, width: 16, height: 16 },
+      value: sc_static('images/working'),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().bool(),
+      useImageQueue: NO
     })
   }),
-
 
   table: SC.TableView.design({
     layout: { top: 125, left: 10, right: 10, bottom: 10 },
@@ -125,7 +133,7 @@ Chililog.SearchListView = SC.LabelView.design({
         width: 180,
         isReorderable: NO,   //Bug with reorder when switching with other configure options
         formatter: function(v) {
-          return v.toFormattedString('%Y-%m-%d %H:%M:%S.%s');
+          return SC.none(v) ? '' : v.toFormattedString('%Y-%m-%d %H:%M:%S.%s');
         }
       }),
       SC.TableColumn.create({

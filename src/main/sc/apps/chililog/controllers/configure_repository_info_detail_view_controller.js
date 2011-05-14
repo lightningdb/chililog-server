@@ -103,7 +103,8 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   }.property('content.status', 'isSaving').cacheable(),
 
   /**
-   * Flag to indicate if we are in the middle of trying to save a profile
+   * Flag to indicate if we are in the middle of trying to save a profile.
+   * This flag is set in by the state chart
    */
   isSaving: NO,
 

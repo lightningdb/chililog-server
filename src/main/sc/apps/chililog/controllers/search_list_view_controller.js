@@ -56,6 +56,12 @@ Chililog.searchListViewController = SC.ArrayController.create({
   basicTimeSpan: '',
 
   /**
+   * Flag to indicate if we are in the middle of a basic search.
+   * This flag is set in the state chart
+   */
+  isBasicSearching: NO,
+
+  /**
    * Since this is a simple async call, skip the statechart and directly call the data controller
    */
   basicSearch: function() {

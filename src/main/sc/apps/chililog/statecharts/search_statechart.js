@@ -22,21 +22,17 @@ Chililog.SearchState = SC.State.extend({
     initialSubstate: 'viewingSearchResults_Idle',
 
     enterState: function() {
-      // Set binding on table
-      var ctrl = Chililog.searchListViewController;
-      if (SC.none(ctrl.get('content'))) {
-        var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestamp' });
-        var repoEntries = Chililog.store.find(repoEntryQuery);
-        ctrl.set('content', repoEntries);
-      }
-
       // Update repository drop down
+      var ctrl = Chililog.searchListViewController;
       var nameValueArray = [];
       if (SC.none(ctrl.get('repositories'))) {
         var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
         var repoInfoArray = Chililog.store.find(repoInfoQuery);
         ctrl.set('repositories', repoInfoArray);
       }
+
+      // Have to set this to make sure that SelectFieldList renders the drop downs
+      //cpDidChange
     },
 
     exitState: function() {
@@ -48,6 +44,14 @@ Chililog.SearchState = SC.State.extend({
      */
     viewingSearchResults_Idle: SC.State.design({
       enterState: function() {
+        // Set content for table if there isn't any - 1st time in or after search
+        var ctrl = Chililog.searchListViewController;
+        if (SC.none(ctrl.get('content'))) {
+          var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestamp' });
+          var repoEntries = Chililog.store.find(repoEntryQuery);
+          ctrl.set('content', repoEntries);
+        }
+
         return;
       },
       exitState: function() {
@@ -62,26 +66,31 @@ Chililog.SearchState = SC.State.extend({
       enterState: function(context) {
         if (context.serachType == 'basic') {
           this.doBasicSearch();
+          Chililog.searchListViewController.set('isBasicSearching', YES);
         }
       },
 
       exitState: function() {
+        Chililog.searchListViewController.set('isBasicSearching', NO);
       },
 
       doBasicSearch: function() {
-        var viewCtrl = Chililog.searchListViewController;
+        var ctrl = Chililog.searchListViewController;
         var criteria = {
-          documentID: viewCtrl.get('basicRepository'),
+          documentID: ctrl.get('basicRepository'),
           conditions: '',
           keywordUsage: 'All',
-          keywords: viewCtrl.get('basicKeywords'),
+          keywords: ctrl.get('basicKeywords'),
           startPage: 1,
           recordsPerPage: 100,
           doPageCount: 'false'
         };
-        var repositoryDocumentID = viewCtrl.get('basicRepository');
+        var repositoryDocumentID = ctrl.get('basicRepository');
         var conditions = '';
         Chililog.repositoryDataController.find(criteria, this, this.endBasicSearch);
+
+        // Clear table to signal to the user that we are searching
+        ctrl.set('content', null);
       },
 
       endBasicSearch: function(params, error) {
