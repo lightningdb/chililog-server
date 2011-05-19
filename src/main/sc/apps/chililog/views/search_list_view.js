@@ -5,7 +5,7 @@
 
 Chililog.SearchListView = SC.LabelView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title basicAdvancedOptions basicSearch table'.w(),
+  childViews: 'title basicAdvancedOptions basicSearch table noRowsFoundMessage'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -128,6 +128,20 @@ Chililog.SearchListView = SC.LabelView.design({
     isEditable: NO,
     columns:[
       SC.TableColumn.create({
+        key:   'xxx',
+        title: '_searchListView.Row'.loc(),
+        width: 50,
+        isReorderable: NO,
+        isSortable: NO,
+        formatter: function(v, target) {
+          return target.get('contentIndex') + 1;
+        },
+        exampleView: SC.TableCellContentView.extend({
+          textAlign: SC.ALIGN_RIGHT,
+          fontWeight: SC.BOLD_WEIGHT
+        })
+      }),
+      SC.TableColumn.create({
         key:   'timestamp',
         title: '_searchListView.Timestamp'.loc(),
         width: 180,
@@ -163,7 +177,13 @@ Chililog.SearchListView = SC.LabelView.design({
     ],
     target: Chililog.searchViewController,
     action: 'view'
-  })
+  }),
+
+  noRowsFoundMessage: SC.LabelView.design({
+    layout: { top: 155, left: 25, width: 200, height: 25 },
+    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.rowsFoundAfterSearch').oneWay().not(),
+    value: '_searchListView.NoRowsFound'.loc()
+  })  
 
 });
 

@@ -60,7 +60,7 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
         key:   'name',
         title: '_configureRepositoryInfoDetailView.Name'.loc(),
         width: 150,
-        isReorderable: NO   //Bug with reorder when switching with other configure options
+        isReorderable: NO
       }),
       SC.TableColumn.create({
         key:   'displayName',
@@ -85,16 +85,7 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
          * Note that we bind to the status code and not text so that we can standardise on the user of the
          * status code in the CSS class name.
          */
-        exampleView: SC.LabelView.extend({
-          layout: {left: 10, right: 10},
-          isPoolable: YES,
-          layerIsCacheable: YES,
-
-          contentValueKeyBinding: '*column.key',
-          contentValueKeyDidChange: function() {
-            this.updatePropertyFromContent('value', '*', 'contentValueKey');
-          }.observes('contentValueKey'),
-
+        exampleView: SC.TableCellContentView.extend({
           render: function(context, firstTime) {
             if (!firstTime) {
               context.removeClass('repository-status-online');

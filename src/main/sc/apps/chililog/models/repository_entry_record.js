@@ -34,6 +34,9 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
    * @param {Object} repositoryInfoDocumentID Repository to which this entry belong
    */
   fromApiObject: function(repoEntryAO, repositoryInfoDocumentID) {
+    var d = new Date();
+    var timezoneOffsetMinutes = d.getTimezoneOffset();
+
     for (var i = 0; i < Chililog.REPOSITORY_ENTRY_RECORD_MAP.length; i++) {
       var map = Chililog.REPOSITORY_ENTRY_RECORD_MAP[i];
       var recordPropertyName = map[0];
@@ -42,6 +45,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
       var apiObjectValue = repoEntryAO[apiObjectPropertyName];
       if (recordPropertyName === 'timestamp' || recordPropertyName === 'savedTimestamp') {
         apiObjectValue = SC.DateTime.parse(apiObjectValue, '%Y-%m-%dT%H:%M:%S.%s%Z');
+        apiObjectValue.set('timezone', timezoneOffsetMinutes);
       }
       this.set(recordPropertyName, apiObjectValue);
     }

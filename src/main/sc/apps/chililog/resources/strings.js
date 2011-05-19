@@ -178,7 +178,8 @@ SC.stringsFor('English', {
   '_searchListView.Host': 'Host',
   '_searchListView.Severity': 'Severity',
   '_searchListView.Message': 'Message',
-
+  '_searchListView.Row': '#',
+  '_searchListView.NoRowsFound': 'No matching entries found.',
 
   // ********************************************************
   // Data controllers

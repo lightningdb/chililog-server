@@ -62,6 +62,11 @@ Chililog.searchListViewController = SC.ArrayController.create({
   isBasicSearching: NO,
 
   /**
+   * Flag to control showing the "no rows found" message
+   */
+  rowsFoundAfterSearch: YES,
+
+  /**
    * Since this is a simple async call, skip the statechart and directly call the data controller
    */
   basicSearch: function() {

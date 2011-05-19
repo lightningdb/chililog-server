@@ -73,9 +73,19 @@ Chililog.SearchState = SC.State.extend({
 
       doBasicSearch: function() {
         var ctrl = Chililog.searchListViewController;
+
+        // Make up time condition
+        var minutesAgo = parseInt(ctrl.get('basicTimeSpan')) * -1;
+        var conditions = {
+          'c_ts' : {
+            '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ'),
+            '$lte': SC.DateTime.create().toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ') 
+          }
+        };
+
         var criteria = {
           documentID: ctrl.get('basicRepository'),
-          conditions: '',
+          conditions: conditions,
           keywordUsage: 'All',
           keywords: ctrl.get('basicKeywords'),
           startPage: 1,
@@ -87,14 +97,17 @@ Chililog.SearchState = SC.State.extend({
         Chililog.repositoryDataController.find(criteria, this, this.endBasicSearch);
 
         // Clear table to signal to the user that we are searching
-        //ctrl.set('content', null);
+        ctrl.set('content', null);
       },
 
       endBasicSearch: function(params, error) {
         var ctrl = Chililog.searchListViewController;
         if (!SC.none(error)) {
           ctrl.showError(error);
+        } else {
+          ctrl.set('rowsFoundAfterSearch', ctrl.get('length') > 0);
         }
+
         this.gotoState('viewingSearchResults_Idle');
       }
     }),
