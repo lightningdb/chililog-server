@@ -100,12 +100,12 @@ Chililog.SearchState = SC.State.extend({
         ctrl.set('content', null);
       },
 
-      endBasicSearch: function(params, error) {
+      endBasicSearch: function(documentID, recordCount, params, error) {
         var ctrl = Chililog.searchListViewController;
         if (!SC.none(error)) {
           ctrl.showError(error);
         } else {
-          ctrl.set('rowsFoundAfterSearch', ctrl.get('length') > 0);
+          ctrl.set('rowsFoundAfterSearch', recordCount > 0);
         }
 
         this.gotoState('viewingSearchResults_Idle');

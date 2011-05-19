@@ -3,6 +3,22 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
+Chililog.SearchTableCellContentView = SC.TableCellContentView.extend({
+  render: function(context, firstTime) {
+    if (firstTime) {
+      context.removeClass('severity-error');
+      context.removeClass('severity-warning');
+      var severity = this.getPath('content.severity');
+      if (severity <= 3) {
+        context.addClass('severity-error');
+      } else if (severity === 4 || severity === 5 || severity === 7) {
+        context.addClass('severity-warning');
+      }
+    }
+    sc_super();
+  }
+});
+
 Chililog.SearchListView = SC.LabelView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
   childViews: 'title basicAdvancedOptions basicSearch table noRowsFoundMessage'.w(),
@@ -107,6 +123,7 @@ Chililog.SearchListView = SC.LabelView.design({
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
       isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().not(),
+      isDefault: YES,
       target: Chililog.searchListViewController,
       action: 'basicSearch'
     }),
@@ -148,31 +165,36 @@ Chililog.SearchListView = SC.LabelView.design({
         isReorderable: NO,   //Bug with reorder when switching with other configure options
         formatter: function(v) {
           return SC.none(v) ? '' : v.toFormattedString('%Y-%m-%d %H:%M:%S.%s');
-        }
+        },
+        exampleView: Chililog.SearchTableCellContentView
       }),
       SC.TableColumn.create({
         key:   'source',
         title: '_searchListView.Source'.loc(),
         width: 150,
-        isReorderable: NO
+        isReorderable: NO,
+        exampleView: Chililog.SearchTableCellContentView
       }),
       SC.TableColumn.create({
         key:   'host',
         title: '_searchListView.Host'.loc(),
         width: 150,
-        isReorderable: NO
+        isReorderable: NO,
+        exampleView: Chililog.SearchTableCellContentView
       }),
       SC.TableColumn.create({
         key:   'severityText',
         title: '_searchListView.Severity'.loc(),
         width: 100,
-        isReorderable: NO
+        isReorderable: NO,
+        exampleView: Chililog.SearchTableCellContentView
       }),
       SC.TableColumn.create({
         key:   'message',
         title: '_searchListView.Message'.loc(),
         width: 600,
-        isReorderable: NO
+        isReorderable: NO,
+        exampleView: Chililog.SearchTableCellContentView
       })
     ],
     target: Chililog.searchViewController,
@@ -183,7 +205,7 @@ Chililog.SearchListView = SC.LabelView.design({
     layout: { top: 155, left: 25, width: 200, height: 25 },
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.rowsFoundAfterSearch').oneWay().not(),
     value: '_searchListView.NoRowsFound'.loc()
-  })  
+  })
 
 });
 

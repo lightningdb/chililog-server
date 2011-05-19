@@ -236,3 +236,15 @@
 .sc-table-data-view .table-cell .sc-label-view.user-status-locked {
   color: #FF0000;
 }
+
+
+/*******************************************
+ * Search
+ *******************************************/
+.sc-table-data-view .table-cell .sc-label-view.severity-error {
+  color: #FF0000;
+}
+
+.sc-table-data-view .table-cell .sc-label-view.severity-warning {
+  color: #ff7700;
+}

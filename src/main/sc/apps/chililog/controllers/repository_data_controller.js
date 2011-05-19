@@ -430,8 +430,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    *  - conditions: hash of mongodb criteria
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(documentId, callbackParams, error) {}.
-   * If there is no error, error will be set to null.
+   * Signature is: function(documentId, recordCount, callbackParams, error) {}.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   find: function(criteria, callbackTarget, callbackFunction, callbackParams) {
@@ -461,6 +460,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
   endFind: function(response, params) {
     var error = null;
+    var recordCount = 0;
     try {
       // Check status
       this.checkResponse(response);
@@ -478,7 +478,8 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
       if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
         // Add record
-        for (var i = 0; i < repoEntryAOArray.length; i++) {
+        recordCount = repoEntryAOArray.length;
+        for (var i = 0; i < recordCount; i++) {
           var repoEntryAO = repoEntryAOArray[i];
           var repoEntryRecord = Chililog.store.createRecord(Chililog.RepositoryEntryRecord, {}, repoEntryAO['_id']);
           repoEntryRecord.fromApiObject(repoEntryAO, params.documentID);
@@ -493,7 +494,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, recordCount, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
