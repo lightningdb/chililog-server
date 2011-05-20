@@ -79,7 +79,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Show the details form
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureRepositoryInfoDetailView');
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoDetailView');
 
     // Set scroller to top of page
     Chililog.configureRepositoryInfoDetailView.setPath('body.verticalScrollOffset', 0);

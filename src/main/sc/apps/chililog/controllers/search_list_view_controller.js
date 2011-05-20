@@ -56,21 +56,44 @@ Chililog.searchListViewController = SC.ArrayController.create({
   basicTimeSpan: '',
 
   /**
+   * Number of rows to display per search
+   * @type Number
+   */
+  basicRowsPerSearch: 10,
+  
+  /**
    * Flag to indicate if we are in the middle of a basic search.
    * This flag is set in the state chart
+   * @type boolean
    */
-  isBasicSearching: NO,
+  isSearching: NO,
 
   /**
-   * Flag to control showing the "no rows found" message
+   * Flag to control showing the "no rows found" message.
+   * Initially set to YES so that message don't show until search is clicked.
+   * @type boolean
    */
   rowsFoundAfterSearch: YES,
 
   /**
-   * Since this is a simple async call, skip the statechart and directly call the data controller
+   * Flag to control showing the "no rows found" message.
+   * Init to NO because there are no records to show
+   * @type boolean
+   */
+  canShowMore: NO,
+
+  /**
+   * Do basic search
    */
   basicSearch: function() {
     Chililog.statechart.sendEvent('basicSearch');
+  },
+  
+  /**
+   * Show more records
+   */
+  showMore: function() {
+    Chililog.statechart.sendEvent('showMore');
   }
 
 });

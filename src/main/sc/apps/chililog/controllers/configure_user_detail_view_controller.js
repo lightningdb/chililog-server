@@ -68,7 +68,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    * Show the user details form
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureUserDetailView');
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserDetailView');
 
     // Set scroller to top of page
     Chililog.configureUserDetailView.setPath('body.verticalScrollOffset', 0);

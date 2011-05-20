@@ -51,7 +51,7 @@ Chililog.configureRepositoryInfoListViewController = SC.ArrayController.create(C
    * Show list of repositories in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureRepositoryInfoListView');
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoListView');
     return;
   },
 

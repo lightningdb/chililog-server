@@ -428,6 +428,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
    *  - keywordUsage: 'All' to match entries with all of the listed keywords; or 'Any' to match entries with any of the listed keywords
    *  - keywords: list of keywords to entries must contain
    *  - conditions: hash of mongodb criteria
+   *  -
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(documentId, recordCount, callbackParams, error) {}.
@@ -450,7 +451,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
     request = request.header('X-Chililog-Records-Per-Page', criteria.recordsPerPage + '');
     request = request.header('X-Chililog-Do-Page-Count', 'false');
 
-    var params = { documentID: criteria.documentID, callbackTarget: callbackTarget,
+    var params = { criteria: criteria, callbackTarget: callbackTarget,
       callbackFunction: callbackFunction, callbackParams: callbackParams
     };
     request.notify(this, 'endFind', params).send({dummy: 'data'});
@@ -465,12 +466,15 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       // Check status
       this.checkResponse(response);
 
-      // Delete existing records
-      var records = Chililog.store.find(Chililog.RepositoryEntryRecord);
-      records.forEach(function(record) {
-        record.destroy()
-      });
-      Chililog.store.commitRecords();
+      // Delete existing records if this is the 1st page
+      // Otherwise assume we want more records
+      if (params.criteria.startPage === 1) {
+        var records = Chililog.store.find(Chililog.RepositoryEntryRecord);
+        records.forEach(function(record) {
+          record.destroy()
+        });
+        Chililog.store.commitRecords();
+      }
 
       // Fill with new data
       var repoEntriesAO = response.get('body');
@@ -482,7 +486,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
         for (var i = 0; i < recordCount; i++) {
           var repoEntryAO = repoEntryAOArray[i];
           var repoEntryRecord = Chililog.store.createRecord(Chililog.RepositoryEntryRecord, {}, repoEntryAO['_id']);
-          repoEntryRecord.fromApiObject(repoEntryAO, params.documentID);
+          repoEntryRecord.fromApiObject(repoEntryAO, params.criteria.documentID);
         }
         Chililog.store.commitRecords();
       }

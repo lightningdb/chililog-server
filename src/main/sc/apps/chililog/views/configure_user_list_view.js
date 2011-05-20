@@ -105,9 +105,12 @@ Chililog.ConfigureUserListView = SC.View.design({
 
           render: function(context, firstTime) {
             if (firstTime) {
-              var classArray = [];
-              classArray.push('user-status-' + (this.get('value').toLowerCase()));
-              context.addClass(classArray);
+              var value = this.get('value');
+              if (!SC.none(value)) {
+                var classArray = [];
+                classArray.push('user-status-' + (this.get('value').toLowerCase()));
+                context.addClass(classArray);
+              }
             }
             sc_super();
           }
@@ -115,7 +118,18 @@ Chililog.ConfigureUserListView = SC.View.design({
       })
     ],
     target: Chililog.configureUserListViewController,
-    action: 'edit'
+    action: 'edit',
+
+    /**
+     * Reset when visible to make sure that screen is displayed correctly when show/not showing in container views
+     */
+    doReset: function() {
+      var isVisibleInWindow = this.get('isVisibleInWindow');
+      if (isVisibleInWindow) {
+        var x = this.getPath('_dataView.contentView');
+        x._reset();
+      }
+    }.observes('isVisibleInWindow')
   })
 
 });

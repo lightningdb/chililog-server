@@ -63,19 +63,3 @@ Chililog.ConfigureView = SC.View.design({
  * Instance configure view
  */
 Chililog.configureView = Chililog.ConfigureView.create();
-
-/**
- * Scene views
- * We cannot reuse just the 1 scene view because we get funny overlap issues after navigating away and then back
- */
-Chililog.ConfigureRepositoryInfoSceneView = SC.SceneView.design({
-  layout: { top: 0, bottom: 0, left: 0, right: 0 },
-  scenes: ['Chililog.configureRepositoryInfoListView', 'Chililog.configureRepositoryInfoDetailView']
-});
-Chililog.configureRepositoryInfoSceneView = Chililog.ConfigureRepositoryInfoSceneView.create();
-
-Chililog.ConfigureUserSceneView = SC.SceneView.design({
-  layout: { top: 0, bottom: 0, left: 0, right: 0 },
-  scenes: ['Chililog.configureUserListView', 'Chililog.configureUserDetailView']
-});
-Chililog.configureUserSceneView = Chililog.ConfigureUserSceneView.create();

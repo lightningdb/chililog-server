@@ -13,7 +13,7 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
   /**
    * Selection set. Null if nothing selected
    *
-   * @type SC.SelectionSet.
+   * @type SCtest.SelectionSet.
    */
   selection: null,
 
@@ -35,7 +35,7 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
    * Show list of users in the right hand side details pane
    */
   show: function() {
-    Chililog.configureView.setPath('right.contentView.nowShowing', 'Chililog.configureUserListView');
+    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserListView');
     return;
   },
 

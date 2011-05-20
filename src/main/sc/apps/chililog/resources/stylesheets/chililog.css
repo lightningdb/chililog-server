@@ -243,8 +243,10 @@
  *******************************************/
 .sc-table-data-view .table-cell .sc-label-view.severity-error {
   color: #FF0000;
+  font-weight: bold;
 }
 
 .sc-table-data-view .table-cell .sc-label-view.severity-warning {
   color: #ff7700;
+  font-weight: bold;
 }

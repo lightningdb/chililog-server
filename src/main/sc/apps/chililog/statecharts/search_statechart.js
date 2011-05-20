@@ -15,6 +15,7 @@ Chililog.SearchState = SC.State.extend({
    */
   enterState: function() {
     Chililog.mainViewController.doShow('search');
+    //Chililog.searchListViewController.resetTableView();
   },
 
   viewingSearchResults: SC.State.design({
@@ -60,15 +61,23 @@ Chililog.SearchState = SC.State.extend({
      * Trigger refreshing of repository data
      */
     viewingSearchResults_Searching: SC.State.design({
+
+      /**
+       * Save of the previous basic search criteria for use in show more
+       */
+      previousBasicSearchCriteria: null,
+
       enterState: function(context) {
-        if (context.serachType == 'basic') {
+        if (context.serachType === 'basic') {
           this.doBasicSearch();
-          Chililog.searchListViewController.set('isBasicSearching', YES);
+        } else if (context.serachType === 'showMore') {
+          this.doShowMore();
         }
+        Chililog.searchListViewController.set('isSearching', YES);
       },
 
       exitState: function() {
-        Chililog.searchListViewController.set('isBasicSearching', NO);
+        Chililog.searchListViewController.set('isSearching', NO);
       },
 
       doBasicSearch: function() {
@@ -89,26 +98,35 @@ Chililog.SearchState = SC.State.extend({
           keywordUsage: 'All',
           keywords: ctrl.get('basicKeywords'),
           startPage: 1,
-          recordsPerPage: 100,
+          recordsPerPage: ctrl.get('basicRowsPerSearch'),
           doPageCount: 'false'
         };
-        var repositoryDocumentID = ctrl.get('basicRepository');
-        var conditions = '';
-        Chililog.repositoryDataController.find(criteria, this, this.endBasicSearch);
+        Chililog.repositoryDataController.find(criteria, this, this.endSearch);
+
+        // Save criteria for show more
+        this.set('previousBasicSearchCriteria', criteria);
 
         // Clear table to signal to the user that we are searching
         ctrl.set('content', null);
       },
 
-      endBasicSearch: function(documentID, recordCount, params, error) {
+      endSearch: function(documentID, recordCount, params, error) {
         var ctrl = Chililog.searchListViewController;
         if (!SC.none(error)) {
           ctrl.showError(error);
         } else {
           ctrl.set('rowsFoundAfterSearch', recordCount > 0);
+          ctrl.set('canShowMore', recordCount === ctrl.get('basicRowsPerSearch'));
         }
 
         this.gotoState('viewingSearchResults_Idle');
+      },
+
+      doShowMore: function() {
+        var ctrl = Chililog.searchListViewController;
+        var criteria = this.get('previousBasicSearchCriteria');
+        criteria.startPage = criteria.startPage + 1;
+        Chililog.repositoryDataController.find(criteria, this, this.endSearch);
       }
     }),
 
@@ -119,8 +137,17 @@ Chililog.SearchState = SC.State.extend({
      */
     basicSearch: function(params) {
       this.gotoState('viewingSearchResults_Searching', {serachType: 'basic'});
+    },
+
+    /**
+     * Search event
+     * @param {Hash} params Data hash of parameters.
+     *
+     */
+    showMore: function(params) {
+      this.gotoState('viewingSearchResults_Searching', {serachType: 'showMore'});
     }
-    
+
   })
   
 });

@@ -3,25 +3,9 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
-Chililog.SearchTableCellContentView = SC.TableCellContentView.extend({
-  render: function(context, firstTime) {
-    if (firstTime) {
-      context.removeClass('severity-error');
-      context.removeClass('severity-warning');
-      var severity = this.getPath('content.severity');
-      if (severity <= 3) {
-        context.addClass('severity-error');
-      } else if (severity === 4 || severity === 5 || severity === 7) {
-        context.addClass('severity-warning');
-      }
-    }
-    sc_super();
-  }
-});
-
 Chililog.SearchListView = SC.LabelView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title basicAdvancedOptions basicSearch table noRowsFoundMessage'.w(),
+  childViews: 'title basicAdvancedOptions basicSearch table footer noRowsFoundMessage'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -50,7 +34,6 @@ Chililog.SearchListView = SC.LabelView.design({
     layout: { top: 40, left: 10, right: 10, height: 75 },
     classNames: ['box'],
     childViews: 'repositories timespan keywords searchButton searchingImage'.w(),
-
 
     repositories: SC.View.design({
       layout: { top: 10, left: 15, bottom: 10, width: 150 },
@@ -122,7 +105,7 @@ Chililog.SearchListView = SC.LabelView.design({
       title: '_searchListView.Search',
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
-      isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().not(),
+      isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().not(),
       isDefault: YES,
       target: Chililog.searchListViewController,
       action: 'basicSearch'
@@ -131,13 +114,13 @@ Chililog.SearchListView = SC.LabelView.design({
     searchingImage: Chililog.ImageView.design({
       layout: { top: 35, left: 935, width: 16, height: 16 },
       value: sc_static('images/working'),
-      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearching').oneWay().bool(),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().bool(),
       useImageQueue: NO
     })
   }),
 
   table: SC.TableView.design({
-    layout: { top: 125, left: 10, right: 10, bottom: 10 },
+    layout: { top: 122, left: 10, right: 10, bottom: 50 },
     classNames: ['table'],
     contentBinding: 'Chililog.searchListViewController.arrangedObjects',
     selectionBinding: 'Chililog.searchListViewController.selection',
@@ -165,42 +148,83 @@ Chililog.SearchListView = SC.LabelView.design({
         isReorderable: NO,   //Bug with reorder when switching with other configure options
         formatter: function(v) {
           return SC.none(v) ? '' : v.toFormattedString('%Y-%m-%d %H:%M:%S.%s');
-        },
-        exampleView: Chililog.SearchTableCellContentView
+        }
       }),
       SC.TableColumn.create({
         key:   'source',
         title: '_searchListView.Source'.loc(),
         width: 150,
-        isReorderable: NO,
-        exampleView: Chililog.SearchTableCellContentView
+        isReorderable: NO
       }),
       SC.TableColumn.create({
         key:   'host',
         title: '_searchListView.Host'.loc(),
         width: 150,
-        isReorderable: NO,
-        exampleView: Chililog.SearchTableCellContentView
+        isReorderable: NO
       }),
       SC.TableColumn.create({
         key:   'severityText',
         title: '_searchListView.Severity'.loc(),
         width: 100,
         isReorderable: NO,
-        exampleView: Chililog.SearchTableCellContentView
+        exampleView: SC.TableCellContentView.extend({
+          render: function(context, firstTime) {
+            if (!firstTime) {
+              context.removeClass('severity-error');
+              context.removeClass('severity-warning');
+            }
+            var severity = this.getPath('content.severity');
+            if (severity <= 3) {
+              context.addClass('severity-error');
+            } else if (severity === 4 || severity === 5) {
+              context.addClass('severity-warning');
+            }
+            sc_super();
+          }
+        })
       }),
       SC.TableColumn.create({
         key:   'message',
         title: '_searchListView.Message'.loc(),
         width: 600,
-        isReorderable: NO,
-        exampleView: Chililog.SearchTableCellContentView
+        maxWidth: 1024,
+        isReorderable: NO
       })
     ],
     target: Chililog.searchViewController,
-    action: 'view'
+    action: 'view',
+
+    /**
+     * Reset when visible to make sure that screen is displayed correctly when show/not showing in container views
+     */
+    doReset: function() {
+      var isVisibleInWindow = this.get('isVisibleInWindow');
+      if (isVisibleInWindow) {
+        var x = this.getPath('_dataView.contentView');
+        x._reset(0);
+      }
+    }.observes('isVisibleInWindow')
+
   }),
 
+  footer: SC.View.design({
+    layout: { left: 10, right: 10, bottom: 10, height: 33 },
+    classNames: ['box'],
+    childViews: 'moreButton'.w(),
+
+    moreButton: SC.ButtonView.design({
+      layout: { right: 5, top: 5, width: 100 },
+      title: '_showMore',
+      localize: YES,
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.canShowMore').oneWay().bool(),
+      target: Chililog.searchListViewController,
+      action: 'showMore'
+    })
+  }),
+
+  /**
+   * This is overlay on top of the table so it looks like it is part of the table
+   */
   noRowsFoundMessage: SC.LabelView.design({
     layout: { top: 155, left: 25, width: 200, height: 25 },
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.rowsFoundAfterSearch').oneWay().not(),

@@ -214,7 +214,9 @@ Chililog.repositoryInfoDataController = SC.ObjectController.create(Chililog.Data
 
       // Save new authenticated user details
       var apiObject = response.get('body');
-      if (params.documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
+      if (params.isAdding) {
+        params.documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
+      } else if (params.documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
         throw Chililog.$error('_documentIDError', [ params.documentID, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]]);
       }      
 

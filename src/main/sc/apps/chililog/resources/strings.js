@@ -27,6 +27,7 @@ SC.stringsFor('English', {
   '_starting': 'Starting ...',
   '_stop': 'Stop',
   '_stopping': 'Stopping ...',
+  '_showMore': 'Show More',
 
   '_thousandSeparator': ',',
 

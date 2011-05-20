@@ -162,20 +162,20 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
   save: function(record, callbackTarget, callbackFunction, callbackParams) {
     var documentID = record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     var documentVersion = record.get(Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME);
-    var isCreating = (SC.none(documentVersion) || documentVersion ===  0);
+    var isAdding = (SC.none(documentVersion) || documentVersion ===  0);
 
     var data = record.toApiObject();
     var authToken = Chililog.sessionDataController.get('authenticationToken');
 
     var request;
-    if (isCreating) {
+    if (isAdding) {
       var url = '/api/users/';
       request = SC.Request.postUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     } else {
       var url = '/api/users/' + documentID;
       request = SC.Request.putUrl(url).async(YES).json(YES).header(Chililog.AUTHENTICATION_HEADER_NAME, authToken);
     }
-    var params = { documentID: documentID, isCreating: isCreating,
+    var params = { documentID: documentID, isAdding: isAdding,
       callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams 
     };
     request.notify(this, 'endSave', params).send(data);
@@ -193,7 +193,6 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
    */
   endSave: function(response, params) {
     var error = null;
-    var documentID = params.documentID;
     try {
       // Check status
       this.checkResponse(response);
@@ -203,15 +202,17 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
       // Save user details returns from server
       var apiObject = response.get('body');
-      if (documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw Chililog.$error('_documentIDError', documentID, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
+      if (params.isAdding) {
+        params.documentID = apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME];
+      } else if (params.documentID !== apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw Chililog.$error('_documentIDError', params.documentID, apiObject[Chililog.DOCUMENT_ID_AO_FIELD_NAME]);
       }
 
       var record = null;
-      if (params.isCreating) {
-        record = Chililog.store.createRecord(Chililog.UserRecord, {}, documentID);
+      if (params.isAdding) {
+        record = Chililog.store.createRecord(Chililog.UserRecord, {}, params.documentID);
       } else {
-        record = Chililog.store.find(Chililog.UserRecord, documentID);
+        record = Chililog.store.find(Chililog.UserRecord, params.documentID);
       }
       record.fromApiObject(apiObject);
       Chililog.store.commitRecords();
@@ -229,7 +230,7 @@ Chililog.userDataController = SC.ObjectController.create(Chililog.DataController
 
     // Callback
     if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, documentID, params.callbackParams, error);
+      params.callbackFunction.call(params.callbackTarget, params.documentID, params.callbackParams, error);
     }
 
     // Return YES to signal handling of callback

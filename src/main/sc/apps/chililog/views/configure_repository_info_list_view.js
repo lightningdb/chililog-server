@@ -91,7 +91,10 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
               context.removeClass('repository-status-online');
               context.removeClass('repository-status-offline');
             }
-            context.addClass('repository-status-' + (this.get('value').toLowerCase()));
+            var value = this.get('value');
+            if (!SC.none(value)) {
+              context.addClass('repository-status-' + (value.toLowerCase()));
+            }
             sc_super();
           }
         })
@@ -107,7 +110,18 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
       })
     ],
     target: Chililog.configureRepositoryInfoListViewController,
-    action: 'edit'
+    action: 'edit',
+
+    /**
+     * Reset when visible to make sure that screen is displayed correctly when show/not showing in container views
+     */
+    doReset: function() {
+      var isVisibleInWindow = this.get('isVisibleInWindow');
+      if (isVisibleInWindow) {
+        var x = this.getPath('_dataView.contentView');
+        x._reset(0);
+      }
+    }.observes('isVisibleInWindow')    
   })
 
 });

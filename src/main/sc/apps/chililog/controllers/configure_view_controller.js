@@ -35,8 +35,6 @@ Chililog.configureViewController = SC.Object.create({
   selectRepositoriesMenuItem: function() {
     var menuItems = Chililog.configureView.getPath('left.contentView');
     menuItems.select(0);
-
-    Chililog.configureView.setPath('right.contentView', Chililog.configureRepositoryInfoSceneView);
   },
 
   /**
@@ -45,8 +43,6 @@ Chililog.configureViewController = SC.Object.create({
   selectUsersMenuItem: function() {
     var menuItems = Chililog.configureView.getPath('left.contentView');
     menuItems.select(1);
-
-    Chililog.configureView.setPath('right.contentView', Chililog.configureUserSceneView);
   }
 
 });
