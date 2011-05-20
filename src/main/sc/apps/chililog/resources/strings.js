@@ -28,6 +28,9 @@ SC.stringsFor('English', {
   '_stop': 'Stop',
   '_stopping': 'Stopping ...',
   '_showMore': 'Show More',
+  '_done': 'Done',
+  '_next': '>',
+  '_previous': '\<',
 
   '_thousandSeparator': ',',
 
@@ -181,6 +184,15 @@ SC.stringsFor('English', {
   '_searchListView.Message': 'Message',
   '_searchListView.Row': '#',
   '_searchListView.NoRowsFound': 'No matching entries found.',
+
+  '_searchDetailView.Title': 'Repository Entry',
+  '_searchDetailView.Timestamp': 'Timestamp',
+  '_searchDetailView.Source': 'Source',
+  '_searchDetailView.Host': 'Host',
+  '_searchDetailView.Severity': 'Severity',
+  '_searchDetailView.Message': 'Message',
+  '_searchDetailView.Fields': 'Fields',
+  '_searchDetailView.Keywords': 'Keywords',
 
   // ********************************************************
   // Data controllers

@@ -110,18 +110,7 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
       })
     ],
     target: Chililog.configureRepositoryInfoListViewController,
-    action: 'edit',
-
-    /**
-     * Reset when visible to make sure that screen is displayed correctly when show/not showing in container views
-     */
-    doReset: function() {
-      var isVisibleInWindow = this.get('isVisibleInWindow');
-      if (isVisibleInWindow) {
-        var x = this.getPath('_dataView.contentView');
-        x._reset(0);
-      }
-    }.observes('isVisibleInWindow')    
+    action: 'edit'
   })
 
 });

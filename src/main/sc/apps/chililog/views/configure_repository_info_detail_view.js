@@ -42,7 +42,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
   }),
 
   successMessage: SC.LabelView.design({
-    layout: { top: 40, centerX: 0, width: 200, height: 25, opacity: 0 },
+    layout: { top: 40, centerX: 0, width: 200, height: 25 },
+    isVisible: NO,
     classNames: ['success'],
     value: '_saveSuccess'.loc()
   }),

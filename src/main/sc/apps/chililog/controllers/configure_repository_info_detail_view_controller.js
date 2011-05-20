@@ -175,20 +175,9 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Show success message when profile successfully saved
    */
   showSaveSuccess: function() {
-    var view = Chililog.configureRepositoryInfoDetailView.get('successMessage');
+    this.set('isSaveSuccess', YES);
+
     var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
-    this.set('successMessage', '_successMessage'.loc());
-
-    if (!SC.none(view)) {
-      // Have to invokeLater because of webkit
-      // http://groups.google.com/group/sproutcore/browse_thread/thread/482740f497d80462/cba903f9cc6aadf8?lnk=gst&q=animate#cba903f9cc6aadf8
-      view.adjust("opacity", 1);
-      this.invokeLater(function() {
-        view.animate("opacity", 0, { duration: 4, timing:'ease-in' });
-      }, 10);
-    }
-
     this.setFocusOnField(field);
   }
-
 });

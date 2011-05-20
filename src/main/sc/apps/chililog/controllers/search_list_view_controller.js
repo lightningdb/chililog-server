@@ -94,6 +94,10 @@ Chililog.searchListViewController = SC.ArrayController.create({
    */
   showMore: function() {
     Chililog.statechart.sendEvent('showMore');
+  },
+
+  view: function() {
+    Chililog.statechart.sendEvent('viewEntry');
   }
 
 });

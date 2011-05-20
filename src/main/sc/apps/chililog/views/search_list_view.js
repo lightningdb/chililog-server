@@ -191,7 +191,7 @@ Chililog.SearchListView = SC.LabelView.design({
         isReorderable: NO
       })
     ],
-    target: Chililog.searchViewController,
+    target: Chililog.searchListViewController,
     action: 'view',
 
     /**
