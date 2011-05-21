@@ -48,9 +48,9 @@ db.system.users.find().forEach(printjson);
 //*************************************************************
 db.config.drop();
 db.users.drop();
-db.repositories_info.drop();
-db.chililog_repository.drop();
-db.sandpit_repository.drop();
+db.repoinfo.drop();
+db.repo_chililog.drop();
+db.repo_sandpit.drop();
 
 
 //*************************************************************
@@ -75,7 +75,7 @@ var adminUser = {
 	status: "Enabled",
 	display_name: "Adminstrator",
 	email_address: "admin@chililog.com",
-	c_ver: new NumberLong(1) 
+	doc_version: new NumberLong(1) 
 };
 db.users.insert(adminUser);
 
@@ -86,7 +86,7 @@ var sandpitRepositoryAdminUser = {
 		status: "Enabled",
 		display_name: "Sandpit Repository Administrator",
 		email_address: "sandpitadmin@chililog.com",
-		c_ver: new NumberLong(1) 
+		doc_version: new NumberLong(1) 
 	};
 db.users.insert(sandpitRepositoryAdminUser);
 
@@ -97,7 +97,7 @@ var sandpitRepositoryPowerUser = {
 		status: "Enabled",
 		display_name: "Sandpit Repository Power User",
 		email_address: "sandpitpoweruser@chililog.com",
-		c_ver: new NumberLong(1) 
+		doc_version: new NumberLong(1) 
 	};
 db.users.insert(sandpitRepositoryPowerUser);
 
@@ -108,7 +108,7 @@ var sandpitRepositoryStandardUser = {
 		status: "Enabled",
 		display_name: "Sandpit Repository Standard User",
 		email_address: "sandpituser@chililog.com",
-		c_ver: new NumberLong(1) 
+		doc_version: new NumberLong(1) 
 	};
 db.users.insert(sandpitRepositoryStandardUser);
 
@@ -130,10 +130,10 @@ var chililogRepoInfo = {
 	write_queue_page_size: new NumberLong(1),
 	write_queue_page_count_cache: new NumberLong(1),
 	max_keywords: new NumberLong(50),
-	c_ver: new NumberLong(1)
+	doc_version: new NumberLong(1)
 };
-db.repositories_info.insert(chililogRepoInfo);
-db.chililog_repository.ensureIndex({ c_keywords : 1, c_ts : 1 }, {name: "keyword_ts_index"});
+db.repoinfo.insert(chililogRepoInfo);
+db.repo_chililog.ensureIndex({ keywords : 1, ts : 1 }, {name: "keyword_ts_index"});
 
 print("\nAdding Sandpit Repository");
 var sandpitRepoInfo = {
@@ -151,10 +151,10 @@ var sandpitRepoInfo = {
 	write_queue_page_size: new NumberLong(1024 * 1024 * 10),	// 10 MB
 	write_queue_page_count_cache: new NumberLong(3),
 	max_keywords: new NumberLong(50),
-	c_ver: new NumberLong(1)
+	doc_version: new NumberLong(1)
 };
-db.repositories_info.insert(sandpitRepoInfo);
-db.sandpit_repository.ensureIndex({ c_keywords : 1, c_ts : 1 }, {name: "keyword_ts_index"});
+db.repoinfo.insert(sandpitRepoInfo);
+db.repo_sandpit.ensureIndex({ keywords : 1, ts : 1 }, {name: "keyword_ts_index"});
 
 // *************************************************************
 // Finish

@@ -59,7 +59,7 @@ Chililog.searchListViewController = SC.ArrayController.create({
    * Number of rows to display per search
    * @type Number
    */
-  basicRowsPerSearch: 10,
+  basicRowsPerSearch: 100,
   
   /**
    * Flag to indicate if we are in the middle of a basic search.

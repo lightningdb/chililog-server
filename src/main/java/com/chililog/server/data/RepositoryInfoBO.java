@@ -225,7 +225,7 @@ public class RepositoryInfoBO extends BO implements Serializable
      */
     public String getMongoDBCollectionName()
     {
-        return String.format("%s_repository", _name);
+        return String.format("repo_%s", _name);
     }
 
     /**

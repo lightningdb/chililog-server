@@ -66,7 +66,7 @@ public class DelimitedEntryParserTest
     public static void classTeardown() throws Exception
     {
         // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection("junit_test_repository");
+        DBCollection coll = _db.getCollection("repo_junit_test");
         coll.drop();
     }
 
@@ -138,7 +138,7 @@ public class DelimitedEntryParserTest
         c.save(_db, entry);
 
         // Get Line 1
-        DBCollection coll = _db.getCollection("junit_test_repository");
+        DBCollection coll = _db.getCollection("repo_junit_test");
         DBObject query = new BasicDBObject();
         query.put("_id", entry.toDBObject().get("_id"));
         dbObject = coll.findOne(query);
@@ -151,12 +151,12 @@ public class DelimitedEntryParserTest
         assertNotNull(dbObject);
         assertEquals(cal.getTimeInMillis(), ((Date)dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME)).getTime());
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
-        assertEquals("line1", dbObject.get("field1"));
-        assertEquals(2, dbObject.get("field2"));
-        assertEquals(3L, dbObject.get("field3"));
-        assertEquals(4.4d, dbObject.get("field4"));
-        assertEquals(new GregorianCalendar(2001, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
-        assertEquals(true, dbObject.get("field6"));
+        assertEquals("line1", dbObject.get("fld_field1"));
+        assertEquals(2, dbObject.get("fld_field2"));
+        assertEquals(3L, dbObject.get("fld_field3"));
+        assertEquals(4.4d, dbObject.get("fld_field4"));
+        assertEquals(new GregorianCalendar(2001, 4, 5, 5, 5, 5).getTime(), dbObject.get("fld_field5"));
+        assertEquals(true, dbObject.get("fld_field6"));
         assertEquals("log1", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
         assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
         assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
@@ -181,12 +181,12 @@ public class DelimitedEntryParserTest
         assertNotNull(dbObject);
         assertEquals(cal.getTime(), dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
-        assertEquals("line2", dbObject.get("field1"));
-        assertEquals(22, dbObject.get("field2"));
-        assertEquals(23L, dbObject.get("field3"));
-        assertEquals(24.4d, dbObject.get("field4"));
-        assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("field5"));
-        assertEquals(false, dbObject.get("field6"));
+        assertEquals("line2", dbObject.get("fld_field1"));
+        assertEquals(22, dbObject.get("fld_field2"));
+        assertEquals(23L, dbObject.get("fld_field3"));
+        assertEquals(24.4d, dbObject.get("fld_field4"));
+        assertEquals(new GregorianCalendar(2021, 4, 5, 5, 5, 5).getTime(), dbObject.get("fld_field5"));
+        assertEquals(false, dbObject.get("fld_field6"));
         assertEquals("log1", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
         assertEquals("127.0.0.1", dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
         assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));

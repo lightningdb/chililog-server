@@ -97,7 +97,7 @@ Chililog.SearchState = SC.State.extend({
       // Make up time condition
       var minutesAgo = parseInt(ctrl.get('basicTimeSpan')) * -1;
       var conditions = {
-        'c_ts' : {
+        'ts' : {
           '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ'),
           '$lte': SC.DateTime.create().toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ')
         }

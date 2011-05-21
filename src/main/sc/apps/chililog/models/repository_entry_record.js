@@ -26,6 +26,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
   severityText: SC.Record.attr(String),
   message: SC.Record.attr(String),
   keywords: SC.Record.attr(Array),
+  fields: SC.Record.attr(Array),
 
   /**
    * Only need to map one way because we don't update entries
@@ -50,6 +51,15 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
       this.set(recordPropertyName, apiObjectValue);
     }
 
+    // Set fields
+    var a = [];
+    for (var propertyName in repoEntryAO) {
+      if (!SC.empty(propertyName) && typeof(propertyName) === 'string' && propertyName.indexOf('fld_') === 0) {
+        a.push({ name: propertyName.substr(4), value: repoEntryAO[propertyName]});
+      }
+    }
+    this.set('fields', a);
+
     // Set the severity text. Prepare map if first time because have to wait for strings to load before we can localize
     if (Chililog.REPOSITORY_ENTRY_SEVERITY_MAP == null) {
       Chililog.REPOSITORY_ENTRY_SEVERITY_MAP = [
@@ -73,18 +83,18 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
 });
 
 /**
- * Maps Chililog.UserRecord property names to property names used by the server API objects
+ * Maps Chililog.RepositoryEntry property names to property names used by the server API objects
  */
 Chililog.REPOSITORY_ENTRY_RECORD_MAP = [
   [Chililog.DOCUMENT_ID_RECORD_FIELD_NAME, '_id' ],
-  ['timestampString' ,'c_ts'],
-  ['timestamp' ,'c_ts'],
-  ['savedTimestamp' ,'c_saved_ts'],
-  ['source' ,'c_source'],
-  ['host' ,'c_host'],
-  ['severity', 'c_severity'],
-  ['message' ,'c_message'],
-  ['keywords' ,'c_keywords']
+  ['timestampString' ,'ts'],
+  ['timestamp' ,'ts'],
+  ['savedTimestamp' ,'saved_ts'],
+  ['source' ,'source'],
+  ['host' ,'host'],
+  ['severity', 'severity'],
+  ['message' ,'message'],
+  ['keywords' ,'keywords']
 ];
 
 /**

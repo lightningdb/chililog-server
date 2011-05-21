@@ -146,7 +146,7 @@ public class DelimitedEntryParser extends EntryParser
             String[] ss = StringUtils.split(message, _delimiter);
             for (DelimitedFieldInfo delimitedField : _fields)
             {
-                String fieldName = delimitedField.getRepoFieldInfo().getName();
+                String fieldName = delimitedField.getRepoFieldInfo().getDbObjectName();
                 String fieldStringValue = null;
                 Object fieldValue = null;
                 try

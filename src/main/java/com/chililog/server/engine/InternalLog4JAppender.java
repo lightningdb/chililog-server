@@ -58,10 +58,11 @@ public class InternalLog4JAppender extends AppenderSkeleton
     private DBCollection _coll;
 
     static final String REPOSITORY_NAME = "chililog";
-    static final String MONGODB_COLLECTION_NAME = "chililog_repository";
+    static final String MONGODB_COLLECTION_NAME = "repo_chililog";
 
-    static final String THREAD_FIELD_NAME = "thread";
-    static final String CATEGORY_FIELD_NAME = "category";
+    // fld_ prefix is used to make these fields
+    static final String THREAD_FIELD_NAME = "fld_thread";
+    static final String CATEGORY_FIELD_NAME = "fld_category";
 
     /**
      * Basic Constructor

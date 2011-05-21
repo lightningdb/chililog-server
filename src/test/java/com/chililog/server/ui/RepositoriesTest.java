@@ -214,7 +214,7 @@ public class RepositoriesTest
 
         App.stopChiliLogServer();
         
-        coll = _db.getCollection("test_repo_repository");
+        coll = _db.getCollection("repo_test_repo");
         if (coll != null)
         {
             coll.drop();
@@ -377,9 +377,9 @@ public class RepositoriesTest
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         String json = responseContent.toString();
-        assertTrue(json.contains("\"field1\" : \"line1\" , \"field2\" : 1"));
-        assertTrue(json.contains("\"field1\" : \"line2\" , \"field2\" : 2"));
-        assertTrue(json.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
+        assertTrue(json.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
+        assertTrue(json.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
+        assertTrue(json.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
 
         // Get entries - by repo admin user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
@@ -390,9 +390,9 @@ public class RepositoriesTest
 
         String json2 = responseContent.toString();
         assertEquals(json, json2);
-        assertTrue(json2.contains("\"field1\" : \"line1\" , \"field2\" : 1"));
-        assertTrue(json2.contains("\"field1\" : \"line2\" , \"field2\" : 2"));
-        assertTrue(json2.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
+        assertTrue(json2.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
+        assertTrue(json2.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
+        assertTrue(json2.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
         
         // Get entries - by repo power user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
@@ -444,7 +444,7 @@ public class RepositoriesTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Find
-        String conditions = URLEncoder.encode("{ \"field1\" : \"line1\" }", "UTF-8");
+        String conditions = URLEncoder.encode("{ \"fld_field1\" : \"line1\" }", "UTF-8");
 
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
                 + "/entries?query_type=find&conditions=" + conditions, HttpMethod.GET, _systemAdminAuthToken);
@@ -453,9 +453,9 @@ public class RepositoriesTest
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         String json = responseContent.toString();
-        assertTrue(json.contains("\"field1\" : \"line1\" , \"field2\" : 1"));
-        assertFalse(json.contains("\"field1\" : \"line2\" , \"field2\" : 2"));
-        assertFalse(json.contains("\"field1\" : \"line3\" , \"field2\" : 3"));
+        assertTrue(json.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
+        assertFalse(json.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
+        assertFalse(json.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
 
         // Count
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
@@ -468,7 +468,7 @@ public class RepositoriesTest
         assertTrue(json.contains("{ \"count\" : 1}"));
 
         // Distinct
-        String fields = URLEncoder.encode("{ \"field1\" : 1 }", "UTF-8");
+        String fields = URLEncoder.encode("{ \"fld_field1\" : 1 }", "UTF-8");
 
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
                 + "/entries?query_type=distinct&fields=" + fields, HttpMethod.GET, _systemAdminAuthToken);

@@ -50,13 +50,13 @@ public class RepositoryEntryBO extends BO implements Serializable
     private String _message;
     private ArrayList<String> _keywords = new ArrayList<String>();
 
-    public static final String TIMESTAMP_FIELD_NAME = "c_ts";
-    public static final String SAVED_TIMESTAMP_FIELD_NAME = "c_saved_ts";
-    public static final String SOURCE_FIELD_NAME = "c_source";
-    public static final String HOST_FIELD_NAME = "c_host";
-    public static final String SEVERITY_FIELD_NAME = "c_severity";
-    public static final String MESSAGE_FIELD_NAME = "c_message";
-    public static final String KEYWORDS_FIELD_NAME = "c_keywords";
+    public static final String TIMESTAMP_FIELD_NAME = "ts";
+    public static final String SAVED_TIMESTAMP_FIELD_NAME = "saved_ts";
+    public static final String SOURCE_FIELD_NAME = "source";
+    public static final String HOST_FIELD_NAME = "host";
+    public static final String SEVERITY_FIELD_NAME = "severity";
+    public static final String MESSAGE_FIELD_NAME = "message";
+    public static final String KEYWORDS_FIELD_NAME = "keywords";
 
     /**
      * Basic constructor

@@ -154,7 +154,7 @@ public class RegexEntryParser extends EntryParser
 
             for (RegexFieldInfo regexField : _fields)
             {
-                String fieldName = regexField.getRepoFieldInfo().getName();
+                String fieldName = regexField.getRepoFieldInfo().getDbObjectName();
                 String fieldStringValue = null;
                 Object fieldValue = null;
                 try

@@ -53,6 +53,7 @@ Chililog.SearchDetailView = SC.PanelPane.design({
 
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, width: 225, height: 28 },
+          maxlength: 200,
           valueBinding: 'Chililog.searchDetailViewController.source'
         })
       }),
@@ -69,6 +70,7 @@ Chililog.SearchDetailView = SC.PanelPane.design({
 
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, width: 145, height: 28 },
+          maxlength: 200,
           valueBinding: 'Chililog.searchDetailViewController.host'
         })
       }),
@@ -119,7 +121,7 @@ Chililog.SearchDetailView = SC.PanelPane.design({
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 78 },
           isTextArea: YES,
-          valueBinding: 'Chililog.searchDetailViewController.message'
+          valueBinding: 'Chililog.searchDetailViewController.fieldsText'
         })
       }),
 
@@ -135,7 +137,8 @@ Chililog.SearchDetailView = SC.PanelPane.design({
 
         field: SC.TextFieldView.design({
           layout: { top: 20, left: 0, right: 0, height: 28 },
-          valueBinding: 'Chililog.searchDetailViewController.message'
+          maxlength: 200,
+          valueBinding: 'Chililog.searchDetailViewController.keywordsText'
         })
       })
 

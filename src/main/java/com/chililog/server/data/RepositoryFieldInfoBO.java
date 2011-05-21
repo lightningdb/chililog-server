@@ -139,7 +139,7 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
     }
 
     /**
-     * Returns the unique name for this field. This name is used for storing the field in mongoDB
+     * Returns the unique name for this field.
      */
     public String getName()
     {
@@ -151,6 +151,14 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
         _name = name;
     }
 
+    /**
+     * Returns the unique name for this field for saving in a DbObject. This name is used for storing the field in mongoDB.
+     */
+    public String getDbObjectName()
+    {
+        return "fld_" + _name;
+    }
+    
     /**
      * Returns the user friendly display name for this field. This is used when display the field on the UI.
      */

@@ -66,7 +66,7 @@ public class JsonEntryParserTest
     public static void classTeardown() throws Exception
     {
         // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection("json_test_repository");
+        DBCollection coll = _db.getCollection("repo_json_test");
         coll.drop();
     }
 
@@ -119,7 +119,7 @@ public class JsonEntryParserTest
         c.save(_db, entry);
 
         // Get
-        DBCollection coll = _db.getCollection("json_test_repository");
+        DBCollection coll = _db.getCollection("repo_json_test");
         DBObject query = new BasicDBObject();
         query.put("_id", entry.toDBObject().get("_id"));
         dbObject = coll.findOne(query);

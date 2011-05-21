@@ -57,10 +57,10 @@ public class RepositoryTest
     private static DB _db;
     private static RepositoryInfoBO _repoInfo;
 
-    private static final String REPOSITORY_NAME = "repo_junit_test";
+    private static final String REPOSITORY_NAME = "junit_test";
     private static final String REPOSITORY_WRITER_PASSWORD = "pw4Writer";
     private static final String REPOSITORY_READER_PASSWORD = "pw4Writer";
-    private static final String MONGODB_COLLECTION_NAME = "repo_junit_test_repository";
+    private static final String MONGODB_COLLECTION_NAME = "repo_junit_test";
 
     @BeforeClass
     public static void classSetup() throws Exception

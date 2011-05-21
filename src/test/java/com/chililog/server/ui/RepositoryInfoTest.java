@@ -133,9 +133,9 @@ public class RepositoryInfoTest
         repoInfo.setReadQueueDurable(true);
         repoInfo.setWriteQueueDurable(true);
         repoInfo.setWriteQueueWorkerCount(10);
-        repoInfo.setWriteQueueMaxMemory(1);
+        repoInfo.setWriteQueueMaxMemory(2);
         repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
-        repoInfo.setWriteQueuePageSize(2);
+        repoInfo.setWriteQueuePageSize(1);
         repoInfo.setMaxKeywords(100);
 
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();

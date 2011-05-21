@@ -41,7 +41,7 @@ import com.mongodb.MongoException;
  */
 public class RepositoryInfoController extends Controller
 {
-    public static final String MONGODB_COLLECTION_NAME = "repositories_info";
+    public static final String MONGODB_COLLECTION_NAME = "repoinfo";
 
     /**
      * Returns the singleton instance for this class
