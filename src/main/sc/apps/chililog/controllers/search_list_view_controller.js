@@ -96,6 +96,9 @@ Chililog.searchListViewController = SC.ArrayController.create({
     Chililog.statechart.sendEvent('showMore');
   },
 
+  /**
+   * Popup pane to show record in detail
+   */
   view: function() {
     Chililog.statechart.sendEvent('viewEntry');
   }

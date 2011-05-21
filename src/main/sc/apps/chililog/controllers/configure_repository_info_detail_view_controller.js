@@ -17,11 +17,6 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   content: null,
 
   /**
-   * Text to show in the success message text box
-   */
-  successMessage: null,
-
-  /**
    * Address of the write queue
    */
   writeQueueAddress: function() {
@@ -76,16 +71,20 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   }.property('content').cacheable(),
 
   /**
-   * Show the details form
+   * Show the modal details form
    */
   show: function() {
-    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureRepositoryInfoDetailView');
+    Chililog.configureRepositoryInfoDetailView.append();
 
-    // Set scroller to top of page
-    Chililog.configureRepositoryInfoDetailView.setPath('body.verticalScrollOffset', 0);
-    
     // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
-    this.setFocusOnField(Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field'), 400);
+    this.setFocusOnField(Chililog.configureRepositoryInfoDetailView.getPath('contentView.body.name.field'), 100);
+  },
+
+  /**
+   * Hide this modal form
+   */
+  hide: function() {
+    Chililog.configureRepositoryInfoDetailView.remove();
   },
 
   /**
@@ -113,7 +112,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    */
   save: function() {
     // Check field values
-    var rootView = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView');
+    var rootView = Chililog.configureRepositoryInfoDetailView.getPath('contentView.body');
     var result = this.findFieldAndValidate(rootView);
     if (result !== SC.VALIDATE_OK) {
       this.showError(result);
@@ -169,15 +168,5 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    */
   back: function() {
     Chililog.statechart.sendEvent('discardChanges');
-  },
-
-  /**
-   * Show success message when profile successfully saved
-   */
-  showSaveSuccess: function() {
-    this.set('isSaveSuccess', YES);
-
-    var field = Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.name.field');
-    this.setFocusOnField(field);
   }
 });

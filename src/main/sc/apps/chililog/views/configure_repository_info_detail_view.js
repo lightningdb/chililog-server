@@ -11,49 +11,23 @@ sc_require('views/label_mixin');
 /**
  * Repository details
  */
-Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
-  layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title backButton deleteButton successMessage body'.w(),
+Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
+  layout: { width:800, height:600, centerX:0, centerY:-50 },
+  contentView: SC.View.extend({
+    childViews: 'title body buttons'.w(),
 
-  title: SC.LabelView.design({
-    layout: { top: 5, left: 10, right: 10, height: 30 },
-    tagName: 'h1',
-    controlSize: SC.HUGE_CONTROL_SIZE,
-    valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.title',
-    localize: YES
-  }),
+    title: SC.LabelView.design({
+      layout: { top: 10, left: 10, right: 10, height: 30 },
+      tagName: 'h1',
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.title',
+      localize: YES
+    }),
 
-  backButton: SC.ButtonView.design({
-    layout: { top: 40, left: 10, width: 80 },
-    title: '_back',
-    localize: YES,
-    isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureRepositoryInfoDetailViewController,
-    action: 'back'
-  }),
-
-  deleteButton: SC.ButtonView.design({
-    layout: {top: 40, left: 100, width: 80 },
-    title: '_delete',
-    localize: YES,
-    isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureRepositoryInfoDetailViewController,
-    action: 'confirmErase'
-  }),
-
-  successMessage: SC.LabelView.design({
-    layout: { top: 40, centerX: 0, width: 200, height: 25 },
-    isVisible: NO,
-    classNames: ['success'],
-    value: '_saveSuccess'.loc()
-  }),
-
-  body: SC.ScrollView.design({
-    layout: { top: 80, left: 10, bottom: 10, right: 10 },
-    classNames: ['box'],
-    contentView: SC.View.design({
-      layout: { top: 0, left: 0, right: 0, height: 1300 },
-      childViews: 'name displayName description currentStatus startupStatus writeQueueAttributes readQueueAttributes buttons'.w(),
+    body: SC.View.design({
+      layout: { top: 50, left: 10, bottom: 50, right: 10 },
+      classNames: ['box'],
+      childViews: 'name displayName description currentStatus startupStatus writeQueueAttributes readQueueAttributes'.w(),
 
       name: SC.View.design({
         layout: {top: 0, left: 0, right: 0, height: 50 },
@@ -481,45 +455,55 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.View.design({
             itemValueKey: 'value',
             valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.readQueueDurable'
           })
-        })
-      }),
 
-      buttons: SC.View.design({
-        layout: {top: 1200, left: 0, right: 0, height: 50 },
-        childViews: 'saveButton cancelButton savingImage'.w(),
-
-        saveButton: SC.ButtonView.design({
-          layout: {top: 10, left: 10, width: 90 },
-          title: '_save',
-          localize: YES,
-          controlSize: SC.HUGE_CONTROL_SIZE,
-          isDefault: YES,
-          isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay(),
-          target: 'Chililog.configureRepositoryInfoDetailViewController',
-          action: 'save'
-        }),
-
-        cancelButton: SC.ButtonView.design({
-          layout: {top: 10, left: 110, width: 90 },
-          title: '_cancel',
-          localize: YES,
-          controlSize: SC.HUGE_CONTROL_SIZE,
-          isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay(),
-          target: 'Chililog.configureRepositoryInfoDetailViewController',
-          action: 'discardChanges'
-        }),
-
-        savingImage: Chililog.ImageView.design({
-          layout: { top: 15, left: 210, width: 16, height: 16 },
-          value: sc_static('images/working'),
-          isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.isSaving').oneWay().bool(),
-          useImageQueue: NO
         })
       })
+    }),
 
+    buttons: SC.View.design({
+      layout: { bottom: 0, left: 10, right: 10, height: 40 },
+      childViews: 'deleteButton savingImage saveButton cancelButton savingImage'.w(),
+
+      deleteButton: SC.ButtonView.design({
+        layout: {top: 0, left: 0, width: 80 },
+        title: '_delete',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay().not(),
+        target: Chililog.configureUserDetailViewController,
+        action: 'confirmErase'
+      }),
+
+      savingImage: Chililog.ImageView.design({
+        layout: { top: 15, right: 180, width: 16, height: 16 },
+        value: sc_static('images/working'),
+        isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.isSaving').oneWay().bool(),
+        useImageQueue: NO
+      }),
+
+      saveButton: SC.ButtonView.design({
+        layout: {top: 0, right: 90, width: 80 },
+        title: '_save',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isDefault: YES,
+        isEnabledBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.canSave').oneWay(),
+        target: 'Chililog.configureUserDetailViewController',
+        action: 'save'
+      }),
+
+      cancelButton: SC.ButtonView.design({
+        layout: {top: 0, right: 0, width: 80 },
+        title: '_cancel',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isCancel: YES,
+        target: 'Chililog.configureRepositoryInfoDetailViewController',
+        action: 'discardChanges'
+      })
     })
+    
   })
-
 });
 
 /**

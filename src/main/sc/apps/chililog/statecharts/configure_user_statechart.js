@@ -30,6 +30,9 @@ Chililog.ConfigureUserState = SC.State.extend({
         ctrl.set('content', users);
       }
       ctrl.show();
+
+      // Hide modal form if it is showing
+      Chililog.configureUserDetailViewController.hide();
     },
 
     exitState: function() {
@@ -227,8 +230,8 @@ Chililog.ConfigureUserState = SC.State.extend({
       var ctrl = Chililog.configureUserDetailViewController;
       if (SC.none(error)) {
         // Show saved record
-        ctrl.showSaveSuccess();
-        this.gotoState('editingUser', {documentID: documentID});
+        //this.gotoState('editingUser', {documentID: documentID});
+        this.gotoState('viewingUsers');
       } else {
         // Show error
         ctrl.showError(error);

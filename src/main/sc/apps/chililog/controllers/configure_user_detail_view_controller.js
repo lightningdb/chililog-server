@@ -45,39 +45,29 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   /**
    * Adjust height of body box depending on if we are adding or not
    */
-  bodyLayout: function() {
+  paneLayout: function() {
     if (this.get('isCreating')) {
-      return { top: 0, left: 0, right: 0, height: 450 };
+      return { width:700, height:470, centerX:0, centerY:-50 };
     } else {
-      return { top: 0, left: 0, right: 0, height: 350 };
+      return { width:700, height:370, centerX:0, centerY:-50 };
     }
   }.property('isCreating').cacheable(),
 
   /**
-   * Adjust height of buttons depending on if we are adding or not
-   */
-  buttonsLayout: function() {
-    if (this.get('isCreating')) {
-      return {top: 370, left: 0, right: 0, height: 50 };
-    } else {
-      return {top: 270, left: 0, right: 0, height: 50 };
-    }
-  }.property('isCreating').cacheable(),
-
-  /**
-   * Show the user details form
+   * Show this modal form
    */
   show: function() {
-    Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserDetailView');
+    Chililog.configureUserDetailView.append();
 
-    // Set scroller to top of page
-    Chililog.configureUserDetailView.setPath('body.verticalScrollOffset', 0);
+    // Set focus on the username field
+    this.setFocusOnField(Chililog.configureUserDetailView.getPath('contentView.body.username.field'), 100);
+  },
 
-    // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
-    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
-    this.invokeLater(function() {
-      field.becomeFirstResponder();
-    }, 400);
+  /**
+   * Hide this modal form
+   */
+  hide: function() {
+    Chililog.configureUserDetailView.remove();
   },
 
   /**
@@ -105,7 +95,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    */
   save: function() {
     // Check field values
-    var rootView = Chililog.configureUserDetailView.getPath('body.contentView');
+    var rootView = Chililog.configureUserDetailView.getPath('contentView.body');
     var result = this.findFieldAndValidate(rootView);
 
     // Special cross field checks here
@@ -157,32 +147,6 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    */
   discardChanges: function() {
     Chililog.statechart.sendEvent('discardChanges');
-  },
-
-  /**
-   * Trigger event to discard changes and go back to the view page
-   */
-  back: function() {
-    Chililog.statechart.sendEvent('discardChanges');
-  },
-
-  /**
-   * Show success message when profile successfully saved
-   */
-  showSaveSuccess: function() {
-    var view = Chililog.configureUserDetailView.get('successMessage');
-    var field = Chililog.configureUserDetailView.getPath('body.contentView.username.field');
-
-    if (!SC.none(view)) {
-      // Have to invokeLater because of webkit
-      // http://groups.google.com/group/sproutcore/browse_thread/thread/482740f497d80462/cba903f9cc6aadf8?lnk=gst&q=animate#cba903f9cc6aadf8
-      view.adjust("opacity", 1);
-      this.invokeLater(function() {
-        view.animate("opacity", 0, { duration: 4, timing:'ease-in' });
-      }, 10);
-    }
-
-    this.setFocusOnField(field);
   }
 
 });

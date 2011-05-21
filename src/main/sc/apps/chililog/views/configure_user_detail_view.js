@@ -11,49 +11,24 @@ sc_require('views/label_mixin');
 /**
  * User details
  */
-Chililog.ConfigureUserDetailView = SC.View.design({
-  layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title backButton deleteButton successMessage body'.w(),
+Chililog.ConfigureUserDetailView = SC.PanelPane.design({
+  layoutBinding: 'Chililog.configureUserDetailViewController.paneLayout',
 
-  title: SC.LabelView.design({
-    layout: { top: 5, left: 10, right: 10, height: 30 },
-    tagName: 'h1',
-    controlSize: SC.HUGE_CONTROL_SIZE,
-    valueBinding: 'Chililog.configureUserDetailViewController.title',
-    localize: YES
-  }),
+  contentView: SC.View.extend({
+    childViews: 'title body buttons'.w(),
 
-  backButton: SC.ButtonView.design({
-    layout: { top: 40, left: 10, width: 80 },
-    title: '_back',
-    localize: YES,
-    isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureUserDetailViewController,
-    action: 'back'
-  }),
+    title: SC.LabelView.design({
+      layout: { top: 10, left: 10, right: 10, height: 30 },
+      tagName: 'h1',
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      valueBinding: 'Chililog.configureUserDetailViewController.title',
+      localize: YES
+    }),
 
-  deleteButton: SC.ButtonView.design({
-    layout: {top: 40, left: 100, width: 80 },
-    title: '_delete',
-    localize: YES,
-    isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
-    target: Chililog.configureUserDetailViewController,
-    action: 'confirmErase'
-  }),
-
-  successMessage: SC.LabelView.design({
-    layout: { top: 40, centerX: 0, width: 200, height: 25, opacity: 0 },
-    classNames: ['success'],
-    value: '_saveSuccess',
-    localize: YES
-  }),
-
-  body: SC.ScrollView.design({
-    layout: { top: 80, left: 10, bottom: 10, right: 10 },
-    classNames: ['box'],
-    contentView: SC.View.design({
-      layoutBinding: SC.Binding.from('Chililog.configureUserDetailViewController.bodyLayout').oneWay(),
-      childViews: 'username emailAddress displayName currentStatus password confirmPassword buttons'.w(),
+    body: SC.View.design({
+      layout: { top: 50, left: 10, bottom: 50, right: 10 },
+      classNames: ['box'],
+      childViews: 'username emailAddress displayName currentStatus password confirmPassword'.w(),
 
       username: SC.View.design({
         layout: {top: 0, left: 0, right: 0, height: 50 },
@@ -189,42 +164,54 @@ Chililog.ConfigureUserDetailView = SC.View.design({
             requiredFieldErrorMessage: '_configureUserDetailView.ConfirmPassword.Required'
           })
         })
+      })
+    }),
+
+    buttons: SC.View.design({
+      layout: { bottom: 0, left: 10, right: 10, height: 40 },
+      childViews: 'deleteButton savingImage saveButton cancelButton savingImage'.w(),
+
+      deleteButton: SC.ButtonView.design({
+        layout: {top: 0, left: 0, width: 80 },
+        title: '_delete',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
+        target: Chililog.configureUserDetailViewController,
+        action: 'confirmErase'
       }),
 
-      buttons: SC.View.design({
-        layoutBinding: 'Chililog.configureUserDetailViewController.buttonsLayout',
-        childViews: 'saveButton cancelButton savingImage'.w(),
+      savingImage: Chililog.ImageView.design({
+        layout: { top: 15, right: 180, width: 16, height: 16 },
+        value: sc_static('images/working'),
+        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isSaving').oneWay().bool(),
+        useImageQueue: NO
+      }),
 
-        saveButton: SC.ButtonView.design({
-          layout: {top: 10, left: 10, width: 90 },
-          title: '_save',
-          localize: YES,
-          controlSize: SC.HUGE_CONTROL_SIZE,
-          isDefault: YES,
-          isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay(),
-          target: 'Chililog.configureUserDetailViewController',
-          action: 'save'
-        }),
+      saveButton: SC.ButtonView.design({
+        layout: {top: 0, right: 90, width: 80 },
+        title: '_save',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isDefault: YES,
+        isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay(),
+        target: 'Chililog.configureUserDetailViewController',
+        action: 'save'
+      }),
 
-        cancelButton: SC.ButtonView.design({
-          layout: {top: 10, left: 110, width: 90 },
-          title: '_cancel',
-          localize: YES,
-          controlSize: SC.HUGE_CONTROL_SIZE,
-          isEnabledBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay(),
-          target: 'Chililog.configureUserDetailViewController',
-          action: 'discardChanges'
-        }),
-
-        savingImage: Chililog.ImageView.design({
-          layout: { top: 15, left: 210, width: 16, height: 16 },
-          value: sc_static('images/working'),
-          isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isSaving').oneWay().bool(),
-          useImageQueue: NO
-        })
+      cancelButton: SC.ButtonView.design({
+        layout: {top: 0, right: 0, width: 80 },
+        title: '_cancel',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isCancel: YES,
+        target: 'Chililog.configureUserDetailViewController',
+        action: 'discardChanges'
       })
     })
+
   })
+
 });
 
 /**

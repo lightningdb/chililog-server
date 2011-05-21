@@ -30,6 +30,10 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
         ctrl.set('content', repoInfo);
       }
       ctrl.show();
+
+
+      // Hide modal form if it is showing
+      Chililog.configureRepositoryInfoDetailViewController.hide();
     },
 
     exitState: function() {
