@@ -74,10 +74,11 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Show the modal details form
    */
   show: function() {
+    Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryAttributesView');
     Chililog.configureRepositoryInfoDetailView.append();
 
-    // Need to delay setting focus because our scene view takes focus so we have to wait until that finishes first
-    this.setFocusOnField(Chililog.configureRepositoryInfoDetailView.getPath('contentView.body.name.field'), 100);
+    // What for form to show before setting focus
+    this.setFocusOnField(Chililog.repositoryAttributesView.getPath('name.field'), 100);
   },
 
   /**
@@ -112,9 +113,21 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    */
   save: function() {
     // Check field values
-    var rootView = Chililog.configureRepositoryInfoDetailView.getPath('contentView.body');
-    var result = this.findFieldAndValidate(rootView);
+    var result = this.findFieldAndValidate(Chililog.repositoryAttributesView);
     if (result !== SC.VALIDATE_OK) {
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryAttributesView');
+      this.showError(result);
+      return;
+    }
+    result = this.findFieldAndValidate(Chililog.writeQueueAttributesView);
+    if (result !== SC.VALIDATE_OK) {
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.writeQueueAttributesView');
+      this.showError(result);
+      return;
+    }
+    result = this.findFieldAndValidate(Chililog.readQueueAttributesView);
+    if (result !== SC.VALIDATE_OK) {
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.readQueueAttributesView');
       this.showError(result);
       return;
     }
@@ -123,7 +136,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
     if (this.get('writeQueuePageSize') > this.get('writeQueueMaxMemory')) {
       this.showError(Chililog.$error('_configureRepositoryInfoDetailView.WriteQueuePageSize.InvalidSize',
         [this.get('writeQueuePageSize'), this.get('writeQueueMaxMemory')],
-        Chililog.configureRepositoryInfoDetailView.getPath('body.contentView.writeQueueAttributes.writeQueuePageSize.field')));
+        Chililog.writeQueueAttributesView.getPath('contentView.writeQueuePageSize.field')));
       return;
     }
 

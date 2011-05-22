@@ -308,7 +308,6 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
       var ctrl = Chililog.configureRepositoryInfoDetailViewController;
       if (SC.none(error)) {
         // Show saved record
-        ctrl.showSaveSuccess();
         //this.gotoState('editingRepositoryInfo', {documentID: documentID});
         this.gotoState('viewingRepositoryInfo_Idle');
       } else {

@@ -133,11 +133,11 @@
  * Data item is a label-field combo.
  *******************************************/
 .sc-view.data-group {
-  border-bottom: 1px solid #999;
+  background-color: #fff;
 }
 
 .sc-view.data-item {
-  border-bottom: 1px solid #999;
+  border-bottom: 1px solid #ccc;
 }
 
 .sc-view.data-item .label {
