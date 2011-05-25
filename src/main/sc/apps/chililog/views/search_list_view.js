@@ -201,7 +201,7 @@ Chililog.SearchListView = SC.LabelView.design({
       var isVisibleInWindow = this.get('isVisibleInWindow');
       if (isVisibleInWindow) {
         var x = this.getPath('_dataView.contentView');
-        x._reset(0);
+        x._reset();
       }
     }.observes('isVisibleInWindow')
 

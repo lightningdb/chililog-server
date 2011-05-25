@@ -265,7 +265,25 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
      */
     discardChanges: function() {
       this.gotoState('viewingRepositoryInfo');
+    },
+
+    /**
+     * Load another record for editing
+     *
+     * @param {String} documentID id of record to edit
+     */
+    editAnother: function (documentID) {
+      var ctrl = Chililog.configureRepositoryInfoDetailViewController;
+
+      // Discard changes
+      var record = ctrl.get('content');
+      Chililog.repositoryInfoDataController.discardChanges(record);
+
+      // Load next record
+      record = Chililog.repositoryInfoDataController.edit(documentID);
+      ctrl.set('content', record);
     }
+
   }),
 
   /**

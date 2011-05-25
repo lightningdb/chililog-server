@@ -187,6 +187,23 @@ Chililog.ConfigureUserState = SC.State.extend({
      */
     discardChanges: function() {
       this.gotoState('viewingUsers');
+    },
+
+    /**
+     * Load another record for editing
+     *
+     * @param {String} documentID id of record to edit
+     */
+    editAnother: function (documentID) {
+      var ctrl = Chililog.configureUserDetailViewController;
+
+      // Discard changes
+      var record = ctrl.get('content');
+      Chililog.userDataController.discardChanges(record);
+
+      // Load next record
+      record = Chililog.userDataController.edit(documentID);
+      ctrl.set('content', record);
     }
   }),
 

@@ -169,14 +169,34 @@ Chililog.ConfigureUserDetailView = SC.PanelPane.design({
 
     buttons: SC.View.design({
       layout: { bottom: 0, left: 10, right: 10, height: 40 },
-      childViews: 'deleteButton savingImage saveButton cancelButton savingImage'.w(),
+      childViews: 'previousButton nextButton deleteButton savingImage saveButton cancelButton savingImage'.w(),
+
+      previousButton: SC.ButtonView.design({
+        layout: { top: 0, left: 0, width: 40 },
+        title: '_previous',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canDelete').oneWay().bool(),
+        target: Chililog.configureUserDetailViewController,
+        action: 'previous'
+      }),
+
+      nextButton: SC.ButtonView.design({
+        layout: { top: 0, left: 50, width: 40 },
+        title: '_next',
+        localize: YES,
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canDelete').oneWay().bool(),
+        target: Chililog.configureUserDetailViewController,
+        action: 'next'
+      }),
 
       deleteButton: SC.ButtonView.design({
-        layout: {top: 0, left: 0, width: 80 },
+        layout: {top: 0, centerX: 0, width: 80 },
         title: '_delete',
         localize: YES,
         controlSize: SC.HUGE_CONTROL_SIZE,
-        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canSave').oneWay().not(),
+        isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.canDelete').oneWay().bool(),
         target: Chililog.configureUserDetailViewController,
         action: 'confirmErase'
       }),

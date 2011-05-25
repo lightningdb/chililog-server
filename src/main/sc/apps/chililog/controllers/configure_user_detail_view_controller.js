@@ -17,6 +17,17 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   content: null,
 
   /**
+   * Flag to denote if we can delete this record or not
+   * @type Boolean
+   */
+  canDelete: function() {
+    var canSave = this.get('canSave');
+    var isCreating = this.get('isCreating');
+
+    return !canSave && !isCreating;
+  }.property('canSave', 'isCreating').cacheable(),
+
+  /**
    * Flag to indicate if we are creating
    */
   title: function() {
@@ -147,6 +158,34 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    */
   discardChanges: function() {
     Chililog.statechart.sendEvent('discardChanges');
+  },
+
+  /**
+   * Event handler to select previous item in the list
+   */
+  previous: function() {
+    var tableDataView = Chililog.configureUserListView.getPath('table._dataView.contentView');
+    tableDataView.selectPreviousItem();
+
+    // Cannot use the view controller but must reference the view itself because the controller does not get
+    // updated until the run loop finishes
+    var selectedRecord = tableDataView.getPath('selection.firstObject');
+    var id = selectedRecord.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
+    Chililog.statechart.sendEvent('editAnother', id);
+  },
+
+  /**
+   * Event handler to select next item in the list
+   */
+  next: function() {
+    var tableDataView = Chililog.configureUserListView.getPath('table._dataView.contentView');
+    tableDataView.selectNextItem();
+
+    // Cannot use the view controller but must reference the view itself because the controller does not get
+    // updated until the run loop finishes
+    var selectedRecord = tableDataView.getPath('selection.firstObject');
+    var id = selectedRecord.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
+    Chililog.statechart.sendEvent('editAnother', id);
   }
 
 });

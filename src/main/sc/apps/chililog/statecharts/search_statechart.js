@@ -17,6 +17,10 @@ Chililog.SearchState = SC.State.extend({
     Chililog.mainViewController.doShow('search');
   },
 
+  exitState: function() {
+    Chililog.searchListViewController.set('content', null);
+  },
+
   /**
    *  Just viewing the list of entries.
    */
