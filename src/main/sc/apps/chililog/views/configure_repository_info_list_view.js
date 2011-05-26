@@ -115,6 +115,6 @@ Chililog.ConfigureRepositoryInfoListView = SC.View.design({
 
 });
 
-Chililog.configureRepositoryInfoListView = Chililog.ConfigureRepositoryInfoListView.create();
+Chililog.configureRepositoryInfoListView = null;
 
 

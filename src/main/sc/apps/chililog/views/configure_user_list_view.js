@@ -134,5 +134,5 @@ Chililog.ConfigureUserListView = SC.View.design({
 
 });
 
-Chililog.configureUserListView = Chililog.ConfigureUserListView.create();
+Chililog.configureUserListView = null;
 

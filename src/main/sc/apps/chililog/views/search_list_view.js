@@ -192,19 +192,7 @@ Chililog.SearchListView = SC.LabelView.design({
       })
     ],
     target: Chililog.searchListViewController,
-    action: 'view',
-
-    /**
-     * Reset when visible to make sure that screen is displayed correctly when show/not showing in container views
-     */
-    doReset: function() {
-      var isVisibleInWindow = this.get('isVisibleInWindow');
-      if (isVisibleInWindow) {
-        var x = this.getPath('_dataView.contentView');
-        x._reset();
-      }
-    }.observes('isVisibleInWindow')
-
+    action: 'view'
   }),
 
   footer: SC.View.design({
@@ -233,5 +221,6 @@ Chililog.SearchListView = SC.LabelView.design({
 
 });
 
-Chililog.searchListView = Chililog.SearchListView.create();
+// Because of bug with table when swappping in/out of content view, we have to create it manually everytime
+Chililog.searchListView = null;
 

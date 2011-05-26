@@ -18,7 +18,6 @@ Chililog.SearchState = SC.State.extend({
   },
 
   exitState: function() {
-    Chililog.searchListViewController.set('content', null);
   },
 
   /**

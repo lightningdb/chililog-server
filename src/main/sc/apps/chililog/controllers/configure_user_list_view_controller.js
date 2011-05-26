@@ -35,7 +35,20 @@ Chililog.configureUserListViewController = SC.ArrayController.create({
    * Show list of users in the right hand side details pane
    */
   show: function() {
+    // Because of a bug in table view, we need to re-create the view everytime
+    var oldView = Chililog.configureView.getPath('right.contentView');
+    if (!SC.none(oldView)) {
+      oldView.destroy();
+    }
+    Chililog.configureView.setPath('right.nowShowing', null);
+
+    if (Chililog.configureUserListView != null && !Chililog.configureUserListView.get('isDestroyed')) {
+      Chililog.configureUserListView.destroy();
+    }
+    Chililog.configureUserListView = Chililog.ConfigureUserListView.create();
+
     Chililog.configureView.setPath('right.nowShowing', 'Chililog.configureUserListView');
+
     return;
   },
 
