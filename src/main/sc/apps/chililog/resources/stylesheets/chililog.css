@@ -260,3 +260,8 @@
   color: #ff7700;
   font-weight: bold;
 }
+
+.sc-table-data-view .table-cell .sc-label-view .keyword {
+  background-color: yellow;
+}
+

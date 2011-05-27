@@ -32,7 +32,7 @@ Chililog.searchDetailViewController = SC.ObjectController.create({
       }
     }
     if (!SC.empty(text)) {
-      text = text.substr(0, text.length - 3);
+      text = text.substr(0, text.length - 2);
     }
     return text;
   }.property('keywords').cacheable(),

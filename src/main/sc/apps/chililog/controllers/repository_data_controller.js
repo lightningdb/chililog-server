@@ -481,12 +481,24 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       var repoEntryAOArray = repoEntriesAO['find'];
 
       if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
+        // Make keywords into an array of text to highlight
+        var keywordsRegexArray = [];
+        if (!SC.empty(params.criteria.keywords)) {
+          var tempArray = params.criteria.keywords.w();
+          for (var i=0; i<tempArray.length; i++) {
+            var keyword = tempArray[i];
+            if (!SC.empty(keyword)) {
+              keywordsRegexArray.push(new RegExp('(' + keyword + ')', 'gi'));
+            }
+          }
+        }
+
         // Add record
         recordCount = repoEntryAOArray.length;
         for (var i = 0; i < recordCount; i++) {
           var repoEntryAO = repoEntryAOArray[i];
           var repoEntryRecord = Chililog.store.createRecord(Chililog.RepositoryEntryRecord, {}, repoEntryAO['_id']);
-          repoEntryRecord.fromApiObject(repoEntryAO, params.criteria.documentID);
+          repoEntryRecord.fromApiObject(repoEntryAO, params.criteria.documentID, keywordsRegexArray);
         }
         Chililog.store.commitRecords();
       }

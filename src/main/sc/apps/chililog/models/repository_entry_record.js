@@ -25,6 +25,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
   severity: SC.Record.attr(Number),
   severityText: SC.Record.attr(String),
   message: SC.Record.attr(String),
+  messageWithKeywordsHilighted: SC.Record.attr(String),
   keywords: SC.Record.attr(Array),
   fields: SC.Record.attr(Array),
 
@@ -33,8 +34,9 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
    *
    * @param {Object} repoEntryAO Entry API object returned from server
    * @param {Object} repositoryInfoDocumentID Repository to which this entry belong
+   * @param {Array} keywordsRegexArray Array of keywords regular expression to match so that we can highlight them
    */
-  fromApiObject: function(repoEntryAO, repositoryInfoDocumentID) {
+  fromApiObject: function(repoEntryAO, repositoryInfoDocumentID, keywordsRegexArray) {
     var d = new Date();
     var timezoneOffsetMinutes = d.getTimezoneOffset();
 
@@ -78,6 +80,31 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
 
     // Set repository id
     this.set('repositoryInfoDocumentID', repositoryInfoDocumentID);
+
+    // Highlight keywords
+    var msg = repoEntryAO['message'];
+    if (SC.empty(msg)) {
+      this.set('messageWithKeywordsHilighted', '');
+    } else {
+      //Clone to protect original
+      msg = new String(msg);
+
+      // Replace keywords to tokens
+      for (var i=0; i<keywordsRegexArray.length; i++) {
+        var keywordsRegex = keywordsRegexArray[i];
+        msg = msg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
+      }
+
+      // Markup and then replace tokens with tags (so that injected tags don't get marked up)
+      var highlightedMsg = SC.RenderContext.escapeHTML(msg);
+
+      if (keywordsRegexArray.length > 0) {
+        highlightedMsg = highlightedMsg.replace('~~~Chililog~~~', '<span class="keyword">');
+        highlightedMsg = highlightedMsg.replace('###Chililog###', '</span>');
+      }
+
+      this.set('messageWithKeywordsHilighted', highlightedMsg);
+    }
   }
 
 });

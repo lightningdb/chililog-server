@@ -184,11 +184,12 @@ Chililog.SearchListView = SC.LabelView.design({
         })
       }),
       SC.TableColumn.create({
-        key:   'message',
+        key:   'messageWithKeywordsHilighted',
         title: '_searchListView.Message'.loc(),
         width: 600,
         maxWidth: 1024,
-        isReorderable: NO
+        isReorderable: NO,
+        escapeHTML: NO
       })
     ],
     target: Chililog.searchListViewController,
