@@ -72,8 +72,7 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
         '_repositoryEntryRecord.Severity.Warning'.loc(),
         '_repositoryEntryRecord.Severity.Notice'.loc(),
         '_repositoryEntryRecord.Severity.Information'.loc(),
-        '_repositoryEntryRecord.Severity.Debug'.loc(),
-        '_repositoryEntryRecord.Severity.Emergency'.loc()
+        '_repositoryEntryRecord.Severity.Debug'.loc()
       ];
     }
     this.set('severityText', Chililog.REPOSITORY_ENTRY_SEVERITY_MAP[this.get('severity')]);

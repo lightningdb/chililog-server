@@ -18,8 +18,11 @@ Chililog.mainViewController = SC.Object.create(
    */
   menuOptions: null,
 
+
   /**
    * Rebuild menu options if the logged in user changes
+   *
+   *
    */
   buildMenuOptions: function() {
     var values = [
@@ -28,13 +31,13 @@ Chililog.mainViewController = SC.Object.create(
         toolTip: '_mainPane.Search.ToolTip'.loc(),
         target: Chililog.mainViewController,
         action: 'showSearch'
-      },
-      { value: 'analyse',
-        title: '_mainPane.Analyse'.loc(),
-        toolTip: '_mainPane.Analyse.ToolTip'.loc(),
-        target: Chililog.mainViewController,
-        action: 'showAnalyse'
       }
+//      { value: 'analyse',
+//        title: '_mainPane.Analyse'.loc(),
+//        toolTip: '_mainPane.Analyse.ToolTip'.loc(),
+//        target: Chililog.mainViewController,
+//        action: 'showAnalyse'
+//      }
     ];
 
     var isAdmin = Chililog.sessionDataController.get('isInAdministratorRole');

@@ -115,9 +115,191 @@ Chililog.SearchListView = SC.LabelView.design({
   }),
 
   advancedSearch: SC.View.design({
-    layout: { top: 40, left: 10, right: 10, height: 150 },
+    layout: { top: 40, left: 10, right: 10, height: 225 },
     classNames: ['box'],
-    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().not()
+    childViews: 'repositories timeType timespan source host severity keywords conditions searchButton searchingImage'.w(),
+    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().not(),
+
+    repositories: SC.View.design({
+      layout: { top: 10, left: 15, width: 150, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Repository'.loc()
+      }),
+
+      field: SC.SelectFieldView.design({
+        layout: { top: 20, left: 0, width: 150, height: 29 },
+        objectsBinding: 'Chililog.searchListViewController.repositories',
+        nameKey: 'displayNameOrName',
+        valueKey: 'documentID',
+        valueBinding: 'Chililog.searchListViewController.advancedRepository'
+      })
+    }),
+
+    timeType: SC.View.design({
+      layout: { top: 10, left: 175, bottom: 10, width: 150, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.TimeType'.loc()
+      }),
+
+      field: SC.SelectFieldView.design({
+        layout: { top: 20, left: 0, width: 150, height: 29 },
+        objects: [
+          { name:'_searchListView.TimeType.InThePast'.loc(), value:'InThePast' },
+          { name:'_searchListView.TimeType.InBetween'.loc(), value:'InBetween' }
+        ],
+        nameKey: 'name',
+        valueKey: 'value',
+        disableSort: YES,
+        valueBinding: 'Chililog.searchListViewController.advancedTimeType'
+      })
+    }),
+
+    timespan: SC.View.design({
+      layout: { top: 10, left: 335, width: 150, height: 50 },
+      childViews: 'field'.w(),
+
+      field: SC.SelectFieldView.design({
+        layout: { top: 20, left: 0, width: 150, height: 29 },
+        objects: [
+          { name:'_searchListView.TimeSpan.5'.loc(), value:'5' },
+          { name:'_searchListView.TimeSpan.15'.loc(), value:'15' },
+          { name:'_searchListView.TimeSpan.30'.loc(), value:'30' },
+          { name:'_searchListView.TimeSpan.60'.loc(), value:'60' },
+          { name:'_searchListView.TimeSpan.1440'.loc(), value:'1440' },
+          { name:'_searchListView.TimeSpan.10080'.loc(), value:'10080' },
+          { name:'_searchListView.TimeSpan.20160'.loc(), value:'20160' },
+          { name:'_searchListView.TimeSpan.43200'.loc(), value:'43200' }
+        ],
+        nameKey: 'name',
+        valueKey: 'value',
+        disableSort: YES,
+        valueBinding: 'Chililog.searchListViewController.advancedTimeSpan'
+      })
+    }),
+
+    severity: SC.View.design({
+      layout: { top: 10, left: 495, width: 150, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Severity'.loc()
+      }),
+
+      field: SC.SelectFieldView.design({
+        layout: { top: 20, left: 0, width: 150, height: 29 },
+        objects: [
+          { name:'_searchListView.Severity.Any'.loc(), value:'' },
+          { name:'_repositoryEntryRecord.Severity.Emergency'.loc(), value:'Emergency' },
+          { name:'_repositoryEntryRecord.Severity.Action'.loc(), value:'Action' },
+          { name:'_repositoryEntryRecord.Severity.Critical'.loc(), value:'Critical' },
+          { name:'_repositoryEntryRecord.Severity.Error'.loc(), value:'Error' },
+          { name:'_repositoryEntryRecord.Severity.Warning'.loc(), value:'Warning' },
+          { name:'_repositoryEntryRecord.Severity.Notice'.loc(), value:'Notice' },
+          { name:'_repositoryEntryRecord.Severity.Information'.loc(), value:'Information' },
+          { name:'_repositoryEntryRecord.Severity.Debug'.loc(), value:'Debug' }
+        ],
+        nameKey: 'name',
+        valueKey: 'value',
+        disableSort: YES,
+        valueBinding: 'Chililog.searchListViewController.advancedSeverity'
+      })
+    }),
+
+    source: SC.View.design({
+      layout: { top: 70, left: 15, width: 150, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Source'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 29 },
+        valueBinding: 'Chililog.searchListViewController.advancedSource',
+        maxLength: 300
+      })
+    }),
+
+    host: SC.View.design({
+      layout: { top: 70, left: 175, width: 150, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Host'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 29 },
+        valueBinding: 'Chililog.searchListViewController.advancedHost',
+        maxLength: 300
+      })
+    }),
+
+    keywords: SC.View.design({
+      layout: { top: 70, left: 335, width: 310, height: 50 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Keywords'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 29 },
+        valueBinding: 'Chililog.searchListViewController.advancedKeywords',
+        maxLength: 300
+      })
+    }),
+
+    conditions: SC.View.design({
+      layout: { top: 130, left: 15, width: 630, height: 85 },
+      childViews: 'label field'.w(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.Conditions'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 64 },
+        valueBinding: 'Chililog.searchListViewController.advancedConditions',
+        isTextArea: YES
+      })
+    }),
+
+    searchButton: SC.ButtonView.design({
+      layout: { top: 30, left: 655, width: 80 },
+      title: '_searchListView.Search',
+      localize: YES,
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isEnabledBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().not(),
+      isDefault: YES,
+      target: Chililog.searchListViewController,
+      action: 'advancedSearch'
+    }),
+
+    searchingImage: Chililog.ImageView.design({
+      layout: { top: 35, left: 935, width: 16, height: 16 },
+      value: sc_static('images/working'),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().bool(),
+      useImageQueue: NO
+    })
   }),
   
   table: SC.TableView.design({

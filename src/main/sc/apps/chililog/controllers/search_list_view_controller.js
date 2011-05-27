@@ -103,7 +103,7 @@ Chililog.searchListViewController = SC.ArrayController.create({
     var top = 122;
     var isBasicSearchMode = this.get('isBasicSearchMode');
     if (!isBasicSearchMode) {
-      top = 197;
+      top = 272;
     }
     
     var bottom = 10;
@@ -122,7 +122,7 @@ Chililog.searchListViewController = SC.ArrayController.create({
   noRowsFoundMessageLayout: function () {
     var top = 155;
     var isBasicSearchMode = this.get('isBasicSearchMode');
-    if (isBasicSearchMode) {
+    if (!isBasicSearchMode) {
       top = 230;
     }
 
