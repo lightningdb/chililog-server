@@ -185,6 +185,8 @@ SC.stringsFor('English', {
   '_searchListView.Message': 'Message',
   '_searchListView.Row': '#',
   '_searchListView.NoRowsFound': 'No matching entries found.',
+  '_searchListView.BasicSearchMode': 'Hide Advanced Options',
+  '_searchListView.AdvancedSearchMode': 'Show Advanced Options',
 
   '_searchDetailView.Title': 'Repository Entry',
   '_searchDetailView.Timestamp': 'Timestamp',

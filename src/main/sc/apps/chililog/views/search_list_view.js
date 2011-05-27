@@ -5,7 +5,7 @@
 
 Chililog.SearchListView = SC.LabelView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title basicAdvancedOptions basicSearch table footer noRowsFoundMessage'.w(),
+  childViews: 'title toggleSearchModeButton basicSearch advancedSearch table footer noRowsFoundMessage'.w(),
 
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 200, height: 30 },
@@ -15,25 +15,20 @@ Chililog.SearchListView = SC.LabelView.design({
     localize: YES
   }),
 
-  basicAdvancedOptions: SC.SegmentedView.design({
-    layout: { top: 10, left: 300, right: 10, height: 30 },
+  toggleSearchModeButton: SC.ButtonView.design({
+    layout: { top: 10, right: 10, height: 30, width: 175 },
     align: SC.ALIGN_RIGHT,
-    items: [
-      { value: 'basic', title: 'Basic', toolTip: 'Most commonly used search parameters', width: '70' },
-      { value: 'advanced', title: 'Advanced', toolTip: 'Shows all search parameters', width: '70' }
-    ],
-    itemValueKey: 'value',
-    itemTitleKey: 'title',
-    itemToolTipKey: 'toolTip',
-    itemWidthKey: 'width',
-    itemTargetKey: 'target',
-    itemActionKey: 'action'
+    titleBinding: SC.Binding.from('Chililog.searchListViewController.toggleSearchModeButtonTitle').oneWay(),
+    localize: YES,
+    target: Chililog.searchListViewController,
+    action: 'toggleSearchMode'
   }),
 
   basicSearch: SC.View.design({
     layout: { top: 40, left: 10, right: 10, height: 75 },
     classNames: ['box'],
     childViews: 'repositories timespan keywords searchButton searchingImage'.w(),
+    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().bool(),
 
     repositories: SC.View.design({
       layout: { top: 10, left: 15, bottom: 10, width: 150 },
@@ -119,8 +114,14 @@ Chililog.SearchListView = SC.LabelView.design({
     })
   }),
 
+  advancedSearch: SC.View.design({
+    layout: { top: 40, left: 10, right: 10, height: 150 },
+    classNames: ['box'],
+    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().not()
+  }),
+  
   table: SC.TableView.design({
-    layout: { top: 122, left: 10, right: 10, bottom: 50 },
+    layoutBinding: SC.Binding.from('Chililog.searchListViewController.tableLayout').oneWay(),
     classNames: ['table'],
     contentBinding: 'Chililog.searchListViewController.arrangedObjects',
     selectionBinding: 'Chililog.searchListViewController.selection',
@@ -199,13 +200,13 @@ Chililog.SearchListView = SC.LabelView.design({
   footer: SC.View.design({
     layout: { left: 10, right: 10, bottom: 10, height: 33 },
     classNames: ['box'],
+    isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.canShowMore').oneWay().bool(),
     childViews: 'moreButton'.w(),
 
     moreButton: SC.ButtonView.design({
       layout: { right: 5, top: 5, width: 100 },
       title: '_showMore',
       localize: YES,
-      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.canShowMore').oneWay().bool(),
       target: Chililog.searchListViewController,
       action: 'showMore'
     })
@@ -215,7 +216,7 @@ Chililog.SearchListView = SC.LabelView.design({
    * This is overlay on top of the table so it looks like it is part of the table
    */
   noRowsFoundMessage: SC.LabelView.design({
-    layout: { top: 155, left: 25, width: 200, height: 25 },
+    layoutBinding: SC.Binding.from('Chililog.searchListViewController.noRowsFoundMessageLayout').oneWay(),
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.rowsFoundAfterSearch').oneWay().not(),
     value: '_searchListView.NoRowsFound'.loc()
   })

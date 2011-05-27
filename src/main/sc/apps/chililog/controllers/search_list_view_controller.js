@@ -59,7 +59,7 @@ Chililog.searchListViewController = SC.ArrayController.create({
    * Number of rows to display per search
    * @type Number
    */
-  basicRowsPerSearch: 100,
+  basicRowsPerSearch: 50,
   
   /**
    * Flag to indicate if we are in the middle of a basic search.
@@ -83,6 +83,53 @@ Chililog.searchListViewController = SC.ArrayController.create({
   canShowMore: NO,
 
   /**
+   * The search mode basic or advanced
+   * @type boolean
+   */
+  isBasicSearchMode: YES,
+
+  /**
+   * Text to display on the toggle search mode button
+   */
+  toggleSearchModeButtonTitle: function() {
+    var isBasicSearchMode = this.get('isBasicSearchMode');
+    return isBasicSearchMode ? '_searchListView.AdvancedSearchMode' : '_searchListView.BasicSearchMode';
+  }.property('isBasicSearchMode').cacheable(),
+
+  /**
+   * Dynamically calculated table layout based on basic/advanced mode and if there are more records to retrieve
+   */
+  tableLayout: function() {
+    var top = 122;
+    var isBasicSearchMode = this.get('isBasicSearchMode');
+    if (!isBasicSearchMode) {
+      top = 197;
+    }
+    
+    var bottom = 10;
+    var canShowMore = this.get('canShowMore');
+    if (canShowMore) {
+      bottom = 50;
+    }
+
+    return { top: top, left: 10, right: 10, bottom: bottom };
+
+  }.property('isBasicSearchMode', 'canShowMore').cacheable(),
+
+  /**
+   * Where the no rows found message is displayed is also dependent on basic/advanced search
+   */
+  noRowsFoundMessageLayout: function () {
+    var top = 155;
+    var isBasicSearchMode = this.get('isBasicSearchMode');
+    if (isBasicSearchMode) {
+      top = 230;
+    }
+
+    return { top: top, left: 25, width: 200, height: 25 };
+  }.property('isBasicSearchMode').cacheable(),
+
+  /**
    * Do basic search
    */
   basicSearch: function() {
@@ -101,6 +148,13 @@ Chililog.searchListViewController = SC.ArrayController.create({
    */
   view: function() {
     Chililog.statechart.sendEvent('viewEntry');
-  }
+  },
 
+  /**
+   * Toggle between advanced and basic search modes
+   */
+  toggleSearchMode: function() {
+    var isBasicSearchMode = this.get('isBasicSearchMode');
+    this.set('isBasicSearchMode', !isBasicSearchMode);
+  }
 });
