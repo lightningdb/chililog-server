@@ -76,5 +76,4 @@ Chililog.DataControllerMixin = {
     return YES;
   }
 
-
 };

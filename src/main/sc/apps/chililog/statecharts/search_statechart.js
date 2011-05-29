@@ -55,6 +55,14 @@ Chililog.SearchState = SC.State.extend({
     },
 
     /**
+     * Search event
+     * @param {Hash} params Data hash of parameters.
+     */
+    advancedSearch: function(params) {
+      this.gotoState('searchingForRepositoryEntries', {searchType: 'advanced'});
+    },
+
+    /**
      * Get more records
      * @param {Hash} params Data hash of parameters.
      */
@@ -67,10 +75,21 @@ Chililog.SearchState = SC.State.extend({
      */
     viewEntry: function() {
       this.gotoState('viewingRepositoryEntry');
+    },
+
+    toggleSearchMode: function() {
+
+      // Clear result set
+      Chililog.repositoryDataController.clearRepositoryEntries();
+
+      // Switch
+      var ctrl = Chililog.searchListViewController;
+      var isBasicSearchMode = ctrl.get('isBasicSearchMode');
+      ctrl.set('isBasicSearchMode', !isBasicSearchMode);
     }
   }),
 
-  
+
   /**
    * Searching for more entries
    */
@@ -84,6 +103,8 @@ Chililog.SearchState = SC.State.extend({
     enterState: function(context) {
       if (context.searchType === 'basic') {
         this.doBasicSearch();
+      } else if (context.searchType === 'advanced') {
+        this.doAdvancedSearch();
       } else if (context.searchType === 'showMore') {
         this.doShowMore();
       }
@@ -95,33 +116,123 @@ Chililog.SearchState = SC.State.extend({
     },
 
     doBasicSearch: function() {
-      var ctrl = Chililog.searchListViewController;
+      try {
+        var ctrl = Chililog.searchListViewController;
 
-      // Make up time condition
-      var minutesAgo = parseInt(ctrl.get('basicTimeSpan')) * -1;
-      var conditions = {
-        'ts' : {
-          '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ'),
-          '$lte': SC.DateTime.create().toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ')
+        // Make up time condition
+        var minutesAgo = parseInt(ctrl.get('basicTimeSpan')) * -1;
+        var conditions = {
+          'ts' : {
+            '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toChililogServerDateTime(),
+            '$lte': SC.DateTime.create().toChililogServerDateTime()
+          }
+        };
+
+        var criteria = {
+          documentID: ctrl.get('basicRepository'),
+          conditions: conditions,
+          keywordUsage: 'All',
+          keywords: ctrl.get('basicKeywords'),
+          startPage: 1,
+          recordsPerPage: ctrl.get('rowsPerSearch'),
+          doPageCount: 'false'
+        };
+        Chililog.repositoryDataController.find(criteria, this, this.endSearch);
+
+        // Save criteria for show more
+        this.set('previousSearchCriteria', criteria);
+
+        // Clear table to signal to the user that we are searching
+        ctrl.set('content', null);
+      }
+      catch (err) {
+        // End search with error
+        this.endSearch(ctrl.get('basicRepository'), 0, null, err);
+      }
+    },
+
+    doAdvancedSearch: function() {
+      try {
+        var ctrl = Chililog.searchListViewController;
+
+        // Turn conditions json into javascript objects
+        var conditions = {};
+        var conditionString = ctrl.get('advancedConditions');
+        if (!SC.empty(conditionString)) {
+          conditions = SC.json.decode(conditionString);
         }
-      };
 
-      var criteria = {
-        documentID: ctrl.get('basicRepository'),
-        conditions: conditions,
-        keywordUsage: 'All',
-        keywords: ctrl.get('basicKeywords'),
-        startPage: 1,
-        recordsPerPage: ctrl.get('basicRowsPerSearch'),
-        doPageCount: 'false'
-      };
-      Chililog.repositoryDataController.find(criteria, this, this.endSearch);
+        // Make up time condition
+        if (SC.none(conditions.ts)) {
+          if (ctrl.get('isInThePastTimeType')) {
+            var minutesAgo = parseInt(ctrl.get('advancedTimeSpan')) * -1;
+            conditions.ts = {
+              '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toChililogServerDateTime(),
+              '$lte': SC.DateTime.create().toChililogServerDateTime()
+            };
+          } else {
+            var parseFormat = '%Y-%m-%d %H:%M:%S';
+            var from = ctrl.get('advancedTimeFrom');
+            var to = ctrl.get('advancedTimeTo');
+            if (!SC.empty(from) && !SC.empty(to)) {
+              conditions.ts = {
+                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime(),
+                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+              };
+            } else if (!SC.empty(from)) {
+              conditions.ts = {
+                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime()
+              };
+            } else if (!SC.empty(to)) {
+              conditions.ts = {
+                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+              };
+            }
+          }
+        }
 
-      // Save criteria for show more
-      this.set('previousBasicSearchCriteria', criteria);
+        // Source, host and severity
+        if (SC.none(conditions.source)) {
+          var source = ctrl.get('advancedSource');
+          if (!SC.empty(source)) {
+            conditions.source = source;
+          }
+        }
+        if (SC.none(conditions.host)) {
+          var host = ctrl.get('advancedHost');
+          if (!SC.empty(host)) {
+            conditions.host = host;
+          }
+        }
+        if (SC.none(conditions.severity)) {
+          var severity = ctrl.get('advancedSeverity');
+          if (!SC.empty(severity)) {
+            conditions.severity = parseInt(severity);
+          }
+        }
 
-      // Clear table to signal to the user that we are searching
-      ctrl.set('content', null);
+        // Final criteria
+        var criteria = {
+          documentID: ctrl.get('advancedRepository'),
+          conditions: conditions,
+          keywordUsage: 'All',
+          keywords: ctrl.get('advancedKeywords'),
+          startPage: 1,
+          recordsPerPage: ctrl.get('rowsPerSearch'),
+          doPageCount: 'false'
+        };
+        Chililog.repositoryDataController.find(criteria, this, this.endSearch);
+
+        // Save criteria for show more
+        this.set('previousSearchCriteria', criteria);
+
+        // Clear table to signal to the user that we are searching
+        ctrl.set('content', null);
+      }
+      catch (err) {
+        // End search with error
+        this.endSearch(ctrl.get('advancedRepository'), 0, null, err);
+      }
     },
 
     endSearch: function(documentID, recordCount, params, error) {
@@ -130,7 +241,7 @@ Chililog.SearchState = SC.State.extend({
         ctrl.showError(error);
       } else {
         ctrl.set('rowsFoundAfterSearch', recordCount > 0);
-        ctrl.set('canShowMore', recordCount === ctrl.get('basicRowsPerSearch'));
+        ctrl.set('canShowMore', recordCount === ctrl.get('rowsPerSearch'));
       }
 
       this.gotoState('viewingRepositoryEntries');
@@ -138,7 +249,7 @@ Chililog.SearchState = SC.State.extend({
 
     doShowMore: function() {
       var ctrl = Chililog.searchListViewController;
-      var criteria = this.get('previousBasicSearchCriteria');
+      var criteria = this.get('previousSearchCriteria');
       criteria.startPage = criteria.startPage + 1;
       Chililog.repositoryDataController.find(criteria, this, this.endSearch);
     }
@@ -160,5 +271,5 @@ Chililog.SearchState = SC.State.extend({
       this.gotoState('viewingRepositoryEntries');
     }
   })
-  
+
 });

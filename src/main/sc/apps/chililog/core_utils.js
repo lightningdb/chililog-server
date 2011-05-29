@@ -36,6 +36,19 @@ Chililog.$error = function(errorCode, params, field) {
 };
 
 /**
+ * Extends the standard date and time object for our special formatter
+ * 
+ * @param {SC.DateTime} dt
+ */
+SC.DateTime.reopen({
+
+  toChililogServerDateTime: function() {
+    return this.toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ');
+  }
+
+});
+
+/**
  * @private Cache for if we are running tests or not
  */
 Chililog._isRunningTests = null;

@@ -11,8 +11,7 @@ sc_require('controllers/data_controller_mixin');
 
  @extends SC.Object
  */
-Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataControllerMixin,
-/** @scope Chililog.userDataController.prototype */ {
+Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataControllerMixin, {
 
   /**
    * YEs if we are performing a server synchronization
@@ -469,11 +468,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
       // Delete existing records if this is the 1st page
       // Otherwise assume we want more records
       if (params.criteria.startPage === 1) {
-        var records = Chililog.store.find(Chililog.RepositoryEntryRecord);
-        records.forEach(function(record) {
-          record.destroy()
-        });
-        Chililog.store.commitRecords();
+        this.clearRepositoryEntries();
       }
 
       // Fill with new data
@@ -485,7 +480,7 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
         var keywordsRegexArray = [];
         if (!SC.empty(params.criteria.keywords)) {
           var tempArray = params.criteria.keywords.w();
-          for (var i=0; i<tempArray.length; i++) {
+          for (var i = 0; i < tempArray.length; i++) {
             var keyword = tempArray[i];
             if (!SC.empty(keyword)) {
               keywordsRegexArray.push(new RegExp('(' + keyword + ')', 'gi'));
@@ -515,6 +510,18 @@ Chililog.repositoryDataController = SC.ObjectController.create(Chililog.DataCont
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Clear result set from find()
+   */
+  clearRepositoryEntries: function() {
+    var records = Chililog.store.find(Chililog.RepositoryEntryRecord);
+    records.forEach(function(record) {
+      record.destroy()
+    });
+    Chililog.store.commitRecords();
   }
+
 
 });

@@ -117,7 +117,7 @@ Chililog.SearchListView = SC.LabelView.design({
   advancedSearch: SC.View.design({
     layout: { top: 40, left: 10, right: 10, height: 225 },
     classNames: ['box'],
-    childViews: 'repositories timeType timespan source host severity keywords conditions searchButton searchingImage'.w(),
+    childViews: 'repositories timeType timespan timeFrom timeTo source host severity keywords conditions searchButton searchingImage'.w(),
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().not(),
 
     repositories: SC.View.design({
@@ -165,6 +165,7 @@ Chililog.SearchListView = SC.LabelView.design({
     timespan: SC.View.design({
       layout: { top: 10, left: 335, width: 150, height: 50 },
       childViews: 'field'.w(),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isInThePastTimeType').oneWay().bool(),
 
       field: SC.SelectFieldView.design({
         layout: { top: 20, left: 0, width: 150, height: 29 },
@@ -185,8 +186,56 @@ Chililog.SearchListView = SC.LabelView.design({
       })
     }),
 
+    timeFrom: SC.View.design({
+      layout: { top: 10, left: 335, width: 160, height: 50 },
+      childViews: 'label field'.w(),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isInThePastTimeType').oneWay().not(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.TimeFrom'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 29 },
+        valueBinding: 'Chililog.searchListViewController.advancedTimeFrom',
+        hint: 'yyyy-mm-dd hh:mm:ss',
+        maxLength: 20,
+        validator: Chililog.DateTimeValidator.extend({
+          keyDownRegExp: /^[0-9 :\-\0]$/,
+          format: '%Y-%m-%d %H:%M:%S',
+          invalidFieldErrorMessage: '_searchListView.TimeFrom.Invalid'
+        })
+      })
+    }),
+
+    timeTo: SC.View.design({
+      layout: { top: 10, left: 505, width: 160, height: 50 },
+      childViews: 'label field'.w(),
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isInThePastTimeType').oneWay().not(),
+
+      label: SC.LabelView.design({
+        layout: { top: 0, left: 0, right: 0, height: 20 },
+        fontWeight: SC.BOLD_WEIGHT,
+        value: '_searchListView.TimeTo'.loc()
+      }),
+
+      field: SC.TextFieldView.design({
+        layout: { top: 20, left: 0, right: 0, height: 29 },
+        valueBinding: 'Chililog.searchListViewController.advancedTimeTo',
+        hint: 'yyyy-mm-dd hh:mm:ss',
+        maxLength: 20,
+        validator: Chililog.DateTimeValidator.extend({
+          keyDownRegExp: /^[0-9 :\-\0]$/,
+          format: '%Y-%m-%d %H:%M:%S',
+          invalidFieldErrorMessage: '_searchListView.TimeFrom.Invalid'
+        })
+      })
+    }),
+
     severity: SC.View.design({
-      layout: { top: 10, left: 495, width: 150, height: 50 },
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedSeverityLayout').oneWay(),
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -199,14 +248,14 @@ Chililog.SearchListView = SC.LabelView.design({
         layout: { top: 20, left: 0, width: 150, height: 29 },
         objects: [
           { name:'_searchListView.Severity.Any'.loc(), value:'' },
-          { name:'_repositoryEntryRecord.Severity.Emergency'.loc(), value:'Emergency' },
-          { name:'_repositoryEntryRecord.Severity.Action'.loc(), value:'Action' },
-          { name:'_repositoryEntryRecord.Severity.Critical'.loc(), value:'Critical' },
-          { name:'_repositoryEntryRecord.Severity.Error'.loc(), value:'Error' },
-          { name:'_repositoryEntryRecord.Severity.Warning'.loc(), value:'Warning' },
-          { name:'_repositoryEntryRecord.Severity.Notice'.loc(), value:'Notice' },
-          { name:'_repositoryEntryRecord.Severity.Information'.loc(), value:'Information' },
-          { name:'_repositoryEntryRecord.Severity.Debug'.loc(), value:'Debug' }
+          { name:'_repositoryEntryRecord.Severity.Emergency'.loc(), value:'0' },
+          { name:'_repositoryEntryRecord.Severity.Action'.loc(), value:'1' },
+          { name:'_repositoryEntryRecord.Severity.Critical'.loc(), value:'2' },
+          { name:'_repositoryEntryRecord.Severity.Error'.loc(), value:'3' },
+          { name:'_repositoryEntryRecord.Severity.Warning'.loc(), value:'4' },
+          { name:'_repositoryEntryRecord.Severity.Notice'.loc(), value:'5' },
+          { name:'_repositoryEntryRecord.Severity.Information'.loc(), value:'6' },
+          { name:'_repositoryEntryRecord.Severity.Debug'.loc(), value:'7' }
         ],
         nameKey: 'name',
         valueKey: 'value',
@@ -250,7 +299,7 @@ Chililog.SearchListView = SC.LabelView.design({
     }),
 
     keywords: SC.View.design({
-      layout: { top: 70, left: 335, width: 310, height: 50 },
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedKeywordsLayout').oneWay(),
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -267,7 +316,7 @@ Chililog.SearchListView = SC.LabelView.design({
     }),
 
     conditions: SC.View.design({
-      layout: { top: 130, left: 15, width: 630, height: 85 },
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedConditionsLayout').oneWay(),
       childViews: 'label field'.w(),
 
       label: SC.LabelView.design({
@@ -279,12 +328,15 @@ Chililog.SearchListView = SC.LabelView.design({
       field: SC.TextFieldView.design({
         layout: { top: 20, left: 0, right: 0, height: 64 },
         valueBinding: 'Chililog.searchListViewController.advancedConditions',
-        isTextArea: YES
+        isTextArea: YES,
+        validator: Chililog.JsonValidator.extend({
+          invalidFieldErrorMessage: '_searchListView.Condition.Invalid'
+        })
       })
     }),
 
     searchButton: SC.ButtonView.design({
-      layout: { top: 30, left: 655, width: 80 },
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedSearchButtonLayout').oneWay(),
       title: '_searchListView.Search',
       localize: YES,
       controlSize: SC.HUGE_CONTROL_SIZE,
@@ -295,7 +347,7 @@ Chililog.SearchListView = SC.LabelView.design({
     }),
 
     searchingImage: Chililog.ImageView.design({
-      layout: { top: 35, left: 935, width: 16, height: 16 },
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedSearchImageLayout').oneWay(),
       value: sc_static('images/working'),
       isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().bool(),
       useImageQueue: NO
