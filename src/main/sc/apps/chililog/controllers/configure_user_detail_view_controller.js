@@ -23,9 +23,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   canDelete: function() {
     var canSave = this.get('canSave');
     var isCreating = this.get('isCreating');
-
-    return !canSave && !isCreating;
-  }.property('canSave', 'isCreating').cacheable(),
+    var isSaving = this.get('isSaving');
+    return !canSave && !isCreating && !isSaving;
+  }.property('canSave', 'isCreating', 'isSaving').cacheable(),
 
   /**
    * Flag to indicate if we are creating
@@ -52,26 +52,18 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
     }
     return NO;
   }.property('content').cacheable(),
-
-  /**
-   * Adjust height of body box depending on if we are adding or not
-   */
-  paneLayout: function() {
-    if (this.get('isCreating')) {
-      return { width:700, height:470, centerX:0, centerY:-50 };
-    } else {
-      return { width:700, height:370, centerX:0, centerY:-50 };
-    }
-  }.property('isCreating').cacheable(),
-
+  
   /**
    * Show this modal form
    */
   show: function() {
+    Chililog.configureUserDetailView.setPath('contentView.body.nowShowing', 'Chililog.userAttributesView');
+
+    // Show modal
     Chililog.configureUserDetailView.append();
 
     // Set focus on the username field
-    this.setFocusOnField(Chililog.configureUserDetailView.getPath('contentView.body.username.field'), 100);
+    this.setFocusOnField(Chililog.userAttributesView.getPath('username.field'), 100);
   },
 
   /**

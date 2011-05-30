@@ -23,8 +23,8 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   canDelete: function() {
     var canSave = this.get('canSave');
     var isCreating = this.get('isCreating');
-
-    return !canSave && !isCreating;
+    var isSaving = this.get('isSaving');
+    return !canSave && !isCreating && !isSaving;
   }.property('canSave', 'isCreating').cacheable(),
 
   /**
@@ -132,13 +132,13 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
     }
     result = this.findFieldAndValidate(Chililog.writeQueueAttributesView);
     if (result !== SC.VALIDATE_OK) {
-      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.writeQueueAttributesView');
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryWriteQueueAttributesView');
       this.showError(result);
       return;
     }
     result = this.findFieldAndValidate(Chililog.readQueueAttributesView);
     if (result !== SC.VALIDATE_OK) {
-      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.readQueueAttributesView');
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryReadQueueAttributesView');
       this.showError(result);
       return;
     }

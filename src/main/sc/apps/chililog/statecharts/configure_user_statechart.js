@@ -217,6 +217,7 @@ Chililog.ConfigureUserState = SC.State.extend({
     },
 
     exitState: function() {
+      // Flag that we are not saving any more
       Chililog.configureUserDetailViewController.set('isSaving', NO);
     },
 

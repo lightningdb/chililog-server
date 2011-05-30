@@ -29,9 +29,9 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
       itemTitleKey: 'title',
       itemValueKey: 'value',
       items: [
-        { title: 'General', value: 'Chililog.repositoryAttributesView'},
-        { title: 'Write Queue', value: 'Chililog.writeQueueAttributesView'},
-        { title: 'Read Queue', value: 'Chililog.readQueueAttributesView'}
+        { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryAttributesView'},
+        { title: '_configureRepositoryInfoDetailView.WriteQueueAttributes'.loc(), value: 'Chililog.repositoryWriteQueueAttributesView'},
+        { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'}
       ]
     }),
 
@@ -70,7 +70,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
       }),
 
       savingImage: Chililog.ImageView.design({
-        layout: { top: 15, right: 180, width: 16, height: 16 },
+        layout: { top: 5, right: 180, width: 16, height: 16 },
         value: sc_static('images/working'),
         isVisibleBinding: SC.Binding.from('Chililog.configureRepositoryInfoDetailViewController.isSaving').oneWay().bool(),
         useImageQueue: NO
@@ -230,7 +230,7 @@ Chililog.repositoryAttributesView = Chililog.RepositoryAttributesView.create();
 /**
  * Write Queue views to fit in our tabs
  */
-Chililog.WriteQueueAttributesView = SC.ScrollView.design({
+Chililog.RepositoryWriteQueueAttributesView = SC.ScrollView.design({
   layout: {top: 0, left: 0, right: 0, bottom: 0 },
   classNames: ['data-group'],
   contentView:   SC.View.design({
@@ -473,13 +473,13 @@ Chililog.WriteQueueAttributesView = SC.ScrollView.design({
 });
 
 
-Chililog.writeQueueAttributesView = Chililog.WriteQueueAttributesView.create();
+Chililog.repositoryWriteQueueAttributesView = Chililog.RepositoryWriteQueueAttributesView.create();
 
 
 /**
  * Read Queue views to fit in our tabs
  */
-Chililog.ReadQueueAttributesView = SC.View.design({
+Chililog.RepositoryReadQueueAttributesView = SC.View.design({
   layout: {top: 0, left: 0, right: 0, bottom: 0 },
   classNames: ['data-group'],
   childViews: 'readQueueAddress readQueueUsername readQueuePassword readQueueDurable'.w(),
@@ -557,4 +557,4 @@ Chililog.ReadQueueAttributesView = SC.View.design({
   })
 });
 
-Chililog.readQueueAttributesView = Chililog.ReadQueueAttributesView.create();
+Chililog.repositoryReadQueueAttributesView = Chililog.RepositoryReadQueueAttributesView.create();
