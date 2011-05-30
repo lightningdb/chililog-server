@@ -11,8 +11,7 @@
  @extends SC.Record
  @version 0.1
  */
-Chililog.UserRecord = SC.Record.extend(
-/** @scope Chililog.UserRecord.prototype */ {
+Chililog.UserRecord = SC.Record.extend({
 
   primaryKey: Chililog.DOCUMENT_ID_RECORD_FIELD_NAME,
 
@@ -25,6 +24,16 @@ Chililog.UserRecord = SC.Record.extend(
   currentStatus: SC.Record.attr(String),
   displayName: SC.Record.attr(String),
   gravatarMD5Hash: SC.Record.attr(String),
+
+  /**
+   * Cached system.administrator role
+   */
+  isSystemAdministrator: SC.Record.attr(Boolean),
+
+  /**
+   * Cached repository access roles
+   */
+  repositoryAccesses: SC.Record.attr(Array),
 
   /**
    * Maps server api data into this user record
@@ -45,14 +54,50 @@ Chililog.UserRecord = SC.Record.extend(
       var apiObjectPropertyName = map[1];
       this.set(recordPropertyName, userAO[apiObjectPropertyName]);
     }
+
+    // Parse roles
+    var isSystemAdministrator = NO;
+    var repositoryAccesses = [];
+    var roles = this.get('roles');
+    if (!SC.none(roles)) {
+      for (var i=0; i<roles.length; i++) {
+        var role = roles[i];
+        if (role === Chililog.SYSTEM_ADMINISTRATOR_ROLE) {
+          isSystemAdministrator = YES;
+        }
+        else if (role.indexOf('repository.') === 0) {
+          var parts = role.split('.');
+          var repoName = parts[1];
+          var repoAccess = parts[2];
+          repositoryAccesses.push( { repository: repoName, access: repoAccess } );
+        }
+      }
+    }
+    this.set('isSystemAdministrator', isSystemAdministrator);
+    this.set('repositoryAccesses', repositoryAccesses);
   },
 
   /**
    * Maps user record data to api object
-   * 
+   *
    * @returns {Object} userAO
    */
   toApiObject: function() {
+    // Re-create roles
+    var roles = [];
+    if (this.get('isSystemAdministrator')) {
+      roles.push(Chililog.SYSTEM_ADMINISTRATOR_ROLE);
+    }
+    var repositoryAccesses = this.get('repositoryAccesses');
+    if (!SC.none(repositoryAccesses)) {
+      for (var i=0; i<repositoryAccesses.length; i++) {
+        var repositoryAccess = repositoryAccesses[i];
+        roles.push('repository.' + repositoryAccess.repository + '.' + repositoryAccess.access);
+      }
+    }
+    this.set('roles', roles);
+
+    // Map
     var apiObject = new Object();
     for (var i = 0; i < Chililog.USER_RECORD_MAP.length; i++) {
       var map = Chililog.USER_RECORD_MAP[i];
@@ -62,7 +107,7 @@ Chililog.UserRecord = SC.Record.extend(
     }
     return apiObject;
   }
-   
+
 });
 
 /**

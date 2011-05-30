@@ -90,6 +90,7 @@ SC.stringsFor('English', {
   '_configureView.NewUser': 'New User',
   '_configureUserListView.Title': 'Users',
   '_configureUserListView.Create': 'Create a New User',
+  
   '_configureUserDetailView.EditTitle': 'User: %@',
   '_configureUserDetailView.CreateTitle': 'New User',
   '_configureUserDetailView.Username': 'Username',
@@ -115,6 +116,10 @@ SC.stringsFor('English', {
   '_configureUserDetailView.ConfirmDelete': 'Delete user "%@"?',
   '_configureUserDetailView.GeneralAttributes': 'General',
   '_configureUserDetailView.RolesAttributes': 'Roles',
+  '_configureUserDetailView.isSystemAdministrator': 'Is System Administrator?',
+  '_configureUserDetailView.isSystemAdministrator.Yes': 'Yes. <span class="help">User will have access to all repositories and users.</span>',
+  '_configureUserDetailView.isSystemAdministrator.No': 'No.',
+
   '_configureRepositoryInfoListView.Title': 'Repositories',
   '_configureRepositoryInfoListView.Create': 'Create a New Repository',
   '_configureRepositoryInfoDetailView.EditTitle': 'Repository: %@',

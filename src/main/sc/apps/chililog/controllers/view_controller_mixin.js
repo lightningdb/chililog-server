@@ -90,7 +90,7 @@ Chililog.ViewControllerMixin = {
         if (field.scrollToVisible) {
           field.scrollToVisible();
         }
-        this.setFocusOnField(field);
+        this.setFocusOnField(field, 100);
       }
     } else {
       // Assume error message string

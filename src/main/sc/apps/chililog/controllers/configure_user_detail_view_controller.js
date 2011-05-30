@@ -43,6 +43,22 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   }.property('content').cacheable(),
 
   /**
+   * label for password. Not mandatory for edit mode
+   */
+  passwordLabelValue: function() {
+    var isCreating = this.get('isCreating');
+    return '_configureUserDetailView.Password'.loc() + (isCreating ? '*' : '');
+  }.property('isCreating').cacheable(),
+
+  /**
+   * Label for confirm password. Not mandatory for edit mode
+   */
+  confirmPasswordLabelValue: function() {
+    var isCreating = this.get('isCreating');
+    return '_configureUserDetailView.ConfirmPassword'.loc() + (isCreating ? '*' : '');
+  }.property('isCreating').cacheable(),
+
+  /**
    * Flag to indicate if we are creating
    */
   isCreating: function() {

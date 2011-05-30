@@ -43,6 +43,10 @@ Chililog.DOCUMENT_VERSION_AO_FIELD_NAME = 'DocumentVersion';
  */
 Chililog.DOCUMENT_VERSION_RECORD_FIELD_NAME = 'documentVersion';
 
+/**
+ * User role representing a system administrator
+ */
+Chililog.SYSTEM_ADMINISTRATOR_ROLE = 'system.administrator';
 
 /**
  * Mixin for heaping with server API comms

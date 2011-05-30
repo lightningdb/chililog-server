@@ -31,7 +31,7 @@ Chililog.ConfigureUserDetailView = SC.PanelPane.design({
       itemValueKey: 'value',
       items: [
         { title: '_configureUserDetailView.GeneralAttributes'.loc(), value: 'Chililog.userAttributesView'},
-        { title: '_configureUserDetailView.RolesAttributes'.loc(), value: 'Chililog.userRoleAttributesView'}
+        { title: '_configureUserDetailView.RolesAttributes'.loc(), value: 'Chililog.userRolesAttributesView'}
       ]
     }),
 
@@ -70,7 +70,7 @@ Chililog.ConfigureUserDetailView = SC.PanelPane.design({
       }),
 
       savingImage: Chililog.ImageView.design({
-        layout: { top: 5, right: 180, width: 16, height: 16 },
+        layout: { top: 15, right: 180, width: 16, height: 16 },
         value: sc_static('images/working'),
         isVisibleBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isSaving').oneWay().bool(),
         useImageQueue: NO
@@ -213,14 +213,7 @@ Chililog.UserAttributesView = SC.View.design({
 
     label: SC.LabelView.design({
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_configureUserDetailView.Password'.loc(),
-      formatter: function(v) {
-        if (Chililog.configureUserDetailViewController.get('isCreating')) {
-          return v + '*';
-        } else {
-          return v;
-        }
-      }
+      valueBinding: SC.Binding.from('Chililog.configureUserDetailViewController.passwordLabelValue').oneWay()
     }),
 
     editHelp: SC.LabelView.design({
@@ -259,14 +252,7 @@ Chililog.UserAttributesView = SC.View.design({
 
     label: SC.LabelView.design({
       layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_configureUserDetailView.ConfirmPassword'.loc(),
-      formatter: function(v) {
-        if (Chililog.configureUserDetailViewController.get('isCreating')) {
-          return v + '*';
-        } else {
-          return v;
-        }
-      }
+      valueBinding: SC.Binding.from('Chililog.configureUserDetailViewController.confirmPasswordLabelValue').oneWay()
     }),
 
     field: SC.TextFieldView.design({
@@ -295,7 +281,30 @@ Chililog.userAttributesView = Chililog.UserAttributesView.create();
  */
 Chililog.UserRolesAttributesView = SC.View.design({
   layout: {top: 0, left: 0, right: 0, bottom: 0},
-  classNames: ['data-group']
+  classNames: ['data-group'],
+  childViews: 'isSystemAdministrator'.w(),
+
+  isSystemAdministrator: SC.View.design({
+    layout: {top: 0, left: 0, right: 0, height: 80 },
+    classNames: ['data-item'],
+    childViews: 'label field'.w(),
+
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 25, left: 10, width: 200, height: 30 },
+      value: '_configureUserDetailView.isSystemAdministrator'.loc()
+    }),
+
+    field: Chililog.RadioView.design({
+      layout: { top: 25, left: 210, width: 500, height: 80 },
+      items: [
+        { title: '_configureUserDetailView.isSystemAdministrator.Yes'.loc(), value: YES},
+        { title: '_configureUserDetailView.isSystemAdministrator.No'.loc(), value: NO}
+      ],
+      itemTitleKey: 'title',
+      itemValueKey: 'value',
+      valueBinding: 'Chililog.configureUserDetailViewController.isSystemAdministrator'
+    })
+  })
 });
 
 Chililog.userRolesAttributesView = Chililog.UserRolesAttributesView.create();

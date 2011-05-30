@@ -10,6 +10,21 @@ Chililog.ConfigureUserState = SC.State.extend({
 
   initialSubstate: 'viewingUsers',
 
+  enterState: function() {
+    // Make sure that we are selected on the left hand side tree menu
+    // This can get out of sync if we navigate from another top level menu like search
+    Chililog.configureViewController.selectUsersMenuItem();
+
+    // Setup and show the list view
+    var ctrl = Chililog.configureUserListViewController;
+    if (SC.none(ctrl.get('content'))) {
+      var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
+      var users = Chililog.store.find(userQuery);
+      ctrl.set('content', users);
+    }
+    ctrl.show();
+  },
+
   /**
    * List users in table view
    */
@@ -18,19 +33,6 @@ Chililog.ConfigureUserState = SC.State.extend({
     initialSubstate: 'viewingUsers_Idle',
 
     enterState: function() {
-      // Make sure that we are selected on the left hand side tree menu
-      // This can get out of sync if we navigate from another top level menu like search
-      Chililog.configureViewController.selectUsersMenuItem();
-
-      // Setup and show the list view
-      var ctrl = Chililog.configureUserListViewController;
-      if (SC.none(ctrl.get('content'))) {
-        var userQuery = SC.Query.local(Chililog.UserRecord, { orderBy: 'username' });
-        var users = Chililog.store.find(userQuery);
-        ctrl.set('content', users);
-      }
-      ctrl.show();
-
       // Hide modal form if it is showing
       Chililog.configureUserDetailViewController.hide();
     },

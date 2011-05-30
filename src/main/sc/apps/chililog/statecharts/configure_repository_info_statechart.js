@@ -10,6 +10,21 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
 
   initialSubstate: 'viewingRepositoryInfo',
 
+  enterState: function() {
+    // Make sure that we are selected on the left hand side tree menu
+    // This can get out of sync if we navigate from another top level menu like search
+    Chililog.configureViewController.selectRepositoriesMenuItem();
+
+    // Setup and show the list view
+    var ctrl = Chililog.configureRepositoryInfoListViewController;
+    if (SC.none(ctrl.get('content'))) {
+      var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
+      var repoInfo = Chililog.store.find(repoInfoQuery);
+      ctrl.set('content', repoInfo);
+    }
+    ctrl.show();
+  },
+
   /**
    * List repositories in table view
    */
@@ -18,20 +33,6 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
     initialSubstate: 'viewingRepositoryInfo_Idle',
 
     enterState: function() {
-      // Make sure that we are selected on the left hand side tree menu
-      // This can get out of sync if we navigate from another top level menu like search
-      Chililog.configureViewController.selectRepositoriesMenuItem();
-
-      // Setup and show the list view
-      var ctrl = Chililog.configureRepositoryInfoListViewController;
-      if (SC.none(ctrl.get('content'))) {
-        var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
-        var repoInfo = Chililog.store.find(repoInfoQuery);
-        ctrl.set('content', repoInfo);
-      }
-      ctrl.show();
-
-
       // Hide modal form if it is showing
       Chililog.configureRepositoryInfoDetailViewController.hide();
     },
