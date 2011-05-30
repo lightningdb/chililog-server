@@ -18,6 +18,10 @@ Chililog.SearchState = SC.State.extend({
   },
 
   exitState: function() {
+    // Clear result set otherwise our table takes forever to load
+    // Not sure why it takes so long but it does!
+    Chililog.repositoryDataController.clearRepositoryEntries();
+    Chililog.searchListViewController.set('canShowMore', NO);
   },
 
   /**
@@ -77,13 +81,17 @@ Chililog.SearchState = SC.State.extend({
       this.gotoState('viewingRepositoryEntry');
     },
 
+    /**
+     * Toggle between basic and advance search
+     */
     toggleSearchMode: function() {
+      var ctrl = Chililog.searchListViewController;
 
       // Clear result set
       Chililog.repositoryDataController.clearRepositoryEntries();
+      ctrl.set('canShowMore', NO);
 
       // Switch
-      var ctrl = Chililog.searchListViewController;
       var isBasicSearchMode = ctrl.get('isBasicSearchMode');
       ctrl.set('isBasicSearchMode', !isBasicSearchMode);
     }
