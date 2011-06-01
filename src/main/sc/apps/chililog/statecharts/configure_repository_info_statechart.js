@@ -232,11 +232,30 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
     enterState: function(context) {
       var isReedit = !SC.none(context) && context['isReedit'];
       if (!isReedit) {
+        // Load record
         var record = Chililog.repositoryInfoDataController.edit(context['documentID']);
         var ctrl = Chililog.configureRepositoryInfoDetailViewController;
         ctrl.set('content', record);
         ctrl.set('isSaving', NO);
         ctrl.show();
+
+        // Load accesses
+        var repositoryName = record.get('name');
+        var users = Chililog.store.find(Chililog.UserRecord);
+        var repositoryAccessArray = [];
+        for (var i=0; i<users.get('length'); i++) {
+          var user = users.objectAt(i);
+          var repositoryAccesses = user.get('repositoryAccesses');
+          if (!SC.none(repositoryAccesses)) {
+            for (var j=0; j<repositoryAccesses.length; j++) {
+              if (repositoryAccesses[j].repository === repositoryName) {
+                repositoryAccessArray.push( { username: user.get('username'), userDisplayName: user.get('displayName'), role: repositoryAccesses[j].role} );
+              }
+            }
+          }
+        }
+        ctrl.setPath('repositoryAccessArrayController.content', repositoryAccessArray);
+        
       }
     },
 

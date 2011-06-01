@@ -31,7 +31,8 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
       items: [
         { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryAttributesView'},
         { title: '_configureRepositoryInfoDetailView.WriteQueueAttributes'.loc(), value: 'Chililog.repositoryWriteQueueAttributesView'},
-        { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'}
+        { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'},
+        { title: '_configureRepositoryInfoDetailView.RepositoryAccesses'.loc(), value: 'Chililog.repositoryAccessView'}
       ]
     }),
 
@@ -558,3 +559,81 @@ Chililog.RepositoryReadQueueAttributesView = SC.View.design({
 });
 
 Chililog.repositoryReadQueueAttributesView = Chililog.RepositoryReadQueueAttributesView.create();
+
+
+/**
+ * Repository access view to fit in our tabs
+ */
+Chililog.RepositoryAccessView = SC.View.design({
+  layout: {top: 0, left: 0, right: 0, bottom: 0 },
+  classNames: ['data-group'],
+  childViews: 'repositoryAccesses'.w(),
+
+  repositoryAccesses: SC.View.design({
+    layout: {top: 25, left: 0, right: 0, height: 320 },
+    classNames: ['data-item'],
+    childViews: 'label field'.w(),
+
+    label: SC.LabelView.design({
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureRepositoryInfoDetailView.RepositoryAccesses'.loc()
+    }),
+
+    field: SC.TableView.design({
+      layout: { top: 15, left: 210, width: 550, height: 270 },
+      classNames: ['table'],
+      contentBinding: 'Chililog.configureRepositoryInfoDetailViewController.repositoryAccessArrayController.arrangedObjects',
+      selectionBinding: 'Chililog.configureRepositoryInfoDetailViewController.repositoryAccessArrayController.selection',
+      useHeaders: YES,
+      isEditable: NO,
+      canEditContent: NO,
+      canDeleteContent: NO,
+
+      columns:[
+        SC.TableColumn.create({
+          key:   'username',
+          title: '_configureRepositoryInfoDetailView.RepositoryAccesses.Username'.loc(),
+          width: 150,
+          isReorderable: NO,
+          sortState: SC.SORT_ASCENDING
+        }),
+        SC.TableColumn.create({
+          key:   'userDisplayName',
+          title: '_configureRepositoryInfoDetailView.RepositoryAccesses.UserDisplayName'.loc(),
+          width: 200,
+          isReorderable: NO,
+          sortState: SC.SORT_ASCENDING
+        }),
+        SC.TableColumn.create({
+          key:   'role',
+          title: '_configureRepositoryInfoDetailView.RepositoryAccesses.Role'.loc(),
+          width: 150,
+          isReorderable: NO,
+          formatter: function(v) {
+            var map = Chililog.configureUserDetailViewController.get('repositoryAccessRoles');
+            for (var i = 0; i < map.length; i++) {
+              if (map[i].code === v) {
+                return map[i].displayText;
+              }
+            }
+            return v;
+          }
+        })
+      ],
+
+      /**
+       * Reset when visible to make sure that screen is displayed
+       correctly when show/not showing in container views
+       */
+      doReset: function() {
+        var isVisibleInWindow = this.get('isVisibleInWindow');
+        if (isVisibleInWindow) {
+          var x = this.getPath('_dataView.contentView');
+          x._reset();
+        }
+      }.observes('isVisibleInWindow')
+    })
+  })
+});
+
+Chililog.repositoryAccessView = Chililog.RepositoryAccessView.create();

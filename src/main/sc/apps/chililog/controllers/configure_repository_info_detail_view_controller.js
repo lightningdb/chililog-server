@@ -17,6 +17,38 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   content: null,
 
   /**
+   * Controller for repository access array
+   */
+  repositoryAccessArrayController: SC.ArrayController.create({
+
+    /**
+     * Sort by the repository name
+     */
+    orderBy: 'user',
+
+    /**
+     * Selection set. Null if nothing selected
+     *
+     * @type SC.SelectionSet.
+     */
+    selection: null,
+
+    /**
+     * The selected record
+     *
+     * @type Chililog.RepositoryInfoRecord
+     */
+    selectedRecord: function() {
+      var selectionSet = this.get('selection');
+      if (SC.none(selectionSet) || selectionSet.get('length') === 0) {
+        return null;
+      }
+      var record = selectionSet.get('firstObject');
+      return record;
+    }.property('selection').cacheable()
+  }),
+
+  /**
    * Flag to denote if we can delete this record or not
    * @type Boolean
    */

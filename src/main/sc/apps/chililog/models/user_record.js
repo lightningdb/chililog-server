@@ -73,8 +73,8 @@ Chililog.UserRecord = SC.Record.extend({
         else if (role.indexOf('repo.') === 0) {
           var parts = role.split('.');
           var repoName = parts[1];
-          var repoAccess = parts[2];
-          repositoryAccesses.push( { repository: repoName, access: repoAccess } );
+          var repoRole = parts[2];
+          repositoryAccesses.push( { repository: repoName, role: repoRole } );
         }
       }
     }
@@ -98,7 +98,7 @@ Chililog.UserRecord = SC.Record.extend({
     if (!SC.none(repositoryAccesses)) {
       for (var i=0; i<repositoryAccesses.length; i++) {
         var repositoryAccess = repositoryAccesses[i];
-        roles.push('repo.' + repositoryAccess.repository + '.' + repositoryAccess.access);
+        roles.push('repo.' + repositoryAccess.repository + '.' + repositoryAccess.role);
       }
     }
     this.set('roles', roles);

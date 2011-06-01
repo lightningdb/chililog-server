@@ -348,12 +348,12 @@ Chililog.UserRolesAttributesView = SC.View.design({
           }
         }),
         SC.TableColumn.create({
-          key:   'access',
-          title: '_configureUserDetailView.repositoryAccesses.Access'.loc(),
+          key:   'role',
+          title: '_configureUserDetailView.repositoryAccesses.Role'.loc(),
           width: 150,
           isReorderable: NO,
           formatter: function(v) {
-            var map = Chililog.configureUserDetailViewController.get('repositoryAccessTypes');
+            var map = Chililog.configureUserDetailViewController.get('repositoryAccessRoles');
             for (var i = 0; i < map.length; i++) {
               if (map[i].code === v) {
                 return map[i].displayText;
@@ -410,7 +410,7 @@ Chililog.UserRolesAttributesView = SC.View.design({
     addBox: SC.View.design({
       layout: { top: 225, left: 210, width: 400, height: 65 },
       classNames: ['box'],
-      childViews: 'label1 repository label2 access add'.w(),
+      childViews: 'label1 repository label2 role add'.w(),
 
       label1: SC.LabelView.design({
         layout: { top: 5, left: 10, width: 140, height: 20 },
@@ -427,16 +427,16 @@ Chililog.UserRolesAttributesView = SC.View.design({
 
       label2: SC.LabelView.design({
         layout: { top: 5, left: 160, width: 140, height: 20 },
-        value: '_configureUserDetailView.repositoryAccesses.Access'.loc()
+        value: '_configureUserDetailView.repositoryAccesses.Role'.loc()
       }),
 
-      access: Chililog.SelectFieldView.design({
+      role: Chililog.SelectFieldView.design({
         layout: { top: 25, left: 160, width: 140, height: 30 },
-        objectsBinding: 'Chililog.configureUserDetailViewController.repositoryAccessTypes',
+        objectsBinding: 'Chililog.configureUserDetailViewController.repositoryAccessRoles',
         nameKey: 'displayText',
         valueKey: 'code',
         disableSort: YES,
-        valueBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.accessToAdd'
+        valueBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.roleToAdd'
       }),
 
       add: SC.ButtonView.design({
@@ -446,7 +446,7 @@ Chililog.UserRolesAttributesView = SC.View.design({
         action: function() {
           // Check if it already exists
           var repository = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.repositoryToAdd');
-          var access = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.accessToAdd');
+          var role = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.roleToAdd');
           var repositoryAccesses = Chililog.configureUserDetailViewController.get('repositoryAccesses');
           if (!SC.none(repositoryAccesses)) {
             for (var i = 0; i < repositoryAccesses.length; i++) {
@@ -460,7 +460,7 @@ Chililog.UserRolesAttributesView = SC.View.design({
           // Add it
           Chililog.configureUserDetailViewController.get('repositoryAccessArrayController').pushObject({
             repository: repository,
-            access: access
+            role: role
           });
           Chililog.configureUserDetailViewController.set('repositoryAccessesChanged', YES);
 

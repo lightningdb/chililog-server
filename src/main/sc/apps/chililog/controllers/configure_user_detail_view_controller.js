@@ -27,11 +27,6 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
     contentBinding: 'Chililog.configureUserDetailViewController.repositoryAccesses',
 
     /**
-     * Sort by the repository name
-     */
-    orderBy: 'repository',
-
-    /**
      * Selection set. Null if nothing selected
      *
      * @type SC.SelectionSet.
@@ -56,11 +51,11 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   /**
    * Map between user repository access code and it's display text
    */
-  repositoryAccessTypes: function() {
+  repositoryAccessRoles: function() {
     return [
-      { displayText:'_configureUserDetailView.repositoryAccesses.AdminAccess'.loc(), code:'admin' },
-      { displayText:'_configureUserDetailView.repositoryAccesses.PowerAccess'.loc(), code:'power' },
-      { displayText:'_configureUserDetailView.repositoryAccesses.StandardAccess'.loc(), code:'standard' }
+      { displayText:'_configureUserDetailView.repositoryAccesses.AdminRole'.loc(), code:'administrator' },
+      { displayText:'_configureUserDetailView.repositoryAccesses.PowerRole'.loc(), code:'power' },
+      { displayText:'_configureUserDetailView.repositoryAccesses.StandardRole'.loc(), code:'standard' }
       ];
   }.property().cacheable(),
 
