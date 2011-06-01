@@ -35,7 +35,11 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Array of repository name-value pairs to display in the drop down list
    * @type Array
    */
-  repositories: null,
+  repositories: function() {
+    var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
+    var repoInfoArray = Chililog.store.find(repoInfoQuery);
+    return repoInfoArray;
+  }.property().cacheable(),
 
   /**
    * Keywords to use in the basic search

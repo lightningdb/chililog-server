@@ -14,6 +14,7 @@ SC.stringsFor('English', {
   // ********************************************************
   // General
   // ********************************************************
+  '_add': 'Add',
   '_save': 'Save',
   '_cancel': 'Cancel',
   '_refresh': 'Refresh',
@@ -119,6 +120,13 @@ SC.stringsFor('English', {
   '_configureUserDetailView.isSystemAdministrator': 'Is System Administrator?',
   '_configureUserDetailView.isSystemAdministrator.Yes': 'Yes. <span class="help">User will have access to all repositories and users.</span>',
   '_configureUserDetailView.isSystemAdministrator.No': 'No.',
+  '_configureUserDetailView.repositoryAccesses': 'Repository Access',
+  '_configureUserDetailView.repositoryAccesses.Repository': 'Repository',
+  '_configureUserDetailView.repositoryAccesses.Access': 'Access',
+  '_configureUserDetailView.repositoryAccesses.Delete': 'Delete',
+  '_configureUserDetailView.repositoryAccesses.AdminAccess': 'Administrator',
+  '_configureUserDetailView.repositoryAccesses.PowerAccess': 'Power User',
+  '_configureUserDetailView.repositoryAccesses.StandardAccess': 'Standard User',
 
   '_configureRepositoryInfoListView.Title': 'Repositories',
   '_configureRepositoryInfoListView.Create': 'Create a New Repository',

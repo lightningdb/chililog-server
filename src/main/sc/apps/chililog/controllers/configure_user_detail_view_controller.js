@@ -17,6 +17,54 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
   content: null,
 
   /**
+   * Controller for repository access array
+   */
+  repositoryAccessArrayController: SC.ArrayController.create({
+
+    /**
+     * Bind to the user's repository access
+     */
+    contentBinding: 'Chililog.configureUserDetailViewController.repositoryAccesses',
+
+    /**
+     * Sort by the repository name
+     */
+    orderBy: 'repository',
+
+    /**
+     * Selection set. Null if nothing selected
+     *
+     * @type SC.SelectionSet.
+     */
+    selection: null,
+
+    /**
+     * The selected record
+     *
+     * @type Chililog.RepositoryInfoRecord
+     */
+    selectedRecord: function() {
+      var selectionSet = this.get('selection');
+      if (SC.none(selectionSet) || selectionSet.get('length') === 0) {
+        return null;
+      }
+      var record = selectionSet.get('firstObject');
+      return record;
+    }.property('selection').cacheable()
+  }),
+
+  /**
+   * Map between user repository access code and it's display text
+   */
+  repositoryAccessTypes: function() {
+    return [
+      { displayText:'_configureUserDetailView.repositoryAccesses.AdminAccess'.loc(), code:'admin' },
+      { displayText:'_configureUserDetailView.repositoryAccesses.PowerAccess'.loc(), code:'power' },
+      { displayText:'_configureUserDetailView.repositoryAccesses.StandardAccess'.loc(), code:'standard' }
+      ];
+  }.property().cacheable(),
+
+  /**
    * Flag to denote if we can delete this record or not
    * @type Boolean
    */

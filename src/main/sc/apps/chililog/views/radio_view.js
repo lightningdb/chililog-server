@@ -5,7 +5,7 @@
 
 /** @class
 
-  RadioView view with handling focus and up/down arrow keys as well as focus ring
+  Enhances the standard SC.RadioView view with handling focus and up/down arrow keys as well as focus ring
 
  @extends SC.ImageView
  */

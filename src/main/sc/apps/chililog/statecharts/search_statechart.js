@@ -30,15 +30,8 @@ Chililog.SearchState = SC.State.extend({
   viewingRepositoryEntries: SC.State.design({
 
     enterState: function() {
-      // Update repository drop down content if it has not been set
-      var ctrl = Chililog.searchListViewController;
-      if (SC.none(ctrl.get('repositories'))) {
-        var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
-        var repoInfoArray = Chililog.store.find(repoInfoQuery);
-        ctrl.set('repositories', repoInfoArray);
-      }
-
       // Set content for table if there isn't any - 1st time in or after search
+      var ctrl = Chililog.searchListViewController;
       if (SC.none(ctrl.get('content'))) {
         var repoEntryQuery = SC.Query.local(Chililog.RepositoryEntryRecord, { orderBy: 'timestampString' });
         var repoEntries = Chililog.store.find(repoEntryQuery);

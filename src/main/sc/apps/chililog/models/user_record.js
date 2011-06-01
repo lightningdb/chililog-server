@@ -36,6 +36,11 @@ Chililog.UserRecord = SC.Record.extend({
   repositoryAccesses: SC.Record.attr(Array),
 
   /**
+   * Flag to be set so that we can trigger saving when adding/deleting repository access items to the array
+   */
+  repositoryAccessesChanged: SC.Record.attr(Boolean),
+
+  /**
    * Maps server api data into this user record
    *
    * @param {Object} userAO
@@ -65,7 +70,7 @@ Chililog.UserRecord = SC.Record.extend({
         if (role === Chililog.SYSTEM_ADMINISTRATOR_ROLE) {
           isSystemAdministrator = YES;
         }
-        else if (role.indexOf('repository.') === 0) {
+        else if (role.indexOf('repo.') === 0) {
           var parts = role.split('.');
           var repoName = parts[1];
           var repoAccess = parts[2];
@@ -75,6 +80,7 @@ Chililog.UserRecord = SC.Record.extend({
     }
     this.set('isSystemAdministrator', isSystemAdministrator);
     this.set('repositoryAccesses', repositoryAccesses);
+    this.set('repositoryAccessesChanged', NO);
   },
 
   /**
@@ -92,7 +98,7 @@ Chililog.UserRecord = SC.Record.extend({
     if (!SC.none(repositoryAccesses)) {
       for (var i=0; i<repositoryAccesses.length; i++) {
         var repositoryAccess = repositoryAccesses[i];
-        roles.push('repository.' + repositoryAccess.repository + '.' + repositoryAccess.access);
+        roles.push('repo.' + repositoryAccess.repository + '.' + repositoryAccess.access);
       }
     }
     this.set('roles', roles);

@@ -177,6 +177,10 @@
   padding-left: 10px;
 }
 
+.sc-view.data-item .table .label {
+  font-weight: normal;
+}
+
 
 /*******************************************
  * Success message when records saved

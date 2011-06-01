@@ -5,6 +5,7 @@
 
 sc_require('views/image_view');
 sc_require('views/radio_view');
+sc_require('views/select_field_view');
 sc_require('views/validators');
 sc_require('views/label_mixin');
 
@@ -231,7 +232,7 @@ Chililog.UserAttributesView = SC.View.design({
       validator: Chililog.RegExpValidator.extend({
         fieldRegExp: /^(?=.{8,}$)(?=(?:.*?\d){1})(?=(?:.*?[A-Za-z]){1})(?=(?:.*?\W){1})/,
         invalidFieldErrorMessage: '_configureUserDetailView.Password.Invalid',
-        requiredFieldErrorMessageBinding:  SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').transform(function(value, isForward){
+        requiredFieldErrorMessageBinding:  SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').transform(function(value, isForward) {
           return value ? '_configureUserDetailView.Password.Required' : null;
         })
       })
@@ -261,7 +262,7 @@ Chililog.UserAttributesView = SC.View.design({
       valueBinding: 'Chililog.configureUserDetailViewController.confirmPassword',
       maxLength: 100,
       validator: Chililog.NotEmptyValidator.extend({
-        requiredFieldErrorMessageBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').transform(function(value, isForward){
+        requiredFieldErrorMessageBinding: SC.Binding.from('Chililog.configureUserDetailViewController.isCreating').transform(function(value, isForward) {
           return value ? '_configureUserDetailView.ConfirmPassword.Required' : null;
         })
       })
@@ -282,7 +283,7 @@ Chililog.userAttributesView = Chililog.UserAttributesView.create();
 Chililog.UserRolesAttributesView = SC.View.design({
   layout: {top: 0, left: 0, right: 0, bottom: 0},
   classNames: ['data-group'],
-  childViews: 'isSystemAdministrator'.w(),
+  childViews: 'isSystemAdministrator repositoryAccesses'.w(),
 
   isSystemAdministrator: SC.View.design({
     layout: {top: 0, left: 0, right: 0, height: 80 },
@@ -304,7 +305,173 @@ Chililog.UserRolesAttributesView = SC.View.design({
       itemValueKey: 'value',
       valueBinding: 'Chililog.configureUserDetailViewController.isSystemAdministrator'
     })
+  }),
+
+  repositoryAccesses: SC.View.design({
+    layout: {top: 80, left: 0, right: 0, height: 320 },
+    classNames: ['data-item'],
+    childViews: 'label field addBox'.w(),
+
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureUserDetailView.repositoryAccesses'.loc()
+    }),
+
+    field: SC.TableView.design({
+      layout: { top: 15, left: 210, width: 400, height: 200 },
+      classNames: ['table'],
+      contentBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.arrangedObjects',
+      selectionBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.selection',
+      useHeaders: YES,
+      isEditable: NO,
+      canEditContent: NO,
+      canDeleteContent: YES,
+
+      columns:[
+        SC.TableColumn.create({
+          key:   'repository',
+          title: '_configureUserDetailView.repositoryAccesses.Repository'.loc(),
+          width: 150,
+          isReorderable: NO,
+          sortState: SC.SORT_ASCENDING,
+          formatter: function(v) {
+            var query = SC.Query.local(Chililog.RepositoryInfoRecord, {
+              conditions: 'name = %@',
+              parameters: [v]
+            });
+            var result = Chililog.store.find(query);
+            if (!SC.none(result) && !SC.none(result.firstObject())) {
+              var r = result.firstObject();
+              return r.get('displayNameOrName');
+            }
+            return v;
+          }
+        }),
+        SC.TableColumn.create({
+          key:   'access',
+          title: '_configureUserDetailView.repositoryAccesses.Access'.loc(),
+          width: 150,
+          isReorderable: NO,
+          formatter: function(v) {
+            var map = Chililog.configureUserDetailViewController.get('repositoryAccessTypes');
+            for (var i = 0; i < map.length; i++) {
+              if (map[i].code === v) {
+                return map[i].displayText;
+              }
+            }
+            return v;
+          }
+        }),
+        SC.TableColumn.create({
+          key:   '',
+          title: '_configureUserDetailView.repositoryAccesses.Delete'.loc(),
+          width: 100,
+          isReorderable: NO,
+          exampleView: SC.TableCellContentView.extend({
+            childViews:[SC.ButtonView.design({
+              layout: { top: 4, width: 32 },
+              controlSize: SC.SMALL_CONTROL_SIZE,
+              icon: sc_static('images/bullet_delete'),
+              action: function() {
+                // To get deletes the work, we need to create a new array with all the elements we want to keep and
+                // update the user record with the new array. For whatever reason, the new array forces the screen
+                // to update. Removing an item from the existing array does not update the screen.
+                var repositoryAccess = this.getPath('parentView.parentView.content');
+                var array = Chililog.configureUserDetailViewController.getPath('content.repositoryAccesses');
+                var newArray = [];
+                for (var i=0; i<array.length; i++) {
+                  if (array[i] !== repositoryAccess) {
+                    newArray.push(array[i]);
+                  }
+                }
+                Chililog.configureUserDetailViewController.setPath('content.repositoryAccesses', newArray);
+                Chililog.configureUserDetailViewController.set('repositoryAccessesChanged', YES);
+              }
+            })]
+          })
+        })
+      ],
+      target: Chililog.configureUserDetailViewController,
+      action: 'edit',
+
+      /**
+       * Reset when visible to make sure that screen is displayed
+       correctly when show/not showing in container views
+       */
+      doReset: function() {
+        var isVisibleInWindow = this.get('isVisibleInWindow');
+        if (isVisibleInWindow) {
+          var x = this.getPath('_dataView.contentView');
+          x._reset();
+        }
+      }.observes('isVisibleInWindow')
+    }),
+
+    addBox: SC.View.design({
+      layout: { top: 225, left: 210, width: 400, height: 65 },
+      classNames: ['box'],
+      childViews: 'label1 repository label2 access add'.w(),
+
+      label1: SC.LabelView.design({
+        layout: { top: 5, left: 10, width: 140, height: 20 },
+        value: '_configureUserDetailView.repositoryAccesses.Repository'.loc()
+      }),
+
+      repository: Chililog.SelectFieldView.design({
+        layout: { top: 25, left: 10, width: 140, height: 30 },
+        objectsBinding: 'Chililog.searchListViewController.repositories',
+        nameKey: 'displayNameOrName',
+        valueKey: 'name',
+        valueBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.repositoryToAdd'
+      }),
+
+      label2: SC.LabelView.design({
+        layout: { top: 5, left: 160, width: 140, height: 20 },
+        value: '_configureUserDetailView.repositoryAccesses.Access'.loc()
+      }),
+
+      access: Chililog.SelectFieldView.design({
+        layout: { top: 25, left: 160, width: 140, height: 30 },
+        objectsBinding: 'Chililog.configureUserDetailViewController.repositoryAccessTypes',
+        nameKey: 'displayText',
+        valueKey: 'code',
+        disableSort: YES,
+        valueBinding: 'Chililog.configureUserDetailViewController.repositoryAccessArrayController.accessToAdd'
+      }),
+
+      add: SC.ButtonView.design({
+        layout: { top: 25, left: 310, width: 75 },
+        title: '_add'.loc(),
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        action: function() {
+          // Check if it already exists
+          var repository = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.repositoryToAdd');
+          var access = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.accessToAdd');
+          var repositoryAccesses = Chililog.configureUserDetailViewController.get('repositoryAccesses');
+          if (!SC.none(repositoryAccesses)) {
+            for (var i = 0; i < repositoryAccesses.length; i++) {
+              var ra = repositoryAccesses[i];
+              if (ra.repository === repository) {
+                return;
+              }
+            }
+          }
+
+          // Add it
+          Chililog.configureUserDetailViewController.get('repositoryAccessArrayController').pushObject({
+            repository: repository,
+            access: access
+          });
+          Chililog.configureUserDetailViewController.set('repositoryAccessesChanged', YES);
+
+        }
+      })
+    })
   })
 });
 
+/**
+ * Instance
+ */
 Chililog.userRolesAttributesView = Chililog.UserRolesAttributesView.create();
+
