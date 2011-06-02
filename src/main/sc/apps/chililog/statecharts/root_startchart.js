@@ -160,6 +160,16 @@ Chililog.statechart = SC.Statechart.create({
       },
 
       logout: function() {
+        // Clean up controller settings for new user
+        Chililog.searchListViewController.set('basicRepository', '');
+        Chililog.searchListViewController.set('advancedRepository', '');
+        Chililog.configureRepositoryInfoDetailViewController.set('content', null);
+        Chililog.configureRepositoryInfoListViewController.set('content', null);
+        Chililog.configureUserDetailViewController.set('content', null);
+        Chililog.configureUserListViewController.set('content', null);
+        Chililog.searchListViewController.set('content', null);
+
+        // Clear session data
         Chililog.sessionDataController.logout();
         this.gotoState('loggedOut');
       }

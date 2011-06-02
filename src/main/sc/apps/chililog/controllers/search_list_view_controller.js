@@ -57,7 +57,7 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Number of past minutes to limit basic search
    * @type String
    */
-  basicTimeSpan: '',
+  basicTimeSpan: '5',
 
   /**
    * Repository to look in for advance search. One of the items listed in the repositories property.
@@ -83,7 +83,7 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Number of past minutes to limit advanced search
    * @type String
    */
-  advancedTimeSpan: '',
+  advancedTimeSpan: '5',
 
   /**
    * Date and time to start search

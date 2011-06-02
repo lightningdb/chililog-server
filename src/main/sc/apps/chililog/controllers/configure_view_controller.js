@@ -11,6 +11,38 @@ sc_require('controllers/view_controller_mixin');
 Chililog.configureViewController = SC.Object.create({
 
   /**
+   * Menu items to display on the left hand side list view
+   */
+  menuItems: [],
+
+  /**
+   * Update menu items when the logged in user changes
+   */
+  updateMenuItems: function() {
+    var isSystemAdministrator = Chililog.sessionDataController.get('isSystemAdministrator');
+    var isRepositoryAdministrator = Chililog.sessionDataController.get('isRepositoryAdministrator');
+    var menuItems = [];
+
+    if (isRepositoryAdministrator || isSystemAdministrator) {
+      menuItems.push({
+        id: 'Repositories',
+        label: '_configureView.Repositories'.loc(),
+        icon: sc_static('images/repositories.png')
+      });
+    }
+
+    if (isSystemAdministrator) {
+      menuItems.push({
+        id: 'Users',
+        label: '_configureView.Users'.loc(),
+        icon: sc_static('images/users.png')
+      });
+    }
+
+    this.set('menuItems', menuItems);
+  }.observes('Chililog.sessionDataController.loggedInUser'),
+
+  /**
    * Menu item selected
    */
   onSelect: function() {

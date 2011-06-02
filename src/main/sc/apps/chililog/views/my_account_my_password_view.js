@@ -22,7 +22,7 @@ Chililog.MyPasswordView = SC.View.design({
     if (which === SC.Event.KEY_RETURN) {
       var canChangePassword = Chililog.myAccountMyPasswordViewController.get('canChangePassword');
       if (canChangePassword) {
-        Chililog.myAccountMyPasswordViewController.changePassword();
+        Chililog.myAccountMyPasswordViewController.save();
         return YES;
       }
     }

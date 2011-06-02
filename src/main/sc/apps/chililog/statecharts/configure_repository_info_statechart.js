@@ -20,7 +20,20 @@ Chililog.ConfigureRepositoryInfoState = SC.State.extend({
     if (SC.none(ctrl.get('content'))) {
       var repoInfoQuery = SC.Query.local(Chililog.RepositoryInfoRecord, { orderBy: 'name' });
       var repoInfo = Chililog.store.find(repoInfoQuery);
-      ctrl.set('content', repoInfo);
+
+      // For repo administrators, only show those repo for which the logged in user is the administrator
+      if (Chililog.sessionDataController.get('isSystemAdministrator')) {
+        ctrl.set('content', repoInfo);
+      } else if (Chililog.sessionDataController.get('isRepositoryAdministrator')) {
+        var repoArray = [];
+        repoInfo.forEach(function(repositoryRecord) {
+          if (Chililog.sessionDataController.isRepositoryAdministratorOf(repositoryRecord)) {
+            repoArray.push(repositoryRecord);
+          }
+        });
+        ctrl.set('content', repoArray);
+      }
+
     }
     ctrl.show();
   },

@@ -53,9 +53,9 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
    */
   repositoryAccessRoles: function() {
     return [
-      { displayText:'_configureUserDetailView.repositoryAccesses.AdminRole'.loc(), code:'administrator' },
-      { displayText:'_configureUserDetailView.repositoryAccesses.PowerRole'.loc(), code:'power' },
-      { displayText:'_configureUserDetailView.repositoryAccesses.StandardRole'.loc(), code:'standard' }
+      { displayText:'_configureUserDetailView.repositoryAccesses.AdminRole'.loc(), code: Chililog.REPOSITORY_ADMINISTRATOR_ROLE },
+      { displayText:'_configureUserDetailView.repositoryAccesses.PowerRole'.loc(), code: Chililog.REPOSITORY_POWER_USER_ROLE },
+      { displayText:'_configureUserDetailView.repositoryAccesses.StandardRole'.loc(), code:Chililog.REPOSITORY_STANDARD_USER_ROLE }
     ];
   }.property().cacheable(),
 

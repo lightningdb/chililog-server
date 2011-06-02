@@ -40,8 +40,8 @@ Chililog.mainViewController = SC.Object.create(
 //      }
     ];
 
-    var isAdmin = Chililog.sessionDataController.get('isInAdministratorRole');
-    if (isAdmin) {
+    if (Chililog.sessionDataController.get('isSystemAdministrator') ||
+        Chililog.sessionDataController.get('isRepositoryAdministrator')) {
       values.push({
         value: 'configure',
         title: '_mainPane.Configure'.loc(),

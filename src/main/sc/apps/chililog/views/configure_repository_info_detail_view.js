@@ -28,12 +28,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
       layout: { top: 50, left: 10, bottom: 50, right: 10 },
       itemTitleKey: 'title',
       itemValueKey: 'value',
-      items: [
-        { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryAttributesView'},
-        { title: '_configureRepositoryInfoDetailView.WriteQueueAttributes'.loc(), value: 'Chililog.repositoryWriteQueueAttributesView'},
-        { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'},
-        { title: '_configureRepositoryInfoDetailView.RepositoryAccesses'.loc(), value: 'Chililog.repositoryAccessView'}
-      ]
+      itemsBinding: 'Chililog.configureRepositoryInfoDetailViewController.tabItems'
     }),
 
     buttons: SC.View.design({

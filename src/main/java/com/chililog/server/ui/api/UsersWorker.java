@@ -201,7 +201,8 @@ public class UsersWorker extends Worker
     }
 
     /**
-     * Read
+     * Read. Anyone is allowed to get a list of users. This helps the client side link usernames with display names and 
+     * gravatars. However, unless you are the system administrator, you don't get roles and email addresses.
      * 
      * @throws Exception
      */

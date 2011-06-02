@@ -77,6 +77,32 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   }),
 
   /**
+   * Tab items to display on the left hand side list view
+   */
+  tabItems: [],
+
+  /**
+   * Update tab items when the logged in user changes
+   */
+  updateTabItems: function() {
+    var isSystemAdministrator = Chililog.sessionDataController.get('isSystemAdministrator');
+    var isRepositoryAdministrator = Chililog.sessionDataController.get('isRepositoryAdministrator');
+    var tabItems = [
+     { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryAttributesView'},
+     { title: '_configureRepositoryInfoDetailView.WriteQueueAttributes'.loc(), value: 'Chililog.repositoryWriteQueueAttributesView'},
+     { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'},
+    ];
+
+    if (isSystemAdministrator) {
+      tabItems.push(
+        { title: '_configureRepositoryInfoDetailView.RepositoryAccesses'.loc(), value: 'Chililog.repositoryAccessView'}
+      );
+    }
+
+    this.set('tabItems', tabItems);
+  }.observes('Chililog.sessionDataController.loggedInUser'),
+  
+  /**
    * Flag to denote if we can delete this record or not
    * @type Boolean
    */
@@ -190,13 +216,13 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
       this.showError(result);
       return;
     }
-    result = this.findFieldAndValidate(Chililog.writeQueueAttributesView);
+    result = this.findFieldAndValidate(Chililog.repositoryWriteQueueAttributesView);
     if (result !== SC.VALIDATE_OK) {
       Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryWriteQueueAttributesView');
       this.showError(result);
       return;
     }
-    result = this.findFieldAndValidate(Chililog.readQueueAttributesView);
+    result = this.findFieldAndValidate(Chililog.repositoryReadQueueAttributesView);
     if (result !== SC.VALIDATE_OK) {
       Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryReadQueueAttributesView');
       this.showError(result);

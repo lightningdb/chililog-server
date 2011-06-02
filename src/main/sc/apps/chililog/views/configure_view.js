@@ -32,18 +32,7 @@ Chililog.ConfigureView = SC.View.design({
       rowHeight: 40,
       isEditable: NO,
       actOnSelect: YES,
-      content: [
-        {
-          id: 'Repositories',
-          label: '_configureView.Repositories'.loc(),
-          icon: sc_static('images/repositories.png')
-        },
-        {
-          id: 'Users',
-          label: '_configureView.Users'.loc(),
-          icon: sc_static('images/users.png')
-        }
-      ],
+      contentBinding: 'Chililog.configureViewController.menuItems',
       hasContentIcon: YES,
       contentValueKey: 'label',
       contentIconKey: 'icon',

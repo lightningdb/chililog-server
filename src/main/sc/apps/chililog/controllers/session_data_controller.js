@@ -4,11 +4,6 @@
 // ==========================================================================
 
 /**
- * Name of cookie where we store the auth token
- */
-Chililog.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'ChiliLog.AuthenticationToken';
-
-/**
  * Controller that manages our session and keeps track of the the user is logged in or not
  *
  * @extends SC.Object
@@ -102,11 +97,11 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
   }.property('loggedInUser').cacheable(),
 
   /**
-   * YES if the user is an administrator
+   * YES if the user is a system administrator
    *
    * @type Boolean
    */
-  isInAdministratorRole: function() {
+  isSystemAdministrator: function() {
     var loggedInUser = this.get('loggedInUser');
     if (SC.none(loggedInUser)) {
       return NO;
@@ -114,6 +109,50 @@ Chililog.sessionDataController = SC.Object.create(Chililog.DataControllerMixin,
     var idx = jQuery.inArray('system.administrator', loggedInUser.get('roles'));
     return idx >= 0;
   }.property('loggedInUser').cacheable(),
+
+  /**
+   * YES if the user is an administrator for one or more repositories
+   *
+   * @type Boolean
+   */
+  isRepositoryAdministrator: function() {
+    var loggedInUser = this.get('loggedInUser');
+    if (SC.none(loggedInUser)) {
+      return NO;
+    }
+    var roles = loggedInUser.get('roles');
+    if (!SC.none(roles)) {
+      for (var i=0; i<roles.length; i++) {
+        var role = roles[i];
+        if (role.indexOf('repo.' === 0) &&
+            role.indexOf('.' + Chililog.REPOSITORY_ADMINISTRATOR_ROLE) > 0) {
+          return YES;
+        }
+      }
+    }
+    return NO;
+  }.property('loggedInUser').cacheable(),
+
+  /**
+   * Checks if the logged in user is the administrator the specified repository
+   * @param {Chililog.RepositoryInfoRecord} repositoryRecord
+   * @returns Boolean
+   */
+  isRepositoryAdministratorOf: function(repositoryRecord) {
+    var loggedInUser = this.get('loggedInUser');
+    if (SC.none(loggedInUser)) {
+      return NO;
+    }
+    var roles = loggedInUser.get('roles');
+    if (!SC.none(roles)) {
+      var roleName = 'repo.' + repositoryRecord.get('name') + '.' + Chililog.REPOSITORY_ADMINISTRATOR_ROLE;
+      for (var i=0; i<roles.length; i++) {
+        if (roles[i] === roleName) {
+          return YES;
+        }
+      }
+    }
+    return NO;  },
 
   /**
    * Call this only once ... it will call itself every 5 minutes
