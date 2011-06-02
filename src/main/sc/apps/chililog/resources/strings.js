@@ -127,6 +127,7 @@ SC.stringsFor('English', {
   '_configureUserDetailView.repositoryAccesses.AdminRole': 'Administrator',
   '_configureUserDetailView.repositoryAccesses.PowerRole': 'Power User',
   '_configureUserDetailView.repositoryAccesses.StandardRole': 'Standard User',
+  '_configureUserDetailView.repositoryAccesses.AlreadyExists': 'Access to "%@" repository as "%@" has already been granted.',
 
   '_configureRepositoryInfoListView.Title': 'Repositories',
   '_configureRepositoryInfoListView.Create': 'Create a New Repository',
@@ -184,8 +185,9 @@ SC.stringsFor('English', {
   '_configureRepositoryInfoDetailView.WriteQueueAttributes': 'Write Queue',
   '_configureRepositoryInfoDetailView.ReadQueueAttributes': 'Read Queue',
   '_configureRepositoryInfoDetailView.RepositoryAccesses': 'Access',
+  '_configureRepositoryInfoDetailView.RepositoryAccesses.Label': 'Users who can access this repository',
   '_configureRepositoryInfoDetailView.RepositoryAccesses.Username': 'Username',
-  '_configureRepositoryInfoDetailView.RepositoryAccesses.UserDisplayName': 'Display Name',
+  '_configureRepositoryInfoDetailView.RepositoryAccesses.UserDisplayName': 'User Display Name',
   '_configureRepositoryInfoDetailView.RepositoryAccesses.Role': 'Role',
 
   '_searchListView.Title': 'Search',

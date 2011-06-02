@@ -78,6 +78,13 @@ Chililog.UserRecord = SC.Record.extend({
         }
       }
     }
+    repositoryAccesses.sort(function(a, b) {
+      var nameA = a.repository, nameB = b.repository;
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    });
+
     this.set('isSystemAdministrator', isSystemAdministrator);
     this.set('repositoryAccesses', repositoryAccesses);
     this.set('repositoryAccessesChanged', NO);

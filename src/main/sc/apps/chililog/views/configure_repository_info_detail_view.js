@@ -575,12 +575,12 @@ Chililog.RepositoryAccessView = SC.View.design({
     childViews: 'label field'.w(),
 
     label: SC.LabelView.design({
-      layout: { top: 15, left: 10, width: 200, height: 30 },
-      value: '_configureRepositoryInfoDetailView.RepositoryAccesses'.loc()
+      layout: { top: 0, left: 10, right: 10, height: 30 },
+      value: '_configureRepositoryInfoDetailView.RepositoryAccesses.Label'.loc()
     }),
 
     field: SC.TableView.design({
-      layout: { top: 15, left: 210, width: 550, height: 270 },
+      layout: { top: 25, left: 10, right: 10, height: 275 },
       classNames: ['table'],
       contentBinding: 'Chililog.configureRepositoryInfoDetailViewController.repositoryAccessArrayController.arrangedObjects',
       selectionBinding: 'Chililog.configureRepositoryInfoDetailViewController.repositoryAccessArrayController.selection',
@@ -593,14 +593,14 @@ Chililog.RepositoryAccessView = SC.View.design({
         SC.TableColumn.create({
           key:   'username',
           title: '_configureRepositoryInfoDetailView.RepositoryAccesses.Username'.loc(),
-          width: 150,
+          width: 200,
           isReorderable: NO,
           sortState: SC.SORT_ASCENDING
         }),
         SC.TableColumn.create({
           key:   'userDisplayName',
           title: '_configureRepositoryInfoDetailView.RepositoryAccesses.UserDisplayName'.loc(),
-          width: 200,
+          width: 350,
           isReorderable: NO,
           sortState: SC.SORT_ASCENDING
         }),

@@ -56,7 +56,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
       { displayText:'_configureUserDetailView.repositoryAccesses.AdminRole'.loc(), code:'administrator' },
       { displayText:'_configureUserDetailView.repositoryAccesses.PowerRole'.loc(), code:'power' },
       { displayText:'_configureUserDetailView.repositoryAccesses.StandardRole'.loc(), code:'standard' }
-      ];
+    ];
   }.property().cacheable(),
 
   /**
@@ -111,7 +111,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
     }
     return NO;
   }.property('content').cacheable(),
-  
+
   /**
    * Show this modal form
    */
@@ -237,6 +237,70 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
     var selectedRecord = tableDataView.getPath('selection.firstObject');
     var id = selectedRecord.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME);
     Chililog.statechart.sendEvent('editAnother', id);
+  },
+
+  /**
+   * Item int he the repositoryAccess array to delete
+   * @param {Object} repositoryAccess
+   */
+  deleteRepositoryAccess: function(repositoryAccess) {
+
+    // To get deletes the work, we need to create a new array with all the elements we want to keep and
+    // update the user record with the new array. For whatever reason, the new array forces the screen
+    // to update. Removing an item from the existing array does not update the screen.
+    var array = this.getPath('content.repositoryAccesses');
+    var newArray = [];
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] !== repositoryAccess) {
+        newArray.push(array[i]);
+      }
+    }
+
+    newArray.sort(function(a, b) {
+      var nameA = a.repository, nameB = b.repository;
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    });
+
+    this.setPath('content.repositoryAccesses', newArray);
+    this.set('repositoryAccessesChanged', YES);
+  },
+
+  /**
+   * Adds the new repository access using the selected repository and role in the add box.
+   */
+  addRepositoryAccess: function() {
+    // Check if it already exists
+    var repository = this.getPath('repositoryAccessArrayController.repositoryToAdd');
+    var role = this.getPath('repositoryAccessArrayController.roleToAdd');
+    var repositoryAccesses = this.getPath('content.repositoryAccesses');
+    if (!SC.none(repositoryAccesses)) {
+      for (var i = 0; i < repositoryAccesses.length; i++) {
+        var ra = repositoryAccesses[i];
+        if (ra.repository === repository) {
+          var msg =  '_configureUserDetailView.repositoryAccesses.AlreadyExists'.loc(repository, role);
+          SC.AlertPane.info( { message: msg });
+          return;
+        }
+      }
+    }
+
+    var newArray = [].concat(repositoryAccesses);
+    newArray.push({
+      repository: repository,
+      role: role
+    });
+
+    newArray.sort(function(a, b) {
+      var nameA = a.repository, nameB = b.repository;
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      return 0;
+    });
+
+    this.setPath('content.repositoryAccesses', newArray);
+    this.set('repositoryAccessesChanged', YES);
   }
 
 });

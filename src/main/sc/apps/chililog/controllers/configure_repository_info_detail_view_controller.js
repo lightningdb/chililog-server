@@ -17,6 +17,34 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   content: null,
 
   /**
+   * Update our content when ever the content of the parent controller changes
+   */
+  contentDidChange: function() {
+    var record = Chililog.configureRepositoryInfoDetailViewController.get('content');
+    if (SC.none(record)) {
+      this.setPath('repositoryAccessArrayController.content', null);
+      return;
+    }
+    
+    var repositoryName = record.get('name');
+    var users = Chililog.store.find(Chililog.UserRecord);
+    var repositoryAccessArray = [];
+    for (var i = 0; i < users.get('length'); i++) {
+      var user = users.objectAt(i);
+      var repositoryAccesses = user.get('repositoryAccesses');
+      if (!SC.none(repositoryAccesses)) {
+        for (var j = 0; j < repositoryAccesses.length; j++) {
+          if (repositoryAccesses[j].repository === repositoryName) {
+            repositoryAccessArray.push({ username: user.get('username'), userDisplayName: user.get('displayName'), role: repositoryAccesses[j].role});
+          }
+        }
+      }
+    }
+    this.setPath('repositoryAccessArrayController.content', repositoryAccessArray);
+
+  }.observes('content'),
+
+  /**
    * Controller for repository access array
    */
   repositoryAccessArrayController: SC.ArrayController.create({

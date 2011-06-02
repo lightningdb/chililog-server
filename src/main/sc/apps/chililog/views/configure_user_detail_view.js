@@ -373,19 +373,9 @@ Chililog.UserRolesAttributesView = SC.View.design({
               controlSize: SC.SMALL_CONTROL_SIZE,
               icon: sc_static('images/bullet_delete'),
               action: function() {
-                // To get deletes the work, we need to create a new array with all the elements we want to keep and
-                // update the user record with the new array. For whatever reason, the new array forces the screen
-                // to update. Removing an item from the existing array does not update the screen.
                 var repositoryAccess = this.getPath('parentView.parentView.content');
-                var array = Chililog.configureUserDetailViewController.getPath('content.repositoryAccesses');
-                var newArray = [];
-                for (var i=0; i<array.length; i++) {
-                  if (array[i] !== repositoryAccess) {
-                    newArray.push(array[i]);
-                  }
-                }
-                Chililog.configureUserDetailViewController.setPath('content.repositoryAccesses', newArray);
-                Chililog.configureUserDetailViewController.set('repositoryAccessesChanged', YES);
+                Chililog.configureUserDetailViewController.deleteRepositoryAccess(repositoryAccess);
+                return;
               }
             })]
           })
@@ -443,28 +433,8 @@ Chililog.UserRolesAttributesView = SC.View.design({
         layout: { top: 25, left: 310, width: 75 },
         title: '_add'.loc(),
         controlSize: SC.HUGE_CONTROL_SIZE,
-        action: function() {
-          // Check if it already exists
-          var repository = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.repositoryToAdd');
-          var role = Chililog.configureUserDetailViewController.getPath('repositoryAccessArrayController.roleToAdd');
-          var repositoryAccesses = Chililog.configureUserDetailViewController.get('repositoryAccesses');
-          if (!SC.none(repositoryAccesses)) {
-            for (var i = 0; i < repositoryAccesses.length; i++) {
-              var ra = repositoryAccesses[i];
-              if (ra.repository === repository) {
-                return;
-              }
-            }
-          }
-
-          // Add it
-          Chililog.configureUserDetailViewController.get('repositoryAccessArrayController').pushObject({
-            repository: repository,
-            role: role
-          });
-          Chililog.configureUserDetailViewController.set('repositoryAccessesChanged', YES);
-
-        }
+        target: Chililog.configureUserDetailViewController,
+        action: 'addRepositoryAccess'
       })
     })
   })
