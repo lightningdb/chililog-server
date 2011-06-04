@@ -40,7 +40,7 @@
         <version>1.6</version>
         <executions>
           <execution>
-            <phase>package</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>run</goal>
             </goals>
@@ -56,6 +56,25 @@
         </configuration>
       </plugin>
 
+      <!-- Plugin to build Sproutcore UI -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2</version>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>sc-build</executable>
+              <workingDirectory>/home/vibul/dev/chililog/chililog-server/src/main/sc</workingDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
       <!-- Javadocs. Generate during packaging. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -63,7 +82,7 @@
         <version>2.7</version>
         <executions>
           <execution>
-            <phase>package</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>javadoc</goal>
             </goals>
