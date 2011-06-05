@@ -198,7 +198,7 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Number of rows to display per search
    * @type Number
    */
-  rowsPerSearch: 50,
+  rowsPerSearch: 100,
 
   /**
    * Flag to control showing the "no rows found" message.

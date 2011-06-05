@@ -98,8 +98,8 @@ Chililog.RepositoryEntryRecord = SC.Record.extend(
       var highlightedMsg = SC.RenderContext.escapeHTML(msg);
 
       if (keywordsRegexArray.length > 0) {
-        highlightedMsg = highlightedMsg.replace('~~~Chililog~~~', '<span class="keyword">');
-        highlightedMsg = highlightedMsg.replace('###Chililog###', '</span>');
+        highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
+        highlightedMsg = highlightedMsg.replace(/###Chililog###/g, '</span>');
       }
 
       this.set('messageWithKeywordsHilighted', highlightedMsg);
