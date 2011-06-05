@@ -382,8 +382,43 @@ public class StaticFileService extends Service
      */
     private void setContentTypeHeader(HttpResponse response, File file)
     {
-        MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, mimeTypesMap.getContentType(file.getPath()));
+        String mimeType = null;
+        String filePath = file.getPath();
+        
+        int idx = filePath.lastIndexOf('.');
+        if (idx == -1)
+        {
+            mimeType = "application/octet-stream";
+        }
+        else
+        {
+            String fileExtension = filePath.substring(idx).toLowerCase();
+            
+            // Try common types first
+            if (fileExtension.equals(".html")) 
+            { mimeType = "text/html"; }
+            else  if (fileExtension.equals(".css"))
+            { mimeType = "text/css"; }
+            else  if (fileExtension.equals(".js"))
+            { mimeType = "application/javascript"; }
+            else  if (fileExtension.equals(".gif"))
+            { mimeType = "image/gif"; }
+            else  if (fileExtension.equals(".png"))
+            { mimeType = "image/png"; }
+            else  if (fileExtension.equals(".txt"))
+            { mimeType = "text/plain"; }
+            else  if (fileExtension.equals(".xml"))
+            { mimeType = "application/xml"; }
+            else  if (fileExtension.equals(".json"))
+            { mimeType = "application/json"; }
+            else
+            {
+                MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+                mimeType = mimeTypesMap.getContentType(file.getPath());
+            }
+        }
+                
+        response.setHeader(HttpHeaders.Names.CONTENT_TYPE, mimeType);
     }
 
     /**
