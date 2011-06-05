@@ -17,6 +17,10 @@
       <outputDirectory>/bin</outputDirectory>
     </fileSet>
     <fileSet>
+      <directory>${basedir}/src/config</directory>
+      <outputDirectory>/config</outputDirectory>
+    </fileSet>
+    <fileSet>
       <directory>${basedir}/src/scripts</directory>
       <outputDirectory>/scripts</outputDirectory>
     </fileSet>
