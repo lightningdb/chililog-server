@@ -69,6 +69,7 @@
             </goals>
             <configuration>
               <executable>sc-build</executable>
+              <commandlineArgs>--mode=production</commandlineArgs>
               <workingDirectory>/home/vibul/dev/chililog/chililog-server/src/main/sc</workingDirectory>
             </configuration>
           </execution>

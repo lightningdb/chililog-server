@@ -201,8 +201,6 @@ public class UserBO extends BO implements Serializable
 
     /**
      * Removes the user from all roles
-     * 
-     * @param role
      */
     public void removeAllRoles()
     {

@@ -127,7 +127,7 @@ public class StaticFileService extends Service
         // We don't handle 100 Continue because we only allow GET method.
         if (request.getMethod() != HttpMethod.GET)
         {
-            sendError(ctx, METHOD_NOT_ALLOWED);
+            sendError(ctx, e, METHOD_NOT_ALLOWED, null);
             return;
         }
 
@@ -135,18 +135,18 @@ public class StaticFileService extends Service
         final String filePath = convertUriToPhysicalFilePath(request.getUri());
         if (filePath == null)
         {
-            sendError(ctx, FORBIDDEN);
+            sendError(ctx, e, FORBIDDEN, null);
             return;
         }
         File file = new File(filePath);
         if (file.isHidden() || !file.exists())
         {
-            sendError(ctx, NOT_FOUND);
+            sendError(ctx, e, NOT_FOUND, String.format("%s not exist", file.getCanonicalPath()));
             return;
         }
         if (!file.isFile())
         {
-            sendError(ctx, FORBIDDEN);
+            sendError(ctx, e, FORBIDDEN, String.format("%s not a file", file.getCanonicalPath()));
             return;
         }
 
@@ -158,7 +158,7 @@ public class StaticFileService extends Service
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
             if (ifModifiedSinceDate.getTime() == file.lastModified())
             {
-                sendNotModified(ctx);
+                sendNotModified(ctx, e);
                 return;
             }
         }
@@ -171,16 +171,17 @@ public class StaticFileService extends Service
         }
         catch (FileNotFoundException fnfe)
         {
-            sendError(ctx, NOT_FOUND);
+            sendError(ctx, e, NOT_FOUND, null);
             return;
         }
         long fileLength = raf.length();
 
+        // Log
+        writeLogEntry(e, OK, null);
+
         // Turn compression on/off
         boolean doCompression = checkDoCompression(filePath, fileLength);
         toogleCompression(ctx, doCompression);
-
-        _logger.debug("Getting URI:%s  FILE:%s", request.getUri(), filePath);
 
         // Create the response
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
@@ -265,12 +266,18 @@ public class StaticFileService extends Service
             uri = URLDecoder.decode(uri, "ISO-8859-1");
         }
 
-        // Remove /static prefix
+        // Remove the initial /static prefix
         uri = uri.substring(7);
-
         if (StringUtils.isBlank(uri))
         {
             return null;
+        }
+
+        // Remove query string if any
+        int idx = uri.indexOf('?');
+        if (idx > 0)
+        {
+            uri = uri.substring(0, idx);
         }
 
         // Convert file separators.
@@ -293,11 +300,17 @@ public class StaticFileService extends Service
      * 
      * @param ctx
      *            Context
+     * @param e
+     *            Message Event
      * @param status
      *            HTTP response status
+     * @param moreInfo
+     *            More details of the error to log
      */
-    private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status)
+    private void sendError(ChannelHandlerContext ctx, MessageEvent e, HttpResponseStatus status, String moreInfo)
     {
+        writeLogEntry(e, status, moreInfo);
+
         toogleCompression(ctx, false);
 
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
@@ -316,9 +329,13 @@ public class StaticFileService extends Service
      * 
      * @param ctx
      *            Context
+     * @param e
+     *            Message Event
      */
-    private void sendNotModified(ChannelHandlerContext ctx)
+    private void sendNotModified(ChannelHandlerContext ctx, MessageEvent e)
     {
+        writeLogEntry(e, HttpResponseStatus.NOT_MODIFIED, null);
+
         toogleCompression(ctx, false);
 
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
@@ -428,5 +445,19 @@ public class StaticFileService extends Service
         {
             ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
         }
+    }
+
+    /**
+     * Write audit log entry
+     * 
+     * @param e
+     *            Message Event
+     */
+    private void writeLogEntry(MessageEvent e, HttpResponseStatus status, String moreInfo)
+    {
+        HttpRequest request = (HttpRequest) e.getMessage();
+        _logger.info("GET %s REMOTE_IP=%s STATUS=%s %s", request.getUri(), e.getRemoteAddress().toString(), status,
+                moreInfo == null ? StringUtils.EMPTY : moreInfo);
+        return;
     }
 }

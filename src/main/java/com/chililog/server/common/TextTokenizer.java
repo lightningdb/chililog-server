@@ -81,7 +81,7 @@ public class TextTokenizer
      * 
      * @param text
      *            Text to extract keywords
-     * @param maxKeyword
+     * @param maxKeywords
      *            Maximum number of keywords to extract. If < 0, then no limit will be used.
      * @return Array of keywords
      * @throws IOException

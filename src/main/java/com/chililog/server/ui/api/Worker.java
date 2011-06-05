@@ -37,12 +37,11 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
-import com.chililog.server.ui.HttpRequestHandler;
 import com.chililog.server.ui.Strings;
 
 /**
  * <p>
- * Base API class. Contains the interface for {@link HttpRequestHandler} to use as well as common methods.
+ * Base API class. Contains the interface for <code>HttpRequestHandler</code> to use as well as common methods.
  * </p>
  * <p>
  * All services classes are designed to be single use (re-entry for more than one request is not supported) and single
@@ -152,7 +151,7 @@ public abstract class Worker
      *            Name of paramter to use in error message
      * @param parameterIndex
      *            Index of the parameter. 0 is the index of the parameter after the worker name in the uri.
-     * @return
+     * @return Value of specified parameter
      * @throws ChiliLogException
      */
     public String getUriPathParameter(String paramterName, int parameterIndex) throws ChiliLogException
@@ -329,8 +328,6 @@ public abstract class Worker
     /**
      * Performs initial validation including authentication.
      * 
-     * @param request
-     *            HTTP request to process
      * @return True if successful and False if error.
      */
     public ApiResult validate()
@@ -382,7 +379,7 @@ public abstract class Worker
      * Allow: GET, HEAD, PUT
      * </pre>
      * 
-     * @return {@link ApiResult}
+     * @return ApiResult
      */
     protected ApiResult validateSupportedMethod()
     {
@@ -422,7 +419,7 @@ public abstract class Worker
      * Validates if this request is authenticated. If not, a "401 Unauthorized" response is returned to the caller.
      * </p>
      * 
-     * @return {@link ApiResult}
+     * @return ApiResult
      */
     protected ApiResult validateAuthenticationToken()
     {
@@ -445,7 +442,7 @@ public abstract class Worker
     /**
      * Generic user role validate. Assumes the user can read but not write.
      * 
-     * @return {@link ApiResult}
+     * @return ApiResult
      */
     protected abstract ApiResult validateAuthenticatedUserRole();
 
@@ -454,7 +451,7 @@ public abstract class Worker
      * Validates if the URI has all the supplied parts. If not, a "400 Bad Request" response is returned to the caller.
      * </p>
      * 
-     * @return {@link ApiResult}
+     * @return ApiResult
      */
     protected ApiResult parseURI()
     {
@@ -491,7 +488,7 @@ public abstract class Worker
      * Validates if the URI has all the supplied parts. If not, a 400 Bad Request response is returned to the caller.
      * </p>
      * 
-     * @return {@link ApiResult}
+     * @return ApiResult
      */
     protected ApiResult validateURI()
     {
@@ -520,9 +517,9 @@ public abstract class Worker
      * Process the incoming request.
      * 
      * @param requestContent
-     *            If {@link ContentIOStyle} is Byte, then <code>byte[]</code> is passed in. If file, then a {@link File}
-     *            will be passed in.
-     * @return {@link ApiResult} to indicate the success/false of processing
+     *            If <code>ContentIOStyle</code> is Byte, then <code>byte[]</code> is passed in. If file, then a 
+     *            <code>File</code> will be passed in.
+     * @return ApiResult to indicate the success/false of processing
      */
     public ApiResult processPost(Object requestContent) throws Exception
     {
@@ -532,7 +529,7 @@ public abstract class Worker
     /**
      * Process the incoming request.
      * 
-     * @return {@link ApiResult} to indicate the success/false of processing
+     * @return ApiResult to indicate the success/false of processing
      */
     public ApiResult processDelete() throws Exception
     {
@@ -542,7 +539,7 @@ public abstract class Worker
     /**
      * Process the incoming request.
      * 
-     * @return {@link ApiResult} to indicate the success/false of processing
+     * @return ApiResult to indicate the success/false of processing
      */
     public ApiResult processGet() throws Exception
     {
@@ -553,9 +550,9 @@ public abstract class Worker
      * Override this to implement worker specific processing
      * 
      * @param requestContent
-     *            If {@link ContentIOStyle} is Byte, then <code>byte[]</code> is passed in. If file, then a {@link File}
-     *            will be passed in.
-     * @return {@link ApiResult} to indicate the success/false of processing
+     *            If <code>ContentIOStyle</code> is <code>Byte</code>, then <code>byte[]</code> is passed in. 
+     *            If file, then a <code>File</code> will be passed in.
+     * @return ApiResult to indicate the success/false of processing
      */
     public ApiResult processPut(Object requestContent) throws Exception
     {

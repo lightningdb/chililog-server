@@ -24,6 +24,10 @@
       <directory>${project.build.directory}/site/apidocs</directory>
       <outputDirectory>/docs/javadoc</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>${basedir}/src/main/sc/tmp/build/static</directory>
+      <outputDirectory>/static</outputDirectory>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

@@ -20,6 +20,8 @@ package com.chililog.server.ui;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 
+import java.io.File;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffers;
@@ -38,6 +40,7 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 
 /**
@@ -90,6 +93,10 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             if (uri.startsWith("/api/"))
             {
                 _service = new ApiService();
+            }
+            else if (uri.equalsIgnoreCase("/ui") || uri.equalsIgnoreCase("/ui/"))
+            {
+                redirectToUiHtml(e);
             }
             else if (uri.startsWith("/static/"))
             {
@@ -184,6 +191,38 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
     private void send404NotFound(MessageEvent e)
     {
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
+        ChannelFuture future = e.getChannel().write(response);
+        future.addListener(ChannelFutureListener.CLOSE);
+    }
+    
+    /**
+     * <p>The /ui URI path is a virtual path. We redirect to our Sproutcore UI HTML page.</p>
+     * <p>
+     * Sproutcore build create directory structure below so that old files don't get cached:
+     * /static/chililog/en/c9e99324b8f9b02834ca5ce4902393aefe100322/index.html
+     * </p>
+     * <p>We have to find the index.html file and redirect to it.</p>
+     * @param e
+     */
+    private void redirectToUiHtml(MessageEvent e)
+    {
+        String dirPath = AppProperties.getInstance().getWebStaticFilesDirectory() + "/chililog/en";
+        File dir = new File(dirPath);
+        if (!dir.exists() || !dir.isDirectory()) {
+            send404NotFound(e);
+            return;
+        }
+        
+        String[] versionDir = dir.list();
+        if (versionDir.length == 0) {
+            send404NotFound(e);
+            return;
+        }
+        
+        String indexHTML = "/static/chililog/en/" + versionDir[0] + "index.html";
+        
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND);
+        response.addHeader("Location", indexHTML);
         ChannelFuture future = e.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
     }

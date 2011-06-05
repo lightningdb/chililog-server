@@ -179,8 +179,6 @@ public class RepositoryEntryController extends Controller
      *            Database connection
      * @param criteria
      *            Criteria to filter resultset. Fields, conditions and orderby are used.
-     * @param queryParameters
-     *            query parameters
      * @return List of matching entries
      */
     public ArrayList<DBObject> executeFindQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
@@ -234,8 +232,6 @@ public class RepositoryEntryController extends Controller
      *            Database connection
      * @param criteria
      *            Criteria to filter resultset. Condition is used.
-     * @param queryParameters
-     *            query parameters
      * @return Number of matching entries
      */
     public int executeCountQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException

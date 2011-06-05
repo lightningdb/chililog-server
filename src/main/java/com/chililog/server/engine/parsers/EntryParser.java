@@ -68,8 +68,8 @@ public abstract class EntryParser
      * Basic constructor
      * </p>
      * 
-     * @param repoName
-     *            Name of repository (for reporting errors)
+     * @param repoInfo
+     *            Repository (for reporting errors)
      * @param repoParserInfo
      *            Parser information that we need
      * @throws ChiliLogException
@@ -153,8 +153,6 @@ public abstract class EntryParser
 
     /**
      * Returns the last error that happened during parsing
-     * 
-     * @return
      */
     public Exception getLastParseError()
     {
@@ -260,7 +258,7 @@ public abstract class EntryParser
      * Parses the timestamp. Assumes the format is '2011-12-31T23:01:01.123Z'.
      * 
      * @param timestamp
-     * @return
+     * @return Date
      * @throws ParseException
      */
     protected Date parseTimestamp(String timestamp) throws ParseException
@@ -310,8 +308,6 @@ public abstract class EntryParser
      *            domain name, static IP address, host name or dynamic IP address.
      * @param severity
      *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
-     * @param parsedFields
-     *            Fields as parsed by an {@link EntryParser}.
      * @param message
      *            Free-form message that provides information about the event
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written

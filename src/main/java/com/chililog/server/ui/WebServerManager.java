@@ -51,7 +51,7 @@ import com.chililog.server.common.Log4JLogger;
  * </p>
  * <p>
  * The pipeline uses {@link HttpRequestHandler} to route requests to services for processing. Routing is based on the
- * request URI.  Example of servers are {@link EchoService} and {@link StaticFileService}.
+ * request URI. Example of servers are {@link EchoService} and {@link StaticFileService}.
  * </p>
  * 
  * @author vibul
@@ -108,7 +108,8 @@ public class WebServerManager
             return;
         }
 
-        _logger.info("Starting Web Sever ...");
+        _logger.info("Starting UI Web Sever on " + AppProperties.getInstance().getWebIpAddress() + ":"
+                + AppProperties.getInstance().getWebIpPort() + "...");
 
         _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool());
@@ -126,7 +127,7 @@ public class WebServerManager
 
         _allChannels.add(channel);
 
-        _logger.info("Starting Web Sever Started.");
+        _logger.info("UI Web Sever Started.");
     }
 
     /**

@@ -270,7 +270,7 @@ public class WebServerManagerTest
             file = new File(file.getPath());
 
             // Create a URL for the desired page
-            URL url = new URL("http://localhost:8989/static/" + fileName);
+            URL url = new URL("http://localhost:8989/static/" + fileName + "?testquerystring=abc");
             URLConnection conn = url.openConnection();
             conn.setRequestProperty("Accept-Encoding", "gzip,deflate");
 

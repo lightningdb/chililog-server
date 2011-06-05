@@ -147,7 +147,7 @@ public class JsonEntryParser extends EntryParser
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
-     * @param timetstamp
+     * @param timestamp
      *            Time when this log entry was created at the source on the host.
      * @param source
      *            Name of the input device or application that created this text entry
