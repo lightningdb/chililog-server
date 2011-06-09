@@ -5,29 +5,12 @@
 
 Chililog.SearchListView = SC.LabelView.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
-  childViews: 'title toggleSearchModeButton basicSearch advancedSearch table footer noRowsFoundMessage'.w(),
-
-  title: SC.LabelView.design({
-    layout: { top: 5, left: 10, width: 200, height: 30 },
-    tagName: 'h1',
-    controlSize: SC.HUGE_CONTROL_SIZE,
-    value: '_searchListView.Title',
-    localize: YES
-  }),
-
-  toggleSearchModeButton: SC.ButtonView.design({
-    layout: { top: 10, right: 10, height: 30, width: 175 },
-    align: SC.ALIGN_RIGHT,
-    titleBinding: SC.Binding.from('Chililog.searchListViewController.toggleSearchModeButtonTitle').oneWay(),
-    localize: YES,
-    target: Chililog.searchListViewController,
-    action: 'toggleSearchMode'
-  }),
+  childViews: 'basicSearch advancedSearch table footer noRowsFoundMessage'.w(),
 
   basicSearch: SC.View.design({
-    layout: { top: 40, left: 10, right: 10, height: 75 },
+    layout: { top: 10, left: 10, right: 10, height: 75 },
     classNames: ['box'],
-    childViews: 'repositories timespan keywords searchButton searchingImage'.w(),
+    childViews: 'repositories timespan keywords searchButton searchingImage toggleSearchModeButton'.w(),
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().bool(),
 
     repositories: SC.View.design({
@@ -111,13 +94,24 @@ Chililog.SearchListView = SC.LabelView.design({
       value: sc_static('images/working'),
       isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().bool(),
       useImageQueue: NO
+    }),
+
+    toggleSearchModeButton: SC.ButtonView.design({
+      layout: { top: 30, left: 935, width: 175 },
+      align: SC.ALIGN_RIGHT,
+      titleBinding: SC.Binding.from('Chililog.searchListViewController.toggleSearchModeButtonTitle').oneWay(),
+      localize: YES,
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().not(),
+      target: Chililog.searchListViewController,
+      action: 'toggleSearchMode'
     })
   }),
 
   advancedSearch: SC.View.design({
-    layout: { top: 40, left: 10, right: 10, height: 225 },
+    layout: { top: 10, left: 10, right: 10, height: 225 },
     classNames: ['box'],
-    childViews: 'repositories timeType timespan timeFrom timeTo source host severity keywords conditions searchButton searchingImage'.w(),
+    childViews: 'repositories timeType timespan timeFrom timeTo source host severity keywords conditions searchButton searchingImage toggleSearchModeButton'.w(),
     isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isBasicSearchMode').oneWay().not(),
 
     repositories: SC.View.design({
@@ -351,6 +345,17 @@ Chililog.SearchListView = SC.LabelView.design({
       value: sc_static('images/working'),
       isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().bool(),
       useImageQueue: NO
+    }),
+
+    toggleSearchModeButton: SC.ButtonView.design({
+      layoutBinding: SC.Binding.from('Chililog.searchListViewController.advancedToggleSearchModeButtonLayout').oneWay(),
+      align: SC.ALIGN_RIGHT,
+      titleBinding: SC.Binding.from('Chililog.searchListViewController.toggleSearchModeButtonTitle').oneWay(),
+      localize: YES,
+      controlSize: SC.HUGE_CONTROL_SIZE,
+      isVisibleBinding: SC.Binding.from('Chililog.searchListViewController.isSearching').oneWay().not(),
+      target: Chililog.searchListViewController,
+      action: 'toggleSearchMode'
     })
   }),
   

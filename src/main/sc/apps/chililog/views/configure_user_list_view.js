@@ -16,7 +16,7 @@ Chililog.ConfigureUserListView = SC.View.design({
   childViews: 'title createButton refreshButton table'.w(),
 
   title: SC.LabelView.design({
-    layout: { top: 5, left: 10, width: 200, height: 30 },
+    layout: { top: 5, left: 10, width: 400, height: 30 },
     tagName: 'h1',
     controlSize: SC.HUGE_CONTROL_SIZE,
     value: '_configureUserListView.Title',

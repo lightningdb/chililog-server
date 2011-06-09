@@ -13,11 +13,22 @@ Chililog.mainPage = SC.Page.design({
 
     toolBar: SC.ToolbarView.design({
       layout: { top: 0, left: 0, right: 0, height: 40 },
+      classNames: ['app-toolbar'],
       anchorLocation: SC.ANCHOR_TOP,
-      childViews: 'menuOptions myProfileButton logoutButton'.w(),
+      childViews: 'title menuOptions myProfileButton logoutButton'.w(),
+
+      title: SC.LabelView.design({
+        layout: { top: 5, left: 10, width: 100, height: 40 },
+        classNames: ['app-title'],
+        tagName: 'h1',
+        controlSize: SC.HUGE_CONTROL_SIZE,
+        value: '_mainPane.Title',
+        localize: YES
+      }),
 
       menuOptions: SC.SegmentedView.design({
-        layout: { top: 5, left: 8 },
+        layout: { top: 5, left: 10 },
+        classNames: ['bold'],
         align: SC.ALIGN_LEFT,
         controlSize: SC.LARGE_CONTROL_SIZE,
         itemsBinding: 'Chililog.mainViewController.menuOptions',
@@ -49,7 +60,7 @@ Chililog.mainPage = SC.Page.design({
       }),
 
       logoutButton: SC.ButtonView.design({
-        layout: { top: 5, right: 8, width: 100 },
+        layout: { top: 5, right: 10, width: 100 },
         controlSize: SC.HUGE_CONTROL_SIZE,
         align: SC.ALIGN_RIGHT,
         title: '_mainPane.Logout'.loc(),
@@ -59,7 +70,8 @@ Chililog.mainPage = SC.Page.design({
     }),
 
     body: SC.ContainerView.design({
-      layout: { top: 40, left: 0, right: 0, bottom: 0 }
+      layout: { top: 40, left: 0, right: 0, bottom: 0 },
+      classNames: ['app-body']
     })
   }) //mainPane
 

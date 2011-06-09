@@ -188,6 +188,18 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
   }.property('isInThePastTimeType').cacheable(),
 
   /**
+   * Advanced search button shifts to the left
+   * @type Object
+   */
+  advancedToggleSearchModeButtonLayout: function() {
+    var left = 745;
+    if (!this.get('isInThePastTimeType')) {
+      left = 925;
+    }
+    return  { top: 30, left: left, width: 175 };
+  }.property('isInThePastTimeType').cacheable(),
+
+  /**
    * Flag to indicate if we are in the middle of a basic search.
    * This flag is set in the state chart
    * @type boolean
@@ -232,10 +244,10 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Dynamically calculated table layout based on basic/advanced mode and if there are more records to retrieve
    */
   tableLayout: function() {
-    var top = 122;
+    var top = 92;
     var isBasicSearchMode = this.get('isBasicSearchMode');
     if (!isBasicSearchMode) {
-      top = 272;
+      top = 242;
     }
     
     var bottom = 10;
@@ -252,10 +264,10 @@ Chililog.searchListViewController = SC.ArrayController.create(Chililog.ViewContr
    * Where the no rows found message is displayed is also dependent on basic/advanced search
    */
   noRowsFoundMessageLayout: function () {
-    var top = 155;
+    var top = 125;
     var isBasicSearchMode = this.get('isBasicSearchMode');
     if (!isBasicSearchMode) {
-      top = 300;
+      top = 270;
     }
 
     return { top: top, left: 25, width: 200, height: 25 };

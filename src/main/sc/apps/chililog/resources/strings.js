@@ -40,8 +40,9 @@ SC.stringsFor('English', {
   // ********************************************************
   // Views
   // ********************************************************
+  '_mainPane.Title': 'Chililog',
   '_mainPane.Search': 'Search',
-  '_mainPane.Search.ToolTip': 'Search for log entries',
+  '_mainPane.Search.ToolTip': 'Search historical log entries',
   '_mainPane.Analyse': 'Analyse',
   '_mainPane.Analyse.ToolTip': 'Use map/reduce to count and group log entries',
   '_mainPane.Monitor': 'Monitors',
@@ -89,9 +90,9 @@ SC.stringsFor('English', {
   '_configureView.Users': 'Users',
   '_configureView.NewRepository': 'New Repository',
   '_configureView.NewUser': 'New User',
-  '_configureUserListView.Title': 'Users',
+
+  '_configureUserListView.Title': 'Configure Users',
   '_configureUserListView.Create': 'Create a New User',
-  
   '_configureUserDetailView.EditTitle': 'User: %@',
   '_configureUserDetailView.CreateTitle': 'New User',
   '_configureUserDetailView.Username': 'Username',
@@ -129,7 +130,7 @@ SC.stringsFor('English', {
   '_configureUserDetailView.repositoryAccesses.StandardRole': 'Standard User',
   '_configureUserDetailView.repositoryAccesses.AlreadyExists': 'Access to "%@" repository as "%@" has already been granted.',
 
-  '_configureRepositoryInfoListView.Title': 'Repositories',
+  '_configureRepositoryInfoListView.Title': 'Configure Repositories',
   '_configureRepositoryInfoListView.Create': 'Create a New Repository',
   '_configureRepositoryInfoDetailView.EditTitle': 'Repository: %@',
   '_configureRepositoryInfoDetailView.CreateTitle': 'New Repository',
@@ -192,7 +193,7 @@ SC.stringsFor('English', {
 
   '_searchListView.Title': 'Search',
   '_searchListView.Search': 'Search',
-  '_searchListView.Repository': 'In Repository',
+  '_searchListView.Repository': 'Search In Repository',
   '_searchListView.TimeSpan': 'In The Past',
   '_searchListView.TimeSpan.5': '5 minutes',
   '_searchListView.TimeSpan.15': '15 minutes',
@@ -210,7 +211,7 @@ SC.stringsFor('English', {
   '_searchListView.Message': 'Message',
   '_searchListView.Row': '#',
   '_searchListView.NoRowsFound': 'No matching entries found.',
-  '_searchListView.BasicSearchMode': 'Hide Advanced Options',
+  '_searchListView.BasicSearchMode': 'Show Basic Options',
   '_searchListView.AdvancedSearchMode': 'Show Advanced Options',
   '_searchListView.TimeType': 'Time Period',
   '_searchListView.TimeType.InThePast': 'In the Past',

@@ -74,7 +74,7 @@ public class RepositoryWriter extends Thread
     public static final String HOST_PROPERTY_NAME = "Host";
 
     /**
-     * HornetQ property identifying the severity of the message. The severity code as a long integer is exteced. See
+     * HornetQ property identifying the severity of the message. The severity code as a long integer is expected. See
      * {@link Severity}.
      */
     public static final String SEVERITY_PROPERTY_NAME = "Severity";

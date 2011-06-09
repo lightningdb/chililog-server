@@ -246,6 +246,10 @@ public class MqManagerTransportTest
         testOK(_coreClientSessionFactory, "core");
     }
 
+    /**
+     * Write with STOMP and read with STOMP
+     * @throws Exception
+     */
     @Test
     public void testOK_Stomp() throws Exception
     {
@@ -356,6 +360,10 @@ public class MqManagerTransportTest
         }
     }
 
+    /**
+     * Write with STOMP and read with CORE
+     * @throws Exception
+     */
     @Test
     public void testOK_StompToCore() throws Exception
     {
