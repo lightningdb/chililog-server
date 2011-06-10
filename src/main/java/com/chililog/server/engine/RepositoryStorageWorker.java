@@ -28,6 +28,7 @@ import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryEntryController;
@@ -41,17 +42,18 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * The RepositoryWriter runs as a worker thread that reading entries off the message queue, parses them and writes them
- * to mongoDB.
+ * The RepositoryStorageWorker runs as a worker thread that reading entries off the message queue, parses them and
+ * writes them to mongoDB.
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryWriter extends Thread
+public class RepositoryStorageWorker extends Thread
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryWriter.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryStorageWorker.class);
     private Repository _repo = null;
+    private String _deadLetterAddress = null;
     private boolean _stopRunning = false;
     private boolean _isRunning = false;
 
@@ -83,12 +85,12 @@ public class RepositoryWriter extends Thread
      * Time stamp format for use with {@link SimpleDateFormat}
      */
     public static final String TIMESTAMP_FORMAT = EntryParser.TIMESTAMP_FORMAT;
-       
+
     /**
      * Time stamp time zone for use with {@link SimpleDateFormat}
      */
     public static final String TIMESTAMP_TIMEZONE = EntryParser.TIMESTAMP_TIMEZONE;
-    
+
     /**
      * 
      * Basic constructor
@@ -100,7 +102,7 @@ public class RepositoryWriter extends Thread
      * @throws Exception
      *             if error
      */
-    public RepositoryWriter(String name, Repository repo) throws Exception
+    public RepositoryStorageWorker(String name, Repository repo) throws Exception
     {
         super(name);
 
@@ -109,6 +111,7 @@ public class RepositoryWriter extends Thread
             throw new NullArgumentException("repo");
         }
         _repo = repo;
+        _deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
 
         // Load parsers
         for (RepositoryParserInfoBO repoParserInfo : repo.getRepoInfo().getParsers())
@@ -140,10 +143,10 @@ public class RepositoryWriter extends Thread
     {
         if (_isRunning)
         {
-            throw new RuntimeException("RepositoryWriter " + this.getName() + " is alrady running");
+            throw new RuntimeException("RepositoryStorageWorker " + this.getName() + " is alrady running");
         }
 
-        _logger.info("RepositoryWriter '%s' started", this.getName());
+        _logger.info("RepositoryStorageWorker '%s' started", this.getName());
         _stopRunning = false;
         _isRunning = true;
         DB db = null;
@@ -155,10 +158,10 @@ public class RepositoryWriter extends Thread
             db = MongoConnection.getInstance().getConnection();
 
             session = MqManager.getInstance().getTransactionalSystemClientSession();
-            ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoInfo().getWriteQueueAddress());
+            ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoInfo().getStorageQueueName());
             session.start();
 
-            ClientProducer dlqProducer = session.createProducer(_repo.getRepoInfo().getDeadLetterAddress());
+            ClientProducer dlqProducer = (_deadLetterAddress == null ? null : session.createProducer(_deadLetterAddress));
 
             while (true)
             {
@@ -182,7 +185,7 @@ public class RepositoryWriter extends Thread
                         if (repoEntry != null)
                         {
                             controller.save(db, repoEntry);
-                            _logger.debug("RepositoryWriter '%s' processed message id %s: %s", this.getName(),
+                            _logger.debug("RepositoryStorageWorker '%s' processed message id %s: %s", this.getName(),
                                     messageReceived.getMessageID(), message);
                         }
 
@@ -196,7 +199,7 @@ public class RepositoryWriter extends Thread
                         if (repoEntry == null)
                         {
                             // Cannot parse. Commit and add to Dead Letter Queue with the error
-                            _logger.debug("RepositoryWriter '%s' parse error processing message id %s: '%s'. "
+                            _logger.error("RepositoryStorageWorker '%s' parse error processing message id %s: '%s'. "
                                     + "Moved message to dead letter queue.", this.getName(),
                                     messageReceived.getMessageID(), message);
 
@@ -215,7 +218,7 @@ public class RepositoryWriter extends Thread
 
                         String msg = null;
                         msg = "This is delivery attempt # " + messageReceived.getDeliveryCount();
-                        _logger.error(ex, "RepositoryWriter '%s' processing error. %s. %s", this.getName(),
+                        _logger.error(ex, "RepositoryStorageWorker '%s' processing error. %s. %s", this.getName(),
                                 ex.getMessage(), msg);
                     }
                 }
@@ -230,7 +233,7 @@ public class RepositoryWriter extends Thread
             }
 
             // We are done
-            _logger.info("RepositoryWriter '%s' stopped", this.getName());
+            _logger.info("RepositoryStorageWorker '%s' stopped", this.getName());
             return;
         }
         catch (Exception ex)
@@ -238,7 +241,7 @@ public class RepositoryWriter extends Thread
             // Just log and terminate
             // TODO Repository or some class should have a periodic check to make sure this thread is started again in
             // the event of an exception stopping the thread
-            _logger.error(ex, "RepositoryWriter '%s' error. %s", this.getName(), ex.getMessage());
+            _logger.error(ex, "RepositoryStorageWorker '%s' error. %s", this.getName(), ex.getMessage());
         }
         finally
         {
@@ -253,7 +256,7 @@ public class RepositoryWriter extends Thread
      * @param source
      *            Application or service that created the log entry
      * @param host
-     *            Device or machine name or ip address that the source is running on
+     *            Device or machine name or IP address that the source is running on
      * @return Entry parser to use. Null if no parser found.
      */
     private EntryParser getParser(String source, String host)
@@ -281,7 +284,18 @@ public class RepositoryWriter extends Thread
     {
         try
         {
+            if (dlqProducer == null)
+            {
+                return;
+            }
+
             ClientMessage message = session.createMessage(Message.TEXT_TYPE, false);
+            
+            // Special property to identify original address
+            // See http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#d0e4430
+            message.putStringProperty("_HQ_ORIG_ADDRESS", _repo.getRepoInfo().getPubSubAddress());
+            
+            message.putStringProperty("RepositoryStorageWorker", this.getName());
             message.putStringProperty("ParseException", ex.toString());
             message.getBodyBuffer().writeString(textEntry);
             dlqProducer.send(message);
@@ -290,7 +304,7 @@ public class RepositoryWriter extends Thread
         catch (Exception ex2)
         {
             // Just log can continue
-            _logger.error(ex2, "RepositoryWriter '%s' could not add message to dead letter queue error. %s",
+            _logger.error(ex2, "RepositoryStorageWorker '%s' could not add message to dead letter queue error. %s",
                     this.getName(), ex2.getMessage());
         }
     }

@@ -184,7 +184,7 @@ public class RepositoryInfoWorker extends Worker
 
             // Only system admin and workbench admin for this repo can update details
             UserBO user = this.getAuthenticatedUser();
-            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getUIAdministratorUserRoleName()))
+            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getWorkBenchAdministratorUserRoleName()))
             {
                 return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                         Strings.NOT_AUTHORIZED_ERROR));
@@ -256,9 +256,9 @@ public class RepositoryInfoWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getUIStandardUserRoleName())
-                        && !user.hasRole(repoInfoBO.getUIPowerUserRoleName())
-                        && !user.hasRole(repoInfoBO.getUIAdministratorUserRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getWorkBenchStandardUserRoleName())
+                        && !user.hasRole(repoInfoBO.getWorkBenchPowerUserRoleName())
+                        && !user.hasRole(repoInfoBO.getWorkBenchAdministratorUserRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));

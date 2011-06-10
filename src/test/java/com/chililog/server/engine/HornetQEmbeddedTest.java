@@ -55,7 +55,7 @@ public class HornetQEmbeddedTest
      * @throws Exception
      */
     @Test
-    public void testNoSecurity() throws Exception
+    public void testPubSub() throws Exception
     {
         HornetQServer hornetqServer;
 
@@ -93,24 +93,31 @@ public class HornetQEmbeddedTest
             // Create a core queue
             coreSession = sf.createSession(false, true, true);
 
-            final String queueName = "queue.exampleQueue";
+            final String address = "topic";
+            final String queue1Name = "topic.queue1";
+            final String queue2Name = "topic.queue2";
 
-            coreSession.createQueue(queueName, queueName, true);
+            coreSession.createQueue(address, queue1Name, true);
+            coreSession.createQueue(address, queue2Name, true);
 
-            QueueQuery q = coreSession.queueQuery(new SimpleString(queueName));
+            QueueQuery q = coreSession.queueQuery(new SimpleString(queue1Name));
             assertNotNull(q);
-            assertEquals(queueName, q.getAddress().toString());
+            assertEquals(address, q.getAddress().toString());
+
+            q = coreSession.queueQuery(new SimpleString(queue2Name));
+            assertNotNull(q);
+            assertEquals(address, q.getAddress().toString());
 
             coreSession.close();
 
             // *******************************
-            // Read/Write
+            // Publish
             // *******************************
 
             // Step 5. Create the session, and producer
             session = sf.createSession();
 
-            ClientProducer producer = session.createProducer(queueName);
+            ClientProducer producer = session.createProducer(address);
 
             // Step 6. Create and send a message
             ClientMessage message = session.createMessage(false);
@@ -123,8 +130,11 @@ public class HornetQEmbeddedTest
 
             producer.send(message);
 
+            // *******************************
+            // Subscriber #1
+            // *******************************
             // Step 7. Create the message consumer and start the connection
-            ClientConsumer messageConsumer = session.createConsumer(queueName);
+            ClientConsumer messageConsumer = session.createConsumer(queue1Name);
             session.start();
 
             // Step 8. Receive the message.
@@ -135,6 +145,23 @@ public class HornetQEmbeddedTest
             // Make sure that there are no more messages
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
+            
+            // *******************************
+            // Subscriber #2
+            // *******************************
+            // Step 7. Create the message consumer and start the connection
+            messageConsumer = session.createConsumer(queue2Name);
+            session.start();
+
+            // Step 8. Receive the message.
+            messageReceived = messageConsumer.receive(1000);
+            _logger.info("Received TextMessage:" + messageReceived.getStringProperty(propName));
+            assertTrue(messageReceived.getStringProperty(propName).startsWith("Hello"));
+
+            // Make sure that there are no more messages
+            messageReceived = messageConsumer.receive(1000);
+            assertNull(messageReceived);
+            
         }
         finally
         {

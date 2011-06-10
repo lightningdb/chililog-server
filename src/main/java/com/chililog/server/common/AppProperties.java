@@ -754,6 +754,23 @@ public class AppProperties
     }
 
     /**
+     * Returns the address to send for undelivered messages
+     */
+    public String getMqDeadLetterAddress()
+    {
+        return _mqDeadLetterAddress;
+    }
+
+    static final String MQ_DEAD_LETTER_ADDRESS = "mq.dead_letter_address";
+
+    private String _mqDeadLetterAddress = null;
+
+    static String loadMqDeadLetterAddress(Properties properties)
+    {
+        return loadString(properties, MQ_DEAD_LETTER_ADDRESS, null);
+    }
+
+    /**
      * Returns the IP address to use for binding our web server
      */
     public String getWebIpAddress()

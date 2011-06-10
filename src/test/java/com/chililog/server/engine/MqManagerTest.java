@@ -50,11 +50,11 @@ public class MqManagerTest
 
     private static final String WRITER_USERNAME = "writer";
     private static final String WRITER_PASSWORD = "pw4writer";
-    private static final String WRITER_ROLE = RepositoryInfoBO.formatQueueRoleName(WRITER_USERNAME, WRITER_PASSWORD);
+    private static final String WRITER_ROLE = RepositoryInfoBO.createHornetQRoleName(WRITER_USERNAME, WRITER_PASSWORD);
     
     private static final String READER_USERNAME = "reader";
     private static final String READER_PASSWORD = "pw4reader";
-    private static final String READER_ROLE = RepositoryInfoBO.formatQueueRoleName(READER_USERNAME, READER_PASSWORD);
+    private static final String READER_ROLE = RepositoryInfoBO.createHornetQRoleName(READER_USERNAME, READER_PASSWORD);
     
     @BeforeClass
     public static void classSetup() throws Exception
@@ -81,14 +81,14 @@ public class MqManagerTest
         assertNotNull(q);
         assertFalse(q.isExists());
 
-        MqManager.getInstance().deployQueue("queue1", "queue1", false, null);
+        MqManager.getInstance().deployQueue("queue1", "queue1", false);
 
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
         assertTrue(q.isExists());
 
         // Delete it
-        MqManager.getInstance().deleteQueue("queue1");
+        MqManager.getInstance().destroyQueue("queue1");
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertFalse(q.isExists());
 
@@ -99,14 +99,14 @@ public class MqManagerTest
     public void testDeployQueueTwice() throws Exception
     {
         ClientSession clientSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
-        MqManager.getInstance().deployQueue("queue2", "queue2", false, null);
+        MqManager.getInstance().deployQueue("queue2", "queue2", false);
 
         QueueQuery q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
 
         // What if we do it twice?
         // We use deploy() so it should be OK. There should not be an exception
-        MqManager.getInstance().deployQueue("queue2", "queue2", false, null);
+        MqManager.getInstance().deployQueue("queue2", "queue2", false);
         
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
@@ -115,7 +115,7 @@ public class MqManagerTest
     @Test
     public void testGetQueueControl() throws Exception
     {
-        MqManager.getInstance().deployQueue("queue3", "queue3", false, null);
+        MqManager.getInstance().deployQueue("queue3", "queue3", false);
 
         QueueControl qc = MqManager.getInstance().getQueueControl("queue3", "queue3");
         assertNotNull(qc);
@@ -144,7 +144,7 @@ public class MqManagerTest
         String queueName = "MqManagerTest.NonTransactional";
 
         // Create queue
-        MqManager.getInstance().deployQueue(queueAddress, queueName, false, null);
+        MqManager.getInstance().deployQueue(queueAddress, queueName, false);
 
         // Write
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -204,7 +204,7 @@ public class MqManagerTest
         String queueName = "MqManagerTest.Transactional";
 
         // Create queue
-        MqManager.getInstance().deployQueue(queueAddress, queueName, false, null);
+        MqManager.getInstance().deployQueue(queueAddress, queueName, false);
 
         // Write
         ClientProducer producer = producerSession.createProducer(queueAddress);

@@ -31,10 +31,10 @@ public class Strings
     public static final String REPOSITORY_ALREADY_STARTED_ERROR = PREFIX + "RepositoryAlreadyStartedError";
     public static final String REPOSITORY_INFO_UPDATE_ERROR = PREFIX + "RepositoryInfoUpdateError";
     public static final String STOP_REPOSITORY_ERROR = PREFIX + "StopRepositoryError";
-    public static final String START_REPOSITORY_QUEUE_ERROR = PREFIX + "StartRepositoryQueueError";
-    public static final String STOP_REPOSITORY_QUEUE_ERROR = PREFIX + "StopRepositoryQueueError";
-    public static final String START_REPOSITORY_WRITERS_ERROR = PREFIX + "StartRepositoryWritersError";
-    public static final String STOP_REPOSITORY_WRITERS_ERROR = PREFIX + "StopRepositoryWritersError";
+    public static final String START_REPOSITORY_STORAGE_QUEUE_ERROR = PREFIX + "StartRepositoryStorageQueueError";
+    public static final String STOP_REPOSITORY_STORAGE_QUEUE_ERROR = PREFIX + "StopRepositoryStorageQueueError";
+    public static final String START_REPOSITORY_STORAGE_WORKER_ERROR = PREFIX + "StartRepositoryStorageWorkerError";
+    public static final String STOP_REPOSITORY_STORAGE_WORKER_ERROR = PREFIX + "StopRepositoryStorageWorkerError";
     public static final String LOAD_REPOSITORIES_ERROR = PREFIX + "LoadRepositoriesError";
     public static final String CLOSE_MQ_SESSION_ERROR = PREFIX + "CloseMqSessionError";
     

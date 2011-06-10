@@ -56,15 +56,15 @@ public class MqManagerTransportTest
 
     private static final String WRITER_USERNAME = "writer";
     private static final String WRITER_PASSWORD = "pw4writer";
-    private static final String WRITER_ROLE = RepositoryInfoBO.formatQueueRoleName(WRITER_USERNAME, WRITER_PASSWORD);
+    private static final String WRITER_ROLE = RepositoryInfoBO.createHornetQRoleName(WRITER_USERNAME, WRITER_PASSWORD);
 
     private static final String READER_USERNAME = "reader";
     private static final String READER_PASSWORD = "pw4reader";
-    private static final String READER_ROLE = RepositoryInfoBO.formatQueueRoleName(READER_USERNAME, READER_PASSWORD);
+    private static final String READER_ROLE = RepositoryInfoBO.createHornetQRoleName(READER_USERNAME, READER_PASSWORD);
 
     private static final String SYSTEM_USERNAME = "system";
     private static final String SYSTEM_PASSWORD = "pw4system";
-    private static final String SYSTEM_ROLE = RepositoryInfoBO.formatQueueRoleName(SYSTEM_USERNAME, SYSTEM_PASSWORD);
+    private static final String SYSTEM_ROLE = RepositoryInfoBO.createHornetQRoleName(SYSTEM_USERNAME, SYSTEM_PASSWORD);
 
     private static ClientSessionFactory _inVmClientSessionFactory;
     private static ClientSessionFactory _coreClientSessionFactory;

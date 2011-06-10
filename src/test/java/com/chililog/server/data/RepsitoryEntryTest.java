@@ -48,21 +48,21 @@ public class RepsitoryEntryTest
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
-        // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection("repo_entry_test_repository");
-        coll.drop();
-
         // Prepare common repo
         _repoInfo = new RepositoryInfoBO();
-        _repoInfo.setName("repo_entry_test");
+        _repoInfo.setName("entry_test");
         _repoInfo.setDisplayName("Repo Entry Test");
+
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(_repoInfo.getMongoDBCollectionName());
+        coll.drop();
     }
 
     @AfterClass
     public static void classTeardown()
     {
         // Clean up old test data if any exists
-        DBCollection coll = _db.getCollection("repo_entry_test_repository");
+        DBCollection coll = _db.getCollection(_repoInfo.getMongoDBCollectionName());
         coll.drop();
     }
 

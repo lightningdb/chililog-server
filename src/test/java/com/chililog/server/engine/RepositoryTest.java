@@ -33,6 +33,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryFieldInfoBO;
@@ -44,7 +45,6 @@ import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-
 
 /**
  * Test a repository
@@ -58,8 +58,8 @@ public class RepositoryTest
     private static RepositoryInfoBO _repoInfo;
 
     private static final String REPOSITORY_NAME = "junit_test";
-    private static final String REPOSITORY_WRITER_PASSWORD = "pw4Writer";
-    private static final String REPOSITORY_READER_PASSWORD = "pw4Writer";
+    private static final String REPOSITORY_PUBLISHER_PASSWORD = "pw4publisher";
+    private static final String REPOSITORY_SUBSCRIBER_PASSWORD = "pw4subscriber";
     private static final String MONGODB_COLLECTION_NAME = "repo_junit_test";
 
     @BeforeClass
@@ -69,11 +69,11 @@ public class RepositoryTest
         _repoInfo = new RepositoryInfoBO();
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Repository Test 1");
-        _repoInfo.setReadQueueDurable(false);
-        _repoInfo.setReadQueuePassword(REPOSITORY_READER_PASSWORD);
-        _repoInfo.setWriteQueueDurable(false);
-        _repoInfo.setWriteQueuePassword(REPOSITORY_WRITER_PASSWORD);
-        _repoInfo.setWriteQueueWorkerCount(2);
+        _repoInfo.setPublisherPassword(REPOSITORY_PUBLISHER_PASSWORD);
+        _repoInfo.setSubscriberPassword(REPOSITORY_SUBSCRIBER_PASSWORD);
+        _repoInfo.setStoreEntriesIndicator(true);
+        _repoInfo.setStorageQueueDurableIndicator(false);
+        _repoInfo.setStorageQueueWorkerCount(2);
 
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
         repoParserInfo.setName("parser1");
@@ -143,8 +143,8 @@ public class RepositoryTest
     @Test
     public void testOK() throws Exception
     {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
         MqManager.getInstance().start();
@@ -153,35 +153,35 @@ public class RepositoryTest
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
+                REPOSITORY_PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getWriteQueueAddress();
+        String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "1");
+        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "1");
         String entry1 = "line1|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry1);
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "2");
+        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "2");
         String entry2 = "line2|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry2);
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
+        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
         String entry3 = "line3|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeString(entry3);
         producer.send(message);
@@ -204,8 +204,8 @@ public class RepositoryTest
     @Test
     public void testUpdateRepositoryInfo() throws Exception
     {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
         MqManager.getInstance().start();
@@ -244,26 +244,26 @@ public class RepositoryTest
         assertEquals(Status.OFFLINE, repo.getStatus());
 
         // Update
-        _repoInfo.setWriteQueueWorkerCount(10);
+        _repoInfo.setStorageQueueWorkerCount(10);
         repo.setRepoInfo(_repoInfo);
 
         // Restart
         repo.start();
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
+                REPOSITORY_PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getWriteQueueAddress();
+        String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         for (int i = 1; i <= 10000; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeString(entry1);
             producer.send(message);
@@ -274,15 +274,15 @@ public class RepositoryTest
         Thread.sleep(5000);
 
         // Check that threads are still running
-        for (RepositoryWriter rw : repo.getWriters())
+        for (RepositoryStorageWorker rw : repo.getWriters())
         {
             assertTrue(rw.isRunning());
         }
         assertEquals(10, repo.getWriters().size());
 
         // Make sure that we've processed all the messages
-        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getWriteQueueAddress(),
-                repo.getRepoInfo().getWriteQueueAddress());
+        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+                repo.getRepoInfo().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure they are in the database
@@ -295,14 +295,15 @@ public class RepositoryTest
         MqManager.getInstance().stop();
 
         // Reset count
-        _repoInfo.setWriteQueueWorkerCount(2);
+        _repoInfo.setStorageQueueWorkerCount(2);
     }
 
     @Test
     public void testBadEntries() throws Exception
     {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+        String deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
         MqManager.getInstance().start();
@@ -310,21 +311,24 @@ public class RepositoryTest
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
-        // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                REPOSITORY_NAME, REPOSITORY_WRITER_PASSWORD);
+        // Create a dead letter queue
+        MqManager.getInstance().deployQueue(deadLetterAddress, "dead_letters.junit_test", false);
 
-        String queueAddress = _repoInfo.getWriteQueueAddress();
+        // Write some repository entries
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
+                REPOSITORY_PUBLISHER_PASSWORD);
+
+        String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         // Write some good entries
         for (int i = 1; i <= 100; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "Debug");
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "Debug");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             if (i == 33)
             {
@@ -339,20 +343,19 @@ public class RepositoryTest
         Thread.sleep(3000);
 
         // Check that threads are still running
-        for (RepositoryWriter rw : repo.getWriters())
+        for (RepositoryStorageWorker rw : repo.getWriters())
         {
             assertTrue(rw.isRunning());
         }
         assertEquals(2, repo.getWriters().size());
 
         // Make sure that bad entries have been removed from the write queue
-        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getWriteQueueAddress(),
-                repo.getRepoInfo().getWriteQueueAddress());
+        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+                repo.getRepoInfo().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure that the bad entry ends up in the dead letter queue
-        qc = MqManager.getInstance()
-                .getQueueControl(_repoInfo.getDeadLetterAddress(), _repoInfo.getDeadLetterAddress());
+        qc = MqManager.getInstance().getQueueControl(deadLetterAddress, "dead_letters.junit_test");
         assertEquals((long) 1, qc.getMessageCount());
 
         // Make sure that only good entries have been saved to the DB
@@ -371,7 +374,7 @@ public class RepositoryTest
     {
         // Start queues
         MqManager.getInstance().start();
-        
+
         // Start
         RepositoryManager.getInstance().start(true);
         Repository[] repos = RepositoryManager.getInstance().getRepositories();
@@ -420,7 +423,7 @@ public class RepositoryTest
             assertEquals(Status.OFFLINE, r.getStatus());
         }
         assertEquals(repos.length, repos2.length);
-        
+
         // Stop queues
         MqManager.getInstance().stop();
     }

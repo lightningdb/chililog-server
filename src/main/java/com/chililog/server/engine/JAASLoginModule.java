@@ -128,7 +128,7 @@ public class JAASLoginModule implements LoginModule
             // It will be enforced by convention in the role
 
             // Add roles
-            String role = RepositoryInfoBO.formatQueueRoleName(username, password);
+            String role = RepositoryInfoBO.createHornetQRoleName(username, password);
             Group roles = new SimpleGroup("Roles");
             roles.addMember(new SimplePrincipal(role));
             _subject.getPrincipals().add(roles);

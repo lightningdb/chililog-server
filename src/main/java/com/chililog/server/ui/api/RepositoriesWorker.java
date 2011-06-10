@@ -177,7 +177,7 @@ public class RepositoriesWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 Repository repo = RepositoryManager.getInstance().getRepository(id);
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoInfo().getUIAdministratorUserRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoInfo().getWorkBenchAdministratorUserRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));

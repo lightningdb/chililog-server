@@ -44,7 +44,7 @@ import com.chililog.server.data.RepositoryInfoBO.Status;
  * in mongoDB as a record in a collection.</li>
  * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
  * processing.</li>
- * <li>The worker threads, {@link RepositoryWriter}, reads the queued log entries and writes them to mongoDB using
+ * <li>The worker threads, {@link RepositoryStorageWorker}, reads the queued log entries and writes them to mongoDB using
  * {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository
  * definition in {@link RepositoryInfoBO}.</li>
  * </ul>
@@ -56,7 +56,7 @@ public class Repository
 {
     static Log4JLogger _logger = Log4JLogger.getLogger(Repository.class);
     private RepositoryInfoBO _repoInfo;
-    private ArrayList<RepositoryWriter> _writers = new ArrayList<RepositoryWriter>();
+    private ArrayList<RepositoryStorageWorker> _storageWorkers = new ArrayList<RepositoryStorageWorker>();
     private Status _status;
 
     /**
@@ -121,75 +121,94 @@ public class Repository
             throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoInfo.getName());
         }
 
-        startQueue();
-        startWriters();
+        setupHornetQAddress();
+        startStorage();
         _status = Status.ONLINE;
     }
 
     /**
-     * Start the queue for this repository
+     * Set security upon the pub/sub address
      */
-    public void startQueue() throws ChiliLogException
+    public void setupHornetQAddress() throws ChiliLogException
     {
         try
         {
             MqManager mqManager = MqManager.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
 
-            // Setup security
-            mqManager.addSecuritySettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getWriteQueueRoleName(),
-                    mqManager.getSystemRoleName());
+            // Security
+            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), _repoInfo.getPublisherRoleName(),
+                    _repoInfo.getSubscriberRoleName());
 
             // Setup queue properties. See
             // http://hornetq.sourceforge.net/docs/hornetq-2.1.2.Final/user-manual/en/html_single/index.html#queue-attributes.address-settings
             mqManager
                     .getNativeServer()
                     .getHornetQServerControl()
-                    .addAddressSettings(_repoInfo.getWriteQueueAddress(), _repoInfo.getDeadLetterAddress(), null,
-                            false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getWriteQueueMaxMemory(),
-                            (int) _repoInfo.getWriteQueuePageSize(), (int)_repoInfo.getWriteQueuePageCountCache(),
+                    .addAddressSettings(_repoInfo.getStorageQueueName(), appProperties.getMqDeadLetterAddress(), null,
+                            false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getMaxMemory(),
+                            (int) _repoInfo.getPageSize(), (int) _repoInfo.getPageCountCache(),
                             appProperties.getMqRedeliveryDelayMilliseconds(), -1, true,
-                            _repoInfo.getWriteQueueMaxMemoryPolicy().toString());
-
-            // Create queues
-            mqManager.deployQueue(_repoInfo.getWriteQueueAddress(), _repoInfo.getWriteQueueAddress(),
-                    _repoInfo.isWriteQueueDurable(), _repoInfo.getDeadLetterAddress());
-
-            mqManager.deployQueue(_repoInfo.getDeadLetterAddress(), _repoInfo.getDeadLetterAddress(),
-                    _repoInfo.isWriteQueueDurable(), null);
-
+                            _repoInfo.getMaxMemoryPolicy().toString());
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_QUEUE_ERROR, _repoInfo.getWriteQueueAddress(),
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_QUEUE_ERROR, _repoInfo.getPubSubAddress(),
                     _repoInfo.getName(), ex.getMessage());
         }
     }
 
     /**
-     * Start writer threads
+     * Start storage queue and workers (if required)
+     */
+    public void startStorage() throws ChiliLogException
+    {
+        try
+        {
+            if (!_repoInfo.getStoreEntriesIndicator())
+            {
+                return;
+            }
+
+            // Create queue
+            MqManager mqManager = MqManager.getInstance();
+            mqManager.deployQueue(_repoInfo.getPubSubAddress(), _repoInfo.getStorageQueueName(),
+                    _repoInfo.getStorageQueueDurableIndicator());
+
+            startStorageWorkers();
+
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_QUEUE_ERROR, _repoInfo.getPubSubAddress(),
+                    _repoInfo.getName(), ex.getMessage());
+        }
+    }
+
+    /**
+     * Start storage worker threads
      * 
      * @throws ChiliLogException
      */
-    public void startWriters() throws ChiliLogException
+    public void startStorageWorkers() throws ChiliLogException
     {
-        // Make sure existing threads are stopped
-        stopWriters();
+        // Make sure existing worker threads are stopped
+        stopStorageWorkers();
 
-        // Add writers to list
+        // Add workers to list
         try
         {
-            for (int i = 1; i <= _repoInfo.getWriteQueueWorkerCount(); i++)
+            for (int i = 1; i <= _repoInfo.getStorageQueueWorkerCount(); i++)
             {
-                String name = String.format("%s RepositoryWriter #%s", _repoInfo.getName(), i);
-                RepositoryWriter writer = new RepositoryWriter(name, this);
-                writer.start();
-                _writers.add(writer);
+                String name = String.format("%s StorageWorker #%s", _repoInfo.getName(), i);
+                RepositoryStorageWorker worker = new RepositoryStorageWorker(name, this);
+                worker.start();
+                _storageWorkers.add(worker);
             }
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_WRITERS_ERROR, _repoInfo.getName(),
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_WORKER_ERROR, _repoInfo.getName(),
                     ex.getMessage());
         }
     }
@@ -208,7 +227,7 @@ public class Repository
      */
     public synchronized void stop() throws ChiliLogException, InterruptedException
     {
-        stopWriters();
+        stopStorageWorkers();
 
         _status = Status.OFFLINE;
     }
@@ -216,21 +235,21 @@ public class Repository
     /**
      * Start writer threads
      */
-    public void stopWriters() throws ChiliLogException
+    public void stopStorageWorkers() throws ChiliLogException
     {
         try
         {
-            while (_writers.size() > 0)
+            while (_storageWorkers.size() > 0)
             {
-                RepositoryWriter writer = _writers.get(0);
-                writer.stopRunning();
-                _writers.remove(0);
-                _logger.debug("Removing '%s' writer", writer.getName());
+                RepositoryStorageWorker worker = _storageWorkers.get(0);
+                worker.stopRunning();
+                _storageWorkers.remove(0);
             }
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_WRITERS_ERROR, _repoInfo.getName(), ex.getMessage());
+            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_STORAGE_WORKER_ERROR, _repoInfo.getName(),
+                    ex.getMessage());
         }
     }
 
@@ -245,9 +264,9 @@ public class Repository
     /**
      * Returns the array of writer threads. This method should only be used for our unit testing!
      */
-    ArrayList<RepositoryWriter> getWriters()
+    ArrayList<RepositoryStorageWorker> getWriters()
     {
-        return _writers;
+        return _storageWorkers;
     }
 
     /**

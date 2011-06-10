@@ -32,7 +32,7 @@ import org.junit.Test;
 
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.RepositoryFieldInfoBO.DataType;
-import com.chililog.server.data.RepositoryInfoBO.QueueMaxMemoryPolicy;
+import com.chililog.server.data.RepositoryInfoBO.MaxMemoryPolicy;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
@@ -98,15 +98,13 @@ public class RepositoryInfoTest
         repoInfo.setName("repo_info_test1");
         repoInfo.setDisplayName("Test 1");
         repoInfo.setDescription("description");
-        repoInfo.setReadQueueDurable(true);
-        repoInfo.setReadQueuePassword("abc");
-        repoInfo.setWriteQueueDurable(true);
-        repoInfo.setWriteQueuePassword("def");
-        repoInfo.setWriteQueueWorkerCount(10);
-        repoInfo.setWriteQueueMaxMemory(100);
-        repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
-        repoInfo.setWriteQueuePageSize(2);
-        repoInfo.setWriteQueuePageCountCache(1);
+        repoInfo.setStoreEntriesIndicator(true);
+        repoInfo.setStorageQueueDurableIndicator(true);
+        repoInfo.setStorageQueueWorkerCount(10);
+        repoInfo.setMaxMemory(100);
+        repoInfo.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
+        repoInfo.setPageSize(2);
+        repoInfo.setPageCountCache(1);
         repoInfo.setMaxKeywords(100);
         
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
@@ -154,16 +152,18 @@ public class RepositoryInfoTest
         assertEquals("repo_info_test1", repoInfo2.getName());
         assertEquals("Test 1", repoInfo2.getDisplayName());
         assertEquals("description", repoInfo2.getDescription());
+        assertEquals("repo.repo_info_test1", repoInfo2.getPubSubAddress());
+        assertEquals("repo.repo_info_test1.storage", repoInfo2.getStorageQueueName());
         assertEquals(Status.ONLINE, repoInfo2.getStartupStatus());
-        assertEquals(true, repoInfo2.isReadQueueDurable());
-        assertEquals("abc", repoInfo2.getReadQueuePassword());
-        assertEquals(true, repoInfo2.isWriteQueueDurable());
-        assertEquals("def", repoInfo2.getWriteQueuePassword());
-        assertEquals(10, repoInfo2.getWriteQueueWorkerCount());
-        assertEquals(100, repoInfo2.getWriteQueueMaxMemory());
-        assertEquals(QueueMaxMemoryPolicy.BLOCK, repoInfo2.getWriteQueueMaxMemoryPolicy());
-        assertEquals(2, repoInfo2.getWriteQueuePageSize());
-        assertEquals(1, repoInfo2.getWriteQueuePageCountCache());
+        assertNull(repoInfo2.getPublisherPassword());
+        assertNull(repoInfo2.getSubscriberPassword());
+        assertEquals(true, repoInfo2.getStoreEntriesIndicator());
+        assertEquals(true, repoInfo2.getStorageQueueDurableIndicator());
+        assertEquals(10, repoInfo2.getStorageQueueWorkerCount());
+        assertEquals(100, repoInfo2.getMaxMemory());
+        assertEquals(MaxMemoryPolicy.BLOCK, repoInfo2.getMaxMemoryPolicy());
+        assertEquals(2, repoInfo2.getPageSize());
+        assertEquals(1, repoInfo2.getPageCountCache());
         assertEquals(100L, repoInfo2.getMaxKeywords());
         assertEquals(1, repoInfo2.getParsers().size());
         
@@ -216,15 +216,15 @@ public class RepositoryInfoTest
         repoInfo.setDisplayName("Test 1x");
         repoInfo.setDescription("description x");
         repoInfo.setStartupStatus(Status.OFFLINE);
-        repoInfo.setReadQueueDurable(false);
-        repoInfo.setReadQueuePassword("xyz");
-        repoInfo.setWriteQueueDurable(false);
-        repoInfo.setWriteQueuePassword("uvw");
-        repoInfo.setWriteQueueWorkerCount(100);
-        repoInfo.setWriteQueueMaxMemory(210);
-        repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.DROP);
-        repoInfo.setWriteQueuePageSize(22);
-        repoInfo.setWriteQueuePageCountCache(10);
+        repoInfo.setPublisherPassword("xyz");
+        repoInfo.setSubscriberPassword("uvw");
+        repoInfo.setStoreEntriesIndicator(false);
+        repoInfo.setStorageQueueDurableIndicator(false);
+        repoInfo.setStorageQueueWorkerCount(100);
+        repoInfo.setMaxMemory(210);
+        repoInfo.setMaxMemoryPolicy(MaxMemoryPolicy.DROP);
+        repoInfo.setPageSize(22);
+        repoInfo.setPageCountCache(10);
         repoInfo.setMaxKeywords(200);
 
         repoParserInfo.setClassName("com.chililog.server.data.DeclimitedRepositoryParserX");
@@ -253,15 +253,15 @@ public class RepositoryInfoTest
         assertEquals("Test 1x", repoInfo2.getDisplayName());
         assertEquals("description x", repoInfo2.getDescription());
         assertEquals(Status.OFFLINE, repoInfo2.getStartupStatus());
-        assertEquals(false, repoInfo2.isReadQueueDurable());
-        assertEquals("xyz", repoInfo2.getReadQueuePassword());
-        assertEquals(false, repoInfo2.isWriteQueueDurable());
-        assertEquals("uvw", repoInfo2.getWriteQueuePassword());
-        assertEquals(100, repoInfo2.getWriteQueueWorkerCount());
-        assertEquals(210, repoInfo2.getWriteQueueMaxMemory());
-        assertEquals(QueueMaxMemoryPolicy.DROP, repoInfo2.getWriteQueueMaxMemoryPolicy());
-        assertEquals(22, repoInfo2.getWriteQueuePageSize());
-        assertEquals(10, repoInfo2.getWriteQueuePageCountCache());
+        assertEquals("xyz", repoInfo2.getPublisherPassword());
+        assertEquals("uvw", repoInfo2.getSubscriberPassword());
+        assertEquals(false, repoInfo2.getStoreEntriesIndicator());
+        assertEquals(false, repoInfo2.getStorageQueueDurableIndicator());
+        assertEquals(100, repoInfo2.getStorageQueueWorkerCount());
+        assertEquals(210, repoInfo2.getMaxMemory());
+        assertEquals(MaxMemoryPolicy.DROP, repoInfo2.getMaxMemoryPolicy());
+        assertEquals(22, repoInfo2.getPageSize());
+        assertEquals(10, repoInfo2.getPageCountCache());
         assertEquals(200L, repoInfo2.getMaxKeywords());
         assertEquals(2, repoInfo2.getDocumentVersion());
 
@@ -431,13 +431,13 @@ public class RepositoryInfoTest
     }
 
     @Test
-    public void testBadWriterPasswordName() throws ChiliLogException
+    public void testBadPublisherPassword() throws ChiliLogException
     {
         try
         {
             RepositoryInfoBO repoInfo = new RepositoryInfoBO();
             repoInfo.setName("repo_info_test4");
-            repoInfo.setWriteQueuePassword("bad~password");
+            repoInfo.setPublisherPassword("bad~password");
             RepositoryInfoController.getInstance().save(_db, repoInfo);
 
             fail("Exception expected");
@@ -449,13 +449,13 @@ public class RepositoryInfoTest
     }
     
     @Test
-    public void testBadReaderPasswordName() throws ChiliLogException
+    public void testBadSubscriberPassword() throws ChiliLogException
     {
         try
         {
             RepositoryInfoBO repoInfo = new RepositoryInfoBO();
             repoInfo.setName("repo_info_test4");
-            repoInfo.setReadQueuePassword("bad,password");
+            repoInfo.setSubscriberPassword("bad,password");
             RepositoryInfoController.getInstance().save(_db, repoInfo);
 
             fail("Exception expected");
@@ -473,8 +473,8 @@ public class RepositoryInfoTest
         {
             RepositoryInfoBO repoInfo = new RepositoryInfoBO();
             repoInfo.setName("badfilesize");
-            repoInfo.setWriteQueueMaxMemory(1);
-            repoInfo.setWriteQueuePageSize(2);
+            repoInfo.setMaxMemory(1);
+            repoInfo.setPageSize(2);
             RepositoryInfoController.getInstance().save(_db, repoInfo);
 
             fail("Exception expected");

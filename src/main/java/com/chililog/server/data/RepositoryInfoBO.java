@@ -31,12 +31,34 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * This class contains information that describes a repository
+ * This class contains information that describes a repository:
+ * <ul>
+ * <li>General Details - Name and status</li>
+ * <li>Security - authentication information for publisher and subscribers of the repository</li>
+ * <li>Storage - how to store log entries in the database</li>
+ * <li>Parsers - how information is to be extracted from log entries and stored in the database</li>
+ * </ul>
  * </p>
  * <p>
- * Paging is implemented individually for queues. See
- * http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#paging. Journal is also implemented
- * individually for queues. See
+ * HornetQ/Repository/JMS PubSub concepts:
+ * <ul>
+ * <li>A repository maps to a HornetQ address. A HornetQ address is the same as a JMS Topic.</li>
+ * <li>Publishers send or produce log entries to a repository (HornetQ address)</li>
+ * <li>Subscribers consume messages from the repository (HornetQ address)</li>
+ * <li>Each subscriber is issued with its own HornetQ queue that is bound to the repository's HornetQ address.</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Note issue with slow consumers in a pub/sub model.Messages are stored once in the address and references passed into
+ * queues bound to that address. If there is a slow queue, un-consumed messages will not be cleared from memory.
+ * http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#d0e5059
+ * </p>
+ * <p>
+ * Paging for a HornetQ address. See
+ * http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#paging.
+ * </p>
+ * <p>
+ * Journal is also implemented individually for an address. See
  * http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#persistence.
  * </p>
  * 
@@ -49,7 +71,8 @@ public class RepositoryInfoBO extends BO implements Serializable
 
     private static Pattern _namePattern = Pattern.compile("^[a-z0-9_]+$");
 
-    // No ~ because it is use in role name as separator. No , because HornetQ uses , in CSV for role specification.
+    // No '~' because it is use in role name as separator. No ',' because HornetQ uses ',' in CSV for role
+    // specification.
     private static Pattern _passwordPattern = Pattern.compile("^[^~,]+$");
 
     private String _name;
@@ -57,37 +80,41 @@ public class RepositoryInfoBO extends BO implements Serializable
     private String _description;
     private Status _startupStatus = Status.ONLINE;
 
-    private boolean _readQueueDurable = false;
-    private String _readQueuePassword = null;
+    private String _publisherPassword = null;
+    private String _subscriberPassword = null;
 
-    private boolean _writeQueueDurable = false;
-    private String _writeQueuePassword = null;
-    private long _writeQueueWorkerCount = 1;
-    private long _writeQueueMaxMemory = 1024 * 1024 * 20; // 20 MB
-    private QueueMaxMemoryPolicy _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.PAGE;
-    private long _writeQueuePageSize = 1024 * 1024 * 10; // 10 MB
-    private long _writeQueuePageCountCache = 3; // max 3 pages in memory when paging
+    private boolean _storeEntriesIndicator = false;
+    private boolean _storageQueueDurableIndicator = false;
+    private long _storageQueueWorkerCount = 1;
 
-    private long _maxKeywords = -1;
+    private long _maxMemory = 1024 * 1024 * 20; // 20 MB
+    private MaxMemoryPolicy _maxMemoryPolicy = MaxMemoryPolicy.PAGE;
+    private long _pageSize = 1024 * 1024 * 10; // 10 MB
+    private long _pageCountCache = 3; // max 3 pages in memory when paging
+    private long _maxKeywords = UNLIMITED_MAX_KEYWORDS;
+
     private ArrayList<RepositoryParserInfoBO> _parsers = new ArrayList<RepositoryParserInfoBO>();
 
     static final String NAME_FIELD_NAME = "name";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
     static final String DESCRIPTION_FIELD_NAME = "description";
     static final String STARTUP_STATUS_FIELD_NAME = "startup_status";
-    static final String READ_QUEUE_DURABLE_FIELD_NAME = "is_read_queue_durable";
-    static final String READ_QUEUE_PASSWORD_FIELD_NAME = "read_queue_password";
-    static final String WRITE_QUEUE_DURABLE_FIELD_NAME = "is_write_queue_durable";
-    static final String WRITE_QUEUE_PASSWORD_FIELD_NAME = "write_queue_password";
-    static final String WRITE_QUEUE_WORKER_COUNT_FIELD_NAME = "write_queue_worker_count";
-    static final String WRITE_QUEUE_MAX_MEMORY_FIELD_NAME = "write_queue_max_memory";
-    static final String WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME = "write_queue_max_memory_policy";
-    static final String WRITE_QUEUE_PAGE_SIZE_FIELD_NAME = "write_queue_page_size";
-    static final String WRITE_QUEUE_PAGE_COUNT_CACHE_FIELD_NAME = "write_queue_page_count_cache";
-    static final String MAX_KEYWORDS = "max_keywords";
-    static final String PARSERS_FIELD_NAME = "parsers";
 
-    public static final long MAX_KEYWORDS_UNLIMITED = -1;
+    static final String PUBLISHER_PASSWORD_FIELD_NAME = "publisher_password";
+    static final String SUBSCRIBER_PASSWORD_FIELD_NAME = "subscriber_password";
+
+    static final String STORE_ENTRIES_INDICATOR_FIELD_NAME = "store_entries_indicator";
+    static final String STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME = "storage_queue_durable_indicator";
+    static final String STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME = "storage_queue_worker_count";
+
+    static final String MAX_MEMORY_FIELD_NAME = "max_memory";
+    static final String MAX_MEMORY_POLICY_FIELD_NAME = "max_memory_policy";
+    static final String PAGE_SIZE_FIELD_NAME = "page_size";
+    static final String PAGE_COUNT_CACHE_FIELD_NAME = "page_count_cache";
+    static final String MAX_KEYWORDS = "max_keywords";
+    public static final long UNLIMITED_MAX_KEYWORDS = -1;
+
+    static final String PARSERS_FIELD_NAME = "parsers";
 
     /**
      * Basic constructor
@@ -107,25 +134,31 @@ public class RepositoryInfoBO extends BO implements Serializable
     public RepositoryInfoBO(DBObject dbObject) throws ChiliLogException
     {
         super(dbObject);
+
+        // General
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
         _displayName = MongoUtils.getString(dbObject, DISPLAY_NAME_FIELD_NAME, false);
         _description = MongoUtils.getString(dbObject, DESCRIPTION_FIELD_NAME, false);
         _startupStatus = Status.valueOf(MongoUtils.getString(dbObject, STARTUP_STATUS_FIELD_NAME, true));
 
-        _readQueueDurable = MongoUtils.getBoolean(dbObject, READ_QUEUE_DURABLE_FIELD_NAME, true);
-        _readQueuePassword = MongoUtils.getString(dbObject, READ_QUEUE_PASSWORD_FIELD_NAME, false);
+        // Security
+        _publisherPassword = MongoUtils.getString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, false);
+        _subscriberPassword = MongoUtils.getString(dbObject, SUBSCRIBER_PASSWORD_FIELD_NAME, false);
 
-        _writeQueueDurable = MongoUtils.getBoolean(dbObject, WRITE_QUEUE_DURABLE_FIELD_NAME, true);
-        _writeQueuePassword = MongoUtils.getString(dbObject, WRITE_QUEUE_PASSWORD_FIELD_NAME, false);
-        _writeQueueWorkerCount = MongoUtils.getLong(dbObject, WRITE_QUEUE_WORKER_COUNT_FIELD_NAME, true);
-        _writeQueueMaxMemory = MongoUtils.getLong(dbObject, WRITE_QUEUE_MAX_MEMORY_FIELD_NAME, true);
-        _writeQueueMaxMemoryPolicy = QueueMaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject,
-                WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, true));
-        _writeQueuePageSize = MongoUtils.getLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, true);
-        _writeQueuePageCountCache = MongoUtils.getLong(dbObject, WRITE_QUEUE_PAGE_COUNT_CACHE_FIELD_NAME, true);
+        // Storage
+        _storeEntriesIndicator = MongoUtils.getBoolean(dbObject, STORE_ENTRIES_INDICATOR_FIELD_NAME, true);
+        _storageQueueDurableIndicator = MongoUtils.getBoolean(dbObject, STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME,
+                true);
+        _storageQueueWorkerCount = MongoUtils.getLong(dbObject, STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME, true);
 
+        // Resources
+        _maxMemory = MongoUtils.getLong(dbObject, MAX_MEMORY_FIELD_NAME, true);
+        _maxMemoryPolicy = MaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, true));
+        _pageSize = MongoUtils.getLong(dbObject, PAGE_SIZE_FIELD_NAME, true);
+        _pageCountCache = MongoUtils.getLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, true);
         _maxKeywords = MongoUtils.getLong(dbObject, MAX_KEYWORDS, true);
 
+        // Parser
         BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
         ArrayList<RepositoryParserInfoBO> parserList = new ArrayList<RepositoryParserInfoBO>();
         if (list != null && list.size() > 0)
@@ -160,37 +193,42 @@ public class RepositoryInfoBO extends BO implements Serializable
         }
 
         // Check that page file size is less than max memory
-        if (_writeQueuePageSize > _writeQueueMaxMemory) 
+        if (_pageSize > _maxMemory)
         {
-            throw new ChiliLogException(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, _writeQueuePageSize, _writeQueueMaxMemory);
+            throw new ChiliLogException(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, _pageSize, _maxMemory);
         }
-        
+
+        // General
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
         MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString(), true);
 
-        MongoUtils.setBoolean(dbObject, READ_QUEUE_DURABLE_FIELD_NAME, _readQueueDurable, true);
-        MongoUtils.setString(dbObject, READ_QUEUE_PASSWORD_FIELD_NAME, _readQueuePassword, false);
-        if (!StringUtils.isBlank(_readQueuePassword) && !_passwordPattern.matcher(_readQueuePassword).matches())
+        // Security
+        MongoUtils.setString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, _publisherPassword, false);
+        if (!StringUtils.isBlank(_publisherPassword) && !_passwordPattern.matcher(_publisherPassword).matches())
         {
-            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _readQueuePassword);
+            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _publisherPassword);
+        }
+        MongoUtils.setString(dbObject, SUBSCRIBER_PASSWORD_FIELD_NAME, _subscriberPassword, false);
+        if (!StringUtils.isBlank(_subscriberPassword) && !_passwordPattern.matcher(_subscriberPassword).matches())
+        {
+            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _subscriberPassword);
         }
 
-        MongoUtils.setBoolean(dbObject, WRITE_QUEUE_DURABLE_FIELD_NAME, _writeQueueDurable, true);
-        MongoUtils.setString(dbObject, WRITE_QUEUE_PASSWORD_FIELD_NAME, _writeQueuePassword, false);
-        if (!StringUtils.isBlank(_writeQueuePassword) && !_passwordPattern.matcher(_writeQueuePassword).matches())
-        {
-            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _writeQueuePassword);
-        }
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_WORKER_COUNT_FIELD_NAME, _writeQueueWorkerCount, true);
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_MAX_MEMORY_FIELD_NAME, _writeQueueMaxMemory, true);
-        MongoUtils.setString(dbObject, WRITE_QUEUE_MAX_MEMORY_POLICY_FIELD_NAME, _writeQueueMaxMemoryPolicy.toString(),
-                true);
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_SIZE_FIELD_NAME, _writeQueuePageSize, true);
-        MongoUtils.setLong(dbObject, WRITE_QUEUE_PAGE_COUNT_CACHE_FIELD_NAME, _writeQueuePageCountCache, true);
+        // Storage
+        MongoUtils.setBoolean(dbObject, STORE_ENTRIES_INDICATOR_FIELD_NAME, _storeEntriesIndicator, true);
+        MongoUtils
+                .setBoolean(dbObject, STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME, _storageQueueDurableIndicator, true);
+        MongoUtils.setLong(dbObject, STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME, _storageQueueWorkerCount, true);
 
+        // Resources
+        MongoUtils.setLong(dbObject, MAX_MEMORY_FIELD_NAME, _maxMemory, true);
+        MongoUtils.setString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, _maxMemoryPolicy.toString(), true);
+        MongoUtils.setLong(dbObject, PAGE_SIZE_FIELD_NAME, _pageSize, true);
+        MongoUtils.setLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, _pageCountCache, true);
         MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords, true);
 
+        // Parsers
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
         for (RepositoryParserInfoBO parser : _parsers)
         {
@@ -276,186 +314,191 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * Returns the address to use for the message queue that handles dead letters
+     * Returns the address for publishers to use for sending in log entries
      */
-    public String getDeadLetterAddress()
+    public String getPubSubAddress()
     {
-        return String.format("repository.%s.dead_letters", _name);
+        return String.format("repo.%s", _name);
     }
 
     /**
-     * Returns the address to use for the message queue that handles incoming entries
+     * Returns the address of the message queue that used for storing incoming log entries
      */
-    public String getWriteQueueAddress()
+    public String getStorageQueueName()
     {
-        return String.format("repository.%s.write", _name);
+        return String.format("repo.%s.storage", _name);
     }
 
     /**
-     * Returns the name of the role for our HornetQ JAAS provider to grant permission to an agent to write to this
-     * repository's queue.
+     * Returns the name of the role used by our HornetQ JAAS provider to grant permission to publishers of log entries
      */
-    public String getWriteQueueRoleName()
+    public String getPublisherRoleName()
     {
-        return formatQueueRoleName(_name, _writeQueuePassword);
+        return createHornetQRoleName(_name, _publisherPassword);
     }
 
     /**
-     * Returns the address to use for the message queue that handles outgoing entries
+     * Returns the name of the role used by our HornetQ JAAS provider to grant permission to subscribers of log entries
      */
-    public String getReadQueueAddress()
+    public String getSubscriberRoleName()
     {
-        return String.format("repository.%s.read", _name);
+        return createHornetQRoleName(_name, _subscriberPassword);
     }
 
     /**
-     * Returns the name of the role for our HornetQ JAAS provider to grant permission to an agent to read this
-     * repository's queue.
+     * Returns the password to authenticate publishers (agents that send log entries)
      */
-    public String getReadQueueRoleName()
+    public String getPublisherPassword()
     {
-        return formatQueueRoleName(_name, _readQueuePassword);
+        return _publisherPassword;
+    }
+
+    public void setPublisherPassword(String publisherPassword)
+    {
+        _publisherPassword = publisherPassword;
     }
 
     /**
-     * Returns a flag indicating if the read queue for this repository is to be durable. For this to take effect, the
+     * Returns the password to authenticate subscribers (agents that consume log entries)
+     */
+    public String getSubscriberPassword()
+    {
+        return _subscriberPassword;
+    }
+
+    public void setSubscriberPassword(String subscriberPassword)
+    {
+        _subscriberPassword = subscriberPassword;
+    }
+
+    /**
+     * Returns a flag indicating if the log entries published to this repository is to be stored in the database.
+     */
+    public boolean getStoreEntriesIndicator()
+    {
+        return _storeEntriesIndicator;
+    }
+
+    public void setStoreEntriesIndicator(boolean storeEntriesIndicator)
+    {
+        _storeEntriesIndicator = storeEntriesIndicator;
+    }
+
+    /**
+     * <p>
+     * Returns a flag indicating if the storage queue for this repository is to be durable. For this to take effect, the
      * app.properties mq.persistence_enabled must also be set to true.
+     * </p>
+     * <p>
+     * A durable queue saves all entries to hard disk. This means that if the server crashes, queued log entries are not
+     * lost. However, storing queued log entries slows performance.
+     * </p>
+     * <p>
+     * By default, storage queues are not durable. We recommend that you only make storage queues durable if the log
+     * entries contain critical information that cannot be lost.
+     * </p>
      */
-    public boolean isReadQueueDurable()
+    public boolean getStorageQueueDurableIndicator()
     {
-        return _readQueueDurable;
+        return _storageQueueDurableIndicator;
     }
 
-    public void setReadQueueDurable(boolean durableReadQueue)
+    public void setStorageQueueDurableIndicator(boolean storageQueueDurableIndicator)
     {
-        _readQueueDurable = durableReadQueue;
+        _storageQueueDurableIndicator = storageQueueDurableIndicator;
     }
 
     /**
-     * Returns the password to be used for consumers of the read queue. The username is the name of the repository.
+     * <p>
+     * Returns the number of writer worker threads that will be created to processing queued incoming log entries. The
+     * more workers, the quicker log entries are saved to the database and the smaller the storage queue size.
+     * </p>
+     * <p>
+     * The default is 1.
+     * </p>
      */
-    public String getReadQueuePassword()
+    public long getStorageQueueWorkerCount()
     {
-        return _readQueuePassword;
+        return _storageQueueWorkerCount;
     }
 
-    public void setReadQueuePassword(String readQueuePassword)
+    public void setStorageQueueWorkerCount(long writeWorkerCount)
     {
-        _readQueuePassword = readQueuePassword;
+        _storageQueueWorkerCount = writeWorkerCount;
     }
 
     /**
-     * Returns a flag indicating if the write queue for this repository is to be durable. For this to take effect, the
-     * app.properties mq.persistence_enabled must also be set to true.
+     * The maximum amount of memory (in bytes) that will be used by the storage queue. <code>-1</code> means no limit.
      */
-    public boolean isWriteQueueDurable()
+    public long getMaxMemory()
     {
-        return _writeQueueDurable;
+        return _maxMemory;
     }
 
-    public void setWriteQueueDurable(boolean durableWriteQueue)
+    public void setMaxMemory(long maxMemory)
     {
-        _writeQueueDurable = durableWriteQueue;
+        _maxMemory = maxMemory;
     }
 
     /**
-     * Returns the password to be used for producers of the write queue. The username is the name of the repository.
+     * Determines what happens when MaxMemory is reached on the storage queue.
      */
-    public String getWriteQueuePassword()
+    public MaxMemoryPolicy getMaxMemoryPolicy()
     {
-        return _writeQueuePassword;
+        return _maxMemoryPolicy;
     }
 
-    public void setWriteQueuePassword(String writeQueuePassword)
+    public void setMaxMemoryPolicy(MaxMemoryPolicy maxMemoryPolicy)
     {
-        _writeQueuePassword = writeQueuePassword;
+        _maxMemoryPolicy = maxMemoryPolicy;
     }
 
     /**
-     * Returns the number of writer worker threads that will be created to processing incoming entries.
-     */
-    public long getWriteQueueWorkerCount()
-    {
-        return _writeQueueWorkerCount;
-    }
-
-    public void setWriteQueueWorkerCount(long writeWorkerCount)
-    {
-        _writeQueueWorkerCount = writeWorkerCount;
-    }
-
-    /**
-     * The maximum amount of memory (in bytes) that will be used by this queue. <code>-1</code> means no limit.
-     */
-    public long getWriteQueueMaxMemory()
-    {
-        return _writeQueueMaxMemory;
-    }
-
-    public void setWriteQueueMaxMemory(long writeQueueMaxMemory)
-    {
-        _writeQueueMaxMemory = writeQueueMaxMemory;
-    }
-
-    /**
-     * Determines what happens when WriteQueueMaxMemory is reached.
-     */
-    public QueueMaxMemoryPolicy getWriteQueueMaxMemoryPolicy()
-    {
-        return _writeQueueMaxMemoryPolicy;
-    }
-
-    public void setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy writeQueueMaxMemoryPolicy)
-    {
-        _writeQueueMaxMemoryPolicy = writeQueueMaxMemoryPolicy;
-    }
-
-    /**
-     * If WriteQueueMaxMemoryPolicy is set to PAGE, then this value determines the size of each page file on the hard
+     * If MaxMemoryPolicy is set to PAGE, then this value determines the size of each page file on the hard
      * disk in bytes.
      */
-    public long getWriteQueuePageSize()
+    public long getPageSize()
     {
-        return _writeQueuePageSize;
+        return _pageSize;
     }
 
-    public void setWriteQueuePageSize(long writeQueuePageSize)
+    public void setPageSize(long pageSize)
     {
-        _writeQueuePageSize = writeQueuePageSize;
+        _pageSize = pageSize;
     }
 
     /**
-     * If WriteQueueMaxMemoryPolicy is set to PAGE, then this value determines the number of pages to be kept in memeory
+     * If MaxMemoryPolicy is set to PAGE, then this value determines the number of pages to be kept in memory
      * during page navigation.
      */
-    public long getWriteQueuePageCountCache()
+    public long getPageCountCache()
     {
-        return _writeQueuePageCountCache;
+        return _pageCountCache;
     }
 
-    public void setWriteQueuePageCountCache(long writeQueuePageCountCache)
+    public void setPageCountCache(long writeQueuePageCountCache)
     {
-        _writeQueuePageCountCache = writeQueuePageCountCache;
+        _pageCountCache = writeQueuePageCountCache;
     }
 
     /**
-     * Maximum number of keywords to be stored per entry
+     * Returns the maximum number of keywords to store.
      */
     public long getMaxKeywords()
     {
         return _maxKeywords;
     }
 
-    public void setMaxKeywords(long maxKeywords)
+    public void setMaxKeywords(long parserMaxKeywords)
     {
-        _maxKeywords = maxKeywords;
+        _maxKeywords = parserMaxKeywords;
     }
 
     /**
      * Returns the name of the role in which a user must be a member before permission is granted find entries in this
      * repository and setup monitors.
      */
-    public String getUIStandardUserRoleName()
+    public String getWorkBenchStandardUserRoleName()
     {
         return String.format("repo.%s.standard", _name);
     }
@@ -464,16 +507,16 @@ public class RepositoryInfoBO extends BO implements Serializable
      * Returns the name of the role in which a user must be a member before permission is granted find entries in this
      * repository and setup monitors.
      */
-    public String getUIPowerUserRoleName()
+    public String getWorkBenchPowerUserRoleName()
     {
         return String.format("repo.%s.power", _name);
     }
-    
+
     /**
      * Returns the name of the role in which a user must be a member before permission is granted to find entries,
-     * start/stop and reconfigure this repostiory.
+     * start/stop and reconfigure this repository.
      */
-    public String getUIAdministratorUserRoleName()
+    public String getWorkBenchAdministratorUserRoleName()
     {
         return String.format("repo.%s.administrator", _name);
     }
@@ -500,14 +543,14 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * Builds the role name granted permission for queue
+     * Builds the HornetQ role name granted permission for queue
      * 
      * @param username
      *            Username
      * @param password
      *            Password
      */
-    public static String formatQueueRoleName(String username, String password)
+    public static String createHornetQRoleName(String username, String password)
     {
         return String.format("%s~~~%s", username, password);
     }
@@ -537,7 +580,7 @@ public class RepositoryInfoBO extends BO implements Serializable
      * @author vibul
      * 
      */
-    public enum QueueMaxMemoryPolicy
+    public enum MaxMemoryPolicy
     {
         /**
          * Messages will be pushed to page files on the hard disk once queue memory limit is reached.

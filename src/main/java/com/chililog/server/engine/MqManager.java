@@ -25,7 +25,6 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.security.auth.callback.CallbackHandler;
 
-import org.apache.commons.lang.StringUtils;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientSession;
@@ -114,7 +113,7 @@ public class MqManager
         {
             _systemUsername = AppProperties.getInstance().getMqSystemUsername();
             _systemPassword = AppProperties.getInstance().getMqSystemPassword();
-            _systemRoleName = RepositoryInfoBO.formatQueueRoleName(_systemUsername, _systemPassword);
+            _systemRoleName = RepositoryInfoBO.createHornetQRoleName(_systemUsername, _systemPassword);
             return;
         }
         catch (Exception e)
@@ -395,20 +394,20 @@ public class MqManager
     /**
      * Add security settings to a queue
      * 
-     * @param queueAddress
-     *            The queue's address to which the security setting is to apply. A pattern can be provided where *
-     *            represents a work and # represents more than 1 work.
-     * @param writerRoles
-     *            Comma separated list of roles that can write to the queue
-     * @param readerRoles
-     *            Comma separated list of roles that can read from the queue
+     * @param address
+     *            The HornetQ address to which the security setting is to apply. A pattern can be provided where *
+     *            represents a word and # represents and letters.
+     * @param publisherRoles
+     *            Comma separated list of roles that can publish to the address; i.e. submit log entries for processing
+     * @param subscriberRoles
+     *            Comma separated list of roles that can subscribe to the address; i.e. read log entries
      * @throws Exception
      */
-    public void addSecuritySettings(String queueAddress, String writerRoles, String readerRoles) throws Exception
+    public void addSecuritySettings(String address, String publisherRoles, String subscriberRoles) throws Exception
     {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
-        hqControl.removeSecuritySettings(queueAddress);
-        hqControl.addSecuritySettings(queueAddress, writerRoles, readerRoles, _systemRoleName, _systemRoleName,
+        hqControl.removeSecuritySettings(address);
+        hqControl.addSecuritySettings(address, publisherRoles, subscriberRoles, _systemRoleName, _systemRoleName,
                 _systemRoleName, _systemRoleName, _systemRoleName);
     }
 
@@ -435,13 +434,11 @@ public class MqManager
      * @param queueName
      *            Name of the queue
      * @param isDurable
-     *            flag to indicate if this queue is to be persisted
-     * @param deadLetterQueueAddress
-     *            Address to the dead letter queue. Set to null if dead letter queue not supported.
+     *            Flag to indicate if this queue is to be persisted. Set to false for temporary queues. 
      * @throws Exception
      *             if error
      */
-    public void deployQueue(String queueAddress, String queueName, boolean isDurable, String deadLetterQueueAddress)
+    public void deployQueue(String queueAddress, String queueName, boolean isDurable)
             throws Exception
     {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
@@ -453,44 +450,28 @@ public class MqManager
         {
             doCreate = true;
         }
-        else if (qc.isDurable() == isDurable || (deadLetterQueueAddress == null && qc.getDeadLetterAddress() == null))
-        {
-            // Do nothing
-        }
         else if (qc.isDurable() != isDurable)
         {
             // Queue exist but properties are different so we have to delete/create
             hqControl.destroyQueue(queueName);
-        }
-        else if ((qc.getDeadLetterAddress() == null && deadLetterQueueAddress != null)
-                || (qc.getDeadLetterAddress() != null && deadLetterQueueAddress == null)
-                || (!qc.getDeadLetterAddress().equalsIgnoreCase(deadLetterQueueAddress)))
-        {
-            // We just need to update the DLA. Queue does not have to be delete/create
-            qc.setDeadLetterAddress(deadLetterQueueAddress);
-            return;
+            doCreate = true;
         }
 
         if (doCreate)
         {
             hqControl.createQueue(queueAddress, queueName, null, isDurable);
-            if (!StringUtils.isBlank(deadLetterQueueAddress))
-            {
-                qc = MqManager.getInstance().getQueueControl(queueAddress, queueName);
-                qc.setDeadLetterAddress(deadLetterQueueAddress);
-            }
         }
     }
 
     /**
-     * Delete a queue
+     * Removes the named queue.
      * 
      * @param queueName
      *            Name of the queue
      * @throws Exception
      *             if error
      */
-    public void deleteQueue(String queueName) throws Exception
+    public void destroyQueue(String queueName) throws Exception
     {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.destroyQueue(queueName);

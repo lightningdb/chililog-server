@@ -38,7 +38,7 @@ import com.chililog.server.data.RepositoryParserInfoBO;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryInfoController;
 import com.chililog.server.data.UserBO;
-import com.chililog.server.data.RepositoryInfoBO.QueueMaxMemoryPolicy;
+import com.chililog.server.data.RepositoryInfoBO.MaxMemoryPolicy;
 import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserController;
@@ -134,7 +134,7 @@ public class RepositoryInfoTest
         repoInfo.setWriteQueueDurable(true);
         repoInfo.setWriteQueueWorkerCount(10);
         repoInfo.setWriteQueueMaxMemory(2);
-        repoInfo.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
+        repoInfo.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
         repoInfo.setWriteQueuePageSize(1);
         repoInfo.setMaxKeywords(100);
 
@@ -223,7 +223,7 @@ public class RepositoryInfoTest
         createRepoInfoAO.setWriteQueueDurable(true);
         createRepoInfoAO.setWriteQueueWorkerCount(2);
         createRepoInfoAO.setWriteQueueMaxMemory(10);
-        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
+        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
         createRepoInfoAO.setWriteQueuePageSize(2);
         createRepoInfoAO.setMaxKeywords(100);
 
@@ -257,7 +257,7 @@ public class RepositoryInfoTest
         assertEquals(true, createResponseAO.isWriteQueueDurable());
         assertEquals(2, createResponseAO.getWriteQueueWorkerCount());
         assertEquals(10, createResponseAO.getWriteQueueMaxMemory());
-        assertEquals(QueueMaxMemoryPolicy.BLOCK, createResponseAO.getWriteQueueMaxMemoryPolicy());
+        assertEquals(MaxMemoryPolicy.BLOCK, createResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, createResponseAO.getWriteQueuePageSize());
         assertEquals(100L, createResponseAO.getMaxKeywords());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
@@ -300,7 +300,7 @@ public class RepositoryInfoTest
         assertEquals(true, readResponseAO.isWriteQueueDurable());
         assertEquals(2, readResponseAO.getWriteQueueWorkerCount());
         assertEquals(10, readResponseAO.getWriteQueueMaxMemory());
-        assertEquals(QueueMaxMemoryPolicy.BLOCK, readResponseAO.getWriteQueueMaxMemoryPolicy());
+        assertEquals(MaxMemoryPolicy.BLOCK, readResponseAO.getWriteQueueMaxMemoryPolicy());
         assertEquals(2, readResponseAO.getWriteQueuePageSize());
         assertEquals(100L, createResponseAO.getMaxKeywords());
 
@@ -765,7 +765,7 @@ public class RepositoryInfoTest
         createRepoInfoAO.setWriteQueueDurable(true);
         createRepoInfoAO.setWriteQueueWorkerCount(2);
         createRepoInfoAO.setWriteQueueMaxMemory(10);
-        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(QueueMaxMemoryPolicy.BLOCK);
+        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
         createRepoInfoAO.setWriteQueuePageSize(2);
 
         ApiUtils.sendJSON(httpConn, createRepoInfoAO);

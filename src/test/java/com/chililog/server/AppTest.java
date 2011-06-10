@@ -44,7 +44,7 @@ import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.engine.MqManager;
-import com.chililog.server.engine.RepositoryWriter;
+import com.chililog.server.engine.RepositoryStorageWorker;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -71,9 +71,9 @@ public class AppTest
         _repoInfo = new RepositoryInfoBO();
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Repository Test 1");
-        _repoInfo.setReadQueueDurable(false);
-        _repoInfo.setWriteQueueDurable(false);
-        _repoInfo.setWriteQueueWorkerCount(2);
+        _repoInfo.setStoreEntriesIndicator(true);
+        _repoInfo.setStorageQueueDurableIndicator(false);
+        _repoInfo.setStorageQueueWorkerCount(2);
         
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
         repoParserInfo.setName("parser1");
@@ -148,18 +148,18 @@ public class AppTest
         // Create repository record
         RepositoryInfoController.getInstance().save(_db, _repoInfo);
         
-        // Create writer user
+        // Create publisher user
         UserBO user = new UserBO();
-        user.setUsername("AppTestUser_Writer");
+        user.setUsername("AppTestUser_Publisher");
         user.setPassword("222", true);
-        user.addRole(_repoInfo.getWriteQueueRoleName());
+        user.addRole(_repoInfo.getPublisherRoleName());
         UserController.getInstance().save(_db, user);
 
-        // Create reader user
+        // Create subscriber user
         user = new UserBO();
-        user.setUsername("AppTestUser_Reader");
+        user.setUsername("AppTestUser_Subscriber");
         user.setPassword("333", true);
-        user.addRole(_repoInfo.getReadQueueRoleName());
+        user.addRole(_repoInfo.getSubscriberRoleName());
         UserController.getInstance().save(_db, user);
     }
 
@@ -196,23 +196,23 @@ public class AppTest
         // Start
         App.startChiliLogServer();
 
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryWriter.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryWriter.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
         
         // Write some repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession("AppTestUser_Writer",
                 "222");
 
-        String queueAddress = _repoInfo.getWriteQueueAddress();
-        ClientProducer producer = producerSession.createProducer(queueAddress);
+        String publicationAddress = _repoInfo.getPubSubAddress();
+        ClientProducer producer = producerSession.createProducer(publicationAddress);
 
         for (int i = 0; i < 10000; i++)
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryWriter.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryWriter.SOURCE_PROPERTY_NAME, "AppTest");
-            message.putStringProperty(RepositoryWriter.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryWriter.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "AppTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeString(entry1);
             producer.send(message);
