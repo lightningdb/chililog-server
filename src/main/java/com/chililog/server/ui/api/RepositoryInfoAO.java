@@ -49,12 +49,12 @@ public class RepositoryInfoAO extends AO
     private boolean _storeEntriesIndicator = false;
     private boolean _storageQueueDurableIndicator = false;
     private long _storageQueueWorkerCount = 1;
+    private long _storageMaxKeywords = -1;
 
     private long _maxMemory = 1024 * 1024 * 20; // 20 MB
     private MaxMemoryPolicy _maxMemoryPolicy = MaxMemoryPolicy.PAGE;
     private long _pageSize = 1024 * 1024 * 10; // 10 MB
     private long _pageCountCache = 3; // max 3 pages in memory when paging
-    private long _maxKeywords = -1;
 
     private RepositoryParserInfoAO[] _parsers = null;
 
@@ -88,12 +88,12 @@ public class RepositoryInfoAO extends AO
         _storeEntriesIndicator = repoInfo.getStoreEntriesIndicator();
         _storageQueueDurableIndicator = repoInfo.getStorageQueueDurableIndicator();
         _storageQueueWorkerCount = repoInfo.getStorageQueueWorkerCount();
+        _storageMaxKeywords = repoInfo.getStorageMaxKeywords();
 
         _maxMemory = repoInfo.getMaxMemory();
         _maxMemoryPolicy = repoInfo.getMaxMemoryPolicy();
         _pageSize = repoInfo.getPageSize();
         _pageCountCache = repoInfo.getPageCountCache();
-        _maxKeywords = repoInfo.getMaxKeywords();
 
         if (repoInfo.getParsers() == null || repoInfo.getParsers().isEmpty())
         {
@@ -134,12 +134,12 @@ public class RepositoryInfoAO extends AO
         repoInfo.setStoreEntriesIndicator(_storeEntriesIndicator);
         repoInfo.setStorageQueueDurableIndicator(_storageQueueDurableIndicator);
         repoInfo.setStorageQueueWorkerCount(_storageQueueWorkerCount);
+        repoInfo.setStorageMaxKeywords(_storageMaxKeywords);
 
         repoInfo.setMaxMemory(_maxMemory);
         repoInfo.setMaxMemoryPolicy(_maxMemoryPolicy);
         repoInfo.setPageSize(_pageSize);
         repoInfo.setPageCountCache(_pageCountCache);
-        repoInfo.setMaxKeywords(_maxKeywords);
 
         repoInfo.getParsers().clear();
         if (_parsers != null && _parsers.length > 0)
@@ -265,6 +265,16 @@ public class RepositoryInfoAO extends AO
         _storageQueueWorkerCount = storageQueueWorkerCount;
     }
 
+    public long getStorageMaxKeywords()
+    {
+        return _storageMaxKeywords;
+    }
+
+    public void setStorageMaxKeywords(long maxKeywords)
+    {
+        _storageMaxKeywords = maxKeywords;
+    }
+    
     public long getMaxMemory()
     {
         return _maxMemory;
@@ -303,16 +313,6 @@ public class RepositoryInfoAO extends AO
     public void setPageCountCache(long pageCountCache)
     {
         _pageCountCache = pageCountCache;
-    }
-
-    public long getMaxKeywords()
-    {
-        return _maxKeywords;
-    }
-
-    public void setMaxKeywords(long maxKeywords)
-    {
-        _maxKeywords = maxKeywords;
     }
 
     public RepositoryParserInfoAO[] getParsers()

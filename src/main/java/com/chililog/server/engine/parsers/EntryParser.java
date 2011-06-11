@@ -87,7 +87,7 @@ public abstract class EntryParser
 
         _repoName = repoInfo.getName();
         _repoParserInfo = repoParserInfo;
-        _maxKeywords = repoInfo.getMaxKeywords();
+        _maxKeywords = repoInfo.getStorageMaxKeywords();
         if (repoParserInfo.getMaxKeywords() != RepositoryParserInfoBO.MAX_KEYWORDS_INHERITED)
         {
             _maxKeywords = repoParserInfo.getMaxKeywords();

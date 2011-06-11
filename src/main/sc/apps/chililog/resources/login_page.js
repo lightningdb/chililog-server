@@ -13,7 +13,7 @@ Chililog.loginPage = SC.Page.design({
     childViews: 'boxView'.w(),
 
     boxView: SC.View.design({
-      layout: { width: 300, height: 280, centerX: 0, centerY: 0 },
+      layout: { width: 300, height: 280, centerX: 0, centerY: -100 },
       classNames: ['login-box'],
       childViews: 'title line username password rememberMe loginButton loadingImage'.w(),
 

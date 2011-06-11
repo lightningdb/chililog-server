@@ -127,11 +127,11 @@ var chililogRepoInfo = {
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,
 	storage_queue_worker_count: new NumberLong(0),  // No workers because we write direct
+	storage_max_keywords: new NumberLong(50),
 	max_memory: new NumberLong(1024 * 1024 * 1),	// 1MB
 	max_memory_policy: "DROP",
 	page_size: new NumberLong(1),
 	page_count_cache: new NumberLong(1),
-	max_keywords: new NumberLong(50),
 	doc_version: new NumberLong(1)
 };
 db.repoinfo.insert(chililogRepoInfo);
@@ -148,11 +148,11 @@ var sandpitRepoInfo = {
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,
 	storage_queue_worker_count: new NumberLong(1),
+	storage_max_keywords: new NumberLong(50),
 	max_memory: new NumberLong(1024 * 1024 * 20),	// 20MB
 	max_memory_policy: "PAGE",
 	page_size: new NumberLong(1024 * 1024 * 10),	// 10 MB
 	page_count_cache: new NumberLong(3),
-	max_keywords: new NumberLong(50),
 	doc_version: new NumberLong(1)
 };
 db.repoinfo.insert(sandpitRepoInfo);

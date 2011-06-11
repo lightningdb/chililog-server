@@ -78,10 +78,10 @@ public abstract class Worker
     public static final String START_PAGE_HEADER_NAME = "X-Chililog-Start-Page";
     public static final String DO_PAGE_COUNT_HEADER_NAME = "X-Chililog-Do-Page-Count";
 
-    public static final String AUTHENTICATION_TOKEN_HEADER = "X-ChiliLog-Authentication";
-    public static final String AUTHENTICATION_SERVER_VERSION = "X-ChiliLog-Version";
-    public static final String AUTHENTICATION_SERVER_BUILD_TIMESTAMP = "X-ChiliLog-Build-Timestamp";
-    public static final String PAGE_COUNT_HEADER = "X-ChiliLog-PageCount";
+    public static final String AUTHENTICATION_TOKEN_HEADER = "X-Chililog-Authentication";
+    public static final String AUTHENTICATION_SERVER_VERSION = "X-Chililog-Version";
+    public static final String AUTHENTICATION_SERVER_BUILD_TIMESTAMP = "X-Chililog-Build-Timestamp";
+    public static final String PAGE_COUNT_HEADER = "X-Chililog-PageCount";
 
     public static final String JSON_CONTENT_TYPE = "text/json; charset=UTF-8";
     public static final String JSON_CHARSET = "UTF-8";

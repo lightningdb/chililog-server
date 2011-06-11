@@ -101,11 +101,11 @@ public class RepositoryInfoTest
         repoInfo.setStoreEntriesIndicator(true);
         repoInfo.setStorageQueueDurableIndicator(true);
         repoInfo.setStorageQueueWorkerCount(10);
+        repoInfo.setStorageMaxKeywords(100);
         repoInfo.setMaxMemory(100);
         repoInfo.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
         repoInfo.setPageSize(2);
         repoInfo.setPageCountCache(1);
-        repoInfo.setMaxKeywords(100);
         
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
         repoParserInfo.setName("parser1");
@@ -160,11 +160,11 @@ public class RepositoryInfoTest
         assertEquals(true, repoInfo2.getStoreEntriesIndicator());
         assertEquals(true, repoInfo2.getStorageQueueDurableIndicator());
         assertEquals(10, repoInfo2.getStorageQueueWorkerCount());
+        assertEquals(100L, repoInfo2.getStorageMaxKeywords());
         assertEquals(100, repoInfo2.getMaxMemory());
         assertEquals(MaxMemoryPolicy.BLOCK, repoInfo2.getMaxMemoryPolicy());
         assertEquals(2, repoInfo2.getPageSize());
         assertEquals(1, repoInfo2.getPageCountCache());
-        assertEquals(100L, repoInfo2.getMaxKeywords());
         assertEquals(1, repoInfo2.getParsers().size());
         
         RepositoryParserInfoBO repoParserInfo2 = repoInfo2.getParsers().get(0);
@@ -221,11 +221,11 @@ public class RepositoryInfoTest
         repoInfo.setStoreEntriesIndicator(false);
         repoInfo.setStorageQueueDurableIndicator(false);
         repoInfo.setStorageQueueWorkerCount(100);
+        repoInfo.setStorageMaxKeywords(200);
         repoInfo.setMaxMemory(210);
         repoInfo.setMaxMemoryPolicy(MaxMemoryPolicy.DROP);
         repoInfo.setPageSize(22);
         repoInfo.setPageCountCache(10);
-        repoInfo.setMaxKeywords(200);
 
         repoParserInfo.setClassName("com.chililog.server.data.DeclimitedRepositoryParserX");
         repoParserInfo.setMaxKeywords(2);
@@ -258,11 +258,11 @@ public class RepositoryInfoTest
         assertEquals(false, repoInfo2.getStoreEntriesIndicator());
         assertEquals(false, repoInfo2.getStorageQueueDurableIndicator());
         assertEquals(100, repoInfo2.getStorageQueueWorkerCount());
+        assertEquals(200L, repoInfo2.getStorageMaxKeywords());
         assertEquals(210, repoInfo2.getMaxMemory());
         assertEquals(MaxMemoryPolicy.DROP, repoInfo2.getMaxMemoryPolicy());
         assertEquals(22, repoInfo2.getPageSize());
         assertEquals(10, repoInfo2.getPageCountCache());
-        assertEquals(200L, repoInfo2.getMaxKeywords());
         assertEquals(2, repoInfo2.getDocumentVersion());
 
         repoParserInfo2 = repoInfo2.getParsers().get(0);

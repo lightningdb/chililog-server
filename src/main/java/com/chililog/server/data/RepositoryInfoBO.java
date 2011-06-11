@@ -86,12 +86,12 @@ public class RepositoryInfoBO extends BO implements Serializable
     private boolean _storeEntriesIndicator = false;
     private boolean _storageQueueDurableIndicator = false;
     private long _storageQueueWorkerCount = 1;
+    private long _storageMaxKeywords = UNLIMITED_MAX_KEYWORDS;
 
     private long _maxMemory = 1024 * 1024 * 20; // 20 MB
     private MaxMemoryPolicy _maxMemoryPolicy = MaxMemoryPolicy.PAGE;
     private long _pageSize = 1024 * 1024 * 10; // 10 MB
     private long _pageCountCache = 3; // max 3 pages in memory when paging
-    private long _maxKeywords = UNLIMITED_MAX_KEYWORDS;
 
     private ArrayList<RepositoryParserInfoBO> _parsers = new ArrayList<RepositoryParserInfoBO>();
 
@@ -106,13 +106,13 @@ public class RepositoryInfoBO extends BO implements Serializable
     static final String STORE_ENTRIES_INDICATOR_FIELD_NAME = "store_entries_indicator";
     static final String STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME = "storage_queue_durable_indicator";
     static final String STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME = "storage_queue_worker_count";
+    static final String STROAGE_MAX_KEYWORDS = "storage_max_keywords";
+    public static final long UNLIMITED_MAX_KEYWORDS = -1;
 
     static final String MAX_MEMORY_FIELD_NAME = "max_memory";
     static final String MAX_MEMORY_POLICY_FIELD_NAME = "max_memory_policy";
     static final String PAGE_SIZE_FIELD_NAME = "page_size";
     static final String PAGE_COUNT_CACHE_FIELD_NAME = "page_count_cache";
-    static final String MAX_KEYWORDS = "max_keywords";
-    public static final long UNLIMITED_MAX_KEYWORDS = -1;
 
     static final String PARSERS_FIELD_NAME = "parsers";
 
@@ -141,22 +141,20 @@ public class RepositoryInfoBO extends BO implements Serializable
         _description = MongoUtils.getString(dbObject, DESCRIPTION_FIELD_NAME, false);
         _startupStatus = Status.valueOf(MongoUtils.getString(dbObject, STARTUP_STATUS_FIELD_NAME, true));
 
-        // Security
+        // PubSub settings
         _publisherPassword = MongoUtils.getString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, false);
         _subscriberPassword = MongoUtils.getString(dbObject, SUBSCRIBER_PASSWORD_FIELD_NAME, false);
+        _maxMemory = MongoUtils.getLong(dbObject, MAX_MEMORY_FIELD_NAME, true);
+        _maxMemoryPolicy = MaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, true));
+        _pageSize = MongoUtils.getLong(dbObject, PAGE_SIZE_FIELD_NAME, true);
+        _pageCountCache = MongoUtils.getLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, true);
 
         // Storage
         _storeEntriesIndicator = MongoUtils.getBoolean(dbObject, STORE_ENTRIES_INDICATOR_FIELD_NAME, true);
         _storageQueueDurableIndicator = MongoUtils.getBoolean(dbObject, STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME,
                 true);
         _storageQueueWorkerCount = MongoUtils.getLong(dbObject, STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME, true);
-
-        // Resources
-        _maxMemory = MongoUtils.getLong(dbObject, MAX_MEMORY_FIELD_NAME, true);
-        _maxMemoryPolicy = MaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, true));
-        _pageSize = MongoUtils.getLong(dbObject, PAGE_SIZE_FIELD_NAME, true);
-        _pageCountCache = MongoUtils.getLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, true);
-        _maxKeywords = MongoUtils.getLong(dbObject, MAX_KEYWORDS, true);
+        _storageMaxKeywords = MongoUtils.getLong(dbObject, STROAGE_MAX_KEYWORDS, true);
 
         // Parser
         BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
@@ -203,7 +201,7 @@ public class RepositoryInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
         MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString(), true);
 
-        // Security
+        // PubSub settings
         MongoUtils.setString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, _publisherPassword, false);
         if (!StringUtils.isBlank(_publisherPassword) && !_passwordPattern.matcher(_publisherPassword).matches())
         {
@@ -214,19 +212,17 @@ public class RepositoryInfoBO extends BO implements Serializable
         {
             throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _subscriberPassword);
         }
+        MongoUtils.setLong(dbObject, MAX_MEMORY_FIELD_NAME, _maxMemory, true);
+        MongoUtils.setString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, _maxMemoryPolicy.toString(), true);
+        MongoUtils.setLong(dbObject, PAGE_SIZE_FIELD_NAME, _pageSize, true);
+        MongoUtils.setLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, _pageCountCache, true);
 
         // Storage
         MongoUtils.setBoolean(dbObject, STORE_ENTRIES_INDICATOR_FIELD_NAME, _storeEntriesIndicator, true);
         MongoUtils
                 .setBoolean(dbObject, STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME, _storageQueueDurableIndicator, true);
         MongoUtils.setLong(dbObject, STORAGE_QUEUE_WORKER_COUNT_FIELD_NAME, _storageQueueWorkerCount, true);
-
-        // Resources
-        MongoUtils.setLong(dbObject, MAX_MEMORY_FIELD_NAME, _maxMemory, true);
-        MongoUtils.setString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, _maxMemoryPolicy.toString(), true);
-        MongoUtils.setLong(dbObject, PAGE_SIZE_FIELD_NAME, _pageSize, true);
-        MongoUtils.setLong(dbObject, PAGE_COUNT_CACHE_FIELD_NAME, _pageCountCache, true);
-        MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords, true);
+        MongoUtils.setLong(dbObject, STROAGE_MAX_KEYWORDS, _storageMaxKeywords, true);
 
         // Parsers
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
@@ -484,14 +480,14 @@ public class RepositoryInfoBO extends BO implements Serializable
     /**
      * Returns the maximum number of keywords to store.
      */
-    public long getMaxKeywords()
+    public long getStorageMaxKeywords()
     {
-        return _maxKeywords;
+        return _storageMaxKeywords;
     }
 
-    public void setMaxKeywords(long parserMaxKeywords)
+    public void setStorageMaxKeywords(long parserMaxKeywords)
     {
-        _maxKeywords = parserMaxKeywords;
+        _storageMaxKeywords = parserMaxKeywords;
     }
 
     /**

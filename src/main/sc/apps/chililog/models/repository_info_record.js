@@ -10,8 +10,7 @@
  @extends SC.Record
  @version 0.1
  */
-Chililog.RepositoryInfoRecord = SC.Record.extend(
-/** @scope Chililog.RepositoryInfoRecord.prototype */ {
+Chililog.RepositoryInfoRecord = SC.Record.extend({
 
   primaryKey: Chililog.DOCUMENT_ID_RECORD_FIELD_NAME,
 
@@ -20,20 +19,20 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
   name: SC.Record.attr(String, { defaultValue: '', isRequired: YES }),
   displayName: SC.Record.attr(String),
   description: SC.Record.attr(String),
-  startupStatus: SC.Record.attr(String, { defaultValue: 'ONLINE', isRequired: YES }),
+  startupStatus: SC.Record.attr(String, { defaultValue: Chililog.REPOSITORY_ONLINE, isRequired: YES }),
 
-  readQueueDurable: SC.Record.attr(Boolean, { defaultValue: NO }),
-  readQueuePassword: SC.Record.attr(String, { defaultValue: '' }),
+  publisherPassword: SC.Record.attr(String, { defaultValue: '' }),
+  subscriberPassword: SC.Record.attr(String, { defaultValue: '' }),
 
-  writeQueueDurable: SC.Record.attr(Boolean, { defaultValue: NO }),
-  writeQueuePassword: SC.Record.attr(String),
-  writeQueueWorkerCount: SC.Record.attr(Number),
-  writeQueueMaxMemory: SC.Record.attr(Number),
-  writeQueueMaxMemoryPolicy: SC.Record.attr(String, { defaultValue: 'DROP' }),
-  writeQueuePageSize: SC.Record.attr(Number),
-  writeQueuePageCountCache: SC.Record.attr(Number),
+  storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
+  storageQueueDurableIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
+  storageQueueWorkerCount: SC.Record.attr(Number),
+  storageMaxKeywords: SC.Record.attr(Number),
 
-  maxKeywords: SC.Record.attr(Number),
+  maxMemory: SC.Record.attr(Number),
+  maxMemoryPolicy: SC.Record.attr(String, { defaultValue: Chililog.REPOSITORY_MAX_MEMORY_POLICY_DROP }),
+  pageSize: SC.Record.attr(Number),
+  pageCountCache: SC.Record.attr(Number),
 
   displayNameOrName: function() {
     var displayName = this.get('displayName');
@@ -70,13 +69,12 @@ Chililog.RepositoryInfoRecord = SC.Record.extend(
    */
   updateStatus: function(repositoryRecord) {
     var s = repositoryRecord.get('currentStatus');
-    this.set('isOnline', s === 'ONLINE');
+    var isOnline = (!SC.empty(s) && s === Chililog.REPOSITORY_ONLINE);
+    this.set('isOnline', isOnline);
     this.set('currentStatus', s);
 
-    var text = '_configureRepositoryInfoDetailView.Status.Offline'.loc();
-    if (!SC.empty(s) && s === 'ONLINE') {
-      text = '_configureRepositoryInfoDetailView.Status.Online'.loc();
-    }
+    var text = isOnline ? '_configureRepositoryInfoDetailView.Status.Online'.loc() :
+      '_configureRepositoryInfoDetailView.Status.Offline'.loc();
     this.set('currentStatusText', text);
   },
 
@@ -130,16 +128,16 @@ Chililog.REPOSITORY_INFO_RECORD_MAP = [
   ['description' ,'Description'],
   ['startupStatus' ,'StartupStatus'],
 
-  ['readQueueDurable' ,'ReadQueueDurable'],
-  ['readQueuePassword' ,'ReadQueuePassword'],
+  ['publisherPassword' ,'PublisherPassword'],
+  ['subscriberPassword' ,'SubscriberPassword'],
 
-  ['writeQueueDurable' ,'WriteQueueDurable'],
-  ['writeQueuePassword' ,'WriteQueuePassword'],
-  ['writeQueueWorkerCount' ,'WriteQueueWorkerCount'],
-  ['writeQueueMaxMemory' ,'WriteQueueMaxMemory'],
-  ['writeQueueMaxMemoryPolicy' ,'WriteQueueMaxMemoryPolicy'],
-  ['writeQueuePageSize' ,'WriteQueuePageSize'],
-  ['writeQueuePageCountCache' ,'WriteQueuePageCountCache'],
-  ['maxKeywords' ,'MaxKeywords']
+  ['storeEntriesIndicator' ,'StoreEntriesIndicator'],
+  ['storageQueueDurableIndicator' ,'StorageQueueDurableIndicator'],
+  ['storageQueueWorkerCount' ,'StorageQueueWorkerCount'],
+  ['storageMaxKeywords' ,'StorageMaxKeywords'],
 
+  ['maxMemory' ,'MaxMemory'],
+  ['maxMemoryPolicy' ,'MaxMemoryPolicy'],
+  ['pageSize' ,'PageSize'],
+  ['pageCountCache' ,'PageCountCache']
 ];

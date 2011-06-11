@@ -25,7 +25,8 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
       this.setPath('repositoryAccessArrayController.content', null);
       return;
     }
-    
+
+    // Update the user access details
     var repositoryName = record.get('name');
     var users = Chililog.store.find(Chililog.UserRecord);
     var repositoryAccessArray = [];
@@ -88,9 +89,9 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
     var isSystemAdministrator = Chililog.sessionDataController.get('isSystemAdministrator');
     var isRepositoryAdministrator = Chililog.sessionDataController.get('isRepositoryAdministrator');
     var tabItems = [
-     { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryAttributesView'},
-     { title: '_configureRepositoryInfoDetailView.WriteQueueAttributes'.loc(), value: 'Chililog.repositoryWriteQueueAttributesView'},
-     { title: '_configureRepositoryInfoDetailView.ReadQueueAttributes'.loc(), value: 'Chililog.repositoryReadQueueAttributesView'},
+      { title: '_configureRepositoryInfoDetailView.GeneralAttributes'.loc(), value: 'Chililog.repositoryGeneralAttributesView'},
+      { title: '_configureRepositoryInfoDetailView.PubSubAttributes'.loc(), value: 'Chililog.repositoryPubSubAttributesView'},
+      { title: '_configureRepositoryInfoDetailView.StorageAttributes'.loc(), value: 'Chililog.repositoryStorageAttributesView'}
     ];
 
     if (isSystemAdministrator) {
@@ -101,7 +102,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
 
     this.set('tabItems', tabItems);
   }.observes('Chililog.sessionDataController.loggedInUser'),
-  
+
   /**
    * Flag to denote if we can delete this record or not
    * @type Boolean
@@ -116,29 +117,8 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
   /**
    * Address of the write queue
    */
-  writeQueueAddress: function() {
-    return 'repository.%@.write'.fmt(this.get('name'));
-  }.property('name').cacheable(),
-
-  /**
-   * Login username to access the write queue
-   */
-  writeQueueUsername: function() {
-    return this.get('name');
-  }.property('name').cacheable(),
-
-  /**
-   * Address of the read queue
-   */
-  readQueueAddress: function() {
-    return 'repository.%@.read'.fmt(this.get('name'));
-  }.property('name').cacheable(),
-
-  /**
-   * Login username of the read queue
-   */
-  readQueueUsername: function() {
-    return this.get('name');
+  address: function() {
+    return 'repo.%@'.fmt(this.get('name'));
   }.property('name').cacheable(),
 
   /**
@@ -171,11 +151,11 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    * Show the modal details form
    */
   show: function() {
-    Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryAttributesView');
+    Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryGeneralAttributesView');
     Chililog.configureRepositoryInfoDetailView.append();
 
     // What for form to show before setting focus
-    this.setFocusOnField(Chililog.repositoryAttributesView.getPath('name.field'), 100);
+    this.setFocusOnField(Chililog.repositoryGeneralAttributesView.getPath('name.field'), 100);
   },
 
   /**
@@ -210,30 +190,30 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
    */
   save: function() {
     // Check field values
-    var result = this.findFieldAndValidate(Chililog.repositoryAttributesView);
+    var result = this.findFieldAndValidate(Chililog.repositoryGeneralAttributesView);
     if (result !== SC.VALIDATE_OK) {
-      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryAttributesView');
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryGeneralAttributesView');
       this.showError(result);
       return;
     }
-    result = this.findFieldAndValidate(Chililog.repositoryWriteQueueAttributesView);
+    result = this.findFieldAndValidate(Chililog.repositoryPubSubAttributesView);
     if (result !== SC.VALIDATE_OK) {
-      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryWriteQueueAttributesView');
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryPubSubAttributesView');
       this.showError(result);
       return;
     }
-    result = this.findFieldAndValidate(Chililog.repositoryReadQueueAttributesView);
+    result = this.findFieldAndValidate(Chililog.repositoryStorageAttributesView);
     if (result !== SC.VALIDATE_OK) {
-      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryReadQueueAttributesView');
+      Chililog.configureRepositoryInfoDetailView.setPath('contentView.body.nowShowing', 'Chililog.repositoryStorageAttributesView');
       this.showError(result);
       return;
     }
 
     // Check that page file size < max memory
-    if (this.get('writeQueuePageSize') > this.get('writeQueueMaxMemory')) {
-      this.showError(Chililog.$error('_configureRepositoryInfoDetailView.WriteQueuePageSize.InvalidSize',
-        [this.get('writeQueuePageSize'), this.get('writeQueueMaxMemory')],
-        Chililog.writeQueueAttributesView.getPath('contentView.writeQueuePageSize.field')));
+    if (this.get('pageSize') > this.get('maxMemory')) {
+      this.showError(Chililog.$error('_configureRepositoryInfoDetailView.PageSize.InvalidSize',
+        [this.get('pageSize'), this.get('maxMemory')],
+        Chililog.repositoryAddressAttributesView.getPath('contentView.pageSize.field')));
       return;
     }
 
