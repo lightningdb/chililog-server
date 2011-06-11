@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -141,7 +142,7 @@ public class RepositoryTest
     }
 
     @Test
-    public void testOK() throws Exception
+    public void testBasicOK() throws Exception
     {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
@@ -213,17 +214,6 @@ public class RepositoryTest
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
-        // try to start again - should error
-        try
-        {
-            repo.start();
-            fail();
-        }
-        catch (Exception ex)
-        {
-            assertEquals(ChiliLogException.class, ex.getClass());
-        }
-
         // Try to update repo - should error because it is not off line
         // Simulate we getting new repoInfo from the DB
         try
@@ -238,19 +228,20 @@ public class RepositoryTest
 
         // Always wait for writer threads to properly start
         Thread.sleep(1000);
+        assertEquals(2, repo.getStorageWorkers().size());
 
         // Stop
         repo.stop();
         assertEquals(Status.OFFLINE, repo.getStatus());
 
-        // Update
+        // Update worker count from 2 to 10
         _repoInfo.setStorageQueueWorkerCount(10);
         repo.setRepoInfo(_repoInfo);
 
         // Restart
         repo.start();
 
-        // Write some repository entries
+        // Write 10,000 repository entries
         ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
                 REPOSITORY_PUBLISHER_PASSWORD);
 
@@ -274,11 +265,11 @@ public class RepositoryTest
         Thread.sleep(5000);
 
         // Check that threads are still running
-        for (RepositoryStorageWorker rw : repo.getWriters())
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
         {
             assertTrue(rw.isRunning());
         }
-        assertEquals(10, repo.getWriters().size());
+        assertEquals(10, repo.getStorageWorkers().size());
 
         // Make sure that we've processed all the messages
         QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
@@ -292,6 +283,106 @@ public class RepositoryTest
         // Stop
         repo.stop();
         assertEquals(Status.OFFLINE, repo.getStatus());
+        MqManager.getInstance().stop();
+
+        // Reset count
+        _repoInfo.setStorageQueueWorkerCount(2);
+    }
+
+    @Test
+    public void testStartStopRepositoryInfo() throws Exception
+    {
+        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
+        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+
+        // Start
+        MqManager.getInstance().start();
+        Repository repo = new Repository(_repoInfo);
+        repo.start();
+        assertEquals(Status.ONLINE, repo.getStatus());
+
+        // try to start again - should error
+        try
+        {
+            repo.start();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            assertEquals(ChiliLogException.class, ex.getClass());
+        }
+
+        // Write some repository entries
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
+                REPOSITORY_PUBLISHER_PASSWORD);
+
+        String queueAddress = _repoInfo.getPubSubAddress();
+        ClientProducer producer = producerSession.createProducer(queueAddress);
+
+        for (int i = 1; i <= 10; i++)
+        {
+            ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
+            message.getBodyBuffer().writeString(entry1);
+            producer.send(message);
+            producerSession.commit();
+        }
+
+        // Make sure that we've processed all the messages
+        Thread.sleep(3000);
+        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+                repo.getRepoInfo().getStorageQueueName());
+        assertEquals(0, qc.getMessageCount());
+
+        // Make sure they are in the database
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(10, coll.find().count());
+
+        // Stop repository
+        repo.stop();
+        assertEquals(Status.OFFLINE, repo.getStatus());
+
+        // Stop again - should be no errors
+        repo.stop();
+        assertEquals(Status.OFFLINE, repo.getStatus());
+
+        // Sending a message after stopping should result in an error
+        // Have to wait for at least 10 seconds for credentials cache to timeout
+        // security-invalidation-interval defaults to 10000 milliseconds
+        Thread.sleep(11000);
+        try
+        {
+            ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
+            message.getBodyBuffer().writeString(entry1);
+            producer.send(message);
+            producerSession.commit();
+        }
+        catch (Exception ex)
+        {
+            // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address repo.junit_test]
+            assertEquals(HornetQException.class, ex.getClass());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, ((HornetQException)ex).getCode());
+        }
+
+        // Check that there are no threads are still running
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
+        {
+            assertTrue(!rw.isRunning());
+        }
+        assertEquals(0, repo.getStorageWorkers().size());
+        
+        // Stop
+        producer.close();
+        producerSession.close();
         MqManager.getInstance().stop();
 
         // Reset count
@@ -343,11 +434,11 @@ public class RepositoryTest
         Thread.sleep(3000);
 
         // Check that threads are still running
-        for (RepositoryStorageWorker rw : repo.getWriters())
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
         {
             assertTrue(rw.isRunning());
         }
-        assertEquals(2, repo.getWriters().size());
+        assertEquals(2, repo.getStorageWorkers().size());
 
         // Make sure that bad entries have been removed from the write queue
         QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),

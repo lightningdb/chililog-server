@@ -211,7 +211,7 @@ public class MqManager
                 .getName()));
         _csf = _sl.createSessionFactory();
 
-        // Add security
+        // Add security to JMS management API to make it hard to hack
         _hornetqServer.getHornetQServerControl().addSecuritySettings("jms.queue.hornetq.management", _systemRoleName,
                 _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName);
 

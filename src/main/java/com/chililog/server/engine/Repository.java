@@ -120,6 +120,8 @@ public class Repository
 
         try
         {
+            _logger.info("Starting Repository '%s'", _repoInfo.getName());
+
             MqManager mqManager = MqManager.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
 
@@ -194,6 +196,8 @@ public class Repository
     {
         try
         {
+            _logger.info("Stopping Repository '%s'", _repoInfo.getName());
+
             MqManager mqManager = MqManager.getInstance();
 
             // Remove permissions so that nobody
@@ -246,9 +250,9 @@ public class Repository
     }
 
     /**
-     * Returns the array of writer threads. This method should only be used for our unit testing!
+     * Returns the array of storage worker threads. This method should only be used for our unit testing!
      */
-    ArrayList<RepositoryStorageWorker> getWriters()
+    ArrayList<RepositoryStorageWorker> getStorageWorkers()
     {
         return _storageWorkers;
     }
