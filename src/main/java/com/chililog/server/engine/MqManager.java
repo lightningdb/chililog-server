@@ -125,7 +125,7 @@ public class MqManager
     }
 
     /**
-     * Returns the trusted system user name    
+     * Returns the trusted system user name
      */
     public String getSystemUsername()
     {
@@ -133,7 +133,7 @@ public class MqManager
     }
 
     /**
-     * Returns the trusted system user's password    
+     * Returns the trusted system user's password
      */
     public String getSystemPassword()
     {
@@ -141,7 +141,7 @@ public class MqManager
     }
 
     /**
-     * Returns the trusted system user's role    
+     * Returns the trusted system user's role
      */
     public String getSystemRoleName()
     {
@@ -392,6 +392,66 @@ public class MqManager
     }
 
     /**
+     * Adds or updates the properties of an address
+     * 
+     * @param address
+     *            matching address
+     * @param DLA
+     *            address to send dead letters (undelivered messages). Maybe null.
+     * @param expiryAddress
+     *            defines where to send a message that has expired
+     * @param lastValueQueue
+     *            Any queues created for this address a last value queue; i.e. queues which discard any messages when a
+     *            newer message with the same value for a well-defined last-value property is put in the queue
+     * @param deliveryAttempts
+     *            defines how many time a cancelled message can be redelivered before sending to the dead-letter-address
+     * @param maxSizeBytes
+     *            What's the max memory the address could have before entering on page mode
+     * @param pageSizeBytes
+     *            The size of each page file used on the paging system
+     * @param pageMaxCacheSize
+     *            The system will keep up to <page-max-cache-size page files in memory to optimize IO during paging
+     *            navigation
+     * @param redeliveryDelay
+     *            defines how long to wait before attempting redelivery of a cancelled message
+     * @param redistributionDelay
+     *            defines how long to wait when the last consumer is closed on a queue before redistributing any
+     *            messages
+     * @param sendToDLAOnNoRoute
+     *            If a message is sent to an address, but the server does not route it to any queues, for example, there
+     *            might be no queues bound to that address, or none of the queues have filters that match, then normally
+     *            that message would be discarded. However if this parameter is set to true for that address, if the
+     *            message is not routed to any queues it will instead be sent to the dead letter address (DLA) for that
+     *            address, if it exists.
+     * @param addressFullMessagePolicy
+     *            This attribute can have one of the following values: PAGE, DROP or BLOCK and determines what happens
+     *            when an address where max-size-bytes is specified becomes full. The default value is PAGE. If the
+     *            value is PAGE then further messages will be paged to disk. If the value is DROP then further messages
+     *            will be silently dropped. If the value is BLOCK then client message producers will block when they try
+     *            and send further messages.
+     * @throws Exception
+     */
+    public void addAddressSettings(final String address,
+                                   final String DLA,
+                                   final String expiryAddress,
+                                   final boolean lastValueQueue,
+                                   final int deliveryAttempts,
+                                   final long maxSizeBytes,
+                                   final int pageSizeBytes,
+                                   final int pageMaxCacheSize,
+                                   final long redeliveryDelay,
+                                   final long redistributionDelay,
+                                   final boolean sendToDLAOnNoRoute,
+                                   final String addressFullMessagePolicy) throws Exception
+    {
+        HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
+        hqControl.addAddressSettings(address, DLA, expiryAddress, lastValueQueue, deliveryAttempts, maxSizeBytes,
+                pageSizeBytes, pageMaxCacheSize, redeliveryDelay, redistributionDelay, sendToDLAOnNoRoute,
+                addressFullMessagePolicy);
+        return;
+    }
+
+    /**
      * Add security settings to a queue
      * 
      * @param address
@@ -434,12 +494,11 @@ public class MqManager
      * @param queueName
      *            Name of the queue
      * @param isDurable
-     *            Flag to indicate if this queue is to be persisted. Set to false for temporary queues. 
+     *            Flag to indicate if this queue is to be persisted. Set to false for temporary queues.
      * @throws Exception
      *             if error
      */
-    public void deployQueue(String queueAddress, String queueName, boolean isDurable)
-            throws Exception
+    public void deployQueue(String queueAddress, String queueName, boolean isDurable) throws Exception
     {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         boolean doCreate = false;

@@ -130,12 +130,12 @@ public class RepositoryInfoTest
         repoInfo.setName("test_repoinfo_common");
         repoInfo.setDisplayName("Test 1");
         repoInfo.setDescription("description");
-        repoInfo.setReadQueueDurable(true);
-        repoInfo.setWriteQueueDurable(true);
-        repoInfo.setWriteQueueWorkerCount(10);
-        repoInfo.setWriteQueueMaxMemory(2);
-        repoInfo.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
-        repoInfo.setWriteQueuePageSize(1);
+        repoInfo.setStoreEntriesIndicator(true);
+        repoInfo.setStorageQueueDurableIndicator(true);
+        repoInfo.setStorageQueueWorkerCount(10);
+        repoInfo.setMaxMemory(2);
+        repoInfo.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
+        repoInfo.setPageSize(1);
         repoInfo.setMaxKeywords(100);
 
         RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
@@ -219,12 +219,12 @@ public class RepositoryInfoTest
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
-        createRepoInfoAO.setReadQueueDurable(true);
-        createRepoInfoAO.setWriteQueueDurable(true);
-        createRepoInfoAO.setWriteQueueWorkerCount(2);
-        createRepoInfoAO.setWriteQueueMaxMemory(10);
-        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
-        createRepoInfoAO.setWriteQueuePageSize(2);
+        createRepoInfoAO.setStoreEntriesIndicator(true);
+        createRepoInfoAO.setStorageQueueDurableIndicator(true);
+        createRepoInfoAO.setStorageQueueWorkerCount(2);
+        createRepoInfoAO.setMaxMemory(10);
+        createRepoInfoAO.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
+        createRepoInfoAO.setPageSize(2);
         createRepoInfoAO.setMaxKeywords(100);
 
         RepositoryParserInfoAO createRepoParserInfo = new RepositoryParserInfoAO();
@@ -253,12 +253,12 @@ public class RepositoryInfoTest
         assertEquals("Repository Test 1", createResponseAO.getDisplayName());
         assertEquals("description", createResponseAO.getDescription());
         assertEquals(Status.ONLINE, createResponseAO.getStartupStatus());
-        assertEquals(true, createResponseAO.isReadQueueDurable());
-        assertEquals(true, createResponseAO.isWriteQueueDurable());
-        assertEquals(2, createResponseAO.getWriteQueueWorkerCount());
-        assertEquals(10, createResponseAO.getWriteQueueMaxMemory());
-        assertEquals(MaxMemoryPolicy.BLOCK, createResponseAO.getWriteQueueMaxMemoryPolicy());
-        assertEquals(2, createResponseAO.getWriteQueuePageSize());
+        assertEquals(true, createResponseAO.getStoreEntriesIndicator());
+        assertEquals(true, createResponseAO.getStorageQueueDurableIndicator());
+        assertEquals(2, createResponseAO.getStorageQueueWorkerCount());
+        assertEquals(10, createResponseAO.getMaxMemory());
+        assertEquals(MaxMemoryPolicy.BLOCK, createResponseAO.getMaxMemoryPolicy());
+        assertEquals(2, createResponseAO.getPageSize());
         assertEquals(100L, createResponseAO.getMaxKeywords());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
 
@@ -296,12 +296,12 @@ public class RepositoryInfoTest
         assertEquals("Repository Test 1", readResponseAO.getDisplayName());
         assertEquals("description", readResponseAO.getDescription());
         assertEquals(Status.ONLINE, readResponseAO.getStartupStatus());
-        assertEquals(true, readResponseAO.isReadQueueDurable());
-        assertEquals(true, readResponseAO.isWriteQueueDurable());
-        assertEquals(2, readResponseAO.getWriteQueueWorkerCount());
-        assertEquals(10, readResponseAO.getWriteQueueMaxMemory());
-        assertEquals(MaxMemoryPolicy.BLOCK, readResponseAO.getWriteQueueMaxMemoryPolicy());
-        assertEquals(2, readResponseAO.getWriteQueuePageSize());
+        assertEquals(true, readResponseAO.getStoreEntriesIndicator());
+        assertEquals(true, readResponseAO.getStorageQueueDurableIndicator());
+        assertEquals(2, readResponseAO.getStorageQueueWorkerCount());
+        assertEquals(10, readResponseAO.getMaxMemory());
+        assertEquals(MaxMemoryPolicy.BLOCK, readResponseAO.getMaxMemoryPolicy());
+        assertEquals(2, readResponseAO.getPageSize());
         assertEquals(100L, createResponseAO.getMaxKeywords());
 
         createParserResponseAO = createResponseAO.getParsers()[0];
@@ -761,12 +761,12 @@ public class RepositoryInfoTest
         createRepoInfoAO.setDisplayName("Repository Test 1");
         createRepoInfoAO.setDescription("description");
         createRepoInfoAO.setStartupStatus(Status.ONLINE);
-        createRepoInfoAO.setReadQueueDurable(true);
-        createRepoInfoAO.setWriteQueueDurable(true);
-        createRepoInfoAO.setWriteQueueWorkerCount(2);
-        createRepoInfoAO.setWriteQueueMaxMemory(10);
-        createRepoInfoAO.setWriteQueueMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
-        createRepoInfoAO.setWriteQueuePageSize(2);
+        createRepoInfoAO.setStoreEntriesIndicator(true);
+        createRepoInfoAO.setStorageQueueDurableIndicator(true);
+        createRepoInfoAO.setStorageQueueWorkerCount(2);
+        createRepoInfoAO.setMaxMemory(10);
+        createRepoInfoAO.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
+        createRepoInfoAO.setPageSize(2);
 
         ApiUtils.sendJSON(httpConn, createRepoInfoAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);

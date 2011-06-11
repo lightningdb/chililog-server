@@ -44,8 +44,8 @@ import com.chililog.server.data.RepositoryInfoBO.Status;
  * in mongoDB as a record in a collection.</li>
  * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
  * processing.</li>
- * <li>The worker threads, {@link RepositoryStorageWorker}, reads the queued log entries and writes them to mongoDB using
- * {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository
+ * <li>The worker threads, {@link RepositoryStorageWorker}, reads the queued log entries and writes them to mongoDB
+ * using {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository
  * definition in {@link RepositoryInfoBO}.</li>
  * </ul>
  * 
@@ -108,10 +108,7 @@ public class Repository
 
     /**
      * <p>
-     * Starts this repository.
-     * </p>
-     * <p>
-     * The message queues are created and activated. Worker threads are created.
+     * Starts this repository. Log entries can be produced and consumed.
      * </p>
      */
     public synchronized void start() throws ChiliLogException
@@ -121,66 +118,41 @@ public class Repository
             throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoInfo.getName());
         }
 
-        setupHornetQAddress();
-        startStorage();
-        _status = Status.ONLINE;
-    }
-
-    /**
-     * Set security upon the pub/sub address
-     */
-    public void setupHornetQAddress() throws ChiliLogException
-    {
         try
         {
             MqManager mqManager = MqManager.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
 
-            // Security
+            // Setup permissions
             mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), _repoInfo.getPublisherRoleName(),
                     _repoInfo.getSubscriberRoleName());
 
-            // Setup queue properties. See
+            // Update address properties. See
             // http://hornetq.sourceforge.net/docs/hornetq-2.1.2.Final/user-manual/en/html_single/index.html#queue-attributes.address-settings
-            mqManager
-                    .getNativeServer()
-                    .getHornetQServerControl()
-                    .addAddressSettings(_repoInfo.getStorageQueueName(), appProperties.getMqDeadLetterAddress(), null,
-                            false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getMaxMemory(),
-                            (int) _repoInfo.getPageSize(), (int) _repoInfo.getPageCountCache(),
-                            appProperties.getMqRedeliveryDelayMilliseconds(), -1, true,
-                            _repoInfo.getMaxMemoryPolicy().toString());
-        }
-        catch (Exception ex)
-        {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_QUEUE_ERROR, _repoInfo.getPubSubAddress(),
-                    _repoInfo.getName(), ex.getMessage());
-        }
-    }
+            mqManager.addAddressSettings(_repoInfo.getPubSubAddress(), appProperties.getMqDeadLetterAddress(), null,
+                    false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getMaxMemory(), (int) _repoInfo
+                            .getPageSize(), (int) _repoInfo.getPageCountCache(), appProperties
+                            .getMqRedeliveryDelayMilliseconds(), -1, true, _repoInfo.getMaxMemoryPolicy().toString());
 
-    /**
-     * Start storage queue and workers (if required)
-     */
-    public void startStorage() throws ChiliLogException
-    {
-        try
-        {
-            if (!_repoInfo.getStoreEntriesIndicator())
+            // If we want to store entries, then start queue on the address and workers to consume and write entries
+            if (_repoInfo.getStoreEntriesIndicator())
             {
-                return;
+                // Create queue
+                mqManager.deployQueue(_repoInfo.getPubSubAddress(), _repoInfo.getStorageQueueName(),
+                        _repoInfo.getStorageQueueDurableIndicator());
+
+                // Start our storage workers
+                startStorageWorkers();
             }
 
-            // Create queue
-            MqManager mqManager = MqManager.getInstance();
-            mqManager.deployQueue(_repoInfo.getPubSubAddress(), _repoInfo.getStorageQueueName(),
-                    _repoInfo.getStorageQueueDurableIndicator());
-
-            startStorageWorkers();
-
+            // Finish
+            _status = Status.ONLINE;
+            _logger.info("Repository '%s' started.", _repoInfo.getName());
+            return;
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_QUEUE_ERROR, _repoInfo.getPubSubAddress(),
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_ERROR, _repoInfo.getPubSubAddress(),
                     _repoInfo.getName(), ex.getMessage());
         }
     }
@@ -215,21 +187,33 @@ public class Repository
 
     /**
      * <p>
-     * Stops this repository.
+     * Stops this repository. Log entries cannot be produced or consumed.
      * </p>
-     * <p>
-     * We really just stop the workers. No need to delete the queue unless changes are made and the repository is
-     * started again (see <code>MqManager.deployQueue()</code>). In this way, unprocessed messages are kept in the
-     * queue.
-     * </p>
-     * 
-     * @throws InterruptedException
      */
-    public synchronized void stop() throws ChiliLogException, InterruptedException
+    public synchronized void stop() throws ChiliLogException
     {
-        stopStorageWorkers();
+        try
+        {
+            MqManager mqManager = MqManager.getInstance();
 
-        _status = Status.OFFLINE;
+            // Remove permissions so that nobody
+            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), null, null);
+
+            // Stop workers
+            stopStorageWorkers();
+
+            // Disconnect remote clients
+
+            // Finish
+            _status = Status.OFFLINE;
+            _logger.info("Repository '%s' stopped.", _repoInfo.getName());
+            return;
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_ERROR, _repoInfo.getPubSubAddress(),
+                    _repoInfo.getName(), ex.getMessage());
+        }
     }
 
     /**
