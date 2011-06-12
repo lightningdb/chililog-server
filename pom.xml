@@ -56,7 +56,18 @@
         </configuration>
       </plugin>
 
-      <!-- Plugin to build Sproutcore UI -->
+      <!-- Plugin to clean and build WorkBench UI using sproutcore -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.4.1</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${basedir}/src/main/sc/tmp</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
@@ -71,12 +82,12 @@
               <executable>sc-build</executable>
               <!-- mode is 'debug' or 'production' -->
               <commandlineArgs>--mode=production</commandlineArgs>
-              <workingDirectory>/home/vibul/dev/chililog/chililog-server/src/main/sc</workingDirectory>
+              <workingDirectory>${basedir}/src/main/sc</workingDirectory>
             </configuration>
           </execution>
         </executions>
       </plugin>
-      
+
       <!-- Javadocs. Generate during packaging. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -119,8 +130,10 @@
               <source>
                 import java.util.Date
                 import java.text.MessageFormat
-                def vartimestamp = MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Date())
-                project.properties['build.timestamp'] = vartimestamp
+                def vartimestamp =
+                MessageFormat.format("{0,date,yyyy-MM-dd HH:mm:ss}", new Date())
+                project.properties['build.timestamp'] =
+                vartimestamp
                 project.properties['build.machinename'] = java.net.InetAddress.getLocalHost().getHostName()
                 project.properties['build.username'] = System.getProperty("user.name")
               </source>
@@ -234,13 +247,13 @@
       <version>3.0.3</version>
       <scope>compile</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>1.6</version>
       <scope>compile</scope>
-    </dependency>    
+    </dependency>
   </dependencies>
 
   <profiles>
