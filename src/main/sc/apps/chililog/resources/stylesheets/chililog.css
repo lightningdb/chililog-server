@@ -6,19 +6,9 @@
     font-weight: bold;
 }
 
-.app-title {
-    font-weight: bold;
-    color: #333333;
-}
-
 .sc-label-view.sc-huge-size {
     font-size: 24px;
     line-height: 30px;
-}
-
-.safari .sc-text-field-view .border {
-    -webkit-appearance: none; /*override default value 'textfield'*/
-    border: 1px solid #999;
 }
 
 .sc-label-view.sc-regular-size {
@@ -30,9 +20,18 @@
     font-size: 14px;
 }
 
+.ace.sc-segmented-view .ace.sc-segment-view .sc-button-label {
+    font-weight: bold;
+}
+
 /*******************************************
  * Main page
  *******************************************/
+.app-title {
+    font-weight: bold;
+    color: #333333;
+}
+
 .ace.toolbar.app-toolbar {
     -webkit-box-shadow: 0px 0px 0px 0px;
 }
@@ -46,6 +45,11 @@
  *******************************************/
 
 /* Textbox */
+.safari .sc-text-field-view .border {
+    -webkit-appearance: none; /*override default value 'textfield'*/
+    border: 1px solid #999;
+}
+
 .mozilla .sc-view .sc-text-field-view.focus {
     outline: solid 2px #ffd700;
     outline-offset: -1px;
@@ -107,6 +111,10 @@
     border: 1px solid #999;
     background-color: #fff;
     color: #222;
+}
+
+.sc-view.table .sc-table-header label {
+    font-weight: bold;
 }
 
 .sc-view.table .sc-table-header label {
@@ -273,7 +281,7 @@
 }
 
 /*******************************************
-* Search
+ Search
 *******************************************/
 .sc-table-data-view .table-cell .sc-label-view.severity-error {
     color: #FF0000;
@@ -288,4 +296,3 @@
 .sc-table-data-view .table-cell .sc-label-view .keyword {
     background-color: yellow;
 }
-

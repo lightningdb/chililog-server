@@ -21,6 +21,7 @@ Chililog.ConfigureUserDetailView = SC.PanelPane.design({
     title: SC.LabelView.design({
       layout: { top: 10, left: 10, right: 10, height: 30 },
       tagName: 'h1',
+      fontWeight: SC.BOLD_WEIGHT,
       controlSize: SC.HUGE_CONTROL_SIZE,
       valueBinding: 'Chililog.configureUserDetailViewController.title',
       localize: YES
@@ -62,6 +63,7 @@ Chililog.ConfigureUserDetailView = SC.PanelPane.design({
 
       deleteButton: SC.ButtonView.design({
         layout: {top: 0, centerX: 0, width: 80 },
+        classNames: ['delete-button'],
         title: '_delete',
         localize: YES,
         controlSize: SC.HUGE_CONTROL_SIZE,

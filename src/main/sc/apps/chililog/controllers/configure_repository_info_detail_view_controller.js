@@ -155,7 +155,7 @@ Chililog.configureRepositoryInfoDetailViewController = SC.ObjectController.creat
     Chililog.configureRepositoryInfoDetailView.append();
 
     // What for form to show before setting focus
-    this.setFocusOnField(Chililog.repositoryGeneralAttributesView.getPath('name.field'), 100);
+    this.setFocusOnField(Chililog.repositoryGeneralAttributesView.getPath('name.field'), 300);
   },
 
   /**

@@ -3,7 +3,7 @@
 // Copyright: ©2011 My Company, Inc.
 // ==========================================================================
 
-Chililog.SearchListView = SC.LabelView.design({
+Chililog.SearchListView = SC.View.design({
   layout: { top: 0, left: 0, bottom: 0, right: 0 },
   childViews: 'basicSearch advancedSearch table footer noRowsFoundMessage'.w(),
 

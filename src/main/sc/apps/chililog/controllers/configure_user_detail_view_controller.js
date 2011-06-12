@@ -122,7 +122,7 @@ Chililog.configureUserDetailViewController = SC.ObjectController.create(Chililog
     Chililog.configureUserDetailView.append();
 
     // Set focus on the username field
-    this.setFocusOnField(Chililog.userAttributesView.getPath('username.field'), 100);
+    this.setFocusOnField(Chililog.userAttributesView.getPath('username.field'), 300);
   },
 
   /**

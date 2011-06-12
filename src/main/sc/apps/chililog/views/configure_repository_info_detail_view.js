@@ -20,6 +20,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
       layout: { top: 10, left: 10, right: 10, height: 30 },
       tagName: 'h1',
       controlSize: SC.HUGE_CONTROL_SIZE,
+      fontWeight: SC.BOLD_WEIGHT,
       valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.title',
       localize: YES
     }),
@@ -57,6 +58,7 @@ Chililog.ConfigureRepositoryInfoDetailView = SC.PanelPane.design({
 
       deleteButton: SC.ButtonView.design({
         layout: {top: 0, centerX: 0, width: 80 },
+        classNames: ['delete-button'],
         title: '_delete',
         localize: YES,
         controlSize: SC.HUGE_CONTROL_SIZE,

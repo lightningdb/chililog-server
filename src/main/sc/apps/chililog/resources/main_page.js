@@ -27,8 +27,7 @@ Chililog.mainPage = SC.Page.design({
       }),
 
       menuOptions: SC.SegmentedView.design({
-        layout: { top: 5, left: 10 },
-        classNames: ['bold'],
+        layout: { top: 5, left: 10, width: 500 },
         align: SC.ALIGN_LEFT,
         controlSize: SC.LARGE_CONTROL_SIZE,
         itemsBinding: 'Chililog.mainViewController.menuOptions',

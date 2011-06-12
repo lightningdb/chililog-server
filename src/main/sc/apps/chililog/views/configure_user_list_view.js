@@ -18,6 +18,7 @@ Chililog.ConfigureUserListView = SC.View.design({
   title: SC.LabelView.design({
     layout: { top: 5, left: 10, width: 400, height: 30 },
     tagName: 'h1',
+    fontWeight: SC.BOLD_WEIGHT,
     controlSize: SC.HUGE_CONTROL_SIZE,
     value: '_configureUserListView.Title',
     localize: YES

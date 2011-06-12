@@ -1,0 +1,16 @@
+
+@theme(sc-huge-size) {
+
+    $theme.button.delete-button {
+      @include slices("../images/delete-button.png", $left: 3, $right: 3);
+
+      color: white;
+        text-shadow: black 0.1em 0.1em 0.2em;
+
+      /* & is SCSS's way of continuing the parent selector; this translates to: $theme.button.active */
+      &.active {
+        @include slices("../images/delete-button-active.png", $left: 3, $right: 4);
+      }
+    }
+
+}
