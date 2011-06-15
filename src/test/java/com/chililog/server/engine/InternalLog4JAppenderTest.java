@@ -18,8 +18,6 @@
 
 package com.chililog.server.engine;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.net.InetAddress;
 import java.util.Date;
 

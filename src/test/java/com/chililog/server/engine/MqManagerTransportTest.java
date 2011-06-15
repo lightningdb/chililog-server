@@ -248,6 +248,7 @@ public class MqManagerTransportTest
 
     /**
      * Write with STOMP and read with STOMP
+     * 
      * @throws Exception
      */
     @Test
@@ -362,6 +363,7 @@ public class MqManagerTransportTest
 
     /**
      * Write with STOMP and read with CORE
+     * 
      * @throws Exception
      */
     @Test

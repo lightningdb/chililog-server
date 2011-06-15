@@ -19,6 +19,7 @@
 package com.chililog.server.engine.parsers;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.Log4JLogger;
@@ -86,6 +87,7 @@ public class DefaultEntryParser extends EntryParser
             
             RepositoryEntryBO entry = new RepositoryEntryBO();
             entry.setTimestamp(parseTimestamp(timestamp));
+            entry.setSavedTimestamp(new Date());
             entry.setSource(source);
             entry.setHost(host);
             entry.setSeverity(sev);

@@ -327,6 +327,11 @@ public class RepositoryEntryBO extends BO implements Serializable
 
             try
             {
+                if (codeOrDescription.length() > 1)
+                {
+                    return Enum.valueOf(Severity.class, codeOrDescription);
+                }
+                
                 // It should be quicker if we don't parse
                 if (codeOrDescription.equals("0"))
                 {
@@ -360,13 +365,8 @@ public class RepositoryEntryBO extends BO implements Serializable
                 {
                     return lookup[7];
                 }
-
-                if (codeOrDescription.length() == 1)
-                {
-                    return lookup[Integer.parseInt(codeOrDescription)];
-                }
-
-                return Enum.valueOf(Severity.class, codeOrDescription);
+                
+                return Severity.Information;
             }
             catch (Exception ex)
             {

@@ -77,7 +77,7 @@ public class DelimitedEntryParserTest
     }
 
     @Test
-    public void testPipe() throws ChiliLogException
+    public void testOK() throws ChiliLogException
     {
         RepositoryInfoBO repoInfo = new RepositoryInfoBO();
         repoInfo.setName("junit_test");
