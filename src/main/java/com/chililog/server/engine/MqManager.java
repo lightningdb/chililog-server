@@ -467,8 +467,10 @@ public class MqManager
     {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.removeSecuritySettings(address);
-        hqControl.addSecuritySettings(address, publisherRoles, subscriberRoles, _systemRoleName, _systemRoleName,
-                _systemRoleName, _systemRoleName, _systemRoleName);
+
+        String createQueueRoles = _systemRoleName + "," + subscriberRoles;
+        hqControl.addSecuritySettings(address, publisherRoles, subscriberRoles, createQueueRoles, _systemRoleName,
+                createQueueRoles, _systemRoleName, _systemRoleName);
     }
 
     /**
