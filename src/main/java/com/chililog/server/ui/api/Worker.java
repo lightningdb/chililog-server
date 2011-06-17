@@ -34,7 +34,6 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.data.ListCriteria;
 import com.chililog.server.data.MongoConnection;
-import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.ui.Strings;
@@ -307,7 +306,7 @@ public abstract class Worker
     }
 
     /**
-     * Returns an array of repository names to which the authenticated user has access
+     * Returns an array of repository names to which the authenticated user has workbench access
      * 
      * @return Array of repository names
      */
@@ -316,10 +315,14 @@ public abstract class Worker
         ArrayList<String> l = new ArrayList<String>();
         for (String role : _authenticatedUser.getRoles())
         {
-            String repoName = RepositoryInfoBO.getNameFromWorkBenchRoleName(role);
-            if (!StringUtils.isBlank(repoName) && !l.contains(repoName))
+            if (role.endsWith(UserBO.REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX)
+                    || role.endsWith(UserBO.REPOSITORY_WORKBENCH_ROLE_SUFFIX))
             {
-                l.add(repoName);
+                String repoName = UserBO.extractRepositoryNameFromRole(role);
+                if (!StringUtils.isBlank(repoName) && !l.contains(repoName))
+                {
+                    l.add(repoName);
+                }
             }
         }
         return l.toArray(new String[l.size()]);
@@ -517,7 +520,7 @@ public abstract class Worker
      * Process the incoming request.
      * 
      * @param requestContent
-     *            If <code>ContentIOStyle</code> is Byte, then <code>byte[]</code> is passed in. If file, then a 
+     *            If <code>ContentIOStyle</code> is Byte, then <code>byte[]</code> is passed in. If file, then a
      *            <code>File</code> will be passed in.
      * @return ApiResult to indicate the success/false of processing
      */
@@ -550,8 +553,8 @@ public abstract class Worker
      * Override this to implement worker specific processing
      * 
      * @param requestContent
-     *            If <code>ContentIOStyle</code> is <code>Byte</code>, then <code>byte[]</code> is passed in. 
-     *            If file, then a <code>File</code> will be passed in.
+     *            If <code>ContentIOStyle</code> is <code>Byte</code>, then <code>byte[]</code> is passed in. If file,
+     *            then a <code>File</code> will be passed in.
      * @return ApiResult to indicate the success/false of processing
      */
     public ApiResult processPut(Object requestContent) throws Exception

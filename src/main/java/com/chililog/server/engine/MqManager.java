@@ -47,7 +47,7 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.UserBO;
 
 /**
  * <p>
@@ -76,7 +76,6 @@ public class MqManager
     private ClientSessionFactory _csf;
     private String _systemUsername;
     private String _systemPassword;
-    private String _systemRoleName;
 
     /**
      * Returns the singleton instance for this class
@@ -113,7 +112,6 @@ public class MqManager
         {
             _systemUsername = AppProperties.getInstance().getMqSystemUsername();
             _systemPassword = AppProperties.getInstance().getMqSystemPassword();
-            _systemRoleName = RepositoryInfoBO.createHornetQRoleName(_systemUsername, _systemPassword);
             return;
         }
         catch (Exception e)
@@ -138,14 +136,6 @@ public class MqManager
     public String getSystemPassword()
     {
         return _systemPassword;
-    }
-
-    /**
-     * Returns the trusted system user's role
-     */
-    public String getSystemRoleName()
-    {
-        return _systemRoleName;
     }
 
     /**
@@ -177,7 +167,8 @@ public class MqManager
         config.setJournalDirectory(appProperties.getMqJournalDirectory());
         config.setPagingDirectory(appProperties.getMqPagingDirectory());
         config.setSecurityEnabled(true);
-
+        config.setSecurityInvalidationInterval(appProperties.getMqSecurityInvalidationInterval());
+        
         // Logging
         config.setLogDelegateFactoryClassName(Log4jLogDelegateFactory.class.getName());
 
@@ -212,8 +203,9 @@ public class MqManager
         _csf = _sl.createSessionFactory();
 
         // Add security to JMS management API to make it hard to hack
-        _hornetqServer.getHornetQServerControl().addSecuritySettings("jms.queue.hornetq.management", _systemRoleName,
-                _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName, _systemRoleName);
+        String adminRoleName = UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME;
+        _hornetqServer.getHornetQServerControl().addSecuritySettings("jms.queue.hornetq.management", adminRoleName,
+                adminRoleName, adminRoleName, adminRoleName, adminRoleName, adminRoleName, adminRoleName);
 
         _logger.info("Message Queue Started.");
         return;
@@ -465,12 +457,14 @@ public class MqManager
      */
     public void addSecuritySettings(String address, String publisherRoles, String subscriberRoles) throws Exception
     {
+        String adminRoleName = UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME;
+        
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.removeSecuritySettings(address);
 
-        String createQueueRoles = _systemRoleName + "," + subscriberRoles;
-        hqControl.addSecuritySettings(address, publisherRoles, subscriberRoles, createQueueRoles, _systemRoleName,
-                createQueueRoles, _systemRoleName, _systemRoleName);
+        String createQueueRoles = adminRoleName + "," + subscriberRoles;
+        hqControl.addSecuritySettings(address, publisherRoles, subscriberRoles, createQueueRoles, adminRoleName,
+                createQueueRoles, adminRoleName, adminRoleName);
     }
 
     /**

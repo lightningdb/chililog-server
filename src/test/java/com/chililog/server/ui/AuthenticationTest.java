@@ -78,7 +78,7 @@ public class AuthenticationTest
         user.setUsername("AuthenticationTest_UpdateProfile");
         user.setEmailAddress("AuthenticationTest_UpdateProfile@chililog.com");
         user.setPassword("hello there", true);
-        user.addRole("repo.sandpit.standard");
+        user.addRole("repo.sandpit.workbench");
         user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
@@ -87,7 +87,7 @@ public class AuthenticationTest
         user.setUsername("AuthenticationTest_ChangePassword");
         user.setEmailAddress("AuthenticationTest_ChangePassword@chililog.com");
         user.setPassword("hello there", true);
-        user.addRole("repo.sandpit.standard");
+        user.addRole("repo.sandpit.workbench");
         user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
@@ -107,6 +107,16 @@ public class AuthenticationTest
         user.setPassword("hello there", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
         user.setStatus(Status.Locked);
+        UserController.getInstance().save(_db, user);
+
+        // Create no access user
+        user = new UserBO();
+        user.setUsername("AuthenticationTest_AccessDeniedUser");
+        user.setEmailAddress("AuthenticationTest_AccessDeniedUser@chililog.com");
+        user.setPassword("hello there", true);
+        user.addRole("repo.sandpit.publisher");
+        user.addRole("repo.chililog.subscriber");
+        user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
         WebServerManager.getInstance().start();
@@ -262,24 +272,6 @@ public class AuthenticationTest
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Data.User.DuplicateUsernameError", errorAO.getErrorCode());
-
-        // Update - error missing email
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
-                HttpMethod.PUT, token);
-
-        request = new AuthenticatedUserAO();
-        request.setDocumentID(authenticatedUser.getDocumentID());
-        request.setDocumentVersion(authenticatedUser.getDocumentVersion());
-        request.setUsername("AuthenticationTest_UpdateProfile2");
-        request.setEmailAddress(null);
-        request.setDisplayName("Changed Man");
-
-        ApiUtils.sendJSON(httpConn, request);
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
-
-        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Update - duplicate email
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
@@ -690,6 +682,50 @@ public class AuthenticationTest
     }
 
     /**
+     * POST - login failed because user cannot access any repositories.
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testPOST_AccessDeniedStatus() throws IOException
+    {
+        // Create a URL for the desired page
+        URL url = new URL("http://localhost:8989/api/Authentication");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", Worker.JSON_CONTENT_TYPE);
+
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest_AccessDeniedUser");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(6000);
+
+        ApiUtils.sendJSON(conn, requestContent);
+
+        // Get response
+        String responseContent = null;
+        try
+        {
+            conn.getInputStream();
+            fail();
+        }
+        catch (Exception ex)
+        {
+            responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
+        }
+
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+
+        assertEquals("HTTP/1.1 401 Unauthorized", responseCode);
+        assertNotNull(headers.get("Date"));
+        assertNull(headers.get(Worker.AUTHENTICATION_TOKEN_HEADER));
+        assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
+        assertTrue(responseContent.contains("Access denied."));
+    }
+
+    /**
      * POST - login failed because user status is locked
      * 
      * @throws IOException
@@ -732,7 +768,7 @@ public class AuthenticationTest
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Account locked."));
     }
-
+    
     /**
      * POST - login failed because user not supplied
      * 

@@ -68,9 +68,8 @@ public class RepositoriesTest
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;
-    private static String _repoPowerUserAuthToken;
-    private static String _repoStandardUserAuthToken;
-    private static String _repoStandardUserNoAccessAuthToken;
+    private static String _repoWorkbenchUserAuthToken;
+    private static String _repoWorkbenchUserNoAccessAuthToken;
     private static String _repoInfoId;
 
     @BeforeClass
@@ -111,30 +110,21 @@ public class RepositoriesTest
         user.setStatus(com.chililog.server.data.UserBO.Status.Enabled);
         UserController.getInstance().save(_db, user);
 
-        // Create repository power user
+        // Create repository workbench user
         user = new UserBO();
-        user.setUsername("TestRepo_RepoPower");
+        user.setUsername("TestRepo_RepoWorkbench");
         user.setPassword("hello", true);
-        user.setEmailAddress("TestRepo_RepoPower@chililog.com");
-        user.addRole("repo.test_repo.power");
+        user.setEmailAddress("TestRepo_RepoWorkbench@chililog.com");
+        user.addRole("repo.test_repo.workbench");
         user.setStatus(com.chililog.server.data.UserBO.Status.Enabled);
         UserController.getInstance().save(_db, user);
 
-        // Create repository standard user
+        // Create repository workbench user with no access to test_repo
         user = new UserBO();
-        user.setUsername("TestRepo_RepoStandard");
+        user.setUsername("TestRepo_RepoWorkbench_NoAccess");
         user.setPassword("hello", true);
-        user.setEmailAddress("TestRepo_RepoStandard@chililog.com");
-        user.addRole("repo.test_repo.standard");
-        user.setStatus(com.chililog.server.data.UserBO.Status.Enabled);
-        UserController.getInstance().save(_db, user);
-
-        // Create repository standard user with no access
-        user = new UserBO();
-        user.setUsername("TestRepo_RepoStandard_NoAccess");
-        user.setPassword("hello", true);
-        user.setEmailAddress("TestRepo_RepoStandard_NoAccess@chililog.com");
-        user.addRole("repo.chililog.standard");
+        user.setEmailAddress("TestRepo_RepoWorkbench_NoAccess@chililog.com");
+        user.addRole("repo.chililog.workbench");
         user.setStatus(com.chililog.server.data.UserBO.Status.Enabled);
         UserController.getInstance().save(_db, user);
 
@@ -190,9 +180,8 @@ public class RepositoriesTest
         // Login
         _systemAdminAuthToken = ApiUtils.login("TestRepo_SystemAdmin", "hello");
         _repoAdminAuthToken = ApiUtils.login("TestRepo_RepoAdmin", "hello");
-        _repoPowerUserAuthToken = ApiUtils.login("TestRepo_RepoPower", "hello");
-        _repoStandardUserAuthToken = ApiUtils.login("TestRepo_RepoStandard", "hello");
-        _repoStandardUserNoAccessAuthToken = ApiUtils.login("TestRepo_RepoStandard_NoAccess", "hello");
+        _repoWorkbenchUserAuthToken = ApiUtils.login("TestRepo_RepoWorkbench", "hello");
+        _repoWorkbenchUserNoAccessAuthToken = ApiUtils.login("TestRepo_RepoWorkbench_NoAccess", "hello");
     }
 
     @AfterClass
@@ -265,20 +254,9 @@ public class RepositoriesTest
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repo", getListResponseAO[0].getName());
 
-        // Get all - repo power user. Should only get 1 repo back because we only have access to 1 repo
+        // Get all - repo workbench user. Should only get 1 repo back because we only have access to 1 repo
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
-                _repoPowerUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check200OKResponse(responseCode.toString(), headers);
-
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryAO[].class);
-        assertEquals(1, getListResponseAO.length);
-        assertEquals("test_repo", getListResponseAO[0].getName());
-
-        // Get all - repo standard user. Should only get 1 repo back because we only have access to 1 repo
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories", HttpMethod.GET,
-                _repoStandardUserAuthToken);
+                _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -321,23 +299,16 @@ public class RepositoriesTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get 1 - repo power        
+        // Get 1 - repo workbench        
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId,
-                HttpMethod.GET, _repoPowerUserAuthToken);
+                HttpMethod.GET, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get 1 - repo standard        
+        // Get 1 - repo workbench with no access. ERROR.       
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId,
-                HttpMethod.GET, _repoStandardUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check200OKResponse(responseCode.toString(), headers);
-
-        // Get 1 - repo standard with no access. ERROR.       
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId,
-                HttpMethod.GET, _repoStandardUserNoAccessAuthToken);
+                HttpMethod.GET, _repoWorkbenchUserNoAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -394,23 +365,16 @@ public class RepositoriesTest
         assertTrue(json2.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
         assertTrue(json2.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
         
-        // Get entries - by repo power user
+        // Get entries - by workbench power user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
-                + "/entries?query_type=find", HttpMethod.GET, _repoPowerUserAuthToken);
+                + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get entries - by repo standard user
+        // Get entries - repo workbench with no access. ERROR.       
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
-                + "/entries?query_type=find", HttpMethod.GET, _repoStandardUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check200OKResponse(responseCode.toString(), headers);
-
-        // Get entries - repo standard with no access. ERROR.       
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/" + _repoInfoId
-                + "/entries?query_type=find", HttpMethod.GET, _repoStandardUserNoAccessAuthToken);
+                + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserNoAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -720,23 +684,16 @@ public class RepositoriesTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        // Start All - Power user
+        // Start All - Workbench user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
-                HttpMethod.POST, _repoPowerUserAuthToken);
+                HttpMethod.POST, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
         
-        // Start All - Standard user
+        // Start All - Workbench user with no access
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
-                HttpMethod.POST, _repoStandardUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-
-        // Start All - Standard user with no access
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=start",
-                HttpMethod.POST, _repoStandardUserNoAccessAuthToken);
+                HttpMethod.POST, _repoWorkbenchUserNoAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -748,23 +705,16 @@ public class RepositoriesTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        // Stop All - Power user
+        // Stop All - Workbench user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=stop", HttpMethod.POST,
-                _repoPowerUserAuthToken);
+                _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        // Stop All - Standard user
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=stop", HttpMethod.POST,
-                _repoStandardUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-
-        // Stop All - Standard user with no access
+        // Stop All - Workbench user with no access
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=stop",
-                HttpMethod.POST, _repoStandardUserNoAccessAuthToken);
+                HttpMethod.POST, _repoWorkbenchUserNoAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -776,23 +726,16 @@ public class RepositoriesTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        // Reload All - Power user
+        // Reload All - Workbench user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload",
-                HttpMethod.POST, _repoPowerUserAuthToken);
+                HttpMethod.POST, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
-        // Reload All - Standard user
+        // Reload All - Workbench user with no access
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload",
-                HttpMethod.POST, _repoStandardUserAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-
-        // Reload All - Standard user with no access
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories?action=reload",
-                HttpMethod.POST, _repoStandardUserNoAccessAuthToken);
+                HttpMethod.POST, _repoWorkbenchUserNoAccessAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);

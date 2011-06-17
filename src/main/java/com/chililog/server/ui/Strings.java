@@ -41,8 +41,9 @@ public class Strings
     public static final String AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR = PREFIX + "AuthenticationBadUsernameOrPasswordError";
     public static final String AUTHENTICAITON_ACCOUNT_DISABLED_ERROR = PREFIX + "AuthenticationAccountDisabledError";
     public static final String AUTHENTICAITON_ACCOUNT_LOCKED_ERROR = PREFIX + "AuthenticationAccountLockedError";
+    public static final String AUTHENTICAITON_ACCESS_DENIED_ERROR = PREFIX + "AuthenticationAccessDeniedError";
     public static final String NOT_AUTHORIZED_ERROR = PREFIX + "NotAuthorizedError";
-
+    
     public static final String REPOSITORY_NOT_FOUND_ERROR = PREFIX + "RepositoryNotFoundError";
 
 }

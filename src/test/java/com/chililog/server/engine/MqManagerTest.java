@@ -21,10 +21,12 @@ package com.chililog.server.engine;
 import static org.junit.Assert.*;
 
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 
+import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -39,30 +41,60 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * More tests regarding MqManager and transactions
  */
 public class MqManagerTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTest.class);    
+    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTest.class);
 
-    private static final String WRITER_USERNAME = "writer";
-    private static final String WRITER_PASSWORD = "pw4writer";
-    private static final String WRITER_ROLE = RepositoryInfoBO.createHornetQRoleName(WRITER_USERNAME, WRITER_PASSWORD);
-    
-    private static final String READER_USERNAME = "reader";
-    private static final String READER_PASSWORD = "pw4reader";
-    private static final String READER_ROLE = RepositoryInfoBO.createHornetQRoleName(READER_USERNAME, READER_PASSWORD);
-    
+    private static DB _db;
+
+    private static final String PUBLISHER_USERNAME = "MqManagerTest.publisher";
+    private static final String PUBLISHER_PASSWORD = "pw4publisher!";
+    private static final String PUBLISHER_ROLE = "publisher";
+
+    private static final String SUBSCRIBER_USERNAME = "MqManagerTest.subscriber";
+    private static final String SUBSCRIBER_PASSWORD = "pw4subscriber!";
+    private static final String SUBSCRIBER_ROLE = "subscriber";
+
     @BeforeClass
     public static void classSetup() throws Exception
     {
+        _db = MongoConnection.getInstance().getConnection();
+
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^MqManagerTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+
+        UserBO user = new UserBO();
+        user.setUsername(PUBLISHER_USERNAME);
+        user.setPassword(PUBLISHER_PASSWORD, true);
+        user.addRole(PUBLISHER_ROLE);
+        UserController.getInstance().save(_db, user);
+        
+        user = new UserBO();
+        user.setUsername(SUBSCRIBER_USERNAME);
+        user.setPassword(SUBSCRIBER_PASSWORD, true);
+        user.addRole(SUBSCRIBER_ROLE);
+        UserController.getInstance().save(_db, user);
+        
+        // Start Mq
         MqManager.getInstance().start();
 
         // Configure security
-        MqManager.getInstance().addSecuritySettings("MqManagerTest#", WRITER_ROLE, READER_ROLE);
+        MqManager.getInstance().addSecuritySettings("MqManagerTest#", PUBLISHER_ROLE, SUBSCRIBER_ROLE);
         MqManager.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
     }
 
@@ -70,6 +102,13 @@ public class MqManagerTest
     public static void classTeardown() throws Exception
     {
         MqManager.getInstance().stop();
+
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^MqManagerTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
     }
 
     @Test
@@ -107,11 +146,11 @@ public class MqManagerTest
         // What if we do it twice?
         // We use deploy() so it should be OK. There should not be an exception
         MqManager.getInstance().deployQueue("queue2", "queue2", false);
-        
+
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
     }
-    
+
     @Test
     public void testGetQueueControl() throws Exception
     {
@@ -124,19 +163,19 @@ public class MqManagerTest
         qc = MqManager.getInstance().getQueueControl("xxx", "nonexistentqueue");
         assertNull(qc);
     }
-    
+
     @Test
     public void testNonTransactional() throws Exception
     {
         ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
 
-        ClientSession producerSession = MqManager.getInstance().getNonTransactionalClientSession(
-                WRITER_USERNAME, WRITER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getNonTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
         assertTrue(producerSession.isAutoCommitSends());
         assertTrue(producerSession.isAutoCommitAcks());
 
-        ClientSession consumerSession = MqManager.getInstance().getNonTransactionalClientSession(
-                READER_USERNAME, READER_PASSWORD);
+        ClientSession consumerSession = MqManager.getInstance().getNonTransactionalClientSession(SUBSCRIBER_USERNAME,
+                SUBSCRIBER_PASSWORD);
         assertTrue(consumerSession.isAutoCommitSends());
         assertTrue(consumerSession.isAutoCommitAcks());
 
@@ -176,7 +215,7 @@ public class MqManagerTest
         messageReceived = messageConsumer.receive(100);
         assertNull(messageReceived);
 
-        // Need close() to force message acknowledgment because the acknowledgment is being batched.
+        // Need close() to force message acknowledgement because the acknowledgement is being batched.
         consumerSession.close();
 
         q = systemSession.queueQuery(new SimpleString(queueName));
@@ -190,13 +229,13 @@ public class MqManagerTest
     {
         ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
 
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(
-                WRITER_USERNAME, WRITER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
         assertFalse(producerSession.isAutoCommitSends());
         assertFalse(producerSession.isAutoCommitAcks());
 
-        ClientSession consumerSession = MqManager.getInstance().getTransactionalClientSession(
-                READER_USERNAME, READER_PASSWORD);
+        ClientSession consumerSession = MqManager.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME,
+                SUBSCRIBER_PASSWORD);
         assertFalse(consumerSession.isAutoCommitSends());
         assertFalse(consumerSession.isAutoCommitAcks());
 
@@ -208,11 +247,11 @@ public class MqManagerTest
 
         // Write
         ClientProducer producer = producerSession.createProducer(queueAddress);
-        ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE,false);
+        ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
 
         String msg = "Hello sent at " + new Date();
         message.getBodyBuffer().writeNullableString(msg);
-        
+
         producer.send(message);
         _logger.info("Sent TextMessage: " + msg);
 
@@ -255,6 +294,33 @@ public class MqManagerTest
         QueueControl qc = (QueueControl) MBeanServerInvocationHandler.newProxyInstance(MqManager.getInstance()
                 .getNativeServer().getMBeanServer(), objectName, QueueControl.class, false);
         assertEquals(0, qc.getMessageCount());
+
+    }
+
+    @Test
+    public void testBadPassword() throws Exception
+    {
+        try
+        {
+            MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME, "badpassword");
+            fail("Exception expected: message=Unable to validate user: MqManagerTest.publisher");
+        }
+        catch (HornetQException ex)
+        {
+            assertEquals(105, ex.getCode());
+            assertTrue(ex.getMessage().contains("Unable to validate user"));
+        }
+
+        try
+        {
+            MqManager.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME, "badpassword");
+            fail("Exception expected: message=Unable to validate user: MqManagerTest.subscriber");
+        }
+        catch (HornetQException ex)
+        {
+            assertEquals(105, ex.getCode());
+            assertTrue(ex.getMessage().contains("Unable to validate user"));
+        }
 
     }
 }

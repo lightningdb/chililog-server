@@ -29,30 +29,22 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import com.chililog.server.data.RepositoryInfoBO;
+import org.apache.commons.lang.StringUtils;
+
+import com.chililog.server.common.AppProperties;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
+import com.mongodb.DB;
 
 /**
  * <p>
- * JAAS login module for HornetQ.
+ * JAAS login module for HornetQ. We lookup the user table, validate the password and then add the roles to the user
  * </p>
- * <p>
- * We don't validate the username/password. Rather, the username and password is combined to form a role. By convention,
- * the role code will be used to perform authentication and authorisation. For example:
- * </p>
- * 
- * <pre>
- * Repository name: repo1
- * Write queue name: repository.repo1.write
- * Write queue password: pw1
- * Role allowed to write to the queue: repo1~~~pw1  
- * 
- * usename: repo1
- * password: pw1
- * role: repo1~~~pw1
- * </pre>
  * 
  * @author vibul
  * 
@@ -60,12 +52,16 @@ import com.chililog.server.data.RepositoryInfoBO;
 public class JAASLoginModule implements LoginModule
 {
     private Subject _subject;
+    private String _systemUsername;
+    private String _systemPassword;
 
     /**
      * Basic constructor
      */
     public JAASLoginModule()
     {
+        _systemUsername = AppProperties.getInstance().getMqSystemUsername();
+        _systemPassword = AppProperties.getInstance().getMqSystemPassword();
         return;
     }
 
@@ -89,15 +85,12 @@ public class JAASLoginModule implements LoginModule
 
     /**
      * <p>
-     * We check the credentials against the data store in the User collection of our MongoDb. If successful, the user's
-     * roles are also loaded.
+     * We check the credentials against the repository. By convention, the username is the repository name and the
+     * password is either the publisher or subscriber password. The role assigned to the user is constructed from the
+     * combination of username and publisher password.
      * </p>
      * 
-     * <p>
-     * We assume that the
-     * </p>
-     * 
-     * @return True if login is successful, False if not.
+     * @return Returns true if this method succeeded, or false if this LoginModule should be ignored.
      */
     public boolean login() throws LoginException
     {
@@ -105,7 +98,7 @@ public class JAASLoginModule implements LoginModule
         {
             //
             // This code is from org.hornetq.spi.core.security.JAASSecurityManager.getAuthenticatedSubject();
-            // It is how hornetq uses JAAS to authenticate
+            // It is how HornetQ uses JAAS to authenticate
             //
             // Subject subject = new Subject();
             // if (user != null)
@@ -118,21 +111,50 @@ public class JAASLoginModule implements LoginModule
             // Get the user name
             Iterator<Principal> iterator = _subject.getPrincipals().iterator();
             String username = iterator.next().getName();
+            if (StringUtils.isBlank(username))
+            {
+                throw new FailedLoginException("Username is requried.");
+            }
 
             // Get the password
             Iterator<char[]> iterator2 = _subject.getPrivateCredentials(char[].class).iterator();
             char[] passwordChars = iterator2.next();
             String password = new String(passwordChars);
+            if (StringUtils.isBlank(password))
+            {
+                throw new FailedLoginException("Password is requried.");
+            }
 
-            // Don't need to perform user validation.
-            // It will be enforced by convention in the role
+            // Check if system user
+            if (username.equals(_systemUsername) && password.equals(_systemPassword))
+            {
+                Group roles = new SimpleGroup("Roles");
+                roles.addMember(new SimplePrincipal(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));
+                _subject.getPrincipals().add(roles);
+                return true;
+            }
 
-            // Add roles
-            String role = RepositoryInfoBO.createHornetQRoleName(username, password);
+            // Let's validate non-system user
+            DB db = MongoConnection.getInstance().getConnection();
+            UserBO user = UserController.getInstance().tryGetByUsername(db, username);
+            if (user == null)
+            {
+                throw new FailedLoginException("Invalid username or password.");
+            }
+            if (StringUtils.isBlank(password) || !user.validatePassword(password))
+            {
+                throw new FailedLoginException("Invalid username or password.");
+            }
+
+            // Add role
             Group roles = new SimpleGroup("Roles");
-            roles.addMember(new SimplePrincipal(role));
+            for (String role : user.getRoles())
+            {
+                roles.addMember(new SimplePrincipal(role));
+            }
             _subject.getPrincipals().add(roles);
 
+            // OK
             return true;
         }
         catch (Exception ex)

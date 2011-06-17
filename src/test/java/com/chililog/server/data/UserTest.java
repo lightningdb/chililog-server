@@ -259,6 +259,15 @@ public class UserTest
     }
     
     @Test
+    public void testNoEmailAddress() throws ChiliLogException
+    {
+        UserBO user = new UserBO();
+        user.setUsername("UserTestUser8");
+        user.setPassword("abc123!", true);
+        UserController.getInstance().save(_db, user);
+    }
+    
+    @Test
     public void testList() throws ChiliLogException
     {
         // Insert
@@ -348,5 +357,16 @@ public class UserTest
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
         
+    }
+    
+    @Test
+    public void testExtractRepositoryNameFromRole()
+    {
+        assertEquals("aaa", UserBO.extractRepositoryNameFromRole("repo.aaa.administrator"));
+        assertEquals("bbb", UserBO.extractRepositoryNameFromRole("repo.bbb.workbench"));
+        assertEquals("ccc", UserBO.extractRepositoryNameFromRole("repo.ccc.publisher"));
+        assertEquals("ddd", UserBO.extractRepositoryNameFromRole("repo.ddd.subscriber"));
+        assertNull(UserBO.extractRepositoryNameFromRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));
+        assertNull(UserBO.extractRepositoryNameFromRole("random string sssss"));
     }
 }

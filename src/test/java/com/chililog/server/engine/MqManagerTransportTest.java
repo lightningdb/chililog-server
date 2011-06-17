@@ -22,13 +22,20 @@ import static org.junit.Assert.*;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
-import org.hornetq.api.core.client.*;
+import org.hornetq.api.core.client.ClientConsumer;
+import org.hornetq.api.core.client.ClientMessage;
+import org.hornetq.api.core.client.ClientProducer;
+import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.ClientSession.QueueQuery;
+import org.hornetq.api.core.client.ClientSessionFactory;
+import org.hornetq.api.core.client.HornetQClient;
+import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -40,9 +47,16 @@ import org.junit.Test;
 
 import com.chililog.client.stomp.Client;
 import com.chililog.client.stomp.TestListener;
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.data.RepositoryInfoBO;
+import com.chililog.server.data.MongoConnection;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
 import com.chililog.server.engine.MqManager;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * Test case for HornetQ integration for different transports
@@ -54,17 +68,19 @@ public class MqManagerTransportTest
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTransportTest.class);
 
-    private static final String WRITER_USERNAME = "writer";
-    private static final String WRITER_PASSWORD = "pw4writer";
-    private static final String WRITER_ROLE = RepositoryInfoBO.createHornetQRoleName(WRITER_USERNAME, WRITER_PASSWORD);
+    private static DB _db;
 
-    private static final String READER_USERNAME = "reader";
-    private static final String READER_PASSWORD = "pw4reader";
-    private static final String READER_ROLE = RepositoryInfoBO.createHornetQRoleName(READER_USERNAME, READER_PASSWORD);
+    private static final String PUBLISHER_USERNAME = "MqManagerTransportTest.publisher";
+    private static final String PUBLISHER_PASSWORD = "pw4publisher!";
+    private static final String PUBLISHER_ROLE = "publisher";
 
-    private static final String SYSTEM_USERNAME = "system";
-    private static final String SYSTEM_PASSWORD = "pw4system";
-    private static final String SYSTEM_ROLE = RepositoryInfoBO.createHornetQRoleName(SYSTEM_USERNAME, SYSTEM_PASSWORD);
+    private static final String SUBSCRIBER_USERNAME = "MqManagerTransportTest.subscriber";
+    private static final String SUBSCRIBER_PASSWORD = "pw4subscriber!";
+    private static final String SUBSCRIBER_ROLE = "subscriber";
+
+    private static final String SYSTEM_USERNAME = AppProperties.getInstance().getMqSystemUsername();
+    private static final String SYSTEM_PASSWORD = AppProperties.getInstance().getMqSystemPassword();
+    private static final String SYSTEM_ROLE = UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME;
 
     private static ClientSessionFactory _inVmClientSessionFactory;
     private static ClientSessionFactory _coreClientSessionFactory;
@@ -72,12 +88,34 @@ public class MqManagerTransportTest
     @BeforeClass
     public static void classSetup() throws Exception
     {
+        _db = MongoConnection.getInstance().getConnection();
+
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^MqManagerTransportTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+
+        UserBO user = new UserBO();
+        user.setUsername(PUBLISHER_USERNAME);
+        user.setPassword(PUBLISHER_PASSWORD, true);
+        user.addRole(PUBLISHER_ROLE);
+        UserController.getInstance().save(_db, user);
+
+        user = new UserBO();
+        user.setUsername(SUBSCRIBER_USERNAME);
+        user.setPassword(SUBSCRIBER_PASSWORD, true);
+        user.addRole(SUBSCRIBER_ROLE);
+        UserController.getInstance().save(_db, user);
+
+        // Start mq
         MqManager.getInstance().start();
 
         // Configure security
         HornetQServerControl hqControl = MqManager.getInstance().getNativeServer().getHornetQServerControl();
-        hqControl.addSecuritySettings("MqTransportTest#", WRITER_ROLE, READER_ROLE, SYSTEM_ROLE, SYSTEM_ROLE,
-                SYSTEM_ROLE, SYSTEM_ROLE, SYSTEM_ROLE + "," + READER_ROLE + "," + WRITER_ROLE);
+        hqControl.addSecuritySettings("MqTransportTest#", PUBLISHER_ROLE, SUBSCRIBER_ROLE, SYSTEM_ROLE + ","
+                + SUBSCRIBER_ROLE, SYSTEM_ROLE, SYSTEM_ROLE + "," + SUBSCRIBER_ROLE, SYSTEM_ROLE, SYSTEM_ROLE);
         MqManager.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
 
         // IN VM connector
@@ -97,6 +135,12 @@ public class MqManagerTransportTest
     {
         MqManager.getInstance().stop();
 
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^MqManagerTransportTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
     }
 
     // TODO Bug in HornetQ means exception not thrown
@@ -149,7 +193,7 @@ public class MqManagerTransportTest
             // Write OK
             // ************************************
             // Create the session, and producer
-            session = csf.createSession(WRITER_USERNAME, WRITER_PASSWORD, false, true, true, true, csf
+            session = csf.createSession(PUBLISHER_USERNAME, PUBLISHER_PASSWORD, false, true, true, true, csf
                     .getServerLocator().getAckBatchSize());
 
             ClientProducer producer = session.createProducer(queueAddress);
@@ -193,7 +237,7 @@ public class MqManagerTransportTest
             // Write FAIL
             // ************************************
             // Create the session, and producer
-            session = csf.createSession(READER_USERNAME, READER_PASSWORD, false, false, false, true, csf
+            session = csf.createSession(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, false, false, false, true, csf
                     .getServerLocator().getAckBatchSize());
 
             // HornetQ throws error on server but it never makes it back to the client!
@@ -291,7 +335,7 @@ public class MqManagerTransportTest
             // ************************************
             // Create the session, and producer
             TestListener errorListener = new TestListener();
-            Client c = new Client("localhost", 61613, WRITER_USERNAME, WRITER_PASSWORD);
+            Client c = new Client("localhost", 61613, PUBLISHER_USERNAME, PUBLISHER_PASSWORD);
             c.addErrorListener(errorListener);
 
             final String propName = "myprop";
@@ -303,8 +347,8 @@ public class MqManagerTransportTest
             _logger.info("Sent TextMessage: " + msg);
 
             // Create the session to check
-            session = _inVmClientSessionFactory.createSession(WRITER_USERNAME, WRITER_PASSWORD, false, true, true,
-                    true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+            session = _inVmClientSessionFactory.createSession(PUBLISHER_USERNAME, PUBLISHER_PASSWORD, false, true,
+                    true, true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
             QueueQuery q = session.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
@@ -318,7 +362,7 @@ public class MqManagerTransportTest
             c.subscribe(queueAddress);
             Thread.sleep(1000);
             assertTrue(errorListener.getLastMessageBody().contains(
-                    "writer doesn't have permission='CONSUME' on address MqTransportTestStomp"));
+                    PUBLISHER_USERNAME + " doesn't have permission='CONSUME' on address MqTransportTestStomp"));
 
             session.close();
             c.disconnect();
@@ -327,16 +371,16 @@ public class MqManagerTransportTest
             // Write FAIL
             // ************************************
             // Create the session, and producer
-            session = _inVmClientSessionFactory.createSession(READER_USERNAME, READER_PASSWORD, false, false, false,
-                    true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+            session = _inVmClientSessionFactory.createSession(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, false, false,
+                    false, true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
-            c = new Client("localhost", 61613, READER_USERNAME, READER_PASSWORD);
+            c = new Client("localhost", 61613, SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
             c.addErrorListener(errorListener);
 
             c.send(queueAddress, "should error");
             Thread.sleep(1000);
             assertTrue(errorListener.getLastMessageBody().contains(
-                    "reader doesn't have permission='SEND' on address MqTransportTestStomp"));
+                    SUBSCRIBER_USERNAME + " doesn't have permission='SEND' on address MqTransportTestStomp"));
 
             q = session.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
@@ -406,7 +450,7 @@ public class MqManagerTransportTest
             // ************************************
             // Create the session, and producer
             TestListener errorListener = new TestListener();
-            Client c = new Client("localhost", 61613, WRITER_USERNAME, WRITER_PASSWORD);
+            Client c = new Client("localhost", 61613, PUBLISHER_USERNAME, PUBLISHER_PASSWORD);
             c.addErrorListener(errorListener);
 
             final String propName = "myprop";
@@ -418,8 +462,8 @@ public class MqManagerTransportTest
             _logger.info("Sent TextMessage: " + msg);
 
             // Create the session to check
-            session = _inVmClientSessionFactory.createSession(WRITER_USERNAME, WRITER_PASSWORD, false, true, true,
-                    true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+            session = _inVmClientSessionFactory.createSession(PUBLISHER_USERNAME, PUBLISHER_PASSWORD, false, true,
+                    true, true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
             QueueQuery q = session.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
@@ -430,8 +474,8 @@ public class MqManagerTransportTest
             // Write FAIL
             // ************************************
             // Create the session, and producer
-            session = _inVmClientSessionFactory.createSession(READER_USERNAME, READER_PASSWORD, false, false, false,
-                    true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+            session = _inVmClientSessionFactory.createSession(SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD, false, false,
+                    false, true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
             // ************************************
             // Read OK

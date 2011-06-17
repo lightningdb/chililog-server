@@ -170,6 +170,13 @@ public class AppPropertiesTest
     }
 
     @Test
+    public void testMqSecurityInvalidationInterval() throws UnknownHostException
+    {
+        int i = AppProperties.getInstance().getMqSecurityInvalidationInterval();
+        assertEquals(0, i);
+    }
+
+    @Test
     public void testMqClusteredEnabled() throws UnknownHostException
     {
         assertFalse(AppProperties.getInstance().getMqClusteredEnabled());

@@ -178,6 +178,31 @@ public class AuthenticationWorker extends Worker
                 }
             }
 
+            // Check if the user has access (must be system administrator, repo admin or repo workbench user)
+            boolean allowed = false;
+            for (String role : user.getRoles())
+            {
+                if (role.equals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME))
+                {
+                    allowed = true;
+                    break;
+                }
+                else if (role.startsWith(UserBO.REPOSITORY_ROLE_PREFIX))
+                {
+                    if (role.endsWith(UserBO.REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX)
+                            || role.endsWith(UserBO.REPOSITORY_WORKBENCH_ROLE_SUFFIX))
+                    {
+                        allowed = true;
+                        break;
+                    }
+                }
+            }
+            if (!allowed)
+            {
+                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                        Strings.AUTHENTICAITON_ACCESS_DENIED_ERROR));
+            }
+
             // Generate token
             AuthenticationTokenAO token = new AuthenticationTokenAO(user, requestApiObject);
 

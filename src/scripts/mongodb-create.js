@@ -90,27 +90,38 @@ var sandpitRepositoryAdminUser = {
 	};
 db.users.insert(sandpitRepositoryAdminUser);
 
-var sandpitRepositoryPowerUser = {
-		username: "sandpitpoweruser",
+var sandpitRepositoryWorkbenchUser = {
+		username: "sandpitworkbench",
 		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.power" ],
+		roles: [ "repo.sandpit.workbench" ],
 		status: "Enabled",
-		display_name: "Sandpit Repository Power User",
-		email_address: "sandpitpoweruser@chililog.com",
+		display_name: "Sandpit Repository Workbench User",
+		email_address: "sandpitworkbenchuser@chililog.com",
 		doc_version: new NumberLong(1) 
 	};
-db.users.insert(sandpitRepositoryPowerUser);
+db.users.insert(sandpitRepositoryWorkbenchUser);
 
-var sandpitRepositoryStandardUser = {
-		username: "sandpituser",
+var sandpitRepositoryPublisherUser = {
+		username: "sandpitpublisher",
 		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.standard" ],
+		roles: [ "repo.sandpit.publisher" ],
 		status: "Enabled",
-		display_name: "Sandpit Repository Standard User",
-		email_address: "sandpituser@chililog.com",
+		display_name: "Sandpit Repository Publisher User",
+		email_address: "sandpitpublisher@chililog.com",
 		doc_version: new NumberLong(1) 
 	};
-db.users.insert(sandpitRepositoryStandardUser);
+db.users.insert(sandpitRepositoryPublisherUser);
+
+var sandpitRepositorySubscriberUser = {
+		username: "sandpitsubscriber",
+		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+		roles: [ "repo.sandpit.subscriber" ],
+		status: "Enabled",
+		display_name: "Sandpit Repository Subscriber User",
+		email_address: "sandpitsubscriber@chililog.com",
+		doc_version: new NumberLong(1) 
+	};
+db.users.insert(sandpitRepositorySubscriberUser);
 
 // *************************************************************
 // Setup Repositories
@@ -122,8 +133,6 @@ var chililogRepoInfo = {
 	display_name: "ChiliLog Log",
 	description: "Log repository for ChiliLog events",
 	startup_status: "ONLINE",
-	publisher_password: 'pub123',
-	subscriber_password: 'sub456',
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,
 	storage_queue_worker_count: new NumberLong(0),  // No workers because we write direct
@@ -143,8 +152,6 @@ var sandpitRepoInfo = {
 	display_name: "Sandpit",
 	description: "For testing and playing around",
 	startup_status: "ONLINE",
-	publisher_password: 'pub123',
-	subscriber_password: 'sub456',
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,
 	storage_queue_worker_count: new NumberLong(1),

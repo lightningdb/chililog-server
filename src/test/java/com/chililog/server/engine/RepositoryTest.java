@@ -21,6 +21,7 @@ package com.chililog.server.engine;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.regex.Pattern;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
@@ -40,12 +41,16 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.RepositoryFieldInfoBO;
 import com.chililog.server.data.RepositoryInfoBO;
 import com.chililog.server.data.RepositoryParserInfoBO;
+import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserController;
 import com.chililog.server.data.RepositoryInfoBO.Status;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * Test a repository
@@ -59,19 +64,43 @@ public class RepositoryTest
     private static RepositoryInfoBO _repoInfo;
 
     private static final String REPOSITORY_NAME = "junit_test";
-    private static final String REPOSITORY_PUBLISHER_PASSWORD = "pw4publisher";
-    private static final String REPOSITORY_SUBSCRIBER_PASSWORD = "pw4subscriber";
+    
+    private static final String PUBLISHER_USERNAME = "RepositoryTest.publisher";
+    private static final String PUBLISHER_PASSWORD = "pw4publisher!";
+
+    private static final String SUBSCRIBER_USERNAME = "RepositoryTest.subscriber";
+    private static final String SUBSCRIBER_PASSWORD = "pw4subscriber!";
+    
     private static final String MONGODB_COLLECTION_NAME = "repo_junit_test";
 
     @BeforeClass
     public static void classSetup() throws Exception
     {
+        _db = MongoConnection.getInstance().getConnection();
+        
+        // Clean up old test data if any exists
+        DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^RepositoryTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+
+        UserBO user = new UserBO();
+        user.setUsername(PUBLISHER_USERNAME);
+        user.setPassword(PUBLISHER_PASSWORD, true);
+        user.addRole(UserBO.createRepositoryPublisherRoleName(REPOSITORY_NAME));
+        UserController.getInstance().save(_db, user);
+        
+        user = new UserBO();
+        user.setUsername(SUBSCRIBER_USERNAME);
+        user.setPassword(SUBSCRIBER_PASSWORD, true);
+        user.addRole(UserBO.createRepositoryPublisherRoleName(REPOSITORY_NAME));
+        UserController.getInstance().save(_db, user);
+        
         // Create repo
         _repoInfo = new RepositoryInfoBO();
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Repository Test 1");
-        _repoInfo.setPublisherPassword(REPOSITORY_PUBLISHER_PASSWORD);
-        _repoInfo.setSubscriberPassword(REPOSITORY_SUBSCRIBER_PASSWORD);
         _repoInfo.setStoreEntriesIndicator(true);
         _repoInfo.setStorageQueueDurableIndicator(false);
         _repoInfo.setStorageQueueWorkerCount(2);
@@ -139,6 +168,12 @@ public class RepositoryTest
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
+        
+        coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^RepositoryTest\\.[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);        
     }
 
     @Test
@@ -154,8 +189,8 @@ public class RepositoryTest
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
-                REPOSITORY_PUBLISHER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -242,8 +277,8 @@ public class RepositoryTest
         repo.start();
 
         // Write 10,000 repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
-                REPOSITORY_PUBLISHER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -313,8 +348,8 @@ public class RepositoryTest
         }
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
-                REPOSITORY_PUBLISHER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -406,8 +441,8 @@ public class RepositoryTest
         MqManager.getInstance().deployQueue(deadLetterAddress, "dead_letters.junit_test", false);
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(REPOSITORY_NAME,
-                REPOSITORY_PUBLISHER_PASSWORD);
+        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+                PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);

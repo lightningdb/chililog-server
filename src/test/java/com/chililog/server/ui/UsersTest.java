@@ -56,8 +56,7 @@ public class UsersTest
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;
-    private static String _repoPowerUserAuthToken;
-    private static String _repoStandardUserAuthToken;
+    private static String _repoWorkbenchUserAuthToken;
 
     @BeforeClass
     public static void classSetup() throws Exception
@@ -88,20 +87,12 @@ public class UsersTest
         user.addRole("repo.sandpit.administrator");
         UserController.getInstance().save(_db, user);
 
-        // Create repository power user
+        // Create repository workbench user
         user = new UserBO();
-        user.setUsername("UsersTest_RepoPower");
+        user.setUsername("UsersTest_RepoWorkbench");
         user.setPassword("hello", true);
-        user.setEmailAddress("UsersTest_RepoPower@chililog.com");
-        user.addRole("repo.sandpit.power");
-        UserController.getInstance().save(_db, user);
-
-        // Create repository standard user
-        user = new UserBO();
-        user.setUsername("UsersTest_RepoStandard");
-        user.setPassword("hello", true);
-        user.setEmailAddress("UsersTest_RepoStandard@chililog.com");
-        user.addRole("repo.sandpit.standard");
+        user.setEmailAddress("UsersTest_RepoWorkbench@chililog.com");
+        user.addRole("repo.sandpit.workbench");
         UserController.getInstance().save(_db, user);
 
         // Start web server
@@ -110,8 +101,7 @@ public class UsersTest
         // Login
         _systemAdminAuthToken = ApiUtils.login("UsersTest_SystemAdmin", "hello");
         _repoAdminAuthToken = ApiUtils.login("UsersTest_RepoAdmin", "hello");
-        _repoPowerUserAuthToken = ApiUtils.login("UsersTest_RepoPower", "hello");
-        _repoStandardUserAuthToken = ApiUtils.login("UsersTest_RepoStandard", "hello");
+        _repoWorkbenchUserAuthToken = ApiUtils.login("UsersTest_RepoWorkbench", "hello");
     }
 
     @AfterClass
@@ -191,7 +181,7 @@ public class UsersTest
         readResponseAO.setUsername("UsersTest_crud_after_update");
         readResponseAO.setEmailAddress("UsersTest_crud_after_update@chililog.com");
         readResponseAO.setRoles(new String[]
-        { "repo.chililog.standard", "repo.chililog.power" });
+        { "repo.chililog.workbench", "repo.sandpit.administrator" });
 
         ApiUtils.sendJSON(httpConn, readResponseAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -202,8 +192,8 @@ public class UsersTest
         assertEquals("UsersTest_crud_after_update@chililog.com", updateResponseAO.getEmailAddress());
         assertNull(updateResponseAO.getPassword());
         assertEquals(2, updateResponseAO.getRoles().length);
-        assertEquals("repo.chililog.standard", updateResponseAO.getRoles()[0]);
-        assertEquals("repo.chililog.power", updateResponseAO.getRoles()[1]);
+        assertEquals("repo.chililog.workbench", updateResponseAO.getRoles()[0]);
+        assertEquals("repo.sandpit.administrator", updateResponseAO.getRoles()[1]);
         assertNotNull(updateResponseAO.getDocumentID());
         assertEquals(new Long(2), updateResponseAO.getDocumentVersion());
         assertEquals(Status.Enabled, updateResponseAO.getStatus());
@@ -220,7 +210,7 @@ public class UsersTest
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
-        assertEquals(5, getListResponseAO.length);
+        assertEquals(4, getListResponseAO.length);
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
@@ -269,7 +259,7 @@ public class UsersTest
         assertNull(updateResponseAO.getRoles());
         assertNull(updateResponseAO.getStatus());
         
-        // Get list ok
+        // Get list ok (unless system administrator, server will return limited information)
         httpConn = ApiUtils.getHttpURLConnection(
                 "http://localhost:8989/api/users?username=" + URLEncoder.encode("^UsersTest[\\w]*$", "UTF-8"),
                 HttpMethod.GET, repoUserAuthToken);
@@ -318,25 +308,14 @@ public class UsersTest
     }
     
     /**
-     * Repo standard user can only GET own record
+     * Repo workbench user can only GET own record
      * 
      * @throws Exception
      */
     @Test
-    public void testRepoStandardUser() throws Exception
+    public void testRepoWorkbenchUser() throws Exception
     {
-        testRepoUser(_repoStandardUserAuthToken);
-    }
-
-    /**
-     * Repo power user can only GET own record
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testRepoPowerUser() throws Exception
-    {
-        testRepoUser(_repoPowerUserAuthToken);
+        testRepoUser(_repoWorkbenchUserAuthToken);
     }
 
     /**
@@ -372,7 +351,7 @@ public class UsersTest
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         UserAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), UserAO[].class);
-        assertEquals(4, getListResponseAO.length);
+        assertEquals(3, getListResponseAO.length);
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.PUT, _systemAdminAuthToken);
@@ -432,7 +411,7 @@ public class UsersTest
         assertEquals(1, getListResponseAO.length);
 
         String pageCountHeader = headers.get(Worker.PAGE_COUNT_HEADER);
-        assertEquals("4", pageCountHeader);
+        assertEquals("3", pageCountHeader);
 
         // Get list - page 2
         httpConn = ApiUtils.getHttpURLConnection(
@@ -523,23 +502,6 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
-
-        ApiUtils.sendJSON(httpConn, createRequestAO);
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
-
-        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
-
-        // Create no email address
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
-
-        createRequestAO = new UserAO();
-        createRequestAO.setUsername("UsersTest_bad_content");
-        createRequestAO.setPassword("test");
-        createRequestAO.setRoles(new String[]
-        { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
-        createRequestAO.setStatus(Status.Enabled);
 
         ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);

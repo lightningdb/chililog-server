@@ -22,8 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
-
 import com.chililog.server.common.ChiliLogException;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -71,17 +69,10 @@ public class RepositoryInfoBO extends BO implements Serializable
 
     private static Pattern _namePattern = Pattern.compile("^[a-z0-9_]+$");
 
-    // No '~' because it is use in role name as separator. No ',' because HornetQ uses ',' in CSV for role
-    // specification.
-    private static Pattern _passwordPattern = Pattern.compile("^[^~,]+$");
-
     private String _name;
     private String _displayName;
     private String _description;
     private Status _startupStatus = Status.ONLINE;
-
-    private String _publisherPassword = null;
-    private String _subscriberPassword = null;
 
     private boolean _storeEntriesIndicator = false;
     private boolean _storageQueueDurableIndicator = false;
@@ -99,9 +90,6 @@ public class RepositoryInfoBO extends BO implements Serializable
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
     static final String DESCRIPTION_FIELD_NAME = "description";
     static final String STARTUP_STATUS_FIELD_NAME = "startup_status";
-
-    static final String PUBLISHER_PASSWORD_FIELD_NAME = "publisher_password";
-    static final String SUBSCRIBER_PASSWORD_FIELD_NAME = "subscriber_password";
 
     static final String STORE_ENTRIES_INDICATOR_FIELD_NAME = "store_entries_indicator";
     static final String STORAGE_QUEUE_DURABLE_INDICATOR_FIELD_NAME = "storage_queue_durable_indicator";
@@ -142,8 +130,6 @@ public class RepositoryInfoBO extends BO implements Serializable
         _startupStatus = Status.valueOf(MongoUtils.getString(dbObject, STARTUP_STATUS_FIELD_NAME, true));
 
         // PubSub settings
-        _publisherPassword = MongoUtils.getString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, false);
-        _subscriberPassword = MongoUtils.getString(dbObject, SUBSCRIBER_PASSWORD_FIELD_NAME, false);
         _maxMemory = MongoUtils.getLong(dbObject, MAX_MEMORY_FIELD_NAME, true);
         _maxMemoryPolicy = MaxMemoryPolicy.valueOf(MongoUtils.getString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, true));
         _pageSize = MongoUtils.getLong(dbObject, PAGE_SIZE_FIELD_NAME, true);
@@ -202,16 +188,6 @@ public class RepositoryInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, STARTUP_STATUS_FIELD_NAME, _startupStatus.toString(), true);
 
         // PubSub settings
-        MongoUtils.setString(dbObject, PUBLISHER_PASSWORD_FIELD_NAME, _publisherPassword, false);
-        if (!StringUtils.isBlank(_publisherPassword) && !_passwordPattern.matcher(_publisherPassword).matches())
-        {
-            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _publisherPassword);
-        }
-        MongoUtils.setString(dbObject, SUBSCRIBER_PASSWORD_FIELD_NAME, _subscriberPassword, false);
-        if (!StringUtils.isBlank(_subscriberPassword) && !_passwordPattern.matcher(_subscriberPassword).matches())
-        {
-            throw new ChiliLogException(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, _subscriberPassword);
-        }
         MongoUtils.setLong(dbObject, MAX_MEMORY_FIELD_NAME, _maxMemory, true);
         MongoUtils.setString(dbObject, MAX_MEMORY_POLICY_FIELD_NAME, _maxMemoryPolicy.toString(), true);
         MongoUtils.setLong(dbObject, PAGE_SIZE_FIELD_NAME, _pageSize, true);
@@ -326,47 +302,37 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * Returns the name of the role used by our HornetQ JAAS provider to grant permission to publishers of log entries
+     * Returns the name of the role that has all access to this repository
+     */
+    public String getAdministratorRoleName()
+    {
+        return UserBO.createRepositoryAdministratorRoleName(_name);
+    }
+
+    /**
+     * Returns the name of the role that can use the workbench to access the data in this repository
+     */
+    public String getWorkbenchRoleName()
+    {
+        return UserBO.createRepositoryWorkbenchRoleName(_name);
+    }
+
+    /**
+     * Returns the name of the role that can publish (write) log entries to this repository
      */
     public String getPublisherRoleName()
     {
-        return createHornetQRoleName(_name, _publisherPassword);
+        return UserBO.createRepositoryPublisherRoleName(_name);
     }
 
     /**
-     * Returns the name of the role used by our HornetQ JAAS provider to grant permission to subscribers of log entries
+     * Returns the name of the role that can subscribe to (read) this repository 
      */
     public String getSubscriberRoleName()
     {
-        return createHornetQRoleName(_name, _subscriberPassword);
+        return UserBO.createRepositorySubscriberRoleName(_name);
     }
-
-    /**
-     * Returns the password to authenticate publishers (agents that send log entries)
-     */
-    public String getPublisherPassword()
-    {
-        return _publisherPassword;
-    }
-
-    public void setPublisherPassword(String publisherPassword)
-    {
-        _publisherPassword = publisherPassword;
-    }
-
-    /**
-     * Returns the password to authenticate subscribers (agents that consume log entries)
-     */
-    public String getSubscriberPassword()
-    {
-        return _subscriberPassword;
-    }
-
-    public void setSubscriberPassword(String subscriberPassword)
-    {
-        _subscriberPassword = subscriberPassword;
-    }
-
+   
     /**
      * Returns a flag indicating if the log entries published to this repository is to be stored in the database.
      */
@@ -489,68 +455,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     {
         _storageMaxKeywords = parserMaxKeywords;
     }
-
-    /**
-     * Returns the name of the role in which a user must be a member before permission is granted find entries in this
-     * repository and setup monitors.
-     */
-    public String getWorkBenchStandardUserRoleName()
-    {
-        return String.format("repo.%s.standard", _name);
-    }
-
-    /**
-     * Returns the name of the role in which a user must be a member before permission is granted find entries in this
-     * repository and setup monitors.
-     */
-    public String getWorkBenchPowerUserRoleName()
-    {
-        return String.format("repo.%s.power", _name);
-    }
-
-    /**
-     * Returns the name of the role in which a user must be a member before permission is granted to find entries,
-     * start/stop and reconfigure this repository.
-     */
-    public String getWorkBenchAdministratorUserRoleName()
-    {
-        return String.format("repo.%s.administrator", _name);
-    }
-
-    /**
-     * Returns the name of the repository given a workbench role name
-     * 
-     * @param workbenchRoleName
-     *            Role for a user
-     * @return Name of the repository or null if not a repository role
-     */
-    public static String getNameFromWorkBenchRoleName(String workbenchRoleName)
-    {
-        if (StringUtils.isBlank(workbenchRoleName) || !workbenchRoleName.startsWith("repo."))
-        {
-            return null;
-        }
-        int idx = workbenchRoleName.lastIndexOf('.');
-        if (idx <= 5)
-        {
-            return null;
-        }
-        return workbenchRoleName.substring(5, idx);
-    }
-
-    /**
-     * Builds the HornetQ role name granted permission for queue
-     * 
-     * @param username
-     *            Username
-     * @param password
-     *            Password
-     */
-    public static String createHornetQRoleName(String username, String password)
-    {
-        return String.format("%s~~~%s", username, password);
-    }
-
+    
     /**
      * Repository status
      * 

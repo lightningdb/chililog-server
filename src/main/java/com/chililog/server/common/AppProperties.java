@@ -453,7 +453,7 @@ public class AppProperties
     {
         return loadInt(properties, DB_CONNECTIONS_PER_HOST, 10);
     }
-    
+
     /**
      * Returns The name of the ChiliLog system user. This auto-create user will have permission to manage all aspects of
      * ChiliLog. If it is not set, then we generate a random one. It should be set for load-balanced installations.
@@ -535,7 +535,7 @@ public class AppProperties
         String s = loadString(properties, MQ_JOURNAL_DIRECTORY);
         return s;
     }
-    
+
     /**
      * Returns the directory to store paging files.
      */
@@ -553,7 +553,26 @@ public class AppProperties
         String s = loadString(properties, MQ_PAGING_DIRECTORY);
         return s;
     }
-    
+
+    /**
+     * Returns the time period in milliseconds during which an authenticated user is valid and credentials will not be
+     * validated by calling JAAS. Defaults to 10000 (10 seconds).
+     */
+    public int getMqSecurityInvalidationInterval()
+    {
+        return _mqSecurityInvalidationInterval;
+    }
+
+    static final String MQ_SECURITY_INVALIDATION_INTERVAL = "mq.security_invalidation_interval";
+
+    private int _mqSecurityInvalidationInterval = 10000;
+
+    static int loadMqSecurityInvalidationInterval(Properties properties)
+    {
+        int i = loadInt(properties, MQ_SECURITY_INVALIDATION_INTERVAL, 10000);
+        return i;
+    }
+
     /**
      * Returns Flag to indicate if message queue clustering is to be used. Default is false.
      */

@@ -43,9 +43,6 @@ public class RepositoryInfoAO extends AO
     private String _description;
     private Status _startupStatus = Status.ONLINE;
 
-    private String _publisherPassword = null;
-    private String _subscriberPassword = null;
-
     private boolean _storeEntriesIndicator = false;
     private boolean _storageQueueDurableIndicator = false;
     private long _storageQueueWorkerCount = 1;
@@ -81,9 +78,6 @@ public class RepositoryInfoAO extends AO
         _description = repoInfo.getDescription();
 
         _startupStatus = repoInfo.getStartupStatus();
-
-        _publisherPassword = repoInfo.getPublisherPassword();
-        _subscriberPassword = repoInfo.getSubscriberPassword();
 
         _storeEntriesIndicator = repoInfo.getStoreEntriesIndicator();
         _storageQueueDurableIndicator = repoInfo.getStorageQueueDurableIndicator();
@@ -127,9 +121,6 @@ public class RepositoryInfoAO extends AO
         repoInfo.setDisplayName(_displayName);
         repoInfo.setDescription(_description);
         repoInfo.setStartupStatus(_startupStatus);
-
-        repoInfo.setPublisherPassword(_publisherPassword);
-        repoInfo.setSubscriberPassword(_subscriberPassword);
 
         repoInfo.setStoreEntriesIndicator(_storeEntriesIndicator);
         repoInfo.setStorageQueueDurableIndicator(_storageQueueDurableIndicator);
@@ -213,26 +204,6 @@ public class RepositoryInfoAO extends AO
     public void setStartupStatus(Status startupStatus)
     {
         _startupStatus = startupStatus;
-    }
-
-    public String getPublisherPassword()
-    {
-        return _publisherPassword;
-    }
-
-    public void setPublisherPassword(String publisherPassword)
-    {
-        _publisherPassword = publisherPassword;
-    }
-
-    public String getSubscriberPassword()
-    {
-        return _subscriberPassword;
-    }
-
-    public void setSubscriberPassword(String subscriberPassword)
-    {
-        _subscriberPassword = subscriberPassword;
     }
 
     public boolean getStoreEntriesIndicator()

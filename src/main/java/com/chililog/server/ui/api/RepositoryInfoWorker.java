@@ -182,9 +182,9 @@ public class RepositoryInfoWorker extends Worker
             DB db = MongoConnection.getInstance().getConnection();
             RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-            // Only system admin and workbench admin for this repo can update details
+            // Only system admin and repo admin for this repo can update details
             UserBO user = this.getAuthenticatedUser();
-            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getWorkBenchAdministratorUserRoleName()))
+            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getAdministratorRoleName()))
             {
                 return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                         Strings.NOT_AUTHORIZED_ERROR));
@@ -256,9 +256,8 @@ public class RepositoryInfoWorker extends Worker
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getWorkBenchStandardUserRoleName())
-                        && !user.hasRole(repoInfoBO.getWorkBenchPowerUserRoleName())
-                        && !user.hasRole(repoInfoBO.getWorkBenchAdministratorUserRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getAdministratorRoleName())
+                        && !user.hasRole(repoInfoBO.getWorkbenchRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));

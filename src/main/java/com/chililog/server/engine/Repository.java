@@ -126,8 +126,17 @@ public class Repository
             AppProperties appProperties = AppProperties.getInstance();
 
             // Setup permissions
-            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), _repoInfo.getPublisherRoleName(),
-                    _repoInfo.getSubscriberRoleName());
+            StringBuilder publisherRoles = new StringBuilder();
+            publisherRoles.append(_repoInfo.getAdministratorRoleName()).append(",");
+            publisherRoles.append(_repoInfo.getPublisherRoleName());
+
+            StringBuilder subscriberRoles = new StringBuilder();
+            subscriberRoles.append(_repoInfo.getAdministratorRoleName()).append(",");
+            subscriberRoles.append(_repoInfo.getWorkbenchRoleName()).append(",");
+            subscriberRoles.append(_repoInfo.getSubscriberRoleName());
+
+            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), publisherRoles.toString(),
+                    subscriberRoles.toString());
 
             // Update address properties. See
             // http://hornetq.sourceforge.net/docs/hornetq-2.1.2.Final/user-manual/en/html_single/index.html#queue-attributes.address-settings

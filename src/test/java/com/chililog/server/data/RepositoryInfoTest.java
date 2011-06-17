@@ -155,8 +155,6 @@ public class RepositoryInfoTest
         assertEquals("repo.repo_info_test1", repoInfo2.getPubSubAddress());
         assertEquals("repo.repo_info_test1.storage", repoInfo2.getStorageQueueName());
         assertEquals(Status.ONLINE, repoInfo2.getStartupStatus());
-        assertNull(repoInfo2.getPublisherPassword());
-        assertNull(repoInfo2.getSubscriberPassword());
         assertEquals(true, repoInfo2.getStoreEntriesIndicator());
         assertEquals(true, repoInfo2.getStorageQueueDurableIndicator());
         assertEquals(10, repoInfo2.getStorageQueueWorkerCount());
@@ -216,8 +214,6 @@ public class RepositoryInfoTest
         repoInfo.setDisplayName("Test 1x");
         repoInfo.setDescription("description x");
         repoInfo.setStartupStatus(Status.OFFLINE);
-        repoInfo.setPublisherPassword("xyz");
-        repoInfo.setSubscriberPassword("uvw");
         repoInfo.setStoreEntriesIndicator(false);
         repoInfo.setStorageQueueDurableIndicator(false);
         repoInfo.setStorageQueueWorkerCount(100);
@@ -253,8 +249,6 @@ public class RepositoryInfoTest
         assertEquals("Test 1x", repoInfo2.getDisplayName());
         assertEquals("description x", repoInfo2.getDescription());
         assertEquals(Status.OFFLINE, repoInfo2.getStartupStatus());
-        assertEquals("xyz", repoInfo2.getPublisherPassword());
-        assertEquals("uvw", repoInfo2.getSubscriberPassword());
         assertEquals(false, repoInfo2.getStoreEntriesIndicator());
         assertEquals(false, repoInfo2.getStorageQueueDurableIndicator());
         assertEquals(100, repoInfo2.getStorageQueueWorkerCount());
@@ -430,42 +424,6 @@ public class RepositoryInfoTest
         }
     }
 
-    @Test
-    public void testBadPublisherPassword() throws ChiliLogException
-    {
-        try
-        {
-            RepositoryInfoBO repoInfo = new RepositoryInfoBO();
-            repoInfo.setName("repo_info_test4");
-            repoInfo.setPublisherPassword("bad~password");
-            RepositoryInfoController.getInstance().save(_db, repoInfo);
-
-            fail("Exception expected");
-        }
-        catch (ChiliLogException ex)
-        {
-            assertEquals(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, ex.getErrorCode());
-        }
-    }
-    
-    @Test
-    public void testBadSubscriberPassword() throws ChiliLogException
-    {
-        try
-        {
-            RepositoryInfoBO repoInfo = new RepositoryInfoBO();
-            repoInfo.setName("repo_info_test4");
-            repoInfo.setSubscriberPassword("bad,password");
-            RepositoryInfoController.getInstance().save(_db, repoInfo);
-
-            fail("Exception expected");
-        }
-        catch (ChiliLogException ex)
-        {
-            assertEquals(Strings.REPO_INFO_PASSWORD_FORMAT_ERROR, ex.getErrorCode());
-        }
-    }
- 
     @Test
     public void testBadPageFileSize() throws ChiliLogException
     {

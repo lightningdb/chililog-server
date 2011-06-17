@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.CryptoUtils;
 import com.mongodb.DBObject;
@@ -44,6 +46,24 @@ public class UserBO extends BO implements Serializable
     private static final long serialVersionUID = 1L;
 
     public static final String SYSTEM_ADMINISTRATOR_ROLE_NAME = "system.administrator";
+
+    public static final String REPOSITORY_ROLE_PREFIX = "repo.";
+
+    public static final String REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX = ".administrator";
+    public static final String REPOSITORY_ADMINISTRATOR_ROLE_TEMPLATE = REPOSITORY_ROLE_PREFIX + "%s"
+            + REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX;
+
+    public static final String REPOSITORY_WORKBENCH_ROLE_SUFFIX = ".workbench";
+    public static final String REPOSITORY_WORKBENCH_ROLE_TEMPLATE = REPOSITORY_ROLE_PREFIX + "%s"
+            + REPOSITORY_WORKBENCH_ROLE_SUFFIX;
+
+    public static final String REPOSITORY_PUBLISHER_ROLE_SUFFIX = ".publisher";
+    public static final String REPOSITORY_PUBLISHER_ROLE_TEMPLATE = REPOSITORY_ROLE_PREFIX + "%s"
+            + REPOSITORY_PUBLISHER_ROLE_SUFFIX;
+
+    public static final String REPOSITORY_SUBSCRIBER_ROLE_SUFFIX = ".subscriber";
+    public static final String REPOSITORY_SUBSCRIBER_ROLE_TEMPLATE = REPOSITORY_ROLE_PREFIX + "%s"
+            + REPOSITORY_SUBSCRIBER_ROLE_SUFFIX;
 
     // Pattern thanks to http://www.regular-expressions.info/email.html
     private static Pattern _emailAddressPattern = Pattern
@@ -86,7 +106,7 @@ public class UserBO extends BO implements Serializable
         _roles = MongoUtils.getStringArrayList(dbObject, ROLES_FIELD_NAME, false);
         _status = Status.valueOf(MongoUtils.getString(dbObject, STATUS_FIELD_NAME, true));
         _displayName = MongoUtils.getString(dbObject, DISPLAY_NAME_FIELD_NAME, false);
-        _emailAddress = MongoUtils.getString(dbObject, EMAIL_ADDRESS_FIELD_NAME, true);
+        _emailAddress = MongoUtils.getString(dbObject, EMAIL_ADDRESS_FIELD_NAME, false);
         return;
     }
 
@@ -105,9 +125,9 @@ public class UserBO extends BO implements Serializable
         MongoUtils.setStringArrayList(dbObject, ROLES_FIELD_NAME, _roles, false);
         MongoUtils.setString(dbObject, STATUS_FIELD_NAME, _status.toString(), true);
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
-        MongoUtils.setString(dbObject, EMAIL_ADDRESS_FIELD_NAME, _emailAddress, true);
+        MongoUtils.setString(dbObject, EMAIL_ADDRESS_FIELD_NAME, _emailAddress, false);
 
-        if (!_emailAddressPattern.matcher(_emailAddress).matches())
+        if (!StringUtils.isBlank(_emailAddress) && !_emailAddressPattern.matcher(_emailAddress).matches())
         {
             throw new ChiliLogException(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, _emailAddress);
         }
@@ -281,6 +301,90 @@ public class UserBO extends BO implements Serializable
     public boolean isSystemAdministrator()
     {
         return hasRole(SYSTEM_ADMINISTRATOR_ROLE_NAME);
+    }
+
+    /**
+     * Creates the role name for users who can manage the repository. Administrators have access to the repository in
+     * the workbench, can publish to the repository, can subscribe to the repository as well configure the repository.
+     * 
+     * @param repositoryName
+     *            name of the repository
+     * @return Role name that grants the user permission to administer the named repository
+     */
+    public static String createRepositoryAdministratorRoleName(String repositoryName)
+    {
+        return String.format(REPOSITORY_ADMINISTRATOR_ROLE_TEMPLATE, repositoryName);
+    }
+
+    /**
+     * Creates the role name for users who can access the named repository from the workbench. Workbench users cannot
+     * publish but they can subscribe to log entries (for streaming)
+     * 
+     * @param repositoryName
+     *            name of the repository
+     * @return Role name that grants the user permission to access the named repository from the workbench.
+     */
+    public static String createRepositoryWorkbenchRoleName(String repositoryName)
+    {
+        return String.format(REPOSITORY_WORKBENCH_ROLE_TEMPLATE, repositoryName);
+    }
+
+    /**
+     * Creates the role name for users who can publish log entries to this repository.
+     * 
+     * @param repositoryName
+     *            name of the repository
+     * @return Role name that grants the user permission to publish log entries to this repository.
+     */
+    public static String createRepositoryPublisherRoleName(String repositoryName)
+    {
+        return String.format(REPOSITORY_PUBLISHER_ROLE_TEMPLATE, repositoryName);
+    }
+
+    /**
+     * Creates the role name for users who can subscribe to log entries from this repository
+     * 
+     * @param repositoryName
+     *            name of the repository
+     * @return Role name that grants the user permission subscribe to log entries from this repository
+     */
+    public static String createRepositorySubscriberRoleName(String repositoryName)
+    {
+        return String.format(REPOSITORY_SUBSCRIBER_ROLE_TEMPLATE, repositoryName);
+    }
+
+    /**
+     * <p>
+     * Given a role name, return the repository to which the role provides permission. Assumes repository roles are in
+     * the format: <code>repo.[repository name].[role type]</code>
+     * </p>
+     * <p>
+     * This provides a quick short cut way to find out the repositories to which a user has access
+     * </p>
+     * 
+     * @param role
+     *            Role name. For example repo.xxx.administrator
+     * @return The repository name (xxx in the above example). Null if not repository access.
+     */
+    public static String extractRepositoryNameFromRole(String role)
+    {
+        if (StringUtils.isBlank(role))
+        {
+            return null;
+        }
+
+        if (!role.startsWith(REPOSITORY_ROLE_PREFIX))
+        {
+            return null;
+        }
+
+        if (role.endsWith(REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX) || role.endsWith(REPOSITORY_WORKBENCH_ROLE_SUFFIX)
+                || role.endsWith(REPOSITORY_PUBLISHER_ROLE_SUFFIX) || role.endsWith(REPOSITORY_SUBSCRIBER_ROLE_SUFFIX))
+        {
+            return role.substring(5, role.lastIndexOf('.'));
+        }
+
+        return null;
     }
 
     /**

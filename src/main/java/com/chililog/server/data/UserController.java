@@ -222,7 +222,7 @@ public class UserController extends Controller
         }
         return o;
     }
-    
+
     /**
      * Tries to retrieve the specified user by the email address. If not found, null is returned.
      * 
@@ -351,18 +351,21 @@ public class UserController extends Controller
         }
 
         // Validate unique email address
-        condition = new BasicDBObject();
-        condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, user.getEmailAddress());
-        if (user.isExistingRecord())
+        if (!StringUtils.isBlank(user.getEmailAddress()))
         {
-            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
+            condition = new BasicDBObject();
+            condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, user.getEmailAddress());
+            if (user.isExistingRecord())
+            {
+                condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
+            }
+            i = coll.getCount(condition);
+            if (i > 0)
+            {
+                throw new ChiliLogException(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, user.getEmailAddress());
+            }
         }
-        i = coll.getCount(condition);
-        if (i > 0)
-        {
-            throw new ChiliLogException(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, user.getEmailAddress());
-        }
-        
+
         // Save it
         super.save(db, user);
     }
