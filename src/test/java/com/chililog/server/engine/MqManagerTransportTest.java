@@ -512,4 +512,92 @@ public class MqManagerTransportTest
         }
     }
 
+    /**
+     * Write with CORE and read with STOMP. This these does not work because string that is passed back to stomp is
+     * corrupted!!!  No time to work it out as yet.
+     * 
+     * @throws Exception
+     */
+    /* @Test */
+    public void testOK_CoreToStomp() throws Exception
+    {
+        // ************************************
+        // Create queue OK
+        // ************************************
+        // Create a core queue
+        String queueAddress = "MqTransportTestCoreToStomp";
+        String queueName = "MqTransportTestCoreToStomp";
+        ClientSession coreSession = null;
+        try
+        {
+            coreSession = _inVmClientSessionFactory.createSession(SYSTEM_USERNAME, SYSTEM_PASSWORD, false, false,
+                    false, false, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+
+            coreSession.createQueue(queueAddress, queueName, true);
+
+            // Make sure the queue is there
+            QueueQuery q = coreSession.queueQuery(new SimpleString(queueAddress));
+            assertNotNull(q);
+            assertEquals(queueAddress, q.getAddress().toString());
+        }
+        finally
+        {
+            if (coreSession != null)
+            {
+                coreSession.close();
+            }
+        }
+
+        // Read/Write to queue
+        ClientSession session = null;
+        try
+        {
+            // ************************************
+            // Write OK
+            // ************************************
+            // Create the session, and producer
+            session = _inVmClientSessionFactory.createSession(PUBLISHER_USERNAME, PUBLISHER_PASSWORD, false, true,
+                    true, true, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
+
+            ClientProducer producer = session.createProducer(queueAddress);
+
+            // Create and send a message
+            ClientMessage message = session.createMessage(false);
+
+            String msg = "Hello sent at " + new Date();
+            message.getBodyBuffer().writeNullableString(msg);
+
+            producer.send(message);
+            _logger.info("Sent TextMessage: " + msg);
+
+            QueueQuery q = session.queueQuery(new SimpleString(queueAddress));
+            assertNotNull(q);
+            assertEquals(queueAddress, q.getAddress().toString());
+            assertEquals(1, q.getMessageCount());
+
+            session.close();
+
+            // ************************************
+            // Read OK
+            // ************************************
+            TestListener errorListener = new TestListener();
+            Client c = new Client("localhost", 61613, SUBSCRIBER_USERNAME, SUBSCRIBER_PASSWORD);
+            c.addErrorListener(errorListener);
+
+            // Should be able to read the message
+            TestListener msgListener = new TestListener();
+            c.subscribe(queueAddress, msgListener);
+            Thread.sleep(1000);
+            assertEquals(msg, msgListener.getLastMessageBody());
+        }
+        finally
+        {
+            if (session != null)
+            {
+                session.close();
+            }
+        }
+
+    }
+
 }

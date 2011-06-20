@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.chililog</groupId>
+  <groupId>com.chililog.server</groupId>
   <artifactId>chililog-server</artifactId>
   <version>00.00.01-ALHPA</version>
   <packaging>jar</packaging>
@@ -88,12 +88,33 @@
         </executions>
       </plugin>
 
-      <!-- Javadocs. Generate during packaging. -->
+      <!-- Create source code jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+         <version>2.1.2</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Javadocs. Generate during packaging as well as create javadoc jar. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.7</version>
         <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
           <execution>
             <phase>prepare-package</phase>
             <goals>
@@ -201,13 +222,13 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core</artifactId>
-      <version>2.2.2.Final</version>
+      <version>2.2.5.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-jms</artifactId>
-      <version>2.2.2.Final</version>
+      <version>2.2.5.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -225,20 +246,20 @@
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-core-client</artifactId>
-      <version>2.2.2.Final</version>
+      <version>2.2.5.Final</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-jms-client</artifactId>
-      <version>2.2.2.Final</version>
+      <version>2.2.5.Final</version>
       <scope>compile</scope>
     </dependency>
 
     <dependency>
       <groupId>org.hornetq</groupId>
       <artifactId>hornetq-logging</artifactId>
-      <version>2.2.2.Final</version>
+      <version>2.2.5.Final</version>
     </dependency>
 
     <dependency>
