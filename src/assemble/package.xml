@@ -25,8 +25,12 @@
       <outputDirectory>/scripts</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>${project.build.directory}/site/apidocs</directory>
+      <directory>${project.build.directory}/apidocs</directory>
       <outputDirectory>/docs/javadoc</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/docs</directory>
+      <outputDirectory>/docs</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>${basedir}/src/main/sc/tmp/build/static</directory>
