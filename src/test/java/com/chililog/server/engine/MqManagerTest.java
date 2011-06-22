@@ -190,7 +190,7 @@ public class MqManagerTest
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
 
         String msg = "Hello sent at " + new Date();
-        message.getBodyBuffer().writeNullableString(msg);
+        message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(msg));;
 
         producer.send(message);
         _logger.info("Sent TextMessage: " + msg);
@@ -206,7 +206,7 @@ public class MqManagerTest
         consumerSession.start();
 
         ClientMessage messageReceived = messageConsumer.receive(1000);
-        String msg2 = messageReceived.getBodyBuffer().readNullableString();
+        String msg2 = messageReceived.getBodyBuffer().readNullableSimpleString().toString();
         _logger.info("Received TextMessage: " + msg2);
         assertEquals(msg, msg2);
 
@@ -250,7 +250,7 @@ public class MqManagerTest
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
 
         String msg = "Hello sent at " + new Date();
-        message.getBodyBuffer().writeNullableString(msg);
+        message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(msg));
 
         producer.send(message);
         _logger.info("Sent TextMessage: " + msg);
@@ -273,7 +273,7 @@ public class MqManagerTest
         consumerSession.start();
 
         ClientMessage messageReceived = messageConsumer.receive(1000);
-        String msg2 = messageReceived.getBodyBuffer().readNullableString();
+        String msg2 = messageReceived.getBodyBuffer().readNullableSimpleString().toString();
         _logger.info("Received TextMessage: " + msg2);
         assertEquals(msg, msg2);
 

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
@@ -175,8 +176,13 @@ public class RepositoryStorageWorker extends Thread
                         String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
                         String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
                         String severity = messageReceived.getStringProperty(SEVERITY_PROPERTY_NAME);
-                        String message = messageReceived.getBodyBuffer().readString();
-
+                        SimpleString messageSimpleString = messageReceived.getBodyBuffer().readNullableSimpleString();
+                        String message = "";
+                        if (messageSimpleString != null)
+                        {
+                            message = messageSimpleString.toString();
+                        }
+                        
                         // Parse message
                         EntryParser entryParser = getParser(source, host);
                         RepositoryEntryBO repoEntry = entryParser.parse(ts, source, host, severity, message);

@@ -47,13 +47,13 @@ public class Receiver extends Thread {
           if (command.length() > 0) {
             try {
               Command c = Command.valueOf( command );
-              _logger.debug("STOMP Receive command: %s", command);
+              _logger.info("STOMP Receive command: %s", command);
 
               // Get headers
               HashMap headers = new HashMap();
               String header;
               while ((header = _input.readLine()).length() > 0) {
-                _logger.debug("STOMP Receive header: %s", header);
+                _logger.info("STOMP Receive header: %s", header);
                 int ind = header.indexOf( ':' );
                 String k = header.substring( 0, ind );
                 String v = header.substring( ind+1, header.length() );
@@ -65,7 +65,7 @@ public class Receiver extends Thread {
               while ((b = _input.read()) != 0) {
                 body.append( (char)b );
               }
-              _logger.debug("STOMP Receive body: %s", body.toString());
+              _logger.info("STOMP Receive body: %s", body.toString());
 
               try {
                 _receiver.receive( c, headers, body.toString() );

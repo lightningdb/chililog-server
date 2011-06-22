@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 
 import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -201,7 +202,7 @@ public class RepositoryTest
         message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "1");
         String entry1 = "line1|2|3|4.4|2001-5-5 5:5:5|True";
-        message.getBodyBuffer().writeString(entry1);
+        message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
@@ -210,7 +211,7 @@ public class RepositoryTest
         message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "2");
         String entry2 = "line2|2|3|4.4|2001-5-5 5:5:5|True";
-        message.getBodyBuffer().writeString(entry2);
+        message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry2));
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
@@ -219,7 +220,7 @@ public class RepositoryTest
         message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
         message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
         String entry3 = "line3|2|3|4.4|2001-5-5 5:5:5|True";
-        message.getBodyBuffer().writeString(entry3);
+        message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry3));
         producer.send(message);
 
         producerSession.commit();
@@ -291,7 +292,7 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeString(entry1);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
             producer.send(message);
             producerSession.commit();
         }
@@ -362,7 +363,7 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeString(entry1);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
             producer.send(message);
             producerSession.commit();
         }
@@ -397,7 +398,7 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeString(entry1);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
             producer.send(message);
             producerSession.commit();
         }
@@ -460,7 +461,7 @@ public class RepositoryTest
             {
                 entry1 = i + " - bad entry no delimiter";
             }
-            message.getBodyBuffer().writeString(entry1);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
             producer.send(message);
             producerSession.commit();
         }

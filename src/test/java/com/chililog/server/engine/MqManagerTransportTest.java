@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.hornetq.api.core.HornetQBuffer;
 import org.hornetq.api.core.HornetQException;
+import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientConsumer;
@@ -37,10 +38,8 @@ import org.hornetq.api.core.client.ClientSessionFactory;
 import org.hornetq.api.core.client.HornetQClient;
 import org.hornetq.api.core.client.ServerLocator;
 import org.hornetq.api.core.management.HornetQServerControl;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
-import org.hornetq.utils.DataConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -202,7 +201,7 @@ public class MqManagerTransportTest
             ClientMessage message = session.createMessage(false);
 
             String msg = "Hello sent at " + new Date();
-            message.getBodyBuffer().writeNullableString(msg);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(msg));
 
             producer.send(message);
             _logger.info("Sent TextMessage: " + msg);
@@ -261,7 +260,7 @@ public class MqManagerTransportTest
             session.start();
 
             ClientMessage messageReceived = messageConsumer.receive(1000);
-            String msg2 = messageReceived.getBodyBuffer().readNullableString();
+            String msg2 = messageReceived.getBodyBuffer().readNullableSimpleString().toString();
             _logger.info("Received TextMessage: " + msg2);
             assertEquals(msg, msg2);
 
@@ -486,10 +485,13 @@ public class MqManagerTransportTest
 
             ClientMessage messageReceived = messageConsumer.receive(1000);
 
+            HornetQBuffer buffer = messageReceived.getBodyBuffer();
+
+            // *** Fixed this error by correctly terminating stomp message with UTF8 null and not ASCII null ***
             // See Hornetq/trunk/src/main/org/hornetq/core/protocol/stomp/StompSession.java sendMessage()
             // This is used to send a stomp packet back to a stomp client
-            HornetQBuffer buffer = messageReceived.getBodyBuffer();
-            buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+            // buffer.readerIndex(MessageImpl.BUFFER_HEADER_SPACE + DataConstants.SIZE_INT);
+
             SimpleString text = buffer.readNullableSimpleString();
             String msg2 = text.toString();
 
@@ -518,7 +520,7 @@ public class MqManagerTransportTest
      * 
      * @throws Exception
      */
-    /* @Test */
+    @Test
     public void testOK_CoreToStomp() throws Exception
     {
         // ************************************
@@ -562,10 +564,9 @@ public class MqManagerTransportTest
             ClientProducer producer = session.createProducer(queueAddress);
 
             // Create and send a message
-            ClientMessage message = session.createMessage(false);
-
+            ClientMessage message = session.createMessage(Message.TEXT_TYPE, false);
             String msg = "Hello sent at " + new Date();
-            message.getBodyBuffer().writeNullableString(msg);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(msg));
 
             producer.send(message);
             _logger.info("Sent TextMessage: " + msg);

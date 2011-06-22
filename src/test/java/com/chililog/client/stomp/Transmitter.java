@@ -35,7 +35,7 @@ class Transmitter {
 
     if (b != null) message.append( b );
 
-    message.append( "\000" );
+    message.append( "\u0000" );
 
     _logger.debug("STOMP Transmit %s", message.toString());
 
