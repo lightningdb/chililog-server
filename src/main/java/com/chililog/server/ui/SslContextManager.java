@@ -77,12 +77,12 @@ public class SslContextManager
             try
             {
                 KeyStore ks = KeyStore.getInstance("JKS");
-                FileInputStream fin = new FileInputStream(AppProperties.getInstance().getWebKeyStorePath());
-                ks.load(fin, AppProperties.getInstance().getWebKeyStorePassword().toCharArray());
+                FileInputStream fin = new FileInputStream(AppProperties.getInstance().getUiKeyStorePath());
+                ks.load(fin, AppProperties.getInstance().getUiKeyStorePassword().toCharArray());
 
                 // Set up key manager factory to use our key store
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-                kmf.init(ks, AppProperties.getInstance().getWebKeyStoreKeyPassword().toCharArray());
+                kmf.init(ks, AppProperties.getInstance().getUiKeyStoreKeyPassword().toCharArray());
 
                 // Initialise the SSLContext to work with our key managers.
                 serverContext = SSLContext.getInstance(PROTOCOL);

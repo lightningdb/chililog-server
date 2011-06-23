@@ -16,36 +16,39 @@
 // limitations under the License.
 //
 
-package com.chililog.server.ui.api;
+package com.chililog.server.ui.workers;
 
 import org.apache.commons.lang.StringUtils;
 
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.CryptoUtils;
 import com.chililog.server.data.UserBO;
+import com.chililog.server.data.UserBO.Status;
 
 /**
  * <p>
- * User API Object used to return the logged in user's details.
+ * User API Object is used as part of the User API service to communicate user information with API callers.
  * </p>
  * 
  * @author vibul
  * 
  */
-public class AuthenticatedUserAO extends AO
+public class UserAO extends AO
 {
     private String _documentID;
     private Long _documentVersion;
     private String _username;
     private String _emailAddress;
-    private String _displayName;
+    private String _password;
     private String[] _roles = null;
+    private Status _status = null;
+    private String _displayName;
     private String _gravatarMD5Hash;
 
     /**
      * Basic constructor
      */
-    public AuthenticatedUserAO()
+    public UserAO()
     {
         return;
     }
@@ -56,14 +59,29 @@ public class AuthenticatedUserAO extends AO
      * @param userBO
      *            User business object from which data will be copied
      */
-    public AuthenticatedUserAO(UserBO userBO)
+    public UserAO(UserBO userBO)
     {
+        this(userBO, true);
+        return;
+    }
+
+    /**
+     * Constructor that copies properties form the user business object
+     * 
+     * @param userBO
+     *            User business object from which data will be copied
+     * @param copyAllProperties
+     *            If true, then all properties will be copied. If false, then only bare essentials (username, display
+     *            name and gravatar hash) will be copied. Typically, only administrators get all properties. Non
+     *            administrators get bare essentials to help with user lookups.
+     */
+    public UserAO(UserBO userBO, boolean copyAllProperties)
+    {
+        // Note: password hash is NEVER supplied for security reasons
         _documentID = userBO.getDocumentID().toString();
         _documentVersion = userBO.getDocumentVersion();
         _username = userBO.getUsername();
         _displayName = userBO.getDisplayName();
-        _emailAddress = userBO.getEmailAddress();
-        _roles = userBO.getRoles();
         if (!StringUtils.isBlank(_emailAddress))
         {
             try
@@ -75,6 +93,15 @@ public class AuthenticatedUserAO extends AO
                 // ignore
             }
         }
+
+        if (copyAllProperties)
+        {
+            _roles = userBO.getRoles();
+            _status = userBO.getStatus();
+            _emailAddress = userBO.getEmailAddress();
+        }
+
+        return;
     }
 
     /**
@@ -90,11 +117,33 @@ public class AuthenticatedUserAO extends AO
 
         userBO.setUsername(_username);
 
+        // Password required on create. On update, change the password only if supplied
+        if (userBO.isExistingRecord())
+        {
+            if (!StringUtils.isBlank(_password))
+            {
+                userBO.setPassword(_password, true);
+            }
+        }
+        else
+        {
+            userBO.setPassword(_password, true);
+        }
+
+        userBO.removeAllRoles();
+        if (_roles != null)
+        {
+            for (String role : _roles)
+            {
+                userBO.addRole(role);
+            }
+        }
+
+        userBO.setStatus(_status);
+
         userBO.setDisplayName(_displayName);
 
         userBO.setEmailAddress(_emailAddress);
-        
-        // Not allowed to update roles under "my account"
     }
 
     public String getDocumentID()
@@ -127,6 +176,36 @@ public class AuthenticatedUserAO extends AO
         _username = username;
     }
 
+    public String getPassword()
+    {
+        return _password;
+    }
+
+    public void setPassword(String password)
+    {
+        _password = password;
+    }
+
+    public String[] getRoles()
+    {
+        return _roles;
+    }
+
+    public void setRoles(String[] roles)
+    {
+        _roles = roles;
+    }
+
+    public Status getStatus()
+    {
+        return _status;
+    }
+
+    public void setStatus(Status status)
+    {
+        _status = status;
+    }
+
     public String getDisplayName()
     {
         return _displayName;
@@ -155,16 +234,6 @@ public class AuthenticatedUserAO extends AO
     public void setGravatarMD5Hash(String gravatarMD5Hash)
     {
         _gravatarMD5Hash = gravatarMD5Hash;
-    }
-
-    public String[] getRoles()
-    {
-        return _roles;
-    }
-
-    public void setRoles(String[] roles)
-    {
-        _roles = roles;
     }
 
 }

@@ -43,13 +43,13 @@ import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserController;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
-import com.chililog.server.ui.api.ErrorAO;
-import com.chililog.server.ui.api.RepositoryFieldInfoAO;
-import com.chililog.server.ui.api.RepositoryInfoAO;
-import com.chililog.server.ui.api.RepositoryParserInfoAO;
-import com.chililog.server.ui.api.RepositoryPropertyInfoAO;
-import com.chililog.server.ui.api.UserAO;
-import com.chililog.server.ui.api.Worker;
+import com.chililog.server.ui.workers.ErrorAO;
+import com.chililog.server.ui.workers.RepositoryFieldInfoAO;
+import com.chililog.server.ui.workers.RepositoryInfoAO;
+import com.chililog.server.ui.workers.RepositoryParserInfoAO;
+import com.chililog.server.ui.workers.RepositoryPropertyInfoAO;
+import com.chililog.server.ui.workers.UserAO;
+import com.chililog.server.ui.workers.Worker;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -146,7 +146,7 @@ public class RepositoryInfoTest
         RepositoryInfoController.getInstance().save(_db, repoInfo);
 
         // Start web server
-        WebServerManager.getInstance().start();
+        UiServerManager.getInstance().start();
 
         // Login
         _systemAdminAuthToken = ApiUtils.login("TestRepoInfo_SystemAdmin", "hello");
@@ -171,7 +171,7 @@ public class RepositoryInfoTest
         query.put("name", pattern);
         coll.remove(query);
         
-        WebServerManager.getInstance().stop();
+        UiServerManager.getInstance().stop();
     }
 
     /**

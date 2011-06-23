@@ -82,8 +82,8 @@ public class SSLTrustManager
         {
             // create a "default" JSSE X509TrustManager.
             KeyStore ks = KeyStore.getInstance("JKS");
-            ks.load(new FileInputStream(AppProperties.getInstance().getWebTrustStorePath()), AppProperties
-                    .getInstance().getWebTrustStorePassword().toCharArray());
+            ks.load(new FileInputStream(AppProperties.getInstance().getUiTrustStorePath()), AppProperties
+                    .getInstance().getUiTrustStorePassword().toCharArray());
 
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
             trustManagerFactory.init(ks);

@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.ui.api;
+package com.chililog.server.ui.workers;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -28,8 +28,8 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.JsonTranslator;
-import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
-import com.chililog.server.ui.api.Worker.ContentIOStyle;
+import com.chililog.server.ui.workers.AuthenticationAO.ExpiryType;
+import com.chililog.server.ui.workers.Worker.ContentIOStyle;
 
 /**
  * <p>

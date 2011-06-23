@@ -213,67 +213,99 @@ public class AppPropertiesTest
     }
 
     @Test
-    public void testWebIpAddress() throws UnknownHostException
+    public void testUiIpAddress() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getWebIpAddress();
+        String s = AppProperties.getInstance().getUiIpAddress();
         assertEquals("localhost", s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_ADDRESS));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_IP_ADDRESS));
     }
 
     @Test
-    public void testWebIpPort() throws UnknownHostException
+    public void testUiIpPort() throws UnknownHostException
     {
-        int s = AppProperties.getInstance().getWebIpPort();
+        int s = AppProperties.getInstance().getUiIpPort();
         assertEquals(8989, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_IP_PORT));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_IP_PORT));
     }
 
     @Test
-    public void testWebSSLEnabled() throws UnknownHostException
+    public void testUiTaskThreadPoolSize() throws UnknownHostException
     {
-        boolean b = AppProperties.getInstance().getWebSslEnabled();
+        int s = AppProperties.getInstance().getUiTaskThreadPoolSize();
+        assertEquals(16, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_TASK_THREAD_POOL_SIZE));
+    }
+
+    @Test
+    public void testUiTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException
+    {
+        long s = AppProperties.getInstance().getUiTaskThreadPoolMaxChannelMemorySize();
+        assertEquals(1048576, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+    }
+
+    @Test
+    public void testUiTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException
+    {
+        long s = AppProperties.getInstance().getUiTaskThreadPoolMaxThreadMemorySize();
+        assertEquals(1048576, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
+    }
+   
+    @Test
+    public void testUiTaskThreadPoolKeepAliveSeconds() throws UnknownHostException
+    {
+        int s = AppProperties.getInstance().getUiTaskThreadPoolKeepAliveSeconds();
+        assertEquals(30, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+    }
+
+    @Test
+    public void testUiSSLEnabled() throws UnknownHostException
+    {
+        boolean b = AppProperties.getInstance().getUiSslEnabled();
         assertFalse(b);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_SSL_ENABLED));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_SSL_ENABLED));
     }
 
     @Test
-    public void testWebKeyStorePath() throws UnknownHostException
+    public void testUiKeyStorePath() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getWebKeyStorePath();
+        String s = AppProperties.getInstance().getUiKeyStorePath();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PATH));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_KEY_STORE_PATH));
     }
 
     @Test
-    public void testWebKeyStorePassword() throws UnknownHostException
+    public void testUiKeyStorePassword() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getWebKeyStorePassword();
+        String s = AppProperties.getInstance().getUiKeyStorePassword();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_PASSWORD));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_KEY_STORE_PASSWORD));
     }
 
     @Test
-    public void testWebKeyStoreKeyPassword() throws UnknownHostException
+    public void testUiKeyStoreKeyPassword() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getWebKeyStoreKeyPassword();
+        String s = AppProperties.getInstance().getUiKeyStoreKeyPassword();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_KEY_STORE_KEY_PASSWORD));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_KEY_STORE_KEY_PASSWORD));
     }
 
     @Test
-    public void testWebKeyStaticFilesDirectory() throws UnknownHostException
+    public void testUiKeyStaticFilesDirectory() throws UnknownHostException
     {
-        String s = AppProperties.getInstance().getWebStaticFilesDirectory();
-        assertTrue(s.equals("/tmp") || s.equals("./static")); // cater for debug and release builds
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_STATIC_FILES_DIRECTORY));
+        String s = AppProperties.getInstance().getUiStaticFilesDirectory();
+        assertTrue(s.equals("/tmp") || s.equals("../static")); // cater for debug and release builds
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_STATIC_FILES_DIRECTORY));
     }
 
     @Test
-    public void testWebStaticFilesCacheSeconds() throws UnknownHostException
+    public void testUiStaticFilesCacheSeconds() throws UnknownHostException
     {
-        int s = AppProperties.getInstance().getWebStaticFilesCacheSeconds();
+        int s = AppProperties.getInstance().getUiStaticFilesCacheSeconds();
         assertTrue(s == 3 || s == 31535000); // cater for debug and release builds
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WEB_STATIC_FILES_CACHE_SECONDS));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.UI_STATIC_FILES_CACHE_SECONDS));
     }
 
     @Test

@@ -790,222 +790,295 @@ public class AppProperties
     }
 
     /**
-     * Returns the IP address to use for binding our web server
+     * Returns the IP address to use for binding our UI web server
      */
-    public String getWebIpAddress()
+    public String getUiIpAddress()
     {
-        return _webIpAddress;
+        return _uiIpAddress;
     }
 
-    static final String WEB_IP_ADDRESS = "web.ip_address";
+    static final String UI_IP_ADDRESS = "ui.ip_address";
 
-    private String _webIpAddress = null;
+    private String _uiIpAddress = null;
 
-    static String loadWebIpAddress(Properties properties)
+    static String loadUiIpAddress(Properties properties)
     {
-        return loadString(properties, WEB_IP_ADDRESS);
+        return loadString(properties, UI_IP_ADDRESS);
     }
 
     /**
-     * Returns the IP port to use for binding our web server
+     * Returns the IP port to use for binding our UI web server
      */
-    public int getWebIpPort()
+    public int getUiIpPort()
     {
-        return _webIpPort;
+        return _uiIpPort;
     }
 
-    static final String WEB_IP_PORT = "web.ip_port";
+    static final String UI_IP_PORT = "ui.ip_port";
 
-    private int _webIpPort = 0;
+    private int _uiIpPort = 0;
 
-    static int loadWebIpPort(Properties properties)
+    static int loadUiIpPort(Properties properties)
     {
-        return loadInt(properties, WEB_IP_PORT, 9898);
+        return loadInt(properties, UI_IP_PORT, 9898);
     }
 
+    /**
+     * Returns the maximum number of active threads to execute tasks
+     */
+    public int getUiTaskThreadPoolSize()
+    {
+        return _uiTaskThreadPoolSize;
+    }
+
+    static final String UI_TASK_THREAD_POOL_SIZE = "ui.task_thread_pool.size";
+
+    private int _uiTaskThreadPoolSize = 0;
+
+    static int loadUiTaskThreadPoolSize(Properties properties)
+    {
+        return loadInt(properties, UI_TASK_THREAD_POOL_SIZE, 16);
+    }
+    
+    /**
+     * Returns maximum total size of the queued events per channel (0 to disable).
+     */
+    public long getUiTaskThreadPoolMaxChannelMemorySize()
+    {
+        return _uiTaskThreadPoolMaxChannelMemorySize;
+    }
+
+    static final String UI_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "ui.task_thread_pool.max_channel_memory_size";
+
+    private long _uiTaskThreadPoolMaxChannelMemorySize = 0;
+
+    static long loadUiTaskThreadPoolMaxChannelMemorySize(Properties properties)
+    {
+        return loadLong(properties, UI_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
+    }
+    
+    /**
+     * Returns maximum total size of the queued events for this pool (0 to disable).
+     */
+    public long getUiTaskThreadPoolMaxThreadMemorySize()
+    {
+        return _uiTaskThreadPoolMaxThreadMemorySize;
+    }
+
+    static final String UI_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "ui.task_thread_pool.max_thread_memory_size";
+
+    private long _uiTaskThreadPoolMaxThreadMemorySize = 0;
+
+    static long loadUiTaskThreadPoolMaxThreadMemorySize(Properties properties)
+    {
+        return loadLong(properties, UI_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+    }
+    
+    /**
+     * Returns the amount of time for an inactive thread to shut itself down
+     */
+    public int getUiTaskThreadPoolKeepAliveSeconds()
+    {
+        return _uiTaskThreadPoolKeepAliveSeconds;
+    }
+
+    static final String UI_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "ui.task_thread_pool.keep_alive_seconds";
+
+    private int _uiTaskThreadPoolKeepAliveSeconds = 0;
+
+    static int loadUiTaskThreadPoolKeepAliveSeconds(Properties properties)
+    {
+        return loadInt(properties, UI_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+    }
+    
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getWebSslEnabled()
+    public boolean getUiSslEnabled()
     {
-        return _webSslEnabled;
+        return _uiSslEnabled;
     }
 
-    static final String WEB_SSL_ENABLED = "web.ssl_enabled";
+    static final String UI_SSL_ENABLED = "ui.ssl_enabled";
 
-    private boolean _webSslEnabled = false;
+    private boolean _uiSslEnabled = false;
 
-    static boolean loadWebSslEnabled(Properties properties)
+    static boolean loadUiSslEnabled(Properties properties)
     {
-        return loadBoolean(properties, WEB_SSL_ENABLED, false);
+        return loadBoolean(properties, UI_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getWebKeyStorePath()
+    public String getUiKeyStorePath()
     {
-        return _webKeyStorePath;
+        return _uiKeyStorePath;
     }
 
-    static final String WEB_KEY_STORE_PATH = "web.key_store_path";
+    static final String UI_KEY_STORE_PATH = "ui.key_store_path";
 
-    private String _webKeyStorePath = null;
+    private String _uiKeyStorePath = null;
 
-    static String loadWebKeyStorePath(Properties properties)
+    static String loadUiKeyStorePath(Properties properties)
     {
-        return loadString(properties, WEB_KEY_STORE_PATH, null);
+        return loadString(properties, UI_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getWebKeyStorePassword()
+    public String getUiKeyStorePassword()
     {
-        return _webKeyStorePassword;
+        return _uiKeyStorePassword;
     }
 
-    static final String WEB_KEY_STORE_PASSWORD = "web.key_store_password";
+    static final String UI_KEY_STORE_PASSWORD = "ui.key_store_password";
 
-    private String _webKeyStorePassword = null;
+    private String _uiKeyStorePassword = null;
 
-    static String loadWebKeyStorePassword(Properties properties)
+    static String loadUiKeyStorePassword(Properties properties)
     {
-        return loadString(properties, WEB_KEY_STORE_PASSWORD, null);
+        return loadString(properties, UI_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getWebKeyStoreKeyPassword()
+    public String getUiKeyStoreKeyPassword()
     {
-        return _webKeyStoreKeyPassword;
+        return _uiKeyStoreKeyPassword;
     }
 
-    static final String WEB_KEY_STORE_KEY_PASSWORD = "web.key_store_key_password";
+    static final String UI_KEY_STORE_KEY_PASSWORD = "ui.key_store_key_password";
 
-    private String _webKeyStoreKeyPassword = null;
+    private String _uiKeyStoreKeyPassword = null;
 
-    static String loadWebKeyStoreKeyPassword(Properties properties)
+    static String loadUiKeyStoreKeyPassword(Properties properties)
     {
-        return loadString(properties, WEB_KEY_STORE_KEY_PASSWORD, null);
+        return loadString(properties, UI_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getWebTrustStorePath()
+    public String getUiTrustStorePath()
     {
-        return _webTrustStorePath;
+        return _uiTrustStorePath;
     }
 
-    static final String WEB_TRUST_STORE_PATH = "web.trust_store_path";
+    static final String UI_TRUST_STORE_PATH = "ui.trust_store_path";
 
-    private String _webTrustStorePath = null;
+    private String _uiTrustStorePath = null;
 
-    static String loadWebTrustStorePath(Properties properties)
+    static String loadUiTrustStorePath(Properties properties)
     {
-        return loadString(properties, WEB_TRUST_STORE_PATH, null);
-    }
-
-    /**
-     * Returns the password to the trust store to use for SSL
-     */
-    public String getWebTrustStorePassword()
-    {
-        return _webTrustStorePassword;
-    }
-
-    static final String WEB_TRUST_STORE_PASSWORD = "web.trust_store_password";
-
-    private String _webTrustStorePassword = null;
-
-    static String loadWebTrustStorePassword(Properties properties)
-    {
-        return loadString(properties, WEB_TRUST_STORE_PASSWORD, null);
+        return loadString(properties, UI_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getWebStaticFilesDirectory()
+    public String getUiTrustStorePassword()
     {
-        return _webStaticFilesDirectory;
+        return _uiTrustStorePassword;
     }
 
-    static final String WEB_STATIC_FILES_DIRECTORY = "web.static_files.directory";
+    static final String UI_TRUST_STORE_PASSWORD = "ui.trust_store_password";
 
-    private String _webStaticFilesDirectory = null;
+    private String _uiTrustStorePassword = null;
 
-    static String loadWebStaticFilesDirectory(Properties properties)
+    static String loadUiTrustStorePassword(Properties properties)
     {
-        return loadString(properties, WEB_STATIC_FILES_DIRECTORY, ".");
+        return loadString(properties, UI_TRUST_STORE_PASSWORD, null);
     }
 
     /**
-     * Returns the IP port to use for binding our web server
+     * Returns the password to the trust store to use for SSL
      */
-    public int getWebStaticFilesCacheSeconds()
+    public String getUiStaticFilesDirectory()
     {
-        return _webStaticFilesCacheSeconds;
+        return _uiStaticFilesDirectory;
     }
 
-    static final String WEB_STATIC_FILES_CACHE_SECONDS = "web.static_files.cache_seconds";
+    static final String UI_STATIC_FILES_DIRECTORY = "ui.static_files.directory";
 
-    private int _webStaticFilesCacheSeconds = 0;
+    private String _uiStaticFilesDirectory = null;
 
-    static int loadWebStaticFilesCacheSeconds(Properties properties)
+    static String loadUiStaticFilesDirectory(Properties properties)
     {
-        return loadInt(properties, WEB_STATIC_FILES_CACHE_SECONDS, 0);
+        return loadString(properties, UI_STATIC_FILES_DIRECTORY, ".");
+    }
+
+    /**
+     * Returns the number of seconds static files are ached
+     */
+    public int getUiStaticFilesCacheSeconds()
+    {
+        return _uiStaticFilesCacheSeconds;
+    }
+
+    static final String UI_STATIC_FILES_CACHE_SECONDS = "ui.static_files.cache_seconds";
+
+    private int _uiStaticFilesCacheSeconds = 0;
+
+    static int loadUiStaticFilesCacheSeconds(Properties properties)
+    {
+        return loadInt(properties, UI_STATIC_FILES_CACHE_SECONDS, 0);
     }
 
     /**
      * Returns the salt to use for hashing of the authentication token
      */
-    public byte[] getWebApiAuthenticationHashSalt()
+    public byte[] getUiApiAuthenticationHashSalt()
     {
-        return _webApiAuthenticationHashSalt;
+        return _uiApiAuthenticationHashSalt;
     }
 
-    static final String WEB_API_AUTHENTICATION_HASH_SALT = "web.api.authentication.hash_salt";
+    static final String UI_API_AUTHENTICATION_HASH_SALT = "ui.api.authentication.hash_salt";
 
-    private byte[] _webApiAuthenticationHashSalt = null;
+    private byte[] _uiApiAuthenticationHashSalt = null;
 
-    static byte[] loadWebApiAuthenticationHashSalt(Properties properties)
+    static byte[] loadUiApiAuthenticationHashSalt(Properties properties)
     {
         try
         {
-            return loadString(properties, WEB_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
+            return loadString(properties, UI_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, WEB_API_AUTHENTICATION_HASH_SALT).getBytes();
+            return loadString(properties, UI_API_AUTHENTICATION_HASH_SALT).getBytes();
         }
     }
 
     /**
      * Returns the password to use for authentication token encryption
      */
-    public byte[] getWebApiAuthenticationEncryptionPassword()
+    public byte[] getUiApiAuthenticationEncryptionPassword()
     {
-        return _webApiAuthenticationEncryptionPassword;
+        return _uiApiAuthenticationEncryptionPassword;
     }
 
-    static final String WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "web.api.authentication.encyrption_password";
+    static final String UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "ui.api.authentication.encyrption_password";
 
-    private byte[] _webApiAuthenticationEncryptionPassword = null;
+    private byte[] _uiApiAuthenticationEncryptionPassword = null;
 
-    static byte[] loadWebApiAuthenticationEncryptionPassword(Properties properties)
+    static byte[] loadUiApiAuthenticationEncryptionPassword(Properties properties)
     {
         try
         {
-            return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
+            return loadString(properties, UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, WEB_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
+            return loadString(properties, UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
+
+    
+    // *************************************************************************************************************
+    // LOAD METHODS
+    // *************************************************************************************************************
 
     /**
      * Loads a string. If it is blank (whitespace, empty or null), then exception is thrown.
@@ -1092,6 +1165,29 @@ public class AppProperties
         return Integer.parseInt(s);
     }
 
+    /**
+     * Loads a Long value. If it is blank (whitespace, empty or null), then return the <code>defaultValue</code>
+     * 
+     * @param properties
+     *            Properties to lookup
+     * @param name
+     *            Name of the property
+     * @param defaultValue
+     *            Value to return if property value is blank.
+     * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
+     *         <code>defaultValue</code>
+     */
+    private static long loadLong(Properties properties, String name, int defaultValue)
+    {
+        String s = loadString(properties, name, null);
+        if (s == null)
+        {
+            return defaultValue;
+        }
+        return Long.parseLong(s);
+    }
+
+    
     /**
      * Loads an boolean value. If not set, an exception is thrown
      * 

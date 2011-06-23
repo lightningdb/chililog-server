@@ -26,6 +26,7 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
@@ -38,6 +39,13 @@ import com.chililog.server.common.AppProperties;
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory
 {
+    private final ExecutionHandler _executionHandler;
+
+    public HttpServerPipelineFactory(ExecutionHandler executionHandler)
+    {
+        _executionHandler = executionHandler;
+    }
+
     /**
      * Creates an HTTP Pipeline for our server
      */
@@ -49,7 +57,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         ChannelPipeline pipeline = pipeline();
 
         // SSL handling
-        if (appProperties.getWebSslEnabled())
+        if (appProperties.getUiSslEnabled())
         {
             SSLEngine engine = SslContextManager.getInstance().getServerContext().createSSLEngine();
             engine.setUseClientMode(false);
@@ -67,7 +75,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
         // Chunked handler for SSL large static file downloads
-        if (appProperties.getWebSslEnabled())
+        if (appProperties.getUiSslEnabled())
         {
             pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         }
@@ -75,6 +83,9 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         // Compress
         pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
 
+        // Execution handler to move blocking tasks into another thread pool
+        pipeline.addLast("executionHandler", _executionHandler);
+        
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());
 

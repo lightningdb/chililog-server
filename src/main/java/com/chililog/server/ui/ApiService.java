@@ -61,11 +61,11 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import com.chililog.server.common.ChiliLogException;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.ui.api.ErrorAO;
-import com.chililog.server.ui.api.AuthenticationWorker;
-import com.chililog.server.ui.api.Worker;
-import com.chililog.server.ui.api.Worker.ContentIOStyle;
-import com.chililog.server.ui.api.ApiResult;
+import com.chililog.server.ui.workers.ApiResult;
+import com.chililog.server.ui.workers.AuthenticationWorker;
+import com.chililog.server.ui.workers.ErrorAO;
+import com.chililog.server.ui.workers.Worker;
+import com.chililog.server.ui.workers.Worker.ContentIOStyle;
 
 /**
  * <p>

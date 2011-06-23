@@ -34,9 +34,9 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 
 import com.chililog.server.common.JsonTranslator;
-import com.chililog.server.ui.api.AuthenticationAO;
-import com.chililog.server.ui.api.Worker;
-import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
+import com.chililog.server.ui.workers.AuthenticationAO;
+import com.chililog.server.ui.workers.Worker;
+import com.chililog.server.ui.workers.AuthenticationAO.ExpiryType;
 
 public class ApiUtils
 {

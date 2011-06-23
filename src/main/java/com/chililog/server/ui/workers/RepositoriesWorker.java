@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.ui.api;
+package com.chililog.server.ui.workers;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -206,7 +206,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private void redirectToUiHtml(MessageEvent e)
     {
-        String dirPath = AppProperties.getInstance().getWebStaticFilesDirectory() + "/chililog/en";
+        String dirPath = AppProperties.getInstance().getUiStaticFilesDirectory() + "/chililog/en";
         File dir = new File(dirPath);
         if (!dir.exists() || !dir.isDirectory()) {
             send404NotFound(e);

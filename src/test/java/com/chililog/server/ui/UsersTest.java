@@ -36,10 +36,10 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
-import com.chililog.server.ui.api.AuthenticationTokenAO;
-import com.chililog.server.ui.api.ErrorAO;
-import com.chililog.server.ui.api.UserAO;
-import com.chililog.server.ui.api.Worker;
+import com.chililog.server.ui.workers.AuthenticationTokenAO;
+import com.chililog.server.ui.workers.ErrorAO;
+import com.chililog.server.ui.workers.UserAO;
+import com.chililog.server.ui.workers.Worker;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -96,7 +96,7 @@ public class UsersTest
         UserController.getInstance().save(_db, user);
 
         // Start web server
-        WebServerManager.getInstance().start();
+        UiServerManager.getInstance().start();
 
         // Login
         _systemAdminAuthToken = ApiUtils.login("UsersTest_SystemAdmin", "hello");
@@ -114,7 +114,7 @@ public class UsersTest
         query.put("username", pattern);
         coll.remove(query);
 
-        WebServerManager.getInstance().stop();
+        UiServerManager.getInstance().stop();
     }
 
     /**

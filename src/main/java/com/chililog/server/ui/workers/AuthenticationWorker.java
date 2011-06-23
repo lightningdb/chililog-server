@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.ui.api;
+package com.chililog.server.ui.workers;
 
 import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.handler.codec.http.HttpMethod;

@@ -61,12 +61,17 @@ Chililog.REPOSITORY_ADMINISTRATOR_ROLE = 'administrator';
 /**
  * User role representing a repository power user
  */
-Chililog.REPOSITORY_POWER_USER_ROLE = 'power';
+Chililog.REPOSITORY_WORKBENCH_ROLE = 'workbench';
 
 /**
  * User role representing a repository standard user
  */
-Chililog.REPOSITORY_STANDARD_USER_ROLE = 'standard';
+Chililog.REPOSITORY_PUBLISHER_ROLE = 'publisher';
+
+/**
+ * User role representing a repository standard user
+ */
+Chililog.REPOSITORY_SUBSCRIBER_ROLE = 'subscriber';
 
 /**
  * Code for the status of an online repository; i.e. one that is started and can process log entries

@@ -566,6 +566,9 @@ public class MqManagerTransportTest
             // Create and send a message
             ClientMessage message = session.createMessage(Message.TEXT_TYPE, false);
             String msg = "Hello sent at " + new Date();
+
+            // *** This is the trick for interop - use NullableSimpleString ***
+            // Stomp uses this for sending and subscribing to messages
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(msg));
 
             producer.send(message);

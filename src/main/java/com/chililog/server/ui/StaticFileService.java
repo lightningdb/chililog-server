@@ -42,11 +42,8 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelFutureProgressListener;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.DefaultFileRegion;
-import org.jboss.netty.channel.FileRegion;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
@@ -203,7 +200,7 @@ public class StaticFileService extends Service
             response.setContent(ChannelBuffers.copiedBuffer(buffer));
             writeFuture = ch.write(response);
         }
-        else if (AppProperties.getInstance().getWebSslEnabled())
+        else if (AppProperties.getInstance().getUiSslEnabled())
         {
             // Cannot use zero-copy with HTTPS
 
@@ -215,6 +212,16 @@ public class StaticFileService extends Service
         }
         else
         {
+            // Now that we are using Execution Handlers, we cannot do zero-copy.
+            // Do as per with compression (which is what most browser will ask for)
+            byte[] buffer = new byte[(int) fileLength];
+            raf.readFully(buffer);
+            raf.close();
+
+            response.setContent(ChannelBuffers.copiedBuffer(buffer));
+            writeFuture = ch.write(response);
+
+            /*
             // No encryption - use zero-copy.
             // However zero-copy does not seem to work with compression
             // Only use zero-copy for large files like movies and music
@@ -237,6 +244,7 @@ public class StaticFileService extends Service
                     _logger.debug("Zero-Coping file %s: %d / %d (+%d) bytes", filePath, current, total, amount);
                 }
             });
+            */
         }
 
         // Decide whether to close the connection or not.
@@ -292,7 +300,7 @@ public class StaticFileService extends Service
         }
 
         // Convert to absolute path.
-        return AppProperties.getInstance().getWebStaticFilesDirectory() + uri;
+        return AppProperties.getInstance().getUiStaticFilesDirectory() + uri;
     }
 
     /**
@@ -456,11 +464,11 @@ public class StaticFileService extends Service
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
 
         // Add cache headers
-        time.add(Calendar.SECOND, AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+        time.add(Calendar.SECOND, AppProperties.getInstance().getUiStaticFilesCacheSeconds());
         response.setHeader(HttpHeaders.Names.EXPIRES, dateFormatter.format(time.getTime()));
 
         response.setHeader(HttpHeaders.Names.CACHE_CONTROL, "private, max-age="
-                + AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+                + AppProperties.getInstance().getUiStaticFilesCacheSeconds());
 
         response.setHeader(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(new Date(filetoCache.lastModified())));
     }

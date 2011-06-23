@@ -226,148 +226,113 @@ Chililog.repositoryGeneralAttributesView = Chililog.RepositoryGeneralAttributesV
 /**
  * PubSub views to fit in our tabs
  */
-Chililog.RepositoryPubSubAttributesView = SC.ScrollView.design({
+Chililog.RepositoryPubSubAttributesView = SC.View.design({
   layout: {top: 0, left: 0, right: 0, bottom: 0 },
   classNames: ['data-group'],
-  contentView: SC.View.design({
-    layout: {top: 0, left: 0, right: 0, height: 350 },
-    classNames: ['data-group'],
-    childViews: ('publisherPassword subscriberPassword maxMemory maxMemoryPolicy pageSize pageCountCache').w(),
+  childViews: ('maxMemory maxMemoryPolicy pageSize pageCountCache').w(),
 
-    publisherPassword: SC.View.design({
-      layout: {top: 10, left: 0, right: 0, height: 49 },
-      classNames: ['data-item'],
-      childViews: 'label field'.w(),
+  maxMemory: SC.View.design({
+    layout: {top: 10, left: 0, right: 0, height: 49 },
+    classNames: ['data-item'],
+    childViews: 'label field help'.w(),
 
-      label: SC.LabelView.design({
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.PublisherPassword'.loc()
-      }),
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureRepositoryInfoDetailView.MaxMemory'.loc()
+    }),
 
-      field: SC.TextFieldView.design({
-        layout: { top: 10, left: 210, width: 200, height: 30 },
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.publisherPassword'
+    field: SC.TextFieldView.design({
+      layout: { top: 10, left: 210, width: 100, height: 30 },
+      valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxMemory',
+      maxLength: 10,
+      validator: Chililog.PositiveIntegerValidator.extend({
+        formatNumber: YES,
+        requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.MaxMemory.Required'
       })
     }),
 
-    subscriberPassword: SC.View.design({
-      layout: {top: 60, left: 0, right: 0, height: 49 },
-      classNames: ['data-item'],
-      childViews: 'label field'.w(),
+    help: SC.LabelView.design({
+      layout: { top: 17, left: 320, right: 10, height: 30 },
+      classNames: ['help'],
+      value: '_configureRepositoryInfoDetailView.MaxMemory.Help'.loc()
+    })
+  }),
 
-      label: SC.LabelView.design({
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.SubscriberPassword'.loc()
-      }),
+  maxMemoryPolicy: SC.View.design({
+    layout: {top: 60, left: 0, right: 0, height: 89 },
+    classNames: ['data-item'],
+    childViews: 'label field'.w(),
 
-      field: SC.TextFieldView.design({
-        layout: { top: 10, left: 210, width: 200, height: 30 },
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.subscriberPassword'
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureRepositoryInfoDetailView.MaxMemoryPolicy'.loc()
+    }),
+
+    field: Chililog.RadioView.design({
+      layout: { top: 15, left: 210, width: 600, height: 70 },
+      items: [
+        { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Page'.loc(), value: 'PAGE'},
+        { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Drop'.loc(), value: 'DROP'},
+        { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Block'.loc(), value: 'BLOCK'}
+      ],
+      itemTitleKey: 'title',
+      itemValueKey: 'value',
+      valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxMemoryPolicy'
+    })
+  }),
+
+  pageSize: SC.View.design({
+    layout: {top: 150, left: 0, right: 0, height: 49 },
+    classNames: ['data-item'],
+    childViews: 'label field help'.w(),
+
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureRepositoryInfoDetailView.PageSize'.loc()
+    }),
+
+    field: SC.TextFieldView.design({
+      layout: { top: 10, left: 210, width: 100, height: 30 },
+      valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.pageSize',
+      validator: Chililog.PositiveIntegerValidator.extend({
+        formatNumber: YES,
+        requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.PageSize.Required'
       })
     }),
 
-    maxMemory: SC.View.design({
-      layout: {top: 110, left: 0, right: 0, height: 49 },
-      classNames: ['data-item'],
-      childViews: 'label field help'.w(),
+    help: SC.LabelView.design({
+      layout: { top: 17, left: 320, right: 10, height: 30 },
+      classNames: ['help'],
+      value: '_configureRepositoryInfoDetailView.PageSize.Help'.loc()
+    })
+  }),
 
-      label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.MaxMemory'.loc()
-      }),
+  pageCountCache: SC.View.design({
+    layout: {top: 200, left: 0, right: 0, height: 49 },
+    classNames: ['data-item'],
+    childViews: 'label field help'.w(),
 
-      field: SC.TextFieldView.design({
-        layout: { top: 10, left: 210, width: 100, height: 30 },
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxMemory',
-        maxLength: 10,
-        validator: Chililog.PositiveIntegerValidator.extend({
-          formatNumber: YES,
-          requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.MaxMemory.Required'
-        })
-      }),
+    label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
+      layout: { top: 15, left: 10, width: 200, height: 30 },
+      value: '_configureRepositoryInfoDetailView.PageCountCache'.loc()
+    }),
 
-      help: SC.LabelView.design({
-        layout: { top: 17, left: 320, right: 10, height: 30 },
-        classNames: ['help'],
-        value: '_configureRepositoryInfoDetailView.MaxMemory.Help'.loc()
+    field: SC.TextFieldView.design({
+      layout: { top: 10, left: 210, width: 50, height: 30 },
+      valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.pageCountCache',
+      validator: Chililog.PositiveIntegerValidator.extend({
+        formatNumber: YES,
+        requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.PageCountCache.Required'
       })
     }),
 
-    maxMemoryPolicy: SC.View.design({
-      layout: {top: 160, left: 0, right: 0, height: 89 },
-      classNames: ['data-item'],
-      childViews: 'label field'.w(),
-
-      label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.MaxMemoryPolicy'.loc()
-      }),
-
-      field: Chililog.RadioView.design({
-        layout: { top: 15, left: 210, width: 600, height: 70 },
-        items: [
-          { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Page'.loc(), value: 'PAGE'},
-          { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Drop'.loc(), value: 'DROP'},
-          { title: '_configureRepositoryInfoDetailView.MaxMemoryPolicy.Block'.loc(), value: 'BLOCK'}
-        ],
-        itemTitleKey: 'title',
-        itemValueKey: 'value',
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.maxMemoryPolicy'
-      })
-    }),
-
-    pageSize: SC.View.design({
-      layout: {top: 250, left: 0, right: 0, height: 49 },
-      classNames: ['data-item'],
-      childViews: 'label field help'.w(),
-
-      label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.PageSize'.loc()
-      }),
-
-      field: SC.TextFieldView.design({
-        layout: { top: 10, left: 210, width: 100, height: 30 },
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.pageSize',
-        validator: Chililog.PositiveIntegerValidator.extend({
-          formatNumber: YES,
-          requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.PageSize.Required'
-        })
-      }),
-
-      help: SC.LabelView.design({
-        layout: { top: 17, left: 320, right: 10, height: 30 },
-        classNames: ['help'],
-        value: '_configureRepositoryInfoDetailView.PageSize.Help'.loc()
-      })
-    }),
-
-    pageCountCache: SC.View.design({
-      layout: {top: 300, left: 0, right: 0, height: 49 },
-      classNames: ['data-item'],
-      childViews: 'label field help'.w(),
-
-      label: SC.LabelView.design(Chililog.RequiredFieldLabelMixin, {
-        layout: { top: 15, left: 10, width: 200, height: 30 },
-        value: '_configureRepositoryInfoDetailView.PageCountCache'.loc()
-      }),
-
-      field: SC.TextFieldView.design({
-        layout: { top: 10, left: 210, width: 50, height: 30 },
-        valueBinding: 'Chililog.configureRepositoryInfoDetailViewController.pageCountCache',
-        validator: Chililog.PositiveIntegerValidator.extend({
-          formatNumber: YES,
-          requiredFieldErrorMessage: '_configureRepositoryInfoDetailView.PageCountCache.Required'
-        })
-      }),
-
-      help: SC.LabelView.design({
-        layout: { top: 17, left: 270, right: 10, height: 30 },
-        classNames: ['help'],
-        value: '_configureRepositoryInfoDetailView.PageCountCache.Help'.loc()
-      })
+    help: SC.LabelView.design({
+      layout: { top: 17, left: 270, right: 10, height: 30 },
+      classNames: ['help'],
+      value: '_configureRepositoryInfoDetailView.PageCountCache.Help'.loc()
     })
   })
+
 });
 
 Chililog.repositoryPubSubAttributesView = Chililog.RepositoryPubSubAttributesView.create();

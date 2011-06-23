@@ -53,25 +53,25 @@ import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 
 /**
- * Test our web server
+ * Test the UI web server
  * 
  * @author vibul
  * 
  */
-public class WebServerManagerTest
+public class UiServerManagerTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(WebServerManagerTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(UiServerManagerTest.class);
 
     @BeforeClass
     public static void classSetup() throws Exception
     {
-        WebServerManager.getInstance().start();
+        UiServerManager.getInstance().start();
     }
 
     @AfterClass
     public static void classTeardown()
     {
-        WebServerManager.getInstance().stop();
+        UiServerManager.getInstance().stop();
     }
 
     @Test
@@ -119,7 +119,7 @@ public class WebServerManagerTest
     {
         String TEXT = "abc\n123";
 
-        String dir = AppProperties.getInstance().getWebStaticFilesDirectory();
+        String dir = AppProperties.getInstance().getUiStaticFilesDirectory();
         String fileName = UUID.randomUUID().toString() + ".txt";
         File file = new File(dir, fileName);
 
@@ -184,7 +184,7 @@ public class WebServerManagerTest
         Date serverDate = fmt.parse(headers.get("Date"));
         Calendar cal = new GregorianCalendar();
         cal.setTime(serverDate);
-        cal.add(Calendar.SECOND, AppProperties.getInstance().getWebStaticFilesCacheSeconds());
+        cal.add(Calendar.SECOND, AppProperties.getInstance().getUiStaticFilesCacheSeconds());
         assertEquals(cal.getTimeInMillis(), expires.getTime());
 
         // ******************************************************
@@ -257,7 +257,7 @@ public class WebServerManagerTest
 
         for (String fileExtension : fileExtensions)
         {
-            String dir = AppProperties.getInstance().getWebStaticFilesDirectory();
+            String dir = AppProperties.getInstance().getUiStaticFilesDirectory();
             String fileName = UUID.randomUUID().toString() + fileExtension;
             File file = new File(dir, fileName);
 

@@ -21,9 +21,6 @@ Chililog.RepositoryInfoRecord = SC.Record.extend({
   description: SC.Record.attr(String),
   startupStatus: SC.Record.attr(String, { defaultValue: Chililog.REPOSITORY_ONLINE, isRequired: YES }),
 
-  publisherPassword: SC.Record.attr(String, { defaultValue: '' }),
-  subscriberPassword: SC.Record.attr(String, { defaultValue: '' }),
-
   storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
   storageQueueDurableIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
   storageQueueWorkerCount: SC.Record.attr(Number),
@@ -127,9 +124,6 @@ Chililog.REPOSITORY_INFO_RECORD_MAP = [
   ['displayName' ,'DisplayName'],
   ['description' ,'Description'],
   ['startupStatus' ,'StartupStatus'],
-
-  ['publisherPassword' ,'PublisherPassword'],
-  ['subscriberPassword' ,'SubscriberPassword'],
 
   ['storeEntriesIndicator' ,'StoreEntriesIndicator'],
   ['storageQueueDurableIndicator' ,'StorageQueueDurableIndicator'],

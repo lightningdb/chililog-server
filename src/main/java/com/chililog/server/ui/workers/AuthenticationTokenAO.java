@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.ui.api;
+package com.chililog.server.ui.workers;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -31,7 +31,7 @@ import com.chililog.server.common.CryptoUtils;
 import com.chililog.server.common.JsonTranslator;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.ui.Strings;
-import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
+import com.chililog.server.ui.workers.AuthenticationAO.ExpiryType;
 
 /**
  * <p>
@@ -177,7 +177,7 @@ public class AuthenticationTokenAO
             StringBuilder sb = new StringBuilder();
             sb.append(json);
             sb.append("~~~");
-            sb.append(CryptoUtils.createSHA512Hash(json, appProperties.getWebApiAuthenticationHashSalt(), false));
+            sb.append(CryptoUtils.createSHA512Hash(json, appProperties.getUiApiAuthenticationHashSalt(), false));
 
             return sb.toString();
         }
@@ -217,7 +217,7 @@ public class AuthenticationTokenAO
         String json = tokenString.substring(0, separatorIndex);
         String hash = tokenString.substring(separatorIndex + 3);
 
-        if (!CryptoUtils.verifyHash(json, appProperties.getWebApiAuthenticationHashSalt(), hash))
+        if (!CryptoUtils.verifyHash(json, appProperties.getUiApiAuthenticationHashSalt(), hash))
         {
             throw new ChiliLogException(Strings.AUTHENTICAITON_TOKEN_INVALID_ERROR);
         }

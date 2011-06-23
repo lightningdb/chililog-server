@@ -30,7 +30,7 @@ import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.common.SystemProperties;
 import com.chililog.server.engine.MqManager;
 import com.chililog.server.engine.RepositoryManager;
-import com.chililog.server.ui.WebServerManager;
+import com.chililog.server.ui.UiServerManager;
 
 /**
  * ChiliLog Server Application.
@@ -96,7 +96,7 @@ public class App
 
         MqManager.getInstance().start();
         RepositoryManager.getInstance().start(true);
-        WebServerManager.getInstance().start();
+        UiServerManager.getInstance().start();
 
         Thread.sleep(2000);
 
@@ -114,7 +114,7 @@ public class App
 
         RepositoryManager.getInstance().stop();
         MqManager.getInstance().stop();
-        WebServerManager.getInstance().stop();
+        UiServerManager.getInstance().stop();
 
         // Wait 2 seconds for everything to stop properly
         Thread.sleep(2000);

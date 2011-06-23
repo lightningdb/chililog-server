@@ -37,12 +37,12 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.data.UserBO.Status;
-import com.chililog.server.ui.api.AuthenticatedUserAO;
-import com.chililog.server.ui.api.AuthenticatedUserPasswordAO;
-import com.chililog.server.ui.api.AuthenticationAO;
-import com.chililog.server.ui.api.ErrorAO;
-import com.chililog.server.ui.api.AuthenticationAO.ExpiryType;
-import com.chililog.server.ui.api.Worker;
+import com.chililog.server.ui.workers.AuthenticatedUserAO;
+import com.chililog.server.ui.workers.AuthenticatedUserPasswordAO;
+import com.chililog.server.ui.workers.AuthenticationAO;
+import com.chililog.server.ui.workers.ErrorAO;
+import com.chililog.server.ui.workers.Worker;
+import com.chililog.server.ui.workers.AuthenticationAO.ExpiryType;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -119,7 +119,7 @@ public class AuthenticationTest
         user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
-        WebServerManager.getInstance().start();
+        UiServerManager.getInstance().start();
     }
 
     @AfterClass
@@ -132,7 +132,7 @@ public class AuthenticationTest
         query.put("username", pattern);
         coll.remove(query);
 
-        WebServerManager.getInstance().stop();
+        UiServerManager.getInstance().stop();
     }
 
     /**
