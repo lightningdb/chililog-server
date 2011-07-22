@@ -51,7 +51,7 @@ import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
-import com.chililog.server.engine.MqManager;
+import com.chililog.server.engine.MqService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -63,9 +63,9 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class MqManagerTransportTest
+public class MqServiceTransportTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTransportTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(MqServiceTransportTest.class);
 
     private static DB _db;
 
@@ -109,13 +109,13 @@ public class MqManagerTransportTest
         UserController.getInstance().save(_db, user);
 
         // Start mq
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
 
         // Configure security
-        HornetQServerControl hqControl = MqManager.getInstance().getNativeServer().getHornetQServerControl();
+        HornetQServerControl hqControl = MqService.getInstance().getNativeServer().getHornetQServerControl();
         hqControl.addSecuritySettings("MqTransportTest#", PUBLISHER_ROLE, SUBSCRIBER_ROLE, SYSTEM_ROLE + ","
                 + SUBSCRIBER_ROLE, SYSTEM_ROLE, SYSTEM_ROLE + "," + SUBSCRIBER_ROLE, SYSTEM_ROLE, SYSTEM_ROLE);
-        MqManager.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
+        MqService.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
 
         // IN VM connector
         ServerLocator sl = HornetQClient.createServerLocatorWithoutHA(new TransportConfiguration(
@@ -132,7 +132,7 @@ public class MqManagerTransportTest
     @AfterClass
     public static void classTeardown() throws Exception
     {
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
 
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);

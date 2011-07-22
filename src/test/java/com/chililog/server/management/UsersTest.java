@@ -36,7 +36,7 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserBO.Status;
 import com.chililog.server.data.UserController;
-import com.chililog.server.management.ManagementInterfaceManager;
+import com.chililog.server.management.ManagementService;
 import com.chililog.server.management.workers.AuthenticationTokenAO;
 import com.chililog.server.management.workers.ErrorAO;
 import com.chililog.server.management.workers.UserAO;
@@ -97,7 +97,7 @@ public class UsersTest
         UserController.getInstance().save(_db, user);
 
         // Start web server
-        ManagementInterfaceManager.getInstance().start();
+        ManagementService.getInstance().start();
 
         // Login
         _systemAdminAuthToken = ApiUtils.login("UsersTest_SystemAdmin", "hello");
@@ -115,7 +115,7 @@ public class UsersTest
         query.put("username", pattern);
         coll.remove(query);
 
-        ManagementInterfaceManager.getInstance().stop();
+        ManagementService.getInstance().stop();
     }
 
     /**

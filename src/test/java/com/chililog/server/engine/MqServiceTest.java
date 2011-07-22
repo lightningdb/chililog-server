@@ -52,9 +52,9 @@ import com.mongodb.DBObject;
 /**
  * More tests regarding MqManager and transactions
  */
-public class MqManagerTest
+public class MqServiceTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(MqManagerTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(MqServiceTest.class);
 
     private static DB _db;
 
@@ -91,17 +91,17 @@ public class MqManagerTest
         UserController.getInstance().save(_db, user);
         
         // Start Mq
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
 
         // Configure security
-        MqManager.getInstance().addSecuritySettings("MqManagerTest#", PUBLISHER_ROLE, SUBSCRIBER_ROLE);
-        MqManager.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
+        MqService.getInstance().addSecuritySettings("MqManagerTest#", PUBLISHER_ROLE, SUBSCRIBER_ROLE);
+        MqService.getInstance().getNativeServer().getConfiguration().setSecurityEnabled(true);
     }
 
     @AfterClass
     public static void classTeardown() throws Exception
     {
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
 
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
@@ -114,20 +114,20 @@ public class MqManagerTest
     @Test
     public void testDeployDeleteQueue() throws Exception
     {
-        ClientSession clientSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
+        ClientSession clientSession = MqService.getInstance().getNonTransactionalSystemClientSession();
 
         QueueQuery q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
         assertFalse(q.isExists());
 
-        MqManager.getInstance().deployQueue("queue1", "queue1", false);
+        MqService.getInstance().deployQueue("queue1", "queue1", false);
 
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
         assertTrue(q.isExists());
 
         // Delete it
-        MqManager.getInstance().destroyQueue("queue1");
+        MqService.getInstance().destroyQueue("queue1");
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertFalse(q.isExists());
 
@@ -137,15 +137,15 @@ public class MqManagerTest
     @Test
     public void testDeployQueueTwice() throws Exception
     {
-        ClientSession clientSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
-        MqManager.getInstance().deployQueue("queue2", "queue2", false);
+        ClientSession clientSession = MqService.getInstance().getNonTransactionalSystemClientSession();
+        MqService.getInstance().deployQueue("queue2", "queue2", false);
 
         QueueQuery q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
 
         // What if we do it twice?
         // We use deploy() so it should be OK. There should not be an exception
-        MqManager.getInstance().deployQueue("queue2", "queue2", false);
+        MqService.getInstance().deployQueue("queue2", "queue2", false);
 
         q = clientSession.queueQuery(new SimpleString("queue1"));
         assertNotNull(q);
@@ -154,27 +154,27 @@ public class MqManagerTest
     @Test
     public void testGetQueueControl() throws Exception
     {
-        MqManager.getInstance().deployQueue("queue3", "queue3", false);
+        MqService.getInstance().deployQueue("queue3", "queue3", false);
 
-        QueueControl qc = MqManager.getInstance().getQueueControl("queue3", "queue3");
+        QueueControl qc = MqService.getInstance().getQueueControl("queue3", "queue3");
         assertNotNull(qc);
         assertFalse(qc.isDurable());
 
-        qc = MqManager.getInstance().getQueueControl("xxx", "nonexistentqueue");
+        qc = MqService.getInstance().getQueueControl("xxx", "nonexistentqueue");
         assertNull(qc);
     }
 
     @Test
     public void testNonTransactional() throws Exception
     {
-        ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
+        ClientSession systemSession = MqService.getInstance().getNonTransactionalSystemClientSession();
 
-        ClientSession producerSession = MqManager.getInstance().getNonTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getNonTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
         assertTrue(producerSession.isAutoCommitSends());
         assertTrue(producerSession.isAutoCommitAcks());
 
-        ClientSession consumerSession = MqManager.getInstance().getNonTransactionalClientSession(SUBSCRIBER_USERNAME,
+        ClientSession consumerSession = MqService.getInstance().getNonTransactionalClientSession(SUBSCRIBER_USERNAME,
                 SUBSCRIBER_PASSWORD);
         assertTrue(consumerSession.isAutoCommitSends());
         assertTrue(consumerSession.isAutoCommitAcks());
@@ -183,7 +183,7 @@ public class MqManagerTest
         String queueName = "MqManagerTest.NonTransactional";
 
         // Create queue
-        MqManager.getInstance().deployQueue(queueAddress, queueName, false);
+        MqService.getInstance().deployQueue(queueAddress, queueName, false);
 
         // Write
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -227,14 +227,14 @@ public class MqManagerTest
     @Test
     public void testTransactional() throws Exception
     {
-        ClientSession systemSession = MqManager.getInstance().getNonTransactionalSystemClientSession();
+        ClientSession systemSession = MqService.getInstance().getNonTransactionalSystemClientSession();
 
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
         assertFalse(producerSession.isAutoCommitSends());
         assertFalse(producerSession.isAutoCommitAcks());
 
-        ClientSession consumerSession = MqManager.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME,
+        ClientSession consumerSession = MqService.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME,
                 SUBSCRIBER_PASSWORD);
         assertFalse(consumerSession.isAutoCommitSends());
         assertFalse(consumerSession.isAutoCommitAcks());
@@ -243,7 +243,7 @@ public class MqManagerTest
         String queueName = "MqManagerTest.Transactional";
 
         // Create queue
-        MqManager.getInstance().deployQueue(queueAddress, queueName, false);
+        MqService.getInstance().deployQueue(queueAddress, queueName, false);
 
         // Write
         ClientProducer producer = producerSession.createProducer(queueAddress);
@@ -291,7 +291,7 @@ public class MqManagerTest
         // Get count via management API (extract from HornetQ unit test case)
         ObjectName objectName = ObjectNameBuilder.DEFAULT.getQueueObjectName(new SimpleString(queueAddress),
                 new SimpleString(queueName));
-        QueueControl qc = (QueueControl) MBeanServerInvocationHandler.newProxyInstance(MqManager.getInstance()
+        QueueControl qc = (QueueControl) MBeanServerInvocationHandler.newProxyInstance(MqService.getInstance()
                 .getNativeServer().getMBeanServer(), objectName, QueueControl.class, false);
         assertEquals(0, qc.getMessageCount());
 
@@ -302,7 +302,7 @@ public class MqManagerTest
     {
         try
         {
-            MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME, "badpassword");
+            MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME, "badpassword");
             fail("Exception expected: message=Unable to validate user: MqManagerTest.publisher");
         }
         catch (HornetQException ex)
@@ -313,7 +313,7 @@ public class MqManagerTest
 
         try
         {
-            MqManager.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME, "badpassword");
+            MqService.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME, "badpassword");
             fail("Exception expected: message=Unable to validate user: MqManagerTest.subscriber");
         }
         catch (HornetQException ex)

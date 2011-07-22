@@ -43,7 +43,7 @@ import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserController;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
-import com.chililog.server.management.ManagementInterfaceManager;
+import com.chililog.server.management.ManagementService;
 import com.chililog.server.management.workers.ErrorAO;
 import com.chililog.server.management.workers.RepositoryFieldInfoAO;
 import com.chililog.server.management.workers.RepositoryInfoAO;
@@ -147,7 +147,7 @@ public class RepositoryInfoTest
         RepositoryInfoController.getInstance().save(_db, repoInfo);
 
         // Start web server
-        ManagementInterfaceManager.getInstance().start();
+        ManagementService.getInstance().start();
 
         // Login
         _systemAdminAuthToken = ApiUtils.login("TestRepoInfo_SystemAdmin", "hello");
@@ -172,7 +172,7 @@ public class RepositoryInfoTest
         query.put("name", pattern);
         coll.remove(query);
         
-        ManagementInterfaceManager.getInstance().stop();
+        ManagementService.getInstance().stop();
     }
 
     /**

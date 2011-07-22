@@ -51,7 +51,7 @@ import org.junit.Test;
 
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
-import com.chililog.server.management.ManagementInterfaceManager;
+import com.chililog.server.management.ManagementService;
 
 /**
  * Test the UI web server
@@ -59,20 +59,20 @@ import com.chililog.server.management.ManagementInterfaceManager;
  * @author vibul
  * 
  */
-public class ManagementInterfaceManagerTest
+public class ManagementServiceTest
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(ManagementInterfaceManagerTest.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(ManagementServiceTest.class);
 
     @BeforeClass
     public static void classSetup() throws Exception
     {
-        ManagementInterfaceManager.getInstance().start();
+        ManagementService.getInstance().start();
     }
 
     @AfterClass
     public static void classTeardown()
     {
-        ManagementInterfaceManager.getInstance().stop();
+        ManagementService.getInstance().stop();
     }
 
     @Test

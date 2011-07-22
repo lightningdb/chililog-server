@@ -67,9 +67,9 @@ import com.chililog.server.data.UserBO;
  * @author vibul
  * 
  */
-public class MqManager
+public class MqService
 {
-    static Log4JLogger _logger = Log4JLogger.getLogger(MqManager.class);
+    static Log4JLogger _logger = Log4JLogger.getLogger(MqService.class);
     private HornetQServer _hornetqServer;
 
     private ServerLocator _sl;
@@ -80,7 +80,7 @@ public class MqManager
     /**
      * Returns the singleton instance for this class
      */
-    public static MqManager getInstance()
+    public static MqService getInstance()
     {
         return SingletonHolder.INSTANCE;
     }
@@ -93,7 +93,7 @@ public class MqManager
      */
     private static class SingletonHolder
     {
-        public static final MqManager INSTANCE = new MqManager();
+        public static final MqService INSTANCE = new MqService();
     }
 
     /**
@@ -106,7 +106,7 @@ public class MqManager
      * 
      * @throws Exception
      */
-    private MqManager()
+    private MqService()
     {
         try
         {

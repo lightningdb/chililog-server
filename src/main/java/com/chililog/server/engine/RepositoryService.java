@@ -47,22 +47,22 @@ import com.mongodb.DB;
  * </pre>
  * 
  * <p>
- * It is assumed that mongoDB and HornetQ (via {@link MqManager}) has been started.
+ * It is assumed that mongoDB and HornetQ (via {@link MqService}) has been started.
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryManager
+public class RepositoryService
 {
-    static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryManager.class);
+    static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryService.class);
 
     private ArrayList<Repository> _repositories = new ArrayList<Repository>();
 
     /**
      * Returns the singleton instance for this class
      */
-    public static RepositoryManager getInstance()
+    public static RepositoryService getInstance()
     {
         return SingletonHolder.INSTANCE;
     }
@@ -75,7 +75,7 @@ public class RepositoryManager
      */
     private static class SingletonHolder
     {
-        public static final RepositoryManager INSTANCE = new RepositoryManager();
+        public static final RepositoryService INSTANCE = new RepositoryService();
     }
 
     /**
@@ -83,7 +83,7 @@ public class RepositoryManager
      * Singleton constructor
      * </p>
      */
-    private RepositoryManager()
+    private RepositoryService()
     {
         return;
     }

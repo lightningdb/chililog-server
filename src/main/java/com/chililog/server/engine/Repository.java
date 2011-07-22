@@ -122,7 +122,7 @@ public class Repository
         {
             _logger.info("Starting Repository '%s'", _repoInfo.getName());
 
-            MqManager mqManager = MqManager.getInstance();
+            MqService mqManager = MqService.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
 
             // Setup permissions
@@ -207,7 +207,7 @@ public class Repository
         {
             _logger.info("Stopping Repository '%s'", _repoInfo.getName());
 
-            MqManager mqManager = MqManager.getInstance();
+            MqService mqManager = MqService.getInstance();
 
             // Remove permissions so that nobody
             mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), null, null);

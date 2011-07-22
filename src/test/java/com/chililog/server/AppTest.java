@@ -43,7 +43,7 @@ import com.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
 import com.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
-import com.chililog.server.engine.MqManager;
+import com.chililog.server.engine.MqService;
 import com.chililog.server.engine.RepositoryStorageWorker;
 import com.chililog.server.engine.parsers.DelimitedEntryParser;
 import com.mongodb.BasicDBObject;
@@ -200,7 +200,7 @@ public class AppTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
         
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession("AppTestUser_Writer",
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession("AppTestUser_Writer",
                 "222");
 
         String publicationAddress = _repoInfo.getPubSubAddress();

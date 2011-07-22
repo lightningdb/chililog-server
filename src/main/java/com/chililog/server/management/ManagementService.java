@@ -89,16 +89,16 @@ import com.chililog.server.common.Log4JLogger;
  * @author vibul
  * 
  */
-public class ManagementInterfaceManager
+public class ManagementService
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(ManagementInterfaceManager.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(ManagementService.class);
     private static final ChannelGroup _allChannels = new DefaultChannelGroup("WebServerManager");
     private ChannelFactory _channelFactory = null;
 
     /**
      * Returns the singleton instance for this class
      */
-    public static ManagementInterfaceManager getInstance()
+    public static ManagementService getInstance()
     {
         return SingletonHolder.INSTANCE;
     }
@@ -111,7 +111,7 @@ public class ManagementInterfaceManager
      */
     private static class SingletonHolder
     {
-        public static final ManagementInterfaceManager INSTANCE = new ManagementInterfaceManager();
+        public static final ManagementService INSTANCE = new ManagementService();
     }
 
     /**
@@ -124,7 +124,7 @@ public class ManagementInterfaceManager
      * 
      * @throws Exception
      */
-    private ManagementInterfaceManager()
+    private ManagementService()
     {
         return;
     }

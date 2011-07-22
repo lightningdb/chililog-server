@@ -37,7 +37,7 @@ import com.chililog.server.data.RepositoryListCriteria;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.RepositoryListCriteria.QueryType;
 import com.chililog.server.engine.Repository;
-import com.chililog.server.engine.RepositoryManager;
+import com.chililog.server.engine.RepositoryService;
 import com.chililog.server.management.Strings;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -140,22 +140,22 @@ public class RepositoriesWorker extends Worker
 
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
-                    RepositoryManager.getInstance().start(false);
+                    RepositoryService.getInstance().start(false);
                 }
                 else if (action.equalsIgnoreCase(STOP_OPERATION))
                 {
-                    RepositoryManager.getInstance().stop();
+                    RepositoryService.getInstance().stop();
                 }
                 else if (action.equalsIgnoreCase(RELOAD_OPERATION))
                 {
-                    RepositoryManager.getInstance().loadRepositories();
+                    RepositoryService.getInstance().loadRepositories();
                 }
                 else
                 {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
 
-                Repository[] list = RepositoryManager.getInstance().getRepositories();
+                Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {
                     ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
@@ -175,7 +175,7 @@ public class RepositoriesWorker extends Worker
                 // Start/Stop/Reload specific one
                 // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryManager.getInstance().getRepository(id);
+                Repository repo = RepositoryService.getInstance().getRepository(id);
 
                 if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoInfo().getAdministratorRoleName()))
                 {
@@ -230,7 +230,7 @@ public class RepositoriesWorker extends Worker
             // HTTP GET /api/repositories
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
-                Repository[] list = RepositoryManager.getInstance().getRepositories();
+                Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {
                     ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
@@ -253,7 +253,7 @@ public class RepositoriesWorker extends Worker
                 // Get info on specified repository
                 // HTTP GET /api/repositories/{id}
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryManager.getInstance().getRepository(id);
+                Repository repo = RepositoryService.getInstance().getRepository(id);
                 if (repo != null
                         && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
                 {
@@ -270,7 +270,7 @@ public class RepositoriesWorker extends Worker
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryManager.getInstance().getRepository(id);
+                Repository repo = RepositoryService.getInstance().getRepository(id);
                 if (repo == null)
                 {
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);

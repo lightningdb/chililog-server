@@ -158,7 +158,7 @@ public class RepositoryStorageWorker extends Thread
         {
             db = MongoConnection.getInstance().getConnection();
 
-            session = MqManager.getInstance().getTransactionalSystemClientSession();
+            session = MqService.getInstance().getTransactionalSystemClientSession();
             ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoInfo().getStorageQueueName());
             session.start();
 
@@ -252,7 +252,7 @@ public class RepositoryStorageWorker extends Thread
         finally
         {
             _isRunning = false;
-            MqManager.getInstance().closeClientSession(session);
+            MqService.getInstance().closeClientSession(session);
         }
     }
 

@@ -184,13 +184,13 @@ public class RepositoryTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
         Repository repo = new Repository(_repoInfo);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
@@ -235,7 +235,7 @@ public class RepositoryTest
         // Stop
         repo.stop();
         assertEquals(Status.OFFLINE, repo.getStatus());
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
     }
 
     @Test
@@ -245,7 +245,7 @@ public class RepositoryTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
         Repository repo = new Repository(_repoInfo);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
@@ -278,7 +278,7 @@ public class RepositoryTest
         repo.start();
 
         // Write 10,000 repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
@@ -308,7 +308,7 @@ public class RepositoryTest
         assertEquals(10, repo.getStorageWorkers().size());
 
         // Make sure that we've processed all the messages
-        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
                 repo.getRepoInfo().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
@@ -319,7 +319,7 @@ public class RepositoryTest
         // Stop
         repo.stop();
         assertEquals(Status.OFFLINE, repo.getStatus());
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
 
         // Reset count
         _repoInfo.setStorageQueueWorkerCount(2);
@@ -332,7 +332,7 @@ public class RepositoryTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
         Repository repo = new Repository(_repoInfo);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
@@ -349,7 +349,7 @@ public class RepositoryTest
         }
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
@@ -370,7 +370,7 @@ public class RepositoryTest
 
         // Make sure that we've processed all the messages
         Thread.sleep(3000);
-        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
                 repo.getRepoInfo().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
@@ -419,7 +419,7 @@ public class RepositoryTest
         // Stop
         producer.close();
         producerSession.close();
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
 
         // Reset count
         _repoInfo.setStorageQueueWorkerCount(2);
@@ -433,16 +433,16 @@ public class RepositoryTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
         Repository repo = new Repository(_repoInfo);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Create a dead letter queue
-        MqManager.getInstance().deployQueue(deadLetterAddress, "dead_letters.junit_test", false);
+        MqService.getInstance().deployQueue(deadLetterAddress, "dead_letters.junit_test", false);
 
         // Write some repository entries
-        ClientSession producerSession = MqManager.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
         String queueAddress = _repoInfo.getPubSubAddress();
@@ -477,12 +477,12 @@ public class RepositoryTest
         assertEquals(2, repo.getStorageWorkers().size());
 
         // Make sure that bad entries have been removed from the write queue
-        QueueControl qc = MqManager.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
                 repo.getRepoInfo().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure that the bad entry ends up in the dead letter queue
-        qc = MqManager.getInstance().getQueueControl(deadLetterAddress, "dead_letters.junit_test");
+        qc = MqService.getInstance().getQueueControl(deadLetterAddress, "dead_letters.junit_test");
         assertEquals((long) 1, qc.getMessageCount());
 
         // Make sure that only good entries have been saved to the DB
@@ -492,19 +492,19 @@ public class RepositoryTest
         // Stop
         repo.stop();
         assertEquals(Status.OFFLINE, repo.getStatus());
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
 
     }
 
     @Test
-    public void testRepositoryManager() throws Exception
+    public void testRepositoryService() throws Exception
     {
         // Start queues
-        MqManager.getInstance().start();
+        MqService.getInstance().start();
 
         // Start
-        RepositoryManager.getInstance().start(true);
-        Repository[] repos = RepositoryManager.getInstance().getRepositories();
+        RepositoryService.getInstance().start(true);
+        Repository[] repos = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos)
         {
             if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
@@ -518,8 +518,8 @@ public class RepositoryTest
         }
 
         // Start again - should not error
-        RepositoryManager.getInstance().start(true);
-        Repository[] repos2 = RepositoryManager.getInstance().getRepositories();
+        RepositoryService.getInstance().start(true);
+        Repository[] repos2 = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos2)
         {
             if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
@@ -534,8 +534,8 @@ public class RepositoryTest
         assertEquals(repos.length, repos2.length);
 
         // Stop
-        RepositoryManager.getInstance().stop();
-        repos2 = RepositoryManager.getInstance().getRepositories();
+        RepositoryService.getInstance().stop();
+        repos2 = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos2)
         {
             assertEquals(Status.OFFLINE, r.getStatus());
@@ -543,8 +543,8 @@ public class RepositoryTest
         assertEquals(repos.length, repos2.length);
 
         // Stop again
-        RepositoryManager.getInstance().stop();
-        repos2 = RepositoryManager.getInstance().getRepositories();
+        RepositoryService.getInstance().stop();
+        repos2 = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos2)
         {
             assertEquals(Status.OFFLINE, r.getStatus());
@@ -552,6 +552,6 @@ public class RepositoryTest
         assertEquals(repos.length, repos2.length);
 
         // Stop queues
-        MqManager.getInstance().stop();
+        MqService.getInstance().stop();
     }
 }

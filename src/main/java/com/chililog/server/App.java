@@ -28,9 +28,9 @@ import java.util.TimerTask;
 import com.chililog.server.common.AppProperties;
 import com.chililog.server.common.Log4JLogger;
 import com.chililog.server.common.SystemProperties;
-import com.chililog.server.engine.MqManager;
-import com.chililog.server.engine.RepositoryManager;
-import com.chililog.server.management.ManagementInterfaceManager;
+import com.chililog.server.engine.MqService;
+import com.chililog.server.engine.RepositoryService;
+import com.chililog.server.management.ManagementService;
 
 /**
  * ChiliLog Server Application.
@@ -94,9 +94,9 @@ public class App
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());
         _logger.info("Current Directory: " + new File(".").getCanonicalPath());
 
-        MqManager.getInstance().start();
-        RepositoryManager.getInstance().start(true);
-        ManagementInterfaceManager.getInstance().start();
+        MqService.getInstance().start();
+        RepositoryService.getInstance().start(true);
+        ManagementService.getInstance().start();
 
         Thread.sleep(2000);
 
@@ -112,9 +112,9 @@ public class App
     {
         _logger.info("CHILILOG Server shutting down.");
 
-        RepositoryManager.getInstance().stop();
-        MqManager.getInstance().stop();
-        ManagementInterfaceManager.getInstance().stop();
+        RepositoryService.getInstance().stop();
+        MqService.getInstance().stop();
+        ManagementService.getInstance().stop();
 
         // Wait 2 seconds for everything to stop properly
         Thread.sleep(2000);

@@ -37,7 +37,7 @@ import com.chililog.server.data.MongoConnection;
 import com.chililog.server.data.UserBO;
 import com.chililog.server.data.UserController;
 import com.chililog.server.data.UserBO.Status;
-import com.chililog.server.management.ManagementInterfaceManager;
+import com.chililog.server.management.ManagementService;
 import com.chililog.server.management.workers.AuthenticatedUserAO;
 import com.chililog.server.management.workers.AuthenticatedUserPasswordAO;
 import com.chililog.server.management.workers.AuthenticationAO;
@@ -120,7 +120,7 @@ public class AuthenticationTest
         user.setStatus(Status.Enabled);
         UserController.getInstance().save(_db, user);
 
-        ManagementInterfaceManager.getInstance().start();
+        ManagementService.getInstance().start();
     }
 
     @AfterClass
@@ -133,7 +133,7 @@ public class AuthenticationTest
         query.put("username", pattern);
         coll.remove(query);
 
-        ManagementInterfaceManager.getInstance().stop();
+        ManagementService.getInstance().stop();
     }
 
     /**
