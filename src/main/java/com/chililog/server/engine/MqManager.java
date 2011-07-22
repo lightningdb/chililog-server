@@ -227,29 +227,29 @@ public class MqManager
         transports.add(transport);
 
         // Core or JMS protocol
-        if (appProperties.getMqCoreProtocolEnabled())
+        if (appProperties.getPubSubCoreProtocolEnabled())
         {
             _logger.info("Configuring Core Protocol");
             transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                    appProperties.getMqCoreProtocolConfig());
+                    appProperties.getPubSubCoreProtocolConfig());
             transports.add(transport);
         }
 
         // Stomp
-        if (appProperties.getMqStompProtocolEnabled())
+        if (appProperties.getPubSubStompProtocolEnabled())
         {
             _logger.info("Configuring Stomp Protocol");
             transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                    appProperties.getMqStompProtocolConfig());
+                    appProperties.getPubSubStompProtocolConfig());
             transports.add(transport);
         }
 
         // Stomp Web Socket
-        if (appProperties.getMqStompWebSocketProtocolEnabled())
+        if (appProperties.getPubSubStompWebSocketProtocolEnabled())
         {
             _logger.info("Configuring Stomp Web Socket Protocol");
             transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                    appProperties.getMqStompWebSocketProtocolConfig());
+                    appProperties.getPubSubStompWebSocketProtocolConfig());
             transports.add(transport);
         }
 

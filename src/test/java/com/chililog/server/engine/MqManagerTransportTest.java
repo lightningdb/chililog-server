@@ -515,8 +515,7 @@ public class MqManagerTransportTest
     }
 
     /**
-     * Write with CORE and read with STOMP. This these does not work because string that is passed back to stomp is
-     * corrupted!!!  No time to work it out as yet.
+     * Write with CORE and read with STOMP. Must use NullalbeSimpleString to read/write messages
      * 
      * @throws Exception
      */

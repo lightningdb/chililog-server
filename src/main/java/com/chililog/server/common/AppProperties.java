@@ -352,6 +352,12 @@ public class AppProperties
         return loadBoolean(properties, JSON_PRETTY, false);
     }
 
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // Database
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+
     /**
      * Returns the IP address of the mongoDB Database Server
      */
@@ -453,6 +459,12 @@ public class AppProperties
     {
         return loadInt(properties, DB_CONNECTIONS_PER_HOST, 10);
     }
+
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // Message Queue
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
 
     /**
      * Returns The name of the ChiliLog system user. This auto-create user will have permission to manage all aspects of
@@ -591,152 +603,6 @@ public class AppProperties
     }
 
     /**
-     * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled.
-     */
-    public boolean getMqCoreProtocolEnabled()
-    {
-        return _mqCoreProtocolEnabled;
-    }
-
-    static final String MQ_CORE_PROTOCOL_ENABLED = "mq.protocol.core.enabled";
-
-    private boolean _mqCoreProtocolEnabled = false;
-
-    static boolean loadMqCoreProtocolEnabled(Properties properties)
-    {
-        return loadBoolean(properties, MQ_CORE_PROTOCOL_ENABLED, false);
-    }
-
-    /**
-     * Returns configuration settings for the message queue HornetQ and JMS protocols
-     */
-    public Hashtable<String, Object> getMqCoreProtocolConfig()
-    {
-        return _mqCoreProtocolConfig;
-    }
-
-    static final String MQ_CORE_PROTOCOL_CONFIG = "mq.protocol.core.";
-
-    private Hashtable<String, Object> _mqCoreProtocolConfig = null;
-
-    static Hashtable<String, Object> loadMqCoreProtocolConfig(Properties properties)
-    {
-        Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
-            String keyAsString = (String) key;
-            if (keyAsString.startsWith(MQ_CORE_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("mq.protocol.core.enabled"))
-            {
-                String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
-                    m.put(keyAsString.substring(MQ_CORE_PROTOCOL_CONFIG.length()), value);
-                }
-            }
-        }
-        return m;
-    }
-
-    /**
-     * Returns Flag to indicate if the STOMP protocol is to be enabled for the message queue
-     */
-    public boolean getMqStompProtocolEnabled()
-    {
-        return _mqStompProtocolEnabled;
-    }
-
-    static final String MQ_STOMP_PROTOCOL_ENABLED = "mq.protocol.stomp.enabled";
-
-    private boolean _mqStompProtocolEnabled = false;
-
-    static boolean loadMqStompProtocolEnabled(Properties properties)
-    {
-        return loadBoolean(properties, MQ_STOMP_PROTOCOL_ENABLED, false);
-    }
-
-    /**
-     * Returns configuration settings for the message queue STOMP protocol
-     */
-    public Hashtable<String, Object> getMqStompProtocolConfig()
-    {
-        return _mqStompProtocolConfig;
-    }
-
-    static final String MQ_STOMP_PROTOCOL_CONFIG = "mq.protocol.stomp.";
-
-    private Hashtable<String, Object> _mqStompProtocolConfig = null;
-
-    static Hashtable<String, Object> loadMqStompProtocolConfig(Properties properties)
-    {
-        Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
-            String keyAsString = (String) key;
-            if (keyAsString.startsWith(MQ_STOMP_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("mq.protocol.stomp.enabled"))
-            {
-                String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
-                    m.put(keyAsString.substring(MQ_STOMP_PROTOCOL_CONFIG.length()), value);
-                }
-            }
-        }
-        m.put("protocol", "stomp");
-        return m;
-    }
-
-    /**
-     * Returns Flag to indicate if the STOMP WEB SOCKET protocol is to be enabled for the message queue
-     */
-    public boolean getMqStompWebSocketProtocolEnabled()
-    {
-        return _mqStompWebSocketProtocolEnabled;
-    }
-
-    static final String MQ_STOMP_WEB_SOCKET_PROTOCOL_ENABLED = "mq.protocol.stomp-ws.enabled";
-
-    private boolean _mqStompWebSocketProtocolEnabled = false;
-
-    static boolean loadMqStompWebSocketProtocolEnabled(Properties properties)
-    {
-        return loadBoolean(properties, MQ_STOMP_WEB_SOCKET_PROTOCOL_ENABLED, false);
-    }
-
-    /**
-     * Returns configuration settings for the message queue STOMP WEB SOCKET protocol
-     */
-    public Hashtable<String, Object> getMqStompWebSocketProtocolConfig()
-    {
-        return _mqStompWebSocketProtocolConfig;
-    }
-
-    static final String MQ_STOMP_WEB_SOCKET_PROTOCOL_CONFIG = "mq.protocol.stomp-ws.";
-
-    private Hashtable<String, Object> _mqStompWebSocketProtocolConfig = null;
-
-    static Hashtable<String, Object> loadMqStompWebSocketProtocolConfig(Properties properties)
-    {
-        Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
-            String keyAsString = (String) key;
-            if (keyAsString.startsWith(MQ_STOMP_WEB_SOCKET_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("mq.protocol.stomp-ws.enabled"))
-            {
-                String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
-                    m.put(keyAsString.substring(MQ_STOMP_WEB_SOCKET_PROTOCOL_CONFIG.length()), value);
-                }
-            }
-        }
-        m.put("protocol", "stomp_ws");
-        return m;
-    }
-
-    /**
      * Returns the maximum number of delivery attempts that will be made before a message is deleted or placed on the
      * dead letter queue. A message is catergorised as failed if it has been acknowledge AND its transactional session
      * is rolled back.
@@ -789,289 +655,446 @@ public class AppProperties
         return loadString(properties, MQ_DEAD_LETTER_ADDRESS, null);
     }
 
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // PUB SUB
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    
+    /**
+     * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled.
+     */
+    public boolean getPubSubCoreProtocolEnabled()
+    {
+        return _pubSubCoreProtocolEnabled;
+    }
+
+    static final String PUB_SUB_CORE_PROTOCOL_ENABLED = "pubsub.core.enabled";
+
+    private boolean _pubSubCoreProtocolEnabled = false;
+
+    static boolean loadPubSubCoreProtocolEnabled(Properties properties)
+    {
+        return loadBoolean(properties, PUB_SUB_CORE_PROTOCOL_ENABLED, false);
+    }
+
+    /**
+     * Returns configuration settings for the message queue HornetQ and JMS protocols
+     */
+    public Hashtable<String, Object> getPubSubCoreProtocolConfig()
+    {
+        return _pubSubCoreProtocolConfig;
+    }
+
+    static final String PUB_SUB_CORE_PROTOCOL_CONFIG = "pubsub.core.";
+
+    private Hashtable<String, Object> _pubSubCoreProtocolConfig = null;
+
+    static Hashtable<String, Object> loadPubSubCoreProtocolConfig(Properties properties)
+    {
+        Hashtable<String, Object> m = new Hashtable<String, Object>();
+        for (Object key : properties.keySet())
+        {
+            String keyAsString = (String) key;
+            if (keyAsString.startsWith(PUB_SUB_CORE_PROTOCOL_CONFIG)
+                    && !keyAsString.equalsIgnoreCase("pubsub.core.enabled"))
+            {
+                String value = properties.getProperty(keyAsString);
+                if (!StringUtils.isBlank(value))
+                {
+                    m.put(keyAsString.substring(PUB_SUB_CORE_PROTOCOL_CONFIG.length()), value);
+                }
+            }
+        }
+        return m;
+    }
+
+    /**
+     * Returns Flag to indicate if the STOMP protocol is to be enabled for the message queue
+     */
+    public boolean getPubSubStompProtocolEnabled()
+    {
+        return _pubSubStompProtocolEnabled;
+    }
+
+    static final String PUB_SUB_STOMP_PROTOCOL_ENABLED = "pubsub.stomp.enabled";
+
+    private boolean _pubSubStompProtocolEnabled = false;
+
+    static boolean loadPubSubStompProtocolEnabled(Properties properties)
+    {
+        return loadBoolean(properties, PUB_SUB_STOMP_PROTOCOL_ENABLED, false);
+    }
+
+    /**
+     * Returns configuration settings for the message queue STOMP protocol
+     */
+    public Hashtable<String, Object> getPubSubStompProtocolConfig()
+    {
+        return _pubSubStompProtocolConfig;
+    }
+
+    static final String PUB_SUB_STOMP_PROTOCOL_CONFIG = "pubsub.stomp.";
+
+    private Hashtable<String, Object> _pubSubStompProtocolConfig = null;
+
+    static Hashtable<String, Object> loadPubSubStompProtocolConfig(Properties properties)
+    {
+        Hashtable<String, Object> m = new Hashtable<String, Object>();
+        for (Object key : properties.keySet())
+        {
+            String keyAsString = (String) key;
+            if (keyAsString.startsWith(PUB_SUB_STOMP_PROTOCOL_CONFIG)
+                    && !keyAsString.equalsIgnoreCase("pubsub.stomp.enabled"))
+            {
+                String value = properties.getProperty(keyAsString);
+                if (!StringUtils.isBlank(value))
+                {
+                    m.put(keyAsString.substring(PUB_SUB_STOMP_PROTOCOL_CONFIG.length()), value);
+                }
+            }
+        }
+        m.put("protocol", "stomp");
+        return m;
+    }
+
+    /**
+     * Returns Flag to indicate if the STOMP WEB SOCKET protocol is to be enabled for the message queue
+     */
+    public boolean getPubSubStompWebSocketProtocolEnabled()
+    {
+        return _pubSubStompWebSocketProtocolEnabled;
+    }
+
+    static final String PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_ENABLED = "pubsub.stomp-ws.enabled";
+
+    private boolean _pubSubStompWebSocketProtocolEnabled = false;
+
+    static boolean loadPubSubStompWebSocketProtocolEnabled(Properties properties)
+    {
+        return loadBoolean(properties, PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_ENABLED, false);
+    }
+
+    /**
+     * Returns configuration settings for the message queue STOMP WEB SOCKET protocol
+     */
+    public Hashtable<String, Object> getPubSubStompWebSocketProtocolConfig()
+    {
+        return _pubSubStompWebSocketProtocolConfig;
+    }
+
+    static final String PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG = "pubsub.stomp-ws.";
+
+    private Hashtable<String, Object> _pubSubStompWebSocketProtocolConfig = null;
+
+    static Hashtable<String, Object> loadPubSubStompWebSocketProtocolConfig(Properties properties)
+    {
+        Hashtable<String, Object> m = new Hashtable<String, Object>();
+        for (Object key : properties.keySet())
+        {
+            String keyAsString = (String) key;
+            if (keyAsString.startsWith(PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG)
+                    && !keyAsString.equalsIgnoreCase("pubsub.stomp-ws.enabled"))
+            {
+                String value = properties.getProperty(keyAsString);
+                if (!StringUtils.isBlank(value))
+                {
+                    m.put(keyAsString.substring(PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG.length()), value);
+                }
+            }
+        }
+        m.put("protocol", "stomp_ws");
+        return m;
+    }
+
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // MANAGEMENT
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
     /**
      * Returns the IP address to use for binding our UI web server
      */
-    public String getUiIpAddress()
+    public String getManagementIpAddress()
     {
-        return _uiIpAddress;
+        return _managementIpAddress;
     }
 
-    static final String UI_IP_ADDRESS = "ui.ip_address";
+    static final String MANAGEMENT_IP_ADDRESS = "management.ip_address";
 
-    private String _uiIpAddress = null;
+    private String _managementIpAddress = null;
 
-    static String loadUiIpAddress(Properties properties)
+    static String loadManagementIpAddress(Properties properties)
     {
-        return loadString(properties, UI_IP_ADDRESS);
+        return loadString(properties, MANAGEMENT_IP_ADDRESS);
     }
 
     /**
      * Returns the IP port to use for binding our UI web server
      */
-    public int getUiIpPort()
+    public int getManagementIpPort()
     {
-        return _uiIpPort;
+        return _managementIpPort;
     }
 
-    static final String UI_IP_PORT = "ui.ip_port";
+    static final String MANAGEMENT_IP_PORT = "management.ip_port";
 
-    private int _uiIpPort = 0;
+    private int _managementIpPort = 0;
 
-    static int loadUiIpPort(Properties properties)
+    static int loadManagementIpPort(Properties properties)
     {
-        return loadInt(properties, UI_IP_PORT, 9898);
+        return loadInt(properties, MANAGEMENT_IP_PORT, 9898);
     }
 
     /**
      * Returns the maximum number of active threads to execute tasks
      */
-    public int getUiTaskThreadPoolSize()
+    public int getManagementTaskThreadPoolSize()
     {
-        return _uiTaskThreadPoolSize;
+        return _managementTaskThreadPoolSize;
     }
 
-    static final String UI_TASK_THREAD_POOL_SIZE = "ui.task_thread_pool.size";
+    static final String MANAGEMENT_TASK_THREAD_POOL_SIZE = "management.task_thread_pool.size";
 
-    private int _uiTaskThreadPoolSize = 0;
+    private int _managementTaskThreadPoolSize = 0;
 
-    static int loadUiTaskThreadPoolSize(Properties properties)
+    static int loadManagementTaskThreadPoolSize(Properties properties)
     {
-        return loadInt(properties, UI_TASK_THREAD_POOL_SIZE, 16);
+        return loadInt(properties, MANAGEMENT_TASK_THREAD_POOL_SIZE, 16);
     }
     
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getUiTaskThreadPoolMaxChannelMemorySize()
+    public long getManagementTaskThreadPoolMaxChannelMemorySize()
     {
-        return _uiTaskThreadPoolMaxChannelMemorySize;
+        return _managementTaskThreadPoolMaxChannelMemorySize;
     }
 
-    static final String UI_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "ui.task_thread_pool.max_channel_memory_size";
+    static final String MANAGEMENT_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "management.task_thread_pool.max_channel_memory_size";
 
-    private long _uiTaskThreadPoolMaxChannelMemorySize = 0;
+    private long _managementTaskThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadUiTaskThreadPoolMaxChannelMemorySize(Properties properties)
+    static long loadManagementTaskThreadPoolMaxChannelMemorySize(Properties properties)
     {
-        return loadLong(properties, UI_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
+        return loadLong(properties, MANAGEMENT_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
     
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getUiTaskThreadPoolMaxThreadMemorySize()
+    public long getManagementTaskThreadPoolMaxThreadMemorySize()
     {
-        return _uiTaskThreadPoolMaxThreadMemorySize;
+        return _managementTaskThreadPoolMaxThreadMemorySize;
     }
 
-    static final String UI_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "ui.task_thread_pool.max_thread_memory_size";
+    static final String MANAGEMENT_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "management.task_thread_pool.max_thread_memory_size";
 
-    private long _uiTaskThreadPoolMaxThreadMemorySize = 0;
+    private long _managementTaskThreadPoolMaxThreadMemorySize = 0;
 
-    static long loadUiTaskThreadPoolMaxThreadMemorySize(Properties properties)
+    static long loadManagementTaskThreadPoolMaxThreadMemorySize(Properties properties)
     {
-        return loadLong(properties, UI_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+        return loadLong(properties, MANAGEMENT_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
     
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
-    public int getUiTaskThreadPoolKeepAliveSeconds()
+    public int getManagementTaskThreadPoolKeepAliveSeconds()
     {
-        return _uiTaskThreadPoolKeepAliveSeconds;
+        return _managementTaskThreadPoolKeepAliveSeconds;
     }
 
-    static final String UI_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "ui.task_thread_pool.keep_alive_seconds";
+    static final String MANAGEMENT_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "management.task_thread_pool.keep_alive_seconds";
 
-    private int _uiTaskThreadPoolKeepAliveSeconds = 0;
+    private int _managementTaskThreadPoolKeepAliveSeconds = 0;
 
-    static int loadUiTaskThreadPoolKeepAliveSeconds(Properties properties)
+    static int loadManagementTaskThreadPoolKeepAliveSeconds(Properties properties)
     {
-        return loadInt(properties, UI_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+        return loadInt(properties, MANAGEMENT_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
     
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getUiSslEnabled()
+    public boolean getManagementSslEnabled()
     {
-        return _uiSslEnabled;
+        return _managementSslEnabled;
     }
 
-    static final String UI_SSL_ENABLED = "ui.ssl_enabled";
+    static final String MANAGEMENT_SSL_ENABLED = "management.ssl_enabled";
 
-    private boolean _uiSslEnabled = false;
+    private boolean _managementSslEnabled = false;
 
-    static boolean loadUiSslEnabled(Properties properties)
+    static boolean loadManagementSslEnabled(Properties properties)
     {
-        return loadBoolean(properties, UI_SSL_ENABLED, false);
+        return loadBoolean(properties, MANAGEMENT_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getUiKeyStorePath()
+    public String getManagementKeyStorePath()
     {
-        return _uiKeyStorePath;
+        return _managementKeyStorePath;
     }
 
-    static final String UI_KEY_STORE_PATH = "ui.key_store_path";
+    static final String MANAGEMENT_KEY_STORE_PATH = "management.key_store_path";
 
-    private String _uiKeyStorePath = null;
+    private String _managementKeyStorePath = null;
 
-    static String loadUiKeyStorePath(Properties properties)
+    static String loadManagementKeyStorePath(Properties properties)
     {
-        return loadString(properties, UI_KEY_STORE_PATH, null);
+        return loadString(properties, MANAGEMENT_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getUiKeyStorePassword()
+    public String getManagementKeyStorePassword()
     {
-        return _uiKeyStorePassword;
+        return _managementKeyStorePassword;
     }
 
-    static final String UI_KEY_STORE_PASSWORD = "ui.key_store_password";
+    static final String MANAGEMENT_KEY_STORE_PASSWORD = "management.key_store_password";
 
-    private String _uiKeyStorePassword = null;
+    private String _managementKeyStorePassword = null;
 
-    static String loadUiKeyStorePassword(Properties properties)
+    static String loadManagementKeyStorePassword(Properties properties)
     {
-        return loadString(properties, UI_KEY_STORE_PASSWORD, null);
+        return loadString(properties, MANAGEMENT_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getUiKeyStoreKeyPassword()
+    public String getManagementKeyStoreKeyPassword()
     {
-        return _uiKeyStoreKeyPassword;
+        return _managementKeyStoreKeyPassword;
     }
 
-    static final String UI_KEY_STORE_KEY_PASSWORD = "ui.key_store_key_password";
+    static final String MANAGEMENT_KEY_STORE_KEY_PASSWORD = "management.key_store_key_password";
 
-    private String _uiKeyStoreKeyPassword = null;
+    private String _managementKeyStoreKeyPassword = null;
 
-    static String loadUiKeyStoreKeyPassword(Properties properties)
+    static String loadManagementKeyStoreKeyPassword(Properties properties)
     {
-        return loadString(properties, UI_KEY_STORE_KEY_PASSWORD, null);
+        return loadString(properties, MANAGEMENT_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getUiTrustStorePath()
+    public String getManagementTrustStorePath()
     {
-        return _uiTrustStorePath;
+        return _managementTrustStorePath;
     }
 
-    static final String UI_TRUST_STORE_PATH = "ui.trust_store_path";
+    static final String MANAGEMENT_TRUST_STORE_PATH = "management.trust_store_path";
 
-    private String _uiTrustStorePath = null;
+    private String _managementTrustStorePath = null;
 
-    static String loadUiTrustStorePath(Properties properties)
+    static String loadManagementTrustStorePath(Properties properties)
     {
-        return loadString(properties, UI_TRUST_STORE_PATH, null);
-    }
-
-    /**
-     * Returns the password to the trust store to use for SSL
-     */
-    public String getUiTrustStorePassword()
-    {
-        return _uiTrustStorePassword;
-    }
-
-    static final String UI_TRUST_STORE_PASSWORD = "ui.trust_store_password";
-
-    private String _uiTrustStorePassword = null;
-
-    static String loadUiTrustStorePassword(Properties properties)
-    {
-        return loadString(properties, UI_TRUST_STORE_PASSWORD, null);
+        return loadString(properties, MANAGEMENT_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getUiStaticFilesDirectory()
+    public String getManagementTrustStorePassword()
     {
-        return _uiStaticFilesDirectory;
+        return _managementTrustStorePassword;
     }
 
-    static final String UI_STATIC_FILES_DIRECTORY = "ui.static_files.directory";
+    static final String MANAGEMENT_TRUST_STORE_PASSWORD = "management.trust_store_password";
 
-    private String _uiStaticFilesDirectory = null;
+    private String _managementTrustStorePassword = null;
 
-    static String loadUiStaticFilesDirectory(Properties properties)
+    static String loadManagementTrustStorePassword(Properties properties)
     {
-        return loadString(properties, UI_STATIC_FILES_DIRECTORY, ".");
+        return loadString(properties, MANAGEMENT_TRUST_STORE_PASSWORD, null);
+    }
+
+    /**
+     * Returns the password to the trust store to use for SSL
+     */
+    public String getManagementStaticFilesDirectory()
+    {
+        return _managementStaticFilesDirectory;
+    }
+
+    static final String MANAGEMENT_STATIC_FILES_DIRECTORY = "management.static_files.directory";
+
+    private String _managementStaticFilesDirectory = null;
+
+    static String loadManagementStaticFilesDirectory(Properties properties)
+    {
+        return loadString(properties, MANAGEMENT_STATIC_FILES_DIRECTORY, ".");
     }
 
     /**
      * Returns the number of seconds static files are ached
      */
-    public int getUiStaticFilesCacheSeconds()
+    public int getManagementStaticFilesCacheSeconds()
     {
-        return _uiStaticFilesCacheSeconds;
+        return _managementStaticFilesCacheSeconds;
     }
 
-    static final String UI_STATIC_FILES_CACHE_SECONDS = "ui.static_files.cache_seconds";
+    static final String MANAGEMENT_STATIC_FILES_CACHE_SECONDS = "management.static_files.cache_seconds";
 
-    private int _uiStaticFilesCacheSeconds = 0;
+    private int _managementStaticFilesCacheSeconds = 0;
 
-    static int loadUiStaticFilesCacheSeconds(Properties properties)
+    static int loadManagementStaticFilesCacheSeconds(Properties properties)
     {
-        return loadInt(properties, UI_STATIC_FILES_CACHE_SECONDS, 0);
+        return loadInt(properties, MANAGEMENT_STATIC_FILES_CACHE_SECONDS, 0);
     }
 
     /**
      * Returns the salt to use for hashing of the authentication token
      */
-    public byte[] getUiApiAuthenticationHashSalt()
+    public byte[] getManagementApiAuthenticationHashSalt()
     {
-        return _uiApiAuthenticationHashSalt;
+        return _managementApiAuthenticationHashSalt;
     }
 
-    static final String UI_API_AUTHENTICATION_HASH_SALT = "ui.api.authentication.hash_salt";
+    static final String MANAGEMENT_API_AUTHENTICATION_HASH_SALT = "management.api.authentication.hash_salt";
 
-    private byte[] _uiApiAuthenticationHashSalt = null;
+    private byte[] _managementApiAuthenticationHashSalt = null;
 
-    static byte[] loadUiApiAuthenticationHashSalt(Properties properties)
+    static byte[] loadManagementApiAuthenticationHashSalt(Properties properties)
     {
         try
         {
-            return loadString(properties, UI_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
+            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, UI_API_AUTHENTICATION_HASH_SALT).getBytes();
+            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_HASH_SALT).getBytes();
         }
     }
 
     /**
      * Returns the password to use for authentication token encryption
      */
-    public byte[] getUiApiAuthenticationEncryptionPassword()
+    public byte[] getManagementApiAuthenticationEncryptionPassword()
     {
-        return _uiApiAuthenticationEncryptionPassword;
+        return _managementApiAuthenticationEncryptionPassword;
     }
 
-    static final String UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "ui.api.authentication.encyrption_password";
+    static final String MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "management.api.authentication.encyrption_password";
 
-    private byte[] _uiApiAuthenticationEncryptionPassword = null;
+    private byte[] _managementApiAuthenticationEncryptionPassword = null;
 
-    static byte[] loadUiApiAuthenticationEncryptionPassword(Properties properties)
+    static byte[] loadManagementApiAuthenticationEncryptionPassword(Properties properties)
     {
         try
         {
-            return loadString(properties, UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
+            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, UI_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
+            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
 
