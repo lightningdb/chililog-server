@@ -195,23 +195,31 @@ public class AppPropertiesTest
     }
 
     @Test
-    public void testMqCoreProtocolEnabled() throws UnknownHostException
+    public void testPubSubCoreProtocolEnabled() throws UnknownHostException
     {
         assertTrue(AppProperties.getInstance().getPubSubCoreProtocolEnabled());
     }
 
     @Test
-    public void testMqStompProtocolEnabled() throws UnknownHostException
+    public void testPubSubStompProtocolEnabled() throws UnknownHostException
     {
         assertTrue(AppProperties.getInstance().getPubSubStompProtocolEnabled());
     }
 
     @Test
-    public void testMqStompWebSocketProtocolEnabled() throws UnknownHostException
+    public void testPubSubStompWebSocketProtocolEnabled() throws UnknownHostException
     {
         assertFalse(AppProperties.getInstance().getPubSubStompWebSocketProtocolEnabled());
     }
 
+    @Test
+    public void testPubSubPublisherSessionPoolSize() throws UnknownHostException
+    {
+        int s = AppProperties.getInstance().getPubSubPublisherSessionPoolSize();
+        assertEquals(5, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_PUBLISHER_SESSION_POOL_SIZE));
+    }
+    
     @Test
     public void testMangementIpAddress() throws UnknownHostException
     {

@@ -807,6 +807,23 @@ public class AppProperties
         return m;
     }
 
+    /**
+     * Returns the size of the session pool for publishers in the pubsub service
+     */
+    public int getPubSubPublisherSessionPoolSize()
+    {
+        return _pubSubPublisherSessionPoolSize;
+    }
+
+    static final String PUB_SUB_PUBLISHER_SESSION_POOL_SIZE = "pubsub.publisher_session_pool_size";
+
+    private int _pubSubPublisherSessionPoolSize = 5;
+
+    static int loadPubSubPublisherSessionPoolSize(Properties properties)
+    {
+        return loadInt(properties, PUB_SUB_PUBLISHER_SESSION_POOL_SIZE, 5);
+    }
+    
     // *****************************************************************************************************************
     // *****************************************************************************************************************
     // MANAGEMENT
