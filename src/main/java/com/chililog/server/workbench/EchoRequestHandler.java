@@ -54,7 +54,7 @@ import org.jboss.netty.util.CharsetUtil;
  * This code is based on the Netty HTTP Snoop sample (http://www.jboss.org/netty/documentation.html).
  * </p>
  */
-public class EchoService extends Service
+public class EchoRequestHandler extends WorkbenchRequestHandler
 {
     private HttpRequest _request;
 

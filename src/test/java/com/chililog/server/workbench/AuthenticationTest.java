@@ -236,7 +236,7 @@ public class AuthenticationTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - error missing username
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=update_profile",
@@ -365,7 +365,7 @@ public class AuthenticationTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
 
         // Change password error - bad confirm password
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication?action=change_password",
@@ -382,7 +382,7 @@ public class AuthenticationTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.AuthenticationBadUsernameOrPasswordError", errorAO.getErrorCode());
 
     }
 
@@ -433,7 +433,7 @@ public class AuthenticationTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.UriQueryStringParameterError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.UriQueryStringParameterError", errorAO.getErrorCode());
     }
 
     /**
@@ -459,7 +459,7 @@ public class AuthenticationTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.AuthenticationTokenInvalidError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.AuthenticationTokenInvalidError", errorAO.getErrorCode());
 
         // Bad hash
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, token + "abc");
@@ -468,7 +468,7 @@ public class AuthenticationTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.AuthenticationTokenInvalidError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.AuthenticationTokenInvalidError", errorAO.getErrorCode());
         
     
     

@@ -28,7 +28,7 @@ import org.jboss.netty.handler.codec.http.HttpContentCompressor;
  * </p>
  * <p>
  * This class was introduced because the HttpContentCompressor does not handle zero-copy or ChunkedFile used by
- * {@link StaticFileService}. HttpContentCompressor only seems to work when the HTTPResponse content is set to a
+ * {@link StaticFileRequestHandler}. HttpContentCompressor only seems to work when the HTTPResponse content is set to a
  * ChannelBuffer.
  * </p>
  * <p>

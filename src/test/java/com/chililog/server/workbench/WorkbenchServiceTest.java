@@ -351,7 +351,7 @@ public class WorkbenchServiceTest
         assertEquals("HTTP/1.1 404 Not Found", responseCode);
         assertTrue(!StringUtils.isBlank(headers.get("Date")));
         assertTrue(content
-                .contains("\"Message\": \"Cannot find API class 'com.chililog.server.management.workers.NotfoundWorker' in URI: '/api/notfound.'\""));
+                .contains("\"Message\": \"Cannot find API class 'com.chililog.server.workbench.workers.NotfoundWorker' in URI: '/api/notfound.'\""));
     }
 
     /**

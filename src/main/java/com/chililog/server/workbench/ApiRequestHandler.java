@@ -99,9 +99,9 @@ import com.chililog.server.workbench.workers.Worker.ContentIOStyle;
  * }
  * </pre>
  */
-public class ApiService extends Service
+public class ApiRequestHandler extends WorkbenchRequestHandler
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(ApiService.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(ApiRequestHandler.class);
 
     /**
      * Http request
@@ -248,7 +248,7 @@ public class ApiService extends Service
             { '_' });
             apiName = apiName.replace("_", "");
 
-            className = "com.chililog.server.management.workers." + apiName + "Worker";
+            className = "com.chililog.server.workbench.workers." + apiName + "Worker";
             _logger.debug("Instancing ApiWorker: %s", className);
 
             Class<?> apiClass = ClassUtils.getClass(className);

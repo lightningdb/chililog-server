@@ -66,7 +66,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
-    private Service _service = null;
+    private WorkbenchRequestHandler _workbenchRequestHandler = null;
 
     /**
      * Handles incoming messages by routing to services
@@ -92,7 +92,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             uri = uri.toLowerCase();
             if (uri.startsWith("/api/"))
             {
-                _service = new ApiService();
+                _workbenchRequestHandler = new ApiRequestHandler();
             }
             else if (uri.equalsIgnoreCase("/ui") || uri.equalsIgnoreCase("/ui/"))
             {
@@ -100,11 +100,11 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             }
             else if (uri.startsWith("/static/"))
             {
-                _service = new StaticFileService();
+                _workbenchRequestHandler = new StaticFileRequestHandler();
             }
             else if (uri.startsWith("/echo/"))
             {
-                _service = new EchoService();
+                _workbenchRequestHandler = new EchoRequestHandler();
             }
             else
             {
@@ -121,7 +121,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             throw new NotImplementedException("Message Type " + msg.getClass().getName());
         }
 
-        _service.processMessage(ctx, e);
+        _workbenchRequestHandler.processMessage(ctx, e);
         return;
 
     }
@@ -149,7 +149,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
     {
-        boolean _willBeClosed = false;
+        boolean willBeClosed = false;
         try
         {
             Throwable cause = e.getCause();
@@ -168,7 +168,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 
             ChannelFuture future = e.getChannel().write(response);
             future.addListener(ChannelFutureListener.CLOSE);
-            _willBeClosed = true;
+            willBeClosed = true;
         }
         catch (Exception ex)
         {
@@ -176,7 +176,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         }
 
         // Close the channel
-        if (!_willBeClosed)
+        if (!willBeClosed)
         {
             e.getChannel().close();
         }

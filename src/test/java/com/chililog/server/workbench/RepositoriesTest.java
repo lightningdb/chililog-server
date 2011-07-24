@@ -314,7 +314,7 @@ public class RepositoriesTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RepositoryNotFoundError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
 
         // Get 1 - repository not found
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/123", HttpMethod.GET,
@@ -324,7 +324,7 @@ public class RepositoriesTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RepositoryNotFoundError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
     }
 
     /**
@@ -380,7 +380,7 @@ public class RepositoriesTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RepositoryNotFoundError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
         
         // Get entries - repository not found
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repositories/123/entries", HttpMethod.GET,
@@ -390,7 +390,7 @@ public class RepositoriesTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RepositoryNotFoundError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
     }
 
     

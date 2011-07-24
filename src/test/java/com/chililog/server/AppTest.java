@@ -26,6 +26,7 @@ import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.hornetq.api.core.Message;
+import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
@@ -61,7 +62,7 @@ public class AppTest
     private static RepositoryInfoBO _repoInfo;
 
     private static final String REPOSITORY_NAME = "app_junit_test";
-    private static final String MONGODB_COLLECTION_NAME = "app_junit_test_repository";
+    private static final String MONGODB_COLLECTION_NAME = "repo_app_junit_test";
 
     @BeforeClass
     public static void classSetup() throws Exception
@@ -200,7 +201,7 @@ public class AppTest
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
         
         // Write some repository entries
-        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession("AppTestUser_Writer",
+        ClientSession producerSession = MqService.getInstance().getTransactionalClientSession("AppTestUser_Publisher",
                 "222");
 
         String publicationAddress = _repoInfo.getPubSubAddress();
@@ -214,7 +215,7 @@ public class AppTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeString(entry1);
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             producer.send(message);
             producerSession.commit();
         }

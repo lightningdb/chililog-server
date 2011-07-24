@@ -109,9 +109,9 @@ import com.chililog.server.common.Log4JLogger;
  * This code is based on the Netty HTTP File Server sample (http://www.jboss.org/netty/documentation.html).
  * </p>
  */
-public class StaticFileService extends Service
+public class StaticFileRequestHandler extends WorkbenchRequestHandler
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileService.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileRequestHandler.class);
 
     /**
      * Process the message

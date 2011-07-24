@@ -421,7 +421,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - authorized for repo on which we have permission
         httpConn = ApiUtils.getHttpURLConnection(
@@ -442,7 +442,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
@@ -453,7 +453,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
     }
 
     /**
@@ -506,7 +506,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - not authorized for repo on which we have permission
         httpConn = ApiUtils.getHttpURLConnection(
@@ -518,7 +518,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - not authorized for repo with no permission
         httpConn = ApiUtils.getHttpURLConnection(
@@ -530,7 +530,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
@@ -541,7 +541,7 @@ public class RepositoryInfoTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
     }
     
     /**
@@ -571,7 +571,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.UriPathParameterError", errorAO.getErrorCode());
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.DELETE,
@@ -581,7 +581,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.UriPathParameterError", errorAO.getErrorCode());
     }
 
     /**
@@ -652,7 +652,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredContentError", errorAO.getErrorCode());
 
         // Create no name
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_info", HttpMethod.POST,
@@ -705,7 +705,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredContentError", errorAO.getErrorCode());
 
         // Update no name
         httpConn = ApiUtils.getHttpURLConnection(
@@ -745,7 +745,7 @@ public class RepositoryInfoTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredFieldError", errorAO.getErrorCode());
     }
 
 }

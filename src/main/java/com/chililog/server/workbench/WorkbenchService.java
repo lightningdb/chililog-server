@@ -83,7 +83,7 @@ import com.chililog.server.common.Log4JLogger;
  * </pre>
  * <p>
  * The pipeline uses {@link HttpRequestHandler} to route requests to services for processing. Routing is based on the
- * request URI. Example of servers are {@link EchoService} and {@link StaticFileService}.
+ * request URI. Example of servers are {@link EchoRequestHandler} and {@link StaticFileRequestHandler}.
  * </p>
  * 
  * @author vibul

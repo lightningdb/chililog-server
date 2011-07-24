@@ -284,7 +284,7 @@ public class UsersTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Update - not authorized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + systemAdminToken.getUserID(),
@@ -295,7 +295,7 @@ public class UsersTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
 
         // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + systemAdminToken.getUserID(),
@@ -305,7 +305,7 @@ public class UsersTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.NotAuthorizedError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
     }
     
     /**
@@ -365,7 +365,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.UriPathParameterError", errorAO.getErrorCode());
 
         // Delete
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.DELETE, _systemAdminAuthToken);
@@ -374,7 +374,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.UriPathParameterError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.UriPathParameterError", errorAO.getErrorCode());
     }
 
     /**
@@ -494,7 +494,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredContentError", errorAO.getErrorCode());
 
         // Create no username
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users", HttpMethod.POST, _systemAdminAuthToken);
@@ -536,7 +536,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredContentError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredContentError", errorAO.getErrorCode());
 
         // Update no username
         httpConn = ApiUtils.getHttpURLConnection(
@@ -575,7 +575,7 @@ public class UsersTest
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
-        assertEquals("ChiliLogException:UI.RequiredFieldError", errorAO.getErrorCode());
+        assertEquals("ChiliLogException:Workbench.RequiredFieldError", errorAO.getErrorCode());
     }
 
 }
