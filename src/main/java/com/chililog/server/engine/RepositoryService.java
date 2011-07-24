@@ -31,7 +31,7 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * The repository manager is responsible managing for start/stop/reload all our repositories (as represented by the
+ * The RepositoryService is responsible managing for start/stop/reload all our repositories (as represented by the
  * {@link Repository} class).
  * </p>
  * 

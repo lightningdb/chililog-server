@@ -662,7 +662,7 @@ public class AppProperties
     // *****************************************************************************************************************
     
     /**
-     * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled.
+     * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled for pubsub use
      */
     public boolean getPubSubCoreProtocolEnabled()
     {
@@ -710,7 +710,7 @@ public class AppProperties
     }
 
     /**
-     * Returns Flag to indicate if the STOMP protocol is to be enabled for the message queue
+     * Returns Flag to indicate if the STOMP protocol is to be enabled for pubsub use
      */
     public boolean getPubSubStompProtocolEnabled()
     {
@@ -759,7 +759,7 @@ public class AppProperties
     }
 
     /**
-     * Returns Flag to indicate if the STOMP WEB SOCKET protocol is to be enabled for the message queue
+     * Returns Flag to indicate if the STOMP WEB SOCKET protocol is to be enabled for pubsub use
      */
     public boolean getPubSubStompWebSocketProtocolEnabled()
     {
@@ -808,310 +808,514 @@ public class AppProperties
     }
 
     /**
-     * Returns the size of the session pool for publishers in the pubsub service
+     * Returns Flag to indicate if the JSON HTTP protocol is to be enabled for pubsub use
      */
-    public int getPubSubPublisherSessionPoolSize()
+    public boolean getPubSubJsonHttpProtocolEnabled()
     {
-        return _pubSubPublisherSessionPoolSize;
+        return _pubSubJsonHttpProtocolEnabled;
     }
 
-    static final String PUB_SUB_PUBLISHER_SESSION_POOL_SIZE = "pubsub.publisher_session_pool_size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED = "pubsub.json-http.enabled";
 
-    private int _pubSubPublisherSessionPoolSize = 5;
+    private boolean _pubSubJsonHttpProtocolEnabled = false;
 
-    static int loadPubSubPublisherSessionPoolSize(Properties properties)
+    static boolean loadPubSubJsonHttpProtocolEnabled(Properties properties)
     {
-        return loadInt(properties, PUB_SUB_PUBLISHER_SESSION_POOL_SIZE, 5);
+        return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED, false);
     }
     
-    // *****************************************************************************************************************
-    // *****************************************************************************************************************
-    // MANAGEMENT
-    // *****************************************************************************************************************
-    // *****************************************************************************************************************
     /**
      * Returns the IP address to use for binding our UI web server
      */
-    public String getManagementIpAddress()
+    public String getPubSubJsonHttpProtocolHost()
     {
-        return _managementIpAddress;
+        return _pubSubJsonHttpProtocolHost;
     }
 
-    static final String MANAGEMENT_IP_ADDRESS = "management.ip_address";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_HOST = "pubsub.json-http.host";
 
-    private String _managementIpAddress = null;
+    private String _pubSubJsonHttpProtocolHost = null;
 
-    static String loadManagementIpAddress(Properties properties)
+    static String loadPubSubJsonHttpProtocolHost(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_IP_ADDRESS);
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_HOST);
     }
 
     /**
      * Returns the IP port to use for binding our UI web server
      */
-    public int getManagementIpPort()
+    public int getPubSubJsonHttpProtocolPort()
     {
-        return _managementIpPort;
+        return _pubSubJsonHttpProtocolPort;
     }
 
-    static final String MANAGEMENT_IP_PORT = "management.ip_port";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_PORT = "pubsub.json-http.port";
 
-    private int _managementIpPort = 0;
+    private int _pubSubJsonHttpProtocolPort = 0;
 
-    static int loadManagementIpPort(Properties properties)
+    static int loadPubSubJsonHttpProtocolPort(Properties properties)
     {
-        return loadInt(properties, MANAGEMENT_IP_PORT, 9898);
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_PORT, 61615);
     }
 
     /**
      * Returns the maximum number of active threads to execute tasks
      */
-    public int getManagementTaskThreadPoolSize()
+    public int getPubSubJsonHttpProtocolTaskThreadPoolSize()
     {
-        return _managementTaskThreadPoolSize;
+        return _pubSubJsonHttpProtocolTaskThreadPoolSize;
     }
 
-    static final String MANAGEMENT_TASK_THREAD_POOL_SIZE = "management.task_thread_pool.size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE = "pubsub.json-http.task_thread_pool.size";
 
-    private int _managementTaskThreadPoolSize = 0;
+    private int _pubSubJsonHttpProtocolTaskThreadPoolSize = 0;
 
-    static int loadManagementTaskThreadPoolSize(Properties properties)
+    static int loadPubSubJsonHttpProtocolTaskThreadPoolSize(Properties properties)
     {
-        return loadInt(properties, MANAGEMENT_TASK_THREAD_POOL_SIZE, 16);
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE, 16);
     }
     
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getManagementTaskThreadPoolMaxChannelMemorySize()
+    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize()
     {
-        return _managementTaskThreadPoolMaxChannelMemorySize;
+        return _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize;
     }
 
-    static final String MANAGEMENT_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "management.task_thread_pool.max_channel_memory_size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.task_thread_pool.max_channel_memory_size";
 
-    private long _managementTaskThreadPoolMaxChannelMemorySize = 0;
+    private long _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadManagementTaskThreadPoolMaxChannelMemorySize(Properties properties)
+    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(Properties properties)
     {
-        return loadLong(properties, MANAGEMENT_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
+        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
     
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getManagementTaskThreadPoolMaxThreadMemorySize()
+    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize()
     {
-        return _managementTaskThreadPoolMaxThreadMemorySize;
+        return _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize;
     }
 
-    static final String MANAGEMENT_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "management.task_thread_pool.max_thread_memory_size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "pubsub.json-http.task_thread_pool.max_thread_memory_size";
 
-    private long _managementTaskThreadPoolMaxThreadMemorySize = 0;
+    private long _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize = 0;
 
-    static long loadManagementTaskThreadPoolMaxThreadMemorySize(Properties properties)
+    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(Properties properties)
     {
-        return loadLong(properties, MANAGEMENT_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
     
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
-    public int getManagementTaskThreadPoolKeepAliveSeconds()
+    public int getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds()
     {
-        return _managementTaskThreadPoolKeepAliveSeconds;
+        return _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds;
     }
 
-    static final String MANAGEMENT_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "management.task_thread_pool.keep_alive_seconds";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.task_thread_pool.keep_alive_seconds";
 
-    private int _managementTaskThreadPoolKeepAliveSeconds = 0;
+    private int _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds = 0;
 
-    static int loadManagementTaskThreadPoolKeepAliveSeconds(Properties properties)
+    static int loadPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(Properties properties)
     {
-        return loadInt(properties, MANAGEMENT_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
     
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getManagementSslEnabled()
+    public boolean getPubSubJsonHttpProtocolSslEnabled()
     {
-        return _managementSslEnabled;
+        return _pubSubJsonHttpProtocolSslEnabled;
     }
 
-    static final String MANAGEMENT_SSL_ENABLED = "management.ssl_enabled";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED = "pubsub.json-http.ssl_enabled";
 
-    private boolean _managementSslEnabled = false;
+    private boolean _pubSubJsonHttpProtocolSslEnabled = false;
 
-    static boolean loadManagementSslEnabled(Properties properties)
+    static boolean loadPubSubJsonHttpProtocolSslEnabled(Properties properties)
     {
-        return loadBoolean(properties, MANAGEMENT_SSL_ENABLED, false);
+        return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getManagementKeyStorePath()
+    public String getPubSubJsonHttpProtocolKeyStorePath()
     {
-        return _managementKeyStorePath;
+        return _pubSubJsonHttpProtocolKeyStorePath;
     }
 
-    static final String MANAGEMENT_KEY_STORE_PATH = "management.key_store_path";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH = "pubsub.json-http.key_store_path";
 
-    private String _managementKeyStorePath = null;
+    private String _pubSubJsonHttpProtocolKeyStorePath = null;
 
-    static String loadManagementKeyStorePath(Properties properties)
+    static String loadPubSubJsonHttpProtocolKeyStorePath(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_KEY_STORE_PATH, null);
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getManagementKeyStorePassword()
+    public String getPubSubJsonHttpProtocolKeyStorePassword()
     {
-        return _managementKeyStorePassword;
+        return _pubSubJsonHttpProtocolKeyStorePassword;
     }
 
-    static final String MANAGEMENT_KEY_STORE_PASSWORD = "management.key_store_password";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD = "pubsub.json-http.key_store_password";
 
-    private String _managementKeyStorePassword = null;
+    private String _pubSubJsonHttpProtocolKeyStorePassword = null;
 
-    static String loadManagementKeyStorePassword(Properties properties)
+    static String loadPubSubJsonHttpProtocolKeyStorePassword(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_KEY_STORE_PASSWORD, null);
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getManagementKeyStoreKeyPassword()
+    public String getPubSubJsonHttpProtocolKeyStoreKeyPassword()
     {
-        return _managementKeyStoreKeyPassword;
+        return _pubSubJsonHttpProtocolKeyStoreKeyPassword;
     }
 
-    static final String MANAGEMENT_KEY_STORE_KEY_PASSWORD = "management.key_store_key_password";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD = "pubsub.json-http.key_store_key_password";
 
-    private String _managementKeyStoreKeyPassword = null;
+    private String _pubSubJsonHttpProtocolKeyStoreKeyPassword = null;
 
-    static String loadManagementKeyStoreKeyPassword(Properties properties)
+    static String loadPubSubJsonHttpProtocolKeyStoreKeyPassword(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_KEY_STORE_KEY_PASSWORD, null);
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getManagementTrustStorePath()
+    public String getPubSubJsonHttpProtocolTrustStorePath()
     {
-        return _managementTrustStorePath;
+        return _pubSubJsonHttpProtocolTrustStorePath;
     }
 
-    static final String MANAGEMENT_TRUST_STORE_PATH = "management.trust_store_path";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PATH = "pubsub.json-http.trust_store_path";
 
-    private String _managementTrustStorePath = null;
+    private String _pubSubJsonHttpProtocolTrustStorePath = null;
 
-    static String loadManagementTrustStorePath(Properties properties)
+    static String loadPubSubJsonHttpProtocolTrustStorePath(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_TRUST_STORE_PATH, null);
-    }
-
-    /**
-     * Returns the password to the trust store to use for SSL
-     */
-    public String getManagementTrustStorePassword()
-    {
-        return _managementTrustStorePassword;
-    }
-
-    static final String MANAGEMENT_TRUST_STORE_PASSWORD = "management.trust_store_password";
-
-    private String _managementTrustStorePassword = null;
-
-    static String loadManagementTrustStorePassword(Properties properties)
-    {
-        return loadString(properties, MANAGEMENT_TRUST_STORE_PASSWORD, null);
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getManagementStaticFilesDirectory()
+    public String getPubSubJsonHttpProtocolTrustStorePassword()
     {
-        return _managementStaticFilesDirectory;
+        return _pubSubJsonHttpProtocolTrustStorePassword;
     }
 
-    static final String MANAGEMENT_STATIC_FILES_DIRECTORY = "management.static_files.directory";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PASSWORD = "pubsub.json-http.trust_store_password";
 
-    private String _managementStaticFilesDirectory = null;
+    private String _pubSubJsonHttpProtocolTrustStorePassword = null;
 
-    static String loadManagementStaticFilesDirectory(Properties properties)
+    static String loadPubSubJsonHttpProtocolTrustStorePassword(Properties properties)
     {
-        return loadString(properties, MANAGEMENT_STATIC_FILES_DIRECTORY, ".");
+        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PASSWORD, null);
+    }
+
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // WORKBENCH
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    /**
+     * Returns the IP address to use for binding our WorkBench web server
+     */
+    public String getWorkbenchHost()
+    {
+        return _workbenchHost;
+    }
+
+    static final String WORKBENCH_HOST = "workbench.host";
+
+    private String _workbenchHost = null;
+
+    static String loadWorkbenchHost(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_HOST);
     }
 
     /**
-     * Returns the number of seconds static files are ached
+     * Returns the IP port to use for binding our WorkBench web server
      */
-    public int getManagementStaticFilesCacheSeconds()
+    public int getWorkbenchPort()
     {
-        return _managementStaticFilesCacheSeconds;
+        return _workbenchPort;
     }
 
-    static final String MANAGEMENT_STATIC_FILES_CACHE_SECONDS = "management.static_files.cache_seconds";
+    static final String WORKBENCH_PORT = "workbench.port";
 
-    private int _managementStaticFilesCacheSeconds = 0;
+    private int _workbenchPort = 0;
 
-    static int loadManagementStaticFilesCacheSeconds(Properties properties)
+    static int loadWorkbenchPort(Properties properties)
     {
-        return loadInt(properties, MANAGEMENT_STATIC_FILES_CACHE_SECONDS, 0);
+        return loadInt(properties, WORKBENCH_PORT, 8989);
+    }
+
+    /**
+     * Returns the maximum number of active threads to execute tasks
+     */
+    public int getWorkbenchTaskThreadPoolSize()
+    {
+        return _workbenchTaskThreadPoolSize;
+    }
+
+    static final String WORKBENCH_TASK_THREAD_POOL_SIZE = "workbench.task_thread_pool.size";
+
+    private int _workbenchTaskThreadPoolSize = 0;
+
+    static int loadWorkbenchTaskThreadPoolSize(Properties properties)
+    {
+        return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_SIZE, 16);
+    }
+    
+    /**
+     * Returns maximum total size of the queued events per channel (0 to disable).
+     */
+    public long getWorkbenchTaskThreadPoolMaxChannelMemorySize()
+    {
+        return _workbenchTaskThreadPoolMaxChannelMemorySize;
+    }
+
+    static final String WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "workbench.task_thread_pool.max_channel_memory_size";
+
+    private long _workbenchTaskThreadPoolMaxChannelMemorySize = 0;
+
+    static long loadWorkbenchTaskThreadPoolMaxChannelMemorySize(Properties properties)
+    {
+        return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
+    }
+    
+    /**
+     * Returns maximum total size of the queued events for this pool (0 to disable).
+     */
+    public long getWorkbenchTaskThreadPoolMaxThreadMemorySize()
+    {
+        return _workbenchTaskThreadPoolMaxThreadMemorySize;
+    }
+
+    static final String WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "workbench.task_thread_pool.max_thread_memory_size";
+
+    private long _workbenchTaskThreadPoolMaxThreadMemorySize = 0;
+
+    static long loadWorkbenchTaskThreadPoolMaxThreadMemorySize(Properties properties)
+    {
+        return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+    }
+    
+    /**
+     * Returns the amount of time for an inactive thread to shut itself down
+     */
+    public int getWorkbenchTaskThreadPoolKeepAliveSeconds()
+    {
+        return _workbenchTaskThreadPoolKeepAliveSeconds;
+    }
+
+    static final String WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "workbench.task_thread_pool.keep_alive_seconds";
+
+    private int _workbenchTaskThreadPoolKeepAliveSeconds = 0;
+
+    static int loadWorkbenchTaskThreadPoolKeepAliveSeconds(Properties properties)
+    {
+        return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+    }
+    
+    /**
+     * Returns Flag to indicate if the SSL is to be supported
+     */
+    public boolean getWorkbenchSslEnabled()
+    {
+        return _workbenchSslEnabled;
+    }
+
+    static final String WORKBENCH_SSL_ENABLED = "workbench.ssl_enabled";
+
+    private boolean _workbenchSslEnabled = false;
+
+    static boolean loadWorkbenchSslEnabled(Properties properties)
+    {
+        return loadBoolean(properties, WORKBENCH_SSL_ENABLED, false);
+    }
+
+    /**
+     * Returns the path to the key store to use for SSL
+     */
+    public String getWorkbenchKeyStorePath()
+    {
+        return _workbenchKeyStorePath;
+    }
+
+    static final String WORKBENCH_KEY_STORE_PATH = "workbench.key_store_path";
+
+    private String _workbenchKeyStorePath = null;
+
+    static String loadWorkbenchKeyStorePath(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_KEY_STORE_PATH, null);
+    }
+
+    /**
+     * Returns the password to the key store to use for SSL
+     */
+    public String getWorkbenchKeyStorePassword()
+    {
+        return _workbenchKeyStorePassword;
+    }
+
+    static final String WORKBENCH_KEY_STORE_PASSWORD = "workbench.key_store_password";
+
+    private String _workbenchKeyStorePassword = null;
+
+    static String loadWorkbenchKeyStorePassword(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_KEY_STORE_PASSWORD, null);
+    }
+
+    /**
+     * Returns the password to the key inside to the key store to use for SSL
+     */
+    public String getWorkbenchKeyStoreKeyPassword()
+    {
+        return _workbenchKeyStoreKeyPassword;
+    }
+
+    static final String WORKBENCH_KEY_STORE_KEY_PASSWORD = "workbench.key_store_key_password";
+
+    private String _workbenchKeyStoreKeyPassword = null;
+
+    static String loadWorkbenchKeyStoreKeyPassword(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_KEY_STORE_KEY_PASSWORD, null);
+    }
+
+    /**
+     * Returns the path to the trust store to use for SSL
+     */
+    public String getWorkbenchTrustStorePath()
+    {
+        return _workbenchTrustStorePath;
+    }
+
+    static final String WORKBENCH_TRUST_STORE_PATH = "workbench.trust_store_path";
+
+    private String _workbenchTrustStorePath = null;
+
+    static String loadWorkbenchTrustStorePath(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_TRUST_STORE_PATH, null);
+    }
+
+    /**
+     * Returns the password to the trust store to use for SSL
+     */
+    public String getWorkbenchTrustStorePassword()
+    {
+        return _workbenchTrustStorePassword;
+    }
+
+    static final String WORKBENCH_TRUST_STORE_PASSWORD = "workbench.trust_store_password";
+
+    private String _workbenchTrustStorePassword = null;
+
+    static String loadWorkbenchTrustStorePassword(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_TRUST_STORE_PASSWORD, null);
+    }
+
+    /**
+     * Returns the password to the trust store to use for SSL
+     */
+    public String getWorkbenchStaticFilesDirectory()
+    {
+        return _workbenchStaticFilesDirectory;
+    }
+
+    static final String WORKBENCH_STATIC_FILES_DIRECTORY = "workbench.static_files.directory";
+
+    private String _workbenchStaticFilesDirectory = null;
+
+    static String loadWorkbenchStaticFilesDirectory(Properties properties)
+    {
+        return loadString(properties, WORKBENCH_STATIC_FILES_DIRECTORY, ".");
+    }
+
+    /**
+     * Returns the number of seconds static files are cached in the browser
+     */
+    public int getWorkbenchStaticFilesCacheSeconds()
+    {
+        return _workbenchStaticFilesCacheSeconds;
+    }
+
+    static final String WORKBENCH_STATIC_FILES_CACHE_SECONDS = "workbench.static_files.cache_seconds";
+
+    private int _workbenchStaticFilesCacheSeconds = 0;
+
+    static int loadWorkbenchStaticFilesCacheSeconds(Properties properties)
+    {
+        return loadInt(properties, WORKBENCH_STATIC_FILES_CACHE_SECONDS, 0);
     }
 
     /**
      * Returns the salt to use for hashing of the authentication token
      */
-    public byte[] getManagementApiAuthenticationHashSalt()
+    public byte[] getWorkbenchApiAuthenticationHashSalt()
     {
-        return _managementApiAuthenticationHashSalt;
+        return _workbenchApiAuthenticationHashSalt;
     }
 
-    static final String MANAGEMENT_API_AUTHENTICATION_HASH_SALT = "management.api.authentication.hash_salt";
+    static final String WORKBENCH_API_AUTHENTICATION_HASH_SALT = "workbench.api.authentication.hash_salt";
 
-    private byte[] _managementApiAuthenticationHashSalt = null;
+    private byte[] _workbenchApiAuthenticationHashSalt = null;
 
-    static byte[] loadManagementApiAuthenticationHashSalt(Properties properties)
+    static byte[] loadWorkbenchApiAuthenticationHashSalt(Properties properties)
     {
         try
         {
-            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
+            return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_HASH_SALT).getBytes();
+            return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes();
         }
     }
 
     /**
      * Returns the password to use for authentication token encryption
      */
-    public byte[] getManagementApiAuthenticationEncryptionPassword()
+    public byte[] getWorkbenchApiAuthenticationEncryptionPassword()
     {
-        return _managementApiAuthenticationEncryptionPassword;
+        return _workbenchApiAuthenticationEncryptionPassword;
     }
 
-    static final String MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "management.api.authentication.encyrption_password";
+    static final String WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD = "workbench.api.authentication.encyrption_password";
 
-    private byte[] _managementApiAuthenticationEncryptionPassword = null;
+    private byte[] _workbenchApiAuthenticationEncryptionPassword = null;
 
-    static byte[] loadManagementApiAuthenticationEncryptionPassword(Properties properties)
+    static byte[] loadWorkbenchApiAuthenticationEncryptionPassword(Properties properties)
     {
         try
         {
-            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
+            return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
         }
         catch (Exception ex)
         {
-            return loadString(properties, MANAGEMENT_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
+            return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
 

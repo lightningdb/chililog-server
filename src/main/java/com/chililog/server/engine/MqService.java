@@ -51,7 +51,7 @@ import com.chililog.server.data.UserBO;
 
 /**
  * <p>
- * The Message Queue Manager hides the complexities of the embedded HornetQ server. It provides a simple API to manage
+ * The Message Queue Service hides the complexities of the embedded HornetQ server. It provides a simple API to manage
  * the HornetQ server including start, stop, querying queues and establishing connections to the server for message
  * processing.
  * </p>
