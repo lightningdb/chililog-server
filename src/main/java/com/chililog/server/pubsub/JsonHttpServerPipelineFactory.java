@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.workbench;
+package com.chililog.server.pubsub;
 
 import static org.jboss.netty.channel.Channels.*;
 
@@ -24,20 +24,20 @@ import javax.net.ssl.SSLEngine;
 
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
 import com.chililog.server.common.AppProperties;
 
 /**
  * <p>
- * Sets up the pipeline of handlers for incoming HTTP requests.
+ * Sets up the pipeline of handlers for incoming JSON log requests over HTTP and HTTP web sockets
  * </p>
  */
-public class HttpServerPipelineFactory implements ChannelPipelineFactory
+public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory
 {
     private final ExecutionHandler _executionHandler;
 
@@ -47,7 +47,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
      * @param executionHandler
      *            Thread pool to use to execute handlers
      */
-    public HttpServerPipelineFactory(ExecutionHandler executionHandler)
+    public JsonHttpServerPipelineFactory(ExecutionHandler executionHandler)
     {
         _executionHandler = executionHandler;
     }
@@ -63,9 +63,9 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         ChannelPipeline pipeline = pipeline();
 
         // SSL handling
-        if (appProperties.getWorkbenchSslEnabled())
+        if (appProperties.getPubSubJsonHttpProtocolSslEnabled())
         {
-            SSLEngine engine = SslContextManager.getInstance().getServerContext().createSSLEngine();
+            SSLEngine engine = JsonHttpSslContextManager.getInstance().getServerContext().createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));
         }
@@ -73,27 +73,17 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         // Decodes ChannelBuffer into HTTP Request message
         pipeline.addLast("decoder", new HttpRequestDecoder());
 
-        // Uncomment the following line if you don't want to handle HttpChunks.
-        // Leave it off. We want to handle large file uploads efficiently by not aggregating and storing in memory
-        // pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
+        // Aggregate HTTP Chunks so we don't have to do it in our code. Allow 1MB aggregation buffer
+        pipeline.addLast("aggregator", new HttpChunkAggregator(1048576));
 
         // Encodes HTTTPRequest message to ChannelBuffer
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
-        // Chunked handler for SSL large static file downloads
-        if (appProperties.getWorkbenchSslEnabled())
-        {
-            pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
-        }
-
-        // Compress
-        pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
-
         // Execution handler to move blocking tasks into another thread pool
         pipeline.addLast("executionHandler", _executionHandler);
-        
+
         // Handler to dispatch processing to our services
-        pipeline.addLast("handler", new HttpRequestHandler());
+        pipeline.addLast("handler", new JsonHttpRequestHandler());
 
         return pipeline;
     }

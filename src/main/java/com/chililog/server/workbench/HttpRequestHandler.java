@@ -114,7 +114,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         }
         else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame)
         {
-            // If this is HTTP chunk or web socket frame, then use existing _service
+            // If this is HTTP chunk or web socket frame, then use existing _workbenchRequestHandler
         }
         else
         {

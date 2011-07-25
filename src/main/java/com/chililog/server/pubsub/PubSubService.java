@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.workbench;
+package com.chililog.server.pubsub;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -37,20 +37,20 @@ import com.chililog.server.common.Log4JLogger;
 
 /**
  * <p>
- * The WorkbenchService controls the embedded Netty web server used to provide ChiliLog's management, analysis and
- * notification functions to users.
+ * The PubSubService controls the embedded Netty web server used to provide publication and sububscription services
+ * using JSON over HTTP and HTTP web sockets.
  * </p>
  * 
  * <pre class="example">
  * // Start web server
- * WorkbenchService.getInstance().start();
+ * PubSubServicegetInstance().start();
  * 
  * // Stop web server
- * WorkbenchService.getInstance().stop();
+ * PubSubService.getInstance().stop();
  * </pre>
  * 
  * <p>
- * The web server's request handling pipeline is setup by {@link HttpServerPipelineFactory}. <a
+ * The web server's request handling pipeline is setup by {@link JsonHttpServerPipelineFactory}. <a
  * href="http://www.jboss.org/netty/community#nabble-td3823513">Three</a> Netty thread pools are used:
  * <ul>
  * <li>One for the channel bosses (the server channel acceptors). See NioServerSocketChannelFactory javadoc.</li>
@@ -81,24 +81,21 @@ import com.chililog.server.common.Log4JLogger;
  * for writes. Between each filter, control flows back through the centralized pipeline, and a linked list of contexts
  * keeps track of where we are in the pipeline (one context object per handler).
  * </pre>
- * <p>
- * The pipeline uses {@link HttpRequestHandler} to route requests to services for processing. Routing is based on the
- * request URI. Example of servers are {@link EchoRequestHandler} and {@link StaticFileRequestHandler}.
- * </p>
  * 
  * @author vibul
  * 
  */
-public class WorkbenchService
+public class PubSubService
 {
-    private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchService.class);
-    private static final ChannelGroup _allChannels = new DefaultChannelGroup("WorkbenchWebServerManager");
+    private static Log4JLogger _logger = Log4JLogger.getLogger(PubSubService.class);
+    private static final ChannelGroup _allChannels = new DefaultChannelGroup("PubSubJsonHttpWebServerManager");
     private ChannelFactory _channelFactory = null;
+    private MqProducerSessionPool _mqProducerSessionPool = null;
 
     /**
      * Returns the singleton instance for this class
      */
-    public static WorkbenchService getInstance()
+    public static PubSubService getInstance()
     {
         return SingletonHolder.INSTANCE;
     }
@@ -111,7 +108,7 @@ public class WorkbenchService
      */
     private static class SingletonHolder
     {
-        public static final WorkbenchService INSTANCE = new WorkbenchService();
+        public static final PubSubService INSTANCE = new PubSubService();
     }
 
     /**
@@ -124,26 +121,53 @@ public class WorkbenchService
      * 
      * @throws Exception
      */
-    private WorkbenchService()
+    private PubSubService()
     {
         return;
     }
 
     /**
-     * Start the web server
+     * Start all pubsub services
      */
     public void start()
+    {
+        // Create producer session pool equivalent to the number of threads for Json HTTP so that each thread does not
+        // have to wait for a session
+        _mqProducerSessionPool = new MqProducerSessionPool(AppProperties.getInstance()
+                .getPubSubJsonHttpProtocolTaskThreadPoolSize());
+
+        startJsonHttp();
+    }
+
+    /**
+     * Stop all pubsub services
+     */
+    public void stop()
+    {
+        if (_mqProducerSessionPool != null)
+        {
+            _mqProducerSessionPool.cleanup();
+            _mqProducerSessionPool = null;
+        }
+
+        stopJsonHttp();
+    }
+
+    /**
+     * Start the JSON HTTP pubsub service
+     */
+    public void startJsonHttp()
     {
         AppProperties appProperties = AppProperties.getInstance();
 
         if (_channelFactory != null)
         {
-            _logger.info("Workbench Web Sever Already Started.");
+            _logger.info("PubSub JSON HTTP Web Sever Already Started.");
             return;
         }
 
-        _logger.info("Starting Workbench Web Sever on " + appProperties.getWorkbenchHost() + ":"
-                + appProperties.getWorkbenchPort() + "...");
+        _logger.info("Starting PubSub JSON HTTP  Web Sever on " + appProperties.getPubSubJsonHttpProtocolHost() + ":"
+                + appProperties.getPubSubJsonHttpProtocolPort() + "...");
 
         _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
                 Executors.newCachedThreadPool());
@@ -153,29 +177,29 @@ public class WorkbenchService
 
         // Set up the event pipeline factory.
         ExecutionHandler executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(
-                appProperties.getWorkbenchTaskThreadPoolSize(),
-                appProperties.getWorkbenchTaskThreadPoolMaxChannelMemorySize(),
-                appProperties.getWorkbenchTaskThreadPoolMaxThreadMemorySize(),
-                appProperties.getWorkbenchTaskThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS));
+                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolSize(),
+                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(),
+                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(),
+                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS));
 
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(executionHandler));
+        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(executionHandler));
 
         // Bind and start to accept incoming connections.
-        InetSocketAddress socket = new InetSocketAddress(AppProperties.getInstance().getWorkbenchHost(), AppProperties
-                .getInstance().getWorkbenchPort());
+        InetSocketAddress socket = new InetSocketAddress(AppProperties.getInstance().getPubSubJsonHttpProtocolHost(),
+                AppProperties.getInstance().getPubSubJsonHttpProtocolPort());
         Channel channel = bootstrap.bind(socket);
 
         _allChannels.add(channel);
 
-        _logger.info("Workbench Web Sever Started.");
+        _logger.info("PubSub JSON HTTP Web Sever Started.");
     }
 
     /**
-     * Stop the web server
+     * Stop the pubsub services
      */
-    public void stop()
+    public void stopJsonHttp()
     {
-        _logger.info("Stopping Workbench Web Sever ...");
+        _logger.info("Stopping PubSub JSON HTTP Sever ...");
 
         ChannelGroupFuture future = _allChannels.close();
         future.awaitUninterruptibly();
@@ -183,6 +207,14 @@ public class WorkbenchService
         _channelFactory.releaseExternalResources();
         _channelFactory = null;
 
-        _logger.info("Workbench Web Sever Stopped.");
+        _logger.info("PubSub JSON HTTP Web Sever Stopped.");
+    }
+
+    /**
+     * Returns the producer session pool
+     */
+    MqProducerSessionPool getMqProducerSessionPool()
+    {
+        return _mqProducerSessionPool;
     }
 }
