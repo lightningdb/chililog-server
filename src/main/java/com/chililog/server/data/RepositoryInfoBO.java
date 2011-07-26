@@ -290,7 +290,19 @@ public class RepositoryInfoBO extends BO implements Serializable
      */
     public String getPubSubAddress()
     {
-        return String.format("repo.%s", _name);
+        return buildPubSubAddress(_name);
+    }
+
+    /**
+     * Creates the HornetQ address for a repository of the specified name
+     * 
+     * @param repositoryName
+     *            Name of the repository
+     * @return HornetQ name of the repository
+     */
+    public static String buildPubSubAddress(String repositoryName)
+    {
+        return String.format("repo.%s", repositoryName);
     }
 
     /**
@@ -326,13 +338,13 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * Returns the name of the role that can subscribe to (read) this repository 
+     * Returns the name of the role that can subscribe to (read) this repository
      */
     public String getSubscriberRoleName()
     {
         return UserBO.createRepositorySubscriberRoleName(_name);
     }
-   
+
     /**
      * Returns a flag indicating if the log entries published to this repository is to be stored in the database.
      */
@@ -416,8 +428,8 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * If MaxMemoryPolicy is set to PAGE, then this value determines the size of each page file on the hard
-     * disk in bytes.
+     * If MaxMemoryPolicy is set to PAGE, then this value determines the size of each page file on the hard disk in
+     * bytes.
      */
     public long getPageSize()
     {
@@ -430,8 +442,8 @@ public class RepositoryInfoBO extends BO implements Serializable
     }
 
     /**
-     * If MaxMemoryPolicy is set to PAGE, then this value determines the number of pages to be kept in memory
-     * during page navigation.
+     * If MaxMemoryPolicy is set to PAGE, then this value determines the number of pages to be kept in memory during
+     * page navigation.
      */
     public long getPageCountCache()
     {
@@ -455,7 +467,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     {
         _storageMaxKeywords = parserMaxKeywords;
     }
-    
+
     /**
      * Repository status
      * 

@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.pubsub;
+package com.chililog.server.pubsub.jsonhttp;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.*;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.*;
@@ -25,15 +25,19 @@ import static org.jboss.netty.handler.codec.http.HttpMethod.*;
 import static org.jboss.netty.handler.codec.http.HttpResponseStatus.*;
 import static org.jboss.netty.handler.codec.http.HttpVersion.*;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.apache.commons.lang.StringUtils;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -44,6 +48,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
+import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
@@ -64,6 +69,10 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
 
     private static final String WEBSOCKET_HYBI_00_PATH = "/websocket-hybi-00";
 
+    private static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
+
+    private SubscriptionWorker _subscriptionWorker = null;
+    
     /**
      * Handles incoming HTTP data
      * 
@@ -128,7 +137,17 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             }
 
             byte[] requestContent = content.array();
-            
+            String requestJson = bytesToString(requestContent);
+            PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
+
+            StringBuilder responseJson = new StringBuilder();
+            boolean success = worker.process(requestJson, responseJson);
+
+            HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(HTTP_1_1,
+                    INTERNAL_SERVER_ERROR);
+            res.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
+            res.setContent(ChannelBuffers.copiedBuffer(responseJson.toString(), UTF_8_CHARSET));
+            sendHttpResponse(ctx, req, res);
             return;
         }
 
@@ -137,6 +156,23 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         return;
     }
 
+    /**
+     * Converts request bytes into a string using the default UTF-8 character set.
+     * 
+     * @param bytes
+     *            Bytes to convert
+     * @return String form the bytes. If bytes is null, null is returned.
+     * @throws UnsupportedEncodingException
+     */
+    private String bytesToString(byte[] bytes) throws UnsupportedEncodingException
+    {
+        if (bytes == null)
+        {
+            return null;
+        }
+
+        return new String(bytes, UTF_8_CHARSET);
+    }
 
     /**
      * <p>
@@ -266,8 +302,39 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame)
     {
-        // Send the uppercased string back.
-        // ctx.getChannel().write(new DefaultWebSocketFrame(frame.getTextData().toUpperCase()));
+        String requestJson = frame.getTextData();
+
+        if (StringUtils.isBlank(requestJson))
+        {
+            return;
+        }
+
+        // Process according to request type
+        // We do a quick peek in the json in order to dispatch to the required worker
+        String first50Characters = requestJson.length() > 50 ? requestJson.substring(0, 50) : requestJson;
+        if (first50Characters.indexOf("\"PublicationRequest\"") > 0)
+        {
+            PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
+
+            StringBuilder responseJson = new StringBuilder();
+            worker.process(requestJson, responseJson);
+            ctx.getChannel().write(new DefaultWebSocketFrame(responseJson.toString()));
+        }
+        else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0)
+        {
+            // If existing subscription exists, stop it first
+            if (_subscriptionWorker != null)
+            {
+                _subscriptionWorker.stop();
+            }
+            
+            _subscriptionWorker = new SubscriptionWorker(ctx.getChannel());
+
+            StringBuilder responseJson = new StringBuilder();
+            _subscriptionWorker.process(requestJson, responseJson);
+            ctx.getChannel().write(new DefaultWebSocketFrame(responseJson.toString()));
+        }
+
     }
 
     /**
@@ -306,8 +373,18 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         _logger.error(e.getCause(), "Error handling PubSub JSON HTTP Request");
         e.getChannel().close();
     }
-    
-    
-    
 
+    /**
+     * If disconnected, stop subscription if one is present
+     */
+    @Override
+    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
+    {
+        super.channelDisconnected(ctx, e);
+        
+        if (_subscriptionWorker != null)
+        {
+            _subscriptionWorker.stop();
+        }
+    }
 }

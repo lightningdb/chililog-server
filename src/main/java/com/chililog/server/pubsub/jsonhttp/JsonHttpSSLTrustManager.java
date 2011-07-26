@@ -16,7 +16,7 @@
 // limitations under the License.
 //
 
-package com.chililog.server.pubsub;
+package com.chililog.server.pubsub.jsonhttp;
 
 import java.io.FileInputStream;
 import java.security.KeyStore;

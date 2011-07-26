@@ -29,4 +29,5 @@ public class Strings
     public static final String PREFIX = "PubSub.";
 
     public static final String GET_POOLED_PUBLISHER_SESSION_TIMEOUT_ERROR = PREFIX + "GetPooledPublisherSessionTimeoutError";
+    public static final String PUBLISHER_AUTHENTICATION_ERROR = PREFIX + "PublisherAuthenticationError";
 }
