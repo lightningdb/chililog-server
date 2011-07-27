@@ -18,6 +18,9 @@
 
 package com.chililog.server.pubsub.jsonhttp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 /**
  * Publication Response API JSON binding object. Encapsulates the data for publishing log entries
  */
@@ -61,7 +64,18 @@ public class PublicationResponseAO
         _success = false;
         _messageID = messageID;
         _errorMessage = ex.getMessage();
-        _errorStackTrace = ex.toString();
+        
+        try
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos, true, "UTF-8");
+            ex.printStackTrace(ps);
+            _errorStackTrace = baos.toString("UTF-8");
+        }
+        catch (Exception ex2)
+        {
+            _errorStackTrace = ex.toString();
+        }
     }
 
     /**

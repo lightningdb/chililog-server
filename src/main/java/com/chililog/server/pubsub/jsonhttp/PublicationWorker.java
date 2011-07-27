@@ -66,7 +66,7 @@ public class PublicationWorker
      */
     public PublicationWorker(MqProducerSessionPool sessionPool)
     {
-        sessionPool = _sessionPool;
+        _sessionPool = sessionPool;
     }
 
     /**
@@ -168,7 +168,10 @@ public class PublicationWorker
 
         // Make sure user exists and password is valid
         UserBO user = UserController.getInstance().getByUsername(db, publicationAO.getUsername());
-        user.validatePassword(publicationAO.getPassword());
+        if (!user.validatePassword(publicationAO.getPassword()))
+        {
+            throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
+        }
 
         // Make sure the user can publish to the repository
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
@@ -176,7 +179,7 @@ public class PublicationWorker
 
         if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole))
         {
-            throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR, publicationAO.getUsername(), repoName);
+            throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }
 
         // Cache details

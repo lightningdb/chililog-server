@@ -21,6 +21,7 @@ package com.chililog.server.common;
 import java.io.Reader;
 import java.lang.reflect.Field;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.FieldNamingStrategy;
@@ -128,11 +129,18 @@ public class JsonTranslator
      *            the string from which the object is to be deserialized
      * @param classOfT
      *            the class of T
-     * @return an object of type T from the string
+     * @return an object of type T from the string. null if json is null or empty string.
      */
     public <T> T fromJson(String json, Class<T> classOfT)
     {
-        return _gson.fromJson(json, classOfT);
+        if (StringUtils.isBlank(json))
+        {
+            return null;
+        }
+        
+        // Have to trim because of bug with trailing white space
+        // http://groups.google.com/group/google-gson/browse_thread/thread/6f12cf80b12a85b8
+        return _gson.fromJson(json.trim(), classOfT);
     }
 
     /**

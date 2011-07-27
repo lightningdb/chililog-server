@@ -18,6 +18,9 @@
 
 package com.chililog.server.pubsub.jsonhttp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 /**
  * Subscription Response API JSON binding object. Encapsulates the data for subscription log entries
  */
@@ -48,7 +51,7 @@ public class SubscriptionResponseAO
     {
         _messageID = messageID;
     }
-    
+
     /**
      * Constructor for successful response with associated log entry
      * 
@@ -76,7 +79,18 @@ public class SubscriptionResponseAO
         _success = false;
         _messageID = messageID;
         _errorMessage = ex.getMessage();
-        _errorStackTrace = ex.toString();
+
+        try
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(baos, true, "UTF-8");
+            ex.printStackTrace(ps);
+            _errorStackTrace = baos.toString("UTF-8");
+        }
+        catch (Exception ex2)
+        {
+            _errorStackTrace = ex.toString();
+        }
     }
 
     /**

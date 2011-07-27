@@ -33,9 +33,13 @@ public class JsonTranslatorTest
         assertTrue(json.contains("\"Date\": \"2011-01-02T23:22:21+1100\""));
         assertEquals(t1.getDate(), t2.getDate());
 
-        assertTrue(json.contains("\"Colour\": \"Blue\""));
+        assertTrue(json.contains("\"Colour\": \"Blue\"")); 
         assertEquals(t1.getColour(), t2.getColour());
-}
+        
+        
+        // Show work with trailing white spaces
+        JsonTranslator.getInstance().fromJson(json + " \r\n  ", TestClass.class);
+    }
 
     /**
      * Inner classes have to be static before GSON can deserialize
@@ -126,13 +130,10 @@ public class JsonTranslatorTest
             _longNumber = longNumber;
         }
 
-        
     }
-    
+
     public static enum Colour
     {
-        Red,
-        Green,
-        Blue
+        Red, Green, Blue
     }
 }

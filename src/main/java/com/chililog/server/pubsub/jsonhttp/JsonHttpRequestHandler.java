@@ -72,7 +72,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     private static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
 
     private SubscriptionWorker _subscriptionWorker = null;
-    
+
     /**
      * Handles incoming HTTP data
      * 
@@ -139,12 +139,16 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             byte[] requestContent = content.array();
             String requestJson = bytesToString(requestContent);
             PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
-
             StringBuilder responseJson = new StringBuilder();
+            
+            _logger.debug("Publication Worker Request:\n%s", requestJson);
+            
             boolean success = worker.process(requestJson, responseJson);
+            
+            _logger.debug("Publication Worker Response:\n%s", responseJson);
 
             HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(HTTP_1_1,
-                    INTERNAL_SERVER_ERROR);
+                    BAD_REQUEST);
             res.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
             res.setContent(ChannelBuffers.copiedBuffer(responseJson.toString(), UTF_8_CHARSET));
             sendHttpResponse(ctx, req, res);
@@ -327,7 +331,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             {
                 _subscriptionWorker.stop();
             }
-            
+
             _subscriptionWorker = new SubscriptionWorker(ctx.getChannel());
 
             StringBuilder responseJson = new StringBuilder();
@@ -349,16 +353,27 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private void sendHttpResponse(ChannelHandlerContext ctx, HttpRequest req, HttpResponse res)
     {
-        // Generate an error page if response status code is not OK (200).
-        if (res.getStatus().getCode() != 200)
+        // Decide whether to close the connection or not.
+        boolean isKeepAlive = isKeepAlive(req);
+
+        // Set content if one is not set
+        if (res.getContent() == null || res.getContent().readableBytes() == 0)
         {
             res.setContent(ChannelBuffers.copiedBuffer(res.getStatus().toString(), CharsetUtil.UTF_8));
             setContentLength(res, res.getContent().readableBytes());
         }
 
-        // Send the response and close the connection if necessary.
+        // Add 'Content-Length' header only for a keep-alive connection.
+        if (isKeepAlive)
+        {
+            res.setHeader(CONTENT_LENGTH, res.getContent().readableBytes());
+        }
+
+        // Send the response
         ChannelFuture f = ctx.getChannel().write(res);
-        if (!isKeepAlive(req) || res.getStatus().getCode() != 200)
+        
+        // Close the connection if necessary.
+        if (!isKeepAlive || res.getStatus().getCode() != 200)
         {
             f.addListener(ChannelFutureListener.CLOSE);
         }
@@ -381,7 +396,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
     {
         super.channelDisconnected(ctx, e);
-        
+
         if (_subscriptionWorker != null)
         {
             _subscriptionWorker.stop();

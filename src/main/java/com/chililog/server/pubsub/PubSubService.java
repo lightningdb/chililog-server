@@ -18,6 +18,7 @@
 
 package com.chililog.server.pubsub;
 
+import com.chililog.server.common.AppProperties;
 import com.chililog.server.pubsub.jsonhttp.JsonHttpService;
 
 /**
@@ -78,7 +79,12 @@ public class PubSubService
      */
     public void start()
     {
-        JsonHttpService.getInstance().start();
+        AppProperties appProperties = AppProperties.getInstance();
+
+        if (appProperties.getPubSubJsonHttpProtocolEnabled())
+        {
+            JsonHttpService.getInstance().start();
+        }
     }
 
     /**
@@ -86,7 +92,12 @@ public class PubSubService
      */
     public void stop()
     {
-        JsonHttpService.getInstance().stop();
+        AppProperties appProperties = AppProperties.getInstance();
+
+        if (appProperties.getPubSubJsonHttpProtocolEnabled())
+        {
+            JsonHttpService.getInstance().stop();
+        }
     }
 
 }
