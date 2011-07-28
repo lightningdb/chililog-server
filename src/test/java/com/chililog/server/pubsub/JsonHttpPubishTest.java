@@ -154,8 +154,17 @@ public class JsonHttpPubishTest
         }
     }
 
-    @Test
-    public void testOneLogEntry() throws Exception
+    /**
+     * Send valid lod entry request to the server for processing
+     * 
+     * @param msgID
+     *            message ID
+     * @param entryCount
+     *            Number of log entries to send
+     * @throws Exception
+     *             if error
+     */
+    public static void sendPublicshRequest(String msgID, int entryCount) throws Exception
     {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
@@ -166,61 +175,14 @@ public class JsonHttpPubishTest
         httpConn = TestUtils.getHttpURLConnection("http://localhost:61615/publish", HttpMethod.POST);
 
         PublicationRequestAO request = new PublicationRequestAO();
-        request.setMessageID("testOneLogEntry");
+        request.setMessageID(msgID);
         request.setUsername("JsonHttpPublishTestUser_Publisher");
         request.setPassword("222");
         request.setRepositoryName(REPOSITORY_NAME);
 
-        LogEntryAO[] logEntries = new LogEntryAO[1];
+        LogEntryAO[] logEntries = new LogEntryAO[entryCount];
 
-        LogEntryAO logEntry = new LogEntryAO();
-        logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
-        logEntry.setSource("junit");
-        logEntry.setHost("localhost");
-        logEntry.setSeverity("4");
-        logEntry.setMessage("test message 1");
-        logEntries[0] = logEntry;
-
-        request.setLogEntries(logEntries);
-
-        TestUtils.postJSON(httpConn, request);
-        TestUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        TestUtils.check200OKResponse(responseCode.toString(), headers);
-
-        PublicationResponseAO response = JsonTranslator.getInstance().fromJson(responseContent.toString(),
-                PublicationResponseAO.class);
-        assertEquals("testOneLogEntry", response.getMessageID());
-        assertTrue(response.isSuccess());
-        assertNull(response.getErrorMessage());
-        assertNull(response.getErrorStackTrace());
-
-        // Wait a moment for log entry to be processed
-        Thread.sleep(1000);
-
-        // Check that the entry is written to the log
-        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        assertEquals(1, coll.find().count());
-    }
-
-    @Test
-    public void testManyLogEntries() throws Exception
-    {
-        HttpURLConnection httpConn;
-        StringBuilder responseContent = new StringBuilder();
-        StringBuilder responseCode = new StringBuilder();
-        HashMap<String, String> headers = new HashMap<String, String>();
-
-        // Create
-        httpConn = TestUtils.getHttpURLConnection("http://localhost:61615/publish", HttpMethod.POST);
-
-        PublicationRequestAO request = new PublicationRequestAO();
-        request.setMessageID("testManyLogEntries");
-        request.setUsername("JsonHttpPublishTestUser_Publisher");
-        request.setPassword("222");
-        request.setRepositoryName(REPOSITORY_NAME);
-
-        LogEntryAO[] logEntries = new LogEntryAO[100];
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < entryCount; i++)
         {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
@@ -239,10 +201,49 @@ public class JsonHttpPubishTest
 
         PublicationResponseAO response = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 PublicationResponseAO.class);
-        assertEquals("testManyLogEntries", response.getMessageID());
+        assertEquals(msgID, response.getMessageID());
         assertTrue(response.isSuccess());
         assertNull(response.getErrorMessage());
         assertNull(response.getErrorStackTrace());
+    }
+
+    @Test
+    public void testOneLogEntry() throws Exception
+    {
+        sendPublicshRequest("testOneLogEntry", 1);
+
+        // Wait a moment for log entry to be processed
+        Thread.sleep(1000);
+
+        // Check that the entry is written to the log
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(1, coll.find().count());
+    }
+
+    /**
+     * Test 2 requests on same Keep Alive connection
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSubsequentRequests() throws Exception
+    {
+        sendPublicshRequest("testSubsequentRequests", 1);
+        sendPublicshRequest("testSubsequentRequests", 2);
+        sendPublicshRequest("testSubsequentRequests", 3);
+
+        // Wait a moment for log entry to be processed
+        Thread.sleep(1000);
+
+        // Check that the entry is written to the log
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(6, coll.find().count());
+    }
+
+    @Test
+    public void testManyLogEntries() throws Exception
+    {
+        sendPublicshRequest("testManyLogEntries", 100);
 
         // Wait a moment for log entry to be processed
         Thread.sleep(2000);
@@ -256,13 +257,13 @@ public class JsonHttpPubishTest
     public void testMultipleConnections() throws Exception
     {
         // 20 threads each adding 2 log entries = 40 log entries in total
-        for (int i=0; i<20; i++)
+        for (int i = 0; i < 20; i++)
         {
             PublishThread runnable = new PublishThread();
             Thread thread = new Thread(runnable);
             thread.start();
         }
-     
+
         // Wait a moment for log entry to be processed
         Thread.sleep(5000);
 
@@ -311,7 +312,7 @@ public class JsonHttpPubishTest
         assertFalse(response.isSuccess());
         assertEquals("Cannot find user 'XXX'.", response.getErrorMessage());
     }
-    
+
     @Test
     public void testBadPassword() throws Exception
     {
@@ -351,7 +352,7 @@ public class JsonHttpPubishTest
         assertFalse(response.isSuccess());
         assertEquals("Access denied.", response.getErrorMessage());
     }
-    
+
     @Test
     public void testBadRole() throws Exception
     {
@@ -391,61 +392,23 @@ public class JsonHttpPubishTest
         assertFalse(response.isSuccess());
         assertEquals("Access denied.", response.getErrorMessage());
     }
-    
+
     /**
      * Thread for running in testMultipleConnections
+     * 
      * @author vibul
-     *
+     * 
      */
     public static class PublishThread implements Runnable
     {
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishThread.class);
-        
+
         public void run()
         {
             try
             {
-                _logger.debug("HTTP thread started");
-                
-                HttpURLConnection httpConn;
-                StringBuilder responseContent = new StringBuilder();
-                StringBuilder responseCode = new StringBuilder();
-                HashMap<String, String> headers = new HashMap<String, String>();
-
-                // Create
-                httpConn = TestUtils.getHttpURLConnection("http://localhost:61615/publish", HttpMethod.POST);
-
-                PublicationRequestAO request = new PublicationRequestAO();
-                request.setMessageID("testManyLogEntries");
-                request.setUsername("JsonHttpPublishTestUser_Publisher");
-                request.setPassword("222");
-                request.setRepositoryName(REPOSITORY_NAME);
-
-                LogEntryAO[] logEntries = new LogEntryAO[2];
-                for (int i = 0; i < 2; i++)
-                {
-                    LogEntryAO logEntry = new LogEntryAO();
-                    logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
-                    logEntry.setSource("junit");
-                    logEntry.setHost("localhost");
-                    logEntry.setSeverity("4");
-                    logEntry.setMessage("test message " + i);
-                    logEntries[i] = logEntry;
-                }
-
-                request.setLogEntries(logEntries);
-
-                TestUtils.postJSON(httpConn, request);
-                TestUtils.getResponse(httpConn, responseContent, responseCode, headers);
-                TestUtils.check200OKResponse(responseCode.toString(), headers);
-
-                PublicationResponseAO response = JsonTranslator.getInstance().fromJson(responseContent.toString(),
-                        PublicationResponseAO.class);
-                assertEquals("testManyLogEntries", response.getMessageID());
-                assertTrue(response.isSuccess());
-                assertNull(response.getErrorMessage());
-                assertNull(response.getErrorStackTrace());
-
+                _logger.debug("HTTP thread " + Thread.currentThread().getName() + " started");
+                sendPublicshRequest("PublishThread " + Thread.currentThread().getName(), 2);
             }
             catch (Exception ex)
             {

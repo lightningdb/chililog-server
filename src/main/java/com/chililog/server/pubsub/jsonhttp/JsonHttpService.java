@@ -189,11 +189,10 @@ public class JsonHttpService
 
         ChannelGroupFuture future = _allChannels.close();
         future.awaitUninterruptibly();
-
         _channelFactory.releaseExternalResources();
         _channelFactory = null;
 
-        _logger.info("PubSub JSON HTTP Web Sever Stopped.");
+        _logger.info("PubSub JSON HTTP Sever Stopped.");
     }
 
     /**
@@ -202,5 +201,13 @@ public class JsonHttpService
     MqProducerSessionPool getMqProducerSessionPool()
     {
         return _mqProducerSessionPool;
+    }
+    
+    /**
+     * Returns the group holding all channels so we can shutdown without hanging
+     */
+    ChannelGroup getAllChannels()
+    {
+        return _allChannels;
     }
 }

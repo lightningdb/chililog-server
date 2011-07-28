@@ -185,4 +185,13 @@ public class WorkbenchService
 
         _logger.info("Workbench Web Sever Stopped.");
     }
+    
+    /**
+     * Returns the group holding all channels so we can shutdown without hanging
+     */
+    ChannelGroup getAllChannels()
+    {
+        return _allChannels;
+    }
+    
 }

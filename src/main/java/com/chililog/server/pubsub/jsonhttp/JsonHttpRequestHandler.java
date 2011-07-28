@@ -140,11 +140,11 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             String requestJson = bytesToString(requestContent);
             PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
             StringBuilder responseJson = new StringBuilder();
-            
+
             _logger.debug("Publication Worker Request:\n%s", requestJson);
-            
+
             boolean success = worker.process(requestJson, responseJson);
-            
+
             _logger.debug("Publication Worker Response:\n%s", responseJson);
 
             HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(HTTP_1_1,
@@ -371,7 +371,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
 
         // Send the response
         ChannelFuture f = ctx.getChannel().write(res);
-        
+
         // Close the connection if necessary.
         if (!isKeepAlive || res.getStatus().getCode() != 200)
         {
@@ -390,16 +390,26 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     }
 
     /**
+     * Add channel to channel group to disconnect when shutting down. Channel group automatically removes closed
+     * channels.
+     */
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+    {
+        JsonHttpService.getInstance().getAllChannels().add(e.getChannel());
+    }
+
+    /**
      * If disconnected, stop subscription if one is present
      */
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
     {
-        super.channelDisconnected(ctx, e);
-
         if (_subscriptionWorker != null)
         {
             _subscriptionWorker.stop();
         }
+
+        super.channelDisconnected(ctx, e);
     }
 }

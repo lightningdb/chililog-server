@@ -28,6 +28,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
@@ -194,37 +195,54 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         ChannelFuture future = e.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
     }
-    
+
     /**
-     * <p>The /ui URI path is a virtual path. We redirect to our Sproutcore UI HTML page.</p>
+     * <p>
+     * The /ui URI path is a virtual path. We redirect to our Sproutcore UI HTML page.
+     * </p>
      * <p>
      * Sproutcore build create directory structure below so that old files don't get cached:
      * /static/chililog/en/c9e99324b8f9b02834ca5ce4902393aefe100322/index.html
      * </p>
-     * <p>We have to find the index.html file and redirect to it.</p>
+     * <p>
+     * We have to find the index.html file and redirect to it.
+     * </p>
+     * 
      * @param e
      */
     private void redirectToUiHtml(MessageEvent e)
     {
         String dirPath = AppProperties.getInstance().getWorkbenchStaticFilesDirectory() + "/chililog/en";
         File dir = new File(dirPath);
-        if (!dir.exists() || !dir.isDirectory()) {
+        if (!dir.exists() || !dir.isDirectory())
+        {
             send404NotFound(e);
             return;
         }
-        
+
         String[] versionDir = dir.list();
-        if (versionDir.length == 0) {
+        if (versionDir.length == 0)
+        {
             send404NotFound(e);
             return;
         }
-        
+
         String indexHTML = "/static/chililog/en/" + versionDir[0] + "index.html";
-        
+
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND);
         response.addHeader("Location", indexHTML);
         ChannelFuture future = e.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
+    }
+
+    /**
+     * Add channel to channel group to disconnect when shutting down Channel group automatically removes closed
+     * channels.
+     */
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+    {
+        WorkbenchService.getInstance().getAllChannels().add(e.getChannel());
     }
 
 }
