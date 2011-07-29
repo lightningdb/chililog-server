@@ -5,6 +5,7 @@ package com.chililog.server.pubsub;
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
@@ -30,6 +31,8 @@ import com.chililog.server.pubsub.jsonhttp.JsonHttpService;
 import com.chililog.server.pubsub.jsonhttp.LogEntryAO;
 import com.chililog.server.pubsub.jsonhttp.PublicationRequestAO;
 import com.chililog.server.pubsub.jsonhttp.PublicationResponseAO;
+import com.chililog.server.pubsub.jsonhttp.SubscriptionRequestAO;
+import com.chililog.server.pubsub.jsonhttp.SubscriptionResponseAO;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -155,7 +158,7 @@ public class JsonWebSocketHybi00Test
      * @throws Exception
      */
     public static void sendPublicshRequest(WebSocketClient client,
-                                           MyWebSocketCallbackHandler callbackHandler,
+                                           PublishCallbackHandler callbackHandler,
                                            String msgID,
                                            int entryCount) throws Exception
     {
@@ -200,7 +203,7 @@ public class JsonWebSocketHybi00Test
     @Test
     public void testPublishOneLogEntry() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -225,7 +228,7 @@ public class JsonWebSocketHybi00Test
     @Test
     public void testPublishManyLogEntries() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -250,7 +253,7 @@ public class JsonWebSocketHybi00Test
     @Test
     public void testPublishSubsequentLogEntries() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -274,7 +277,7 @@ public class JsonWebSocketHybi00Test
     }
 
     @Test
-    public void testMultipleConnections() throws Exception
+    public void testPublishMultipleConnections() throws Exception
     {
         // 20 threads each adding 2 log entries = 40 log entries in total
         for (int i = 0; i < 20; i++)
@@ -294,9 +297,71 @@ public class JsonWebSocketHybi00Test
     }
 
     @Test
-    public void testBadUsername() throws Exception
+    public void testSubscribeMultipleConnections() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        // Subscribe
+        SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"),
+                callbackHandler);
+        subcriberClient.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        SubscriptionRequestAO request = new SubscriptionRequestAO();
+        request.setMessageID("testSubscribeMultipleConnections");
+        request.setUsername("JsonWsTestUser_Subscriber");
+        request.setPassword("333");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        subcriberClient.send(new DefaultWebSocketFrame(requestJson));
+        Thread.sleep(500);
+
+        assertEquals(1, callbackHandler.messagesReceived.size());
+
+        SubscriptionResponseAO response = JsonTranslator.getInstance().fromJson(
+                callbackHandler.messagesReceived.get(0), SubscriptionResponseAO.class);
+        assertEquals("testSubscribeMultipleConnections", response.getMessageID());
+        assertTrue(response.isSuccess());
+        assertNull(response.getErrorMessage());
+        assertNull(response.getErrorStackTrace());
+
+        callbackHandler.messagesReceived.clear();
+
+        // Publish 20 threads each adding 2 log entries = 40 log entries in total
+        for (int i = 0; i < 20; i++)
+        {
+            PublishThread runnable = new PublishThread();
+            Thread thread = new Thread(runnable);
+            thread.start();
+        }
+
+        // Wait a moment for log entry to be processed
+        Thread.sleep(3000);
+
+        assertEquals(40, callbackHandler.messagesReceived.size());
+        response = JsonTranslator.getInstance().fromJson(callbackHandler.messagesReceived.get(0),
+                SubscriptionResponseAO.class);
+        assertEquals("testSubscribeMultipleConnections", response.getMessageID());
+        assertTrue(response.isSuccess());
+        assertNull(response.getErrorMessage());
+        assertNull(response.getErrorStackTrace());
+
+        LogEntryAO logEntry = response.getLogEntry();
+        assertEquals("2011-01-01T00:00:00.000Z", logEntry.getTimestamp());
+        assertEquals("localhost", logEntry.getHost());
+        assertEquals("junit", logEntry.getSource());
+        assertEquals("4", logEntry.getSeverity());
+        assertEquals("test message 0", logEntry.getMessage());
+
+    }
+
+    @Test
+    public void testPublishBadUsername() throws Exception
+    {
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -347,11 +412,11 @@ public class JsonWebSocketHybi00Test
         assertNotNull(response.getErrorStackTrace());
         assertEquals("Cannot find user 'XXX'.", response.getErrorMessage());
     }
-    
+
     @Test
-    public void testBadPassword() throws Exception
+    public void testPublishBadPassword() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -402,11 +467,11 @@ public class JsonWebSocketHybi00Test
         assertNotNull(response.getErrorStackTrace());
         assertEquals("Access denied.", response.getErrorMessage());
     }
-    
+
     @Test
-    public void testBadRole() throws Exception
+    public void testPublishBadRole() throws Exception
     {
-        MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
         WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
@@ -457,6 +522,130 @@ public class JsonWebSocketHybi00Test
         assertNotNull(response.getErrorStackTrace());
         assertEquals("Access denied.", response.getErrorMessage());
     }
+
+    @Test
+    public void testSubscribeBadUsername() throws Exception
+    {
+        SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        // Prepare request
+        SubscriptionRequestAO request = new SubscriptionRequestAO();
+        request.setMessageID("testBadUsername");
+        request.setUsername("XXX");
+        request.setPassword("222");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        // Send request
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Disconnect
+        client.disconnect();
+
+        // Check response
+        assertEquals(1, callbackHandler.messagesReceived.size());
+        SubscriptionResponseAO response = JsonTranslator.getInstance().fromJson(
+                callbackHandler.messagesReceived.get(0), SubscriptionResponseAO.class);
+        assertEquals("testBadUsername", response.getMessageID());
+        assertFalse(response.isSuccess());
+        assertNotNull(response.getErrorMessage());
+        assertNotNull(response.getErrorStackTrace());
+        assertEquals("Cannot find user 'XXX'.", response.getErrorMessage());
+    }
+
+    @Test
+    public void testSubscribeBadPassword() throws Exception
+    {
+        SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        // Prepare request
+        SubscriptionRequestAO request = new SubscriptionRequestAO();
+        request.setMessageID("testBadPassword");
+        request.setUsername("JsonWsTestUser_Publisher");
+        request.setPassword("bad");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        // Send request
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Disconnect
+        client.disconnect();
+
+        // Check response
+        assertEquals(1, callbackHandler.messagesReceived.size());
+        SubscriptionResponseAO response = JsonTranslator.getInstance().fromJson(
+                callbackHandler.messagesReceived.get(0), SubscriptionResponseAO.class);
+        assertEquals("testBadPassword", response.getMessageID());
+        assertFalse(response.isSuccess());
+        assertNotNull(response.getErrorMessage());
+        assertNotNull(response.getErrorStackTrace());
+        assertEquals("Access denied.", response.getErrorMessage());
+    }
+
+    @Test
+    public void testSubscribeBadRole() throws Exception
+    {
+        SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        // Prepare request
+        SubscriptionRequestAO request = new SubscriptionRequestAO();
+        request.setMessageID("testBadRole");
+        request.setUsername("JsonWsTestUser_NoAccess");
+        request.setPassword("111");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        // Send request
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Disconnect
+        client.disconnect();
+
+        // Check response
+        assertEquals(1, callbackHandler.messagesReceived.size());
+        SubscriptionResponseAO response = JsonTranslator.getInstance().fromJson(
+                callbackHandler.messagesReceived.get(0), SubscriptionResponseAO.class);
+        assertEquals("testBadRole", response.getMessageID());
+        assertFalse(response.isSuccess());
+        assertNotNull(response.getErrorMessage());
+        assertNotNull(response.getErrorStackTrace());
+        assertEquals("Access denied.", response.getErrorMessage());
+    }
+
     /**
      * Thread for running in testMultipleConnections
      * 
@@ -473,7 +662,7 @@ public class JsonWebSocketHybi00Test
             {
                 _logger.debug("WS thread " + Thread.currentThread().getName() + " started");
 
-                MyWebSocketCallbackHandler callbackHandler = new MyWebSocketCallbackHandler();
+                PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
                 WebSocketClientFactory factory = new WebSocketClientFactory();
 
                 WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"),
@@ -495,19 +684,19 @@ public class JsonWebSocketHybi00Test
     }
 
     /**
-     * Our web socket callback handler
+     * Our web socket callback handler for publishing
      * 
      * @author vibul
      * 
      */
-    public static class MyWebSocketCallbackHandler implements WebSocketCallback
+    public static class PublishCallbackHandler implements WebSocketCallback
     {
-        private static Log4JLogger _logger = Log4JLogger.getLogger(MyWebSocketCallbackHandler.class);
+        private static Log4JLogger _logger = Log4JLogger.getLogger(PublishCallbackHandler.class);
 
         public boolean connected = false;
         public String messageReceived = null;
 
-        public MyWebSocketCallbackHandler()
+        public PublishCallbackHandler()
         {
             return;
         }
@@ -515,28 +704,75 @@ public class JsonWebSocketHybi00Test
         @Override
         public void onConnect(WebSocketClient client)
         {
-            _logger.debug("WebSocket connected!");
+            _logger.debug("Publish WebSocket connected!");
             connected = true;
         }
 
         @Override
         public void onDisconnect(WebSocketClient client)
         {
-            _logger.debug("WebSocket disconnected!");
+            _logger.debug("Publish WebSocket disconnected!");
             connected = false;
         }
 
         @Override
         public void onMessage(WebSocketClient client, WebSocketFrame frame)
         {
-            _logger.debug("WebSocket Received Message:" + frame.getTextData());
+            _logger.debug("Publish WebSocket Received Message:" + frame.getTextData());
             messageReceived = frame.getTextData();
         }
 
         @Override
         public void onError(Throwable t)
         {
-            _logger.error(t, "WebSocket error");
+            _logger.error(t, "Publish WebSocket error");
+        }
+
+    }
+
+    /**
+     * Our web socket callback handler for publishing
+     * 
+     * @author vibul
+     * 
+     */
+    public static class SubscribeCallbackHandler implements WebSocketCallback
+    {
+        private static Log4JLogger _logger = Log4JLogger.getLogger(SubscribeCallbackHandler.class);
+
+        public boolean connected = false;
+        public ArrayList<String> messagesReceived = new ArrayList<String>();
+
+        public SubscribeCallbackHandler()
+        {
+            return;
+        }
+
+        @Override
+        public void onConnect(WebSocketClient client)
+        {
+            _logger.debug("Subscribe WebSocket connected!");
+            connected = true;
+        }
+
+        @Override
+        public void onDisconnect(WebSocketClient client)
+        {
+            _logger.debug("Subscribe WebSocket disconnected!");
+            connected = false;
+        }
+
+        @Override
+        public void onMessage(WebSocketClient client, WebSocketFrame frame)
+        {
+            _logger.debug("Subscribe WebSocket Received Message:" + frame.getTextData());
+            messagesReceived.add(frame.getTextData());
+        }
+
+        @Override
+        public void onError(Throwable t)
+        {
+            _logger.error(t, "Subscribe WebSocket error");
         }
 
     }

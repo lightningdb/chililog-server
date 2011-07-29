@@ -62,7 +62,7 @@ public class SubscriptionWorker
      */
     public SubscriptionWorker(Channel channel)
     {
-        channel = _channel;
+        _channel = channel;
     }
 
     /**
@@ -172,9 +172,9 @@ public class SubscriptionWorker
 
         // Make sure the user can publish to the repository
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
-        String publicationRole = UserBO.createRepositoryPublisherRoleName(repoName);
+        String subscriptionRole = UserBO.createRepositorySubscriberRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole))
+        if (!user.hasRole(administratorRole) && !user.hasRole(subscriptionRole))
         {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR, subscriptionAO.getUsername(), repoName);
         }
