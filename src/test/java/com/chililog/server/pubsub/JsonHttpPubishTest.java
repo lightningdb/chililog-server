@@ -152,6 +152,20 @@ public class JsonHttpPubishTest
         {
             coll.drop();
         }
+        
+        // Drop users
+        coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^JsonHttpPublishTestUser[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+        
+        // Clean old repository info
+        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
+        query = new BasicDBObject();
+        query.put("name", pattern);
+        coll.remove(query);        
     }
 
     /**

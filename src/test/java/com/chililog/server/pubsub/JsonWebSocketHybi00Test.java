@@ -142,6 +142,20 @@ public class JsonWebSocketHybi00Test
         {
             coll.drop();
         }
+        
+        // Clean up users
+        coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
+        Pattern pattern = Pattern.compile("^JsonWsTestUser[\\w]*$");
+        DBObject query = new BasicDBObject();
+        query.put("username", pattern);
+        coll.remove(query);
+        
+        // Clean old repository info
+        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
+        query = new BasicDBObject();
+        query.put("name", pattern);
+        coll.remove(query);        
     }
 
     /**
