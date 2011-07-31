@@ -60,7 +60,7 @@ h3. 1.3 Install Tools
 
 2. Install "Ant 1.8":http://ant.apache.org/ or higher.
 
-3. Install "SproutCore 1.4.5":http://www.sproutcore.com/get-started/ or higher. 
+3. Install "SproutCore 2.0":http://www.sproutcore.com. 
 * SproutCore is only needed if you are planning to play around with the user interface.
 * SproutCore requires ruby and ruby gem to have been installed.
 
@@ -108,74 +108,38 @@ The ChiliLog server looks as follows:
 
 !ChiliLogComponents.png!
 
+h3. 2.2 Data Store
 
-h3. 2.2 Data Store - mongoDB
+As the name suggests, the data store is where all the log entry and configuration data is stored. 
 
-ChiliLog server needs to store semi-structured data quickly.
+h3. 2.3 Engine
 
-We want able to dynamically define (and re-define) parsing rules to extract data from all sorts of different log entries.  As such, we cannot pre-determine the type of data that is to be stored.  This makes it difficult to define up front the SQL columns we need.  Sure we can dynamically add/remove columns as need be in an SQL database, however it seems more troublesome that using mongoDB.
+The engine is responsible for parsing and storing log entries into the data store. 
 
-We decided on "mongoDB":http://www.mongodb.org/ over a number of other non-SQL data stores because:
-
-* Simple
-* Scalable
-* Mature and is used in production
-
-Here's a "comparison":http://www.mongodb.org/display/DOCS/MongoDB,+CouchDB,+MySQL+Compare+Grid that we took into consideration. 
-
-
-h3. 2.3 Message Queue - HornetQ
+It is also responsible for monitoring activities with the goal of notifying the user once configurable events are met or thresholds are exceeded.
 
 We decided to queue incoming log entries rather than directly process and write them to mongoDB.
 
-Why use a message queue and not write directly to mongoDB?
+Why? The main reason is scalability. Using a message queue allows buffering of incoming data so that processing (parsing and writing to mongoDB) can be throttled.  This means that we can handle higher peak loads without overloading the hardware. 
 
-The main reason is scalability. Using a message queue allows buffering of incoming data so that processing (parsing and writing to mongoDB) can be throttled.  This means that we can handle higher peak loads without overloading the hardware.
+h3. 2.4 PubSub Service
 
-We decided on "HornetQ":http://www.jboss.org/hornetq because:
+The PubSub service is responsible for handling incoming and outgoing log entries.
 
-* Claims to be the "fastest":http://community.jboss.org/wiki/HornetQ-thePerformanceLeaderinEnterpriseMessaging
-* Allows for different protocol to be used by client side importers so that organization security frameworks can be met.  Current options are
-** JMS
-** STOMP over TCP/IP
-** STOMP over WebSockets
-* Allows for server side log entry routing (i.e. a log entry may be parsed differently and save to 2 or more different repositories).  This centralizes execution of routing logic to the server.
+It follows the "publish and subscribe messaging pattern":http://en.wikipedia.org/wiki/Publish/subscribe.
 
 
-h3. 2.4 Workers
+h3. 2.5 Workbench Service
 
-Workers are responsible for:
+The workbench service provides you with a UI and API to interact with Chililog.
 
-* Processing incoming log entries on the message queue
-* Monitoring logs and sending notifications upon a trigger effect 
-
-To allow for tight integration with HornetQ we've implemented workers as Java classes.
- 
-
-h3. 2.5 Web Server - Netty
-
-We got tired of Servlets and wanted to play with something different ... so "Netty":http://www.jboss.org/netty it is. 
-
-It is small, extensible and fast.
-
-Most importantly, it is also embeddable so that we eliminate a dependency on an external web server.  Apart from mongoDB, every other component of ChiliLog is embedded and intergration into a single Java app.  
-
-We wrote custom Netty handlers to implement the ChiliLog REST API.
- 
-
-h3. 2.6 Web UI - SproutCore
-
-We've implemented our web UI as a fully fat javascript client using "SproutCore":http://www.sproutcore.com.
-
-Again, got sick of working with server side web page technology and want to do something different.
-
-Here's "why":http://www.veebsbraindump.com/2010/08/my-take-on-what-is-sproutcore/ we chose SproutCore.
-
-Our web UI layer is delivered to the browser via the web server and interacts with the web server via its REST API. 
+* View real time streaming of log entries
+* Search historical log entries
+* Configure repositories and users 
 
 
 
-h2. 3. Data Model
+h2. 3. Data Layer
 
 h3. 3.1 Definitions  
 
@@ -193,27 +157,42 @@ h3. 3.1 Definitions
 
 !ChiliLogDefinitions.png!
 
+h3. 3.2 MongoDB
 
-h3. 3.2 Implementation
+ChiliLog server needs to store semi-structured data quickly.
+
+We want able to dynamically define (and re-define) parsing rules to extract data from all sorts of different log entries.  As such, we cannot pre-determine the type of data that is to be stored.  This makes it difficult to define up front the SQL columns we need.  Sure we can dynamically add/remove columns as need be in an SQL database, however it seems more troublesome that using mongoDB.
+
+We decided on "mongoDB":http://www.mongodb.org/ over a number of other non-SQL data stores because:
+
+* Simple install.
+* Simple query language.
+* Scalable
+* Mature and is used in production
+
+Here's a "comparison":http://www.mongodb.org/display/DOCS/MongoDB,+CouchDB,+MySQL+Compare+Grid that we took into consideration.
+
+Cassandra and Hardoop was also considered but at the time of starting Chililog, these projects were in their early stages of development.
+
+h3. 3.2 MongoDB Configuration
 
 The data model is implemented within a mongoDB database.
 
 * By default, the database is called @chililog@.
 
-* A *repository*  is implemented as a collection within the @chililog@ database.  For example, if a repository is named @abc@ then its mongoDB collection is named @abc_repoistory@.
+* A *repository*  is implemented as a collection within the @chililog@ database.  For example, if a repository is named @abc@ then its mongoDB collection is named @repo_abc@.
 
 * A *repository entry* is implemented as a document (AKA record) in the collection.
 
 * A *repository field* is implemented as a field within a document.
 
-* The *meta-data* that describes a repository is stored in the @repositories_info@ collection.
+* The *meta-data* that describes a repository is stored in the @repoinfo@ collection.
 
 * *User* account information is stored in the @users@ collection. 
 
-
 h3. 3.3 Data Access
 
-The Java code for access mongoDB is kept in the @com.chililog.server.data@ package.
+The Java code for access mongoDB is kept in the @org.chililog.server.data@ package.
 
 The mongoDB Java "driver":http://www.mongodb.org/display/DOCS/Java+Language+Center is used for communicating with mongoDB.
 
@@ -250,48 +229,217 @@ p.
 Note that a mongoDB database connection is allocated by @MongoConnection@.  It provides an authenticated connection.  The credentials are read from the __app.properties__ file.
 
 
+
 h2. 4. The Engine
 
-@com.chililog.server.engine@ is where all the heavy lifting occurs.
+@org.chililog.server.engine@ is the Java package for the engine. 
 
-* @MqManager@ is our wrapper for HornetQ.
-* The @Repository@ class is responsible for a single repository.  When a repository is started, @MqManger@ is called to start message queues and @RepositoryWorker@ is instance in a separate thread to consume incoming log entries.
-* The @RepositoryManager@ is responsible for all repositories as defined in the mongoDB @repsitories_info@ collection.
+h3. 4.1 Message Queue - HornetQ
 
-There are 2 types of queues that is setup for a @Repository@.
+We decided on "HornetQ":http://www.jboss.org/hornetq because:
 
-* Write queues
-** By convention, the physical HornetQ queues are named 'repository.XXXX.write'.
-** These queues accept incoming log entries from one or more agents. Queued log entries are processed by one or more @RepositoryWorker@.
-** Agents submitting log entries must provide credentials where the username is the repository name and the password is that specified in the repository meta-data.
-** @RepositoryWorker@ consuming queued log entries must provide credentials of the trusted system user. 
+* Claims to be the "fastest":http://community.jboss.org/wiki/HornetQ-thePerformanceLeaderinEnterpriseMessaging
+* Allows for different protocol to be used by client side importers so that organization security frameworks can be met.
+* Allows for server side log entry routing (i.e. a log entry may be parsed differently and save to 2 or more different repositories).  This centralizes execution of routing logic to the server.
+* Scalable
+* Can be clustered
+* Embeddable
 
-* Read queues
-** By convention, the physical HornetQ queues are named 'repository.XXXX.read'.
-** These queues accept incoming log entries from one or more @RepositoryWorker@. Queued entries are processed by one or more agents. This is the reverse of a write queue.
-** @RepositoryWorker@ submitting entries must provide credentials of the trusted system user.
-** Agents consuming entries must provide credentials where the username is the repository name and the password is that specified in the repository meta-data.
+@MqService@ Java class is our wrapper for HornetQ.  This class starts, stops and configures HornetQ at run time.
 
-HornetQ uses JAAS as the framework for authentication and authorization. Because we don't need to have real users accounts for agents or the system user (i.e. @users@), we use the following convention:
-* The role required to read/write from a queue is the combination: '[username]~~~[password]'.
-* When credentials are presented to HornetQ, our custom JAAS handler return the role in the above format.
-* If the role matches then the agent is allowed to read from or write to the queue.
-* The credentails for the trusted system user is managed by @AppProperties@. It is the single place from which all @RepositoryWorker@ can access the credentials.
-* The trusted system user was used instead of separate credentials for each repository because @RepositoryWorker@ are created by our code so it can be trusted.
+The @RepositoryService@ sits on top of @MqService@ and is responsible for starting and stopping repositories.  
+
+* When a repository is started, a HornetQ 'address' is deployed.  The address is a unique for each repository.  Log entries destined for the repository must be published to the repository's address.  For a repository called @abc@, by convention, the address is @repo.abc@.
+
+* If log entries for a repository are to be saved so they can be searched, a queue is deployed to subscribe to log entries published to the repository's address.  Using the above example of repository @abc@, the storage queue is called @repo.abc.storage@ and deployed to address @repo.abc@.
+
+For security, we have configured HornetQ to use the JAAS as the framework for authentication and authorization.
+* Users must be authenticated with the users as defined in the @users@ monbodb collection.
+* Publishing to a repository (HornetQ address) requires the authenticated user be assigned a role of @repo.abc.publisher@ or @repo.abc.administrator@.
+* Subscribing to a repository (HornetQ queue) requires the authenticated user be assigned a role of @repo.abc.subscriber@ or @repo.abc.administrator@.
+
+h3. 4.2 Workers
+
+Workers are responsible for:
+
+* Storing incoming log entries on the message queue
+** Storage workers are instances of @RepositoryStorageWorker@ class. Each instance run in its own thread.
+** Storage workers are started and stopped by @RepositoryService@.
+
+* Monitoring logs and sending notifications upon a trigger effect
+** To be implemented 
+
+h2. 5. PubSub Service
+
+The code for the PubSub service is located in @org.chililog.server.pubsub@ Java package. 
+
+The PubSub service supports a number of different protocols that can be used to publish or subscribe to log entries.
+* Hornet Q core - proprietary Hornet Q protocol
+* STOMP over TCP/IP
+* STOMP over WebSockets
+* JSON over HTTP - publishing only
+* JSON over WebSockets
+
+h3. 5.1 HornetQ Core
+
+HornetQ Core protocol is directly handled by HornetQ. 
+
+For source code examples, check out "https://github.com/chililog/chililog-java-pubsub":https://github.com/chililog/chililog-java-pubsub
+
+h4. 5.1.1 Publishing
+
+Publish to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
+
+The username and password must be for a user that has publisher or administrator role. 
+
+Each message must contain the following:
+* @Timestamp@ Property - time when log entry was created in; must be formatted like '2001-12-31T23:01:01.000Z'
+* @Source@ Property - name of the device or application that generated the log entry
+* @Host@ Property - host name or ip address of the device 
+* @Severity@ Property - 0 is higest and 7 is lowest
+* Message - log entry
+
+h4. 5.1.1 Subscribing
+ 
+Deploy a temporary queue named 'repo.<repository name>.<uuid>' to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
+
+You can then consume messages delivered to the queue.
 
 
-h2. 5. Web UI and API
+h3. 5.2 STOMP
 
-We've chosen a client-server implementation for our user interface.
+STOMP over TCP/IP and web socket protocols are directly handled by HornetQ. 
 
-* Sever
-** We use the Netty HTTP web server
-** We create a HTTP REST API for use by our client (see below) or other clients as needs be. 
-** @com.chililog.server.ui@ is the package containing all the server side code.
+h4. 5.2.1 Publishing
+
+Publish to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
+
+The username and password must be for a user that has publisher or administrator role. 
+
+Each message must contain the following:
+* @Timestamp@ Property - time when log entry was created in; must be formatted like '2001-12-31T23:01:01.000Z'
+* @Source@ Property - name of the device or application that generated the log entry
+* @Host@ Property - host name or ip address of the device 
+* @Severity@ Property - 0 is higest and 7 is lowest
+* Message - log entry
+
+h4. 5.2.1 Subscribing
+ 
+Deploy a temporary queue named 'repo.<repository name>.<uuid>' to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
+
+You can then consume messages delivered to the queue.
+
+
+h3. 5.3 JSON HTTP and WebSocket
+
+JSON over HTTP and WebSocket is handled by a custom Netty based HTTP web server that proxies connection to HornetQ using the HornetQ core protocol. 
+The code is located in @org.chililog.server.pubsub.jsonhttp@ Java package. "Netty":http://www.jboss.org/netty is used because it is light weight, embeddable, fast and also used by HornetQ.
+
+h4. 5.3.1 Publishing
+
+Publishing is performed using the following JSON data.
+
+pre(code).. 
+    {
+      "MessageType": "PublicationRequest",
+      "MessageID": "11111",
+      "RepositoryName": "sandpit",
+      "Username": "sandpitpublisher",
+      "Password": "password",
+      "LogEntries": [
+        {
+          "Timestamp": "2011-01-01T00:00:00.000Z",
+          "Source": "junit",
+          "Host": "localhost",
+          "Severity": "4",
+          "Message": "test message 0"
+        }
+      ]
+    }
+p.   
+
+A successful response is as follows:
+
+pre(code).. 
+    {
+      "MessageType": "PublicationResponse",
+      "MessageID": "11111",
+      "Success": true
+    }
+p.   
+
+An error response is as follows:
+
+pre(code).. 
+    {
+      "MessageType": "PublicationResponse",
+      "MessageID": "11111",
+      "Success": false,
+      "ErrorMessage": "Access denied.",
+      "ErrorStackTrace": "Some stack trace"
+    }
+p.   
+
+h4. 5.3.1 Subscribing
+ 
+Subscribing is only supported over web sockets.
+
+Start subscribing by sending the following request.
+
+pre(code).. 
+    {
+      "MessageType": "SubscriptionRequest",
+      "MessageID": "22222",
+      "RepositoryName": "sandpit",
+      "Username": "sandpitsubscriber",
+      "Password": "password"
+    }
+p.   
+
+A successful response is returned when a log entries is received. For example:
+
+pre(code).. 
+    {
+      "MessageType": "SubscriptionResponse",
+      "MessageID": "22222",
+      "Success": true,
+      "LogEntry": {
+        "Timestamp": "2011-01-01T00:00:00.000Z",
+        "Source": "junit",
+        "Host": "localhost",
+        "Severity": "4",
+        "Message": "test message 0"
+      }
+    }
+p.   
+
+An error response is as follows:
+
+pre(code).. 
+    {
+      "MessageType": "SubscriptionResponse",
+      "MessageID": "22222",
+      "Success": false,
+      "ErrorMessage": "Access denied.",
+      "ErrorStackTrace": "Some stack trace"
+    }
+p.   
+
+
+h2. 6. Workbench Service
+
+We've chosen a client-server implementation for our workbench user interface.
 
 * Client
-** We use Sproutcore framework to implement our client side user interface.
+** We use Sproutcore framework to implement our client side user interface. Here's "why":http://www.veebsbraindump.com/2010/08/my-take-on-what-is-sproutcore/ we chose SproutCore.
 ** It communicates with the server to access data via the HTTP REST API.
+
+* Sever
+** We create a custom Netty HTTP web server
+** A Static file handler is embedded into the web server to deliver the HTML, javascript and css files to the browser
+** A HTTP REST API is also embedded into the web server for any client to consume  
+** @org.chililog.server.workbench@ is the package containing all the server side code.
+
 
 
 h2. 6. General Coding Notes
@@ -310,7 +458,7 @@ Strings are externalised into the __src/main/resources/strings.properties__ file
 
 pre(code).. 
     #
-    # com.chililog.server.data
+    # org.chililog.server.data
     #
     Data.MongoDB.AuthenticationError=Invalid username or password to access mongodb '%s'.
     Data.MongoDB.ConnectionError=Cannot connect to MongDb. %s.
@@ -319,12 +467,12 @@ pre(code)..
     Data.MongoDB.SaveError=Error saving a record to the database. '%s'. 
     Data.MongoDB.RemoveError=Error removing a record from the database. '%s'. 
 
-p. The @com.chililog.sever.common.StringProperties@ class is use to read strings from this file.
+p. The @org.chililog.sever.common.StringProperties@ class is use to read strings from this file.
 
 
 h3. 6.3 Exceptions
 
-We use a standard exception @com.chililog.sever.common.ChiliLogException@.
+We use a standard exception @org.chililog.sever.common.ChiliLogException@.
 
 Use @ChiliLogException.getErrorCode()@ to retrieve the error that triggered the exception.  
 
@@ -333,7 +481,7 @@ Error codes are tightly integrated with Strings (see above section).  The error 
 
 h3. 6.4 Application and System Properties
 
-All application and system properties used in the code are strongly typed and cached in the @com.chililog.sever.common.AppProperties@ and  @com.chililog.sever.common.SystemProperties@ respectively.
+All application and system properties used in the code are strongly typed and cached in the @org.chililog.sever.common.AppProperties@ and  @org.chililog.sever.common.SystemProperties@ respectively.
 
 @SystemProperties@ reads properties as set when starting the JVM.
 
@@ -344,18 +492,16 @@ h3. 6.5 Logging
 
 We are using log4J to manage logging inside ChiliLog server.
 
-The configuration is located in the __src/main/resources/log4j.xml file.  Note that:
-
-To override this, ....
+The configuration is located in the @src/main/resources/log4j.xml@ file.  Note that:
 
 * @org.apache.log4j.AsyncAppender@ is used so that logging does not block.
-* We have our own @com.chililog.server.engine.InternalLog4JAppender@ appender which writes directly to mongoDB. Because @AsyncAppender@ is used, blocking during writes will not be an issue.
+* We have our own @org.chililog.server.engine.InternalLog4JAppender@ appender which writes directly to mongoDB. Because @AsyncAppender@ is used, blocking during writes should not be an issue.
 
 
 
 h2. 7. Contributing
 
-Just fork the code and submit Pull Requests.
+Please help. Just fork the code and submit Pull Requests.
 
 
 
