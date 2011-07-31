@@ -2,11 +2,11 @@ What?
 =====
 ChiliLog is a real time log aggregation, analysis and monitoring tool.
 
-* ChiliLog aggregates log feeds via JMS or STOMP, queues the feeds in [HornetQ](http://www.jboss.org/hornetq) before parsing and stored in [mongoDB](http://www.mongodb.org/).  The goal is to build agents for different platforms/frameworks/languages to feed it.
+* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Pubishers transmits your log entries to the Chililog Server for storage.
 
-* ChiliLog allows you to "tail" aggregated logs in real time, or search for historical entries. Because your logs are parsed, you can filter and sort the log data.
+* ChiliLog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
 
-* ChiliLog also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
+* ChiliLog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
 
 Why?
@@ -15,13 +15,13 @@ I had a big problem the other day when my data centre provider claimed that I ha
 
 To find out what was causing my unusually high bandwidth usage, I had to aggregate logs from the firewall, load balancer, web server and app servers. 
 
-Wow - what a pain in the arse.
+Wow - what a pain in the arse!
 
 The logs were in different formats, the timestamps were in different timezones and I had to wait 1 week before I got access to the firewall logs.
 
 It was at this moment that the idea for ChiliLog was born.  
 
-I tried to find open source software but none did everything I wanted in one package.  Also, due to corporate policy, I could not use a cloud logging service.
+I tried to find open source software but I could not find one that did everything I needed in one package.  Due to corporate policy, I could not use a cloud logging service.
 
 
 When?
@@ -35,11 +35,15 @@ The current road map is:
 
 * JAN 2011 - Integrate HornetQ and mongoDB, parse incoming logs and store to mongoDB. (Done)
 
-* APR 2011 - UI for configuration and log analysis. (In Progress)
+* MAY 2011 - Chiliog Log server without UI. (Done)
 
-* MAY 2011 - Tentative alpha release.
+* JUL 2011 - Original release date posposed because I am not happy with UI in Sproutcore 1.0. Tables for displaying log entries are work working very well. (Milestone missed).
 
-* JUN 2011 - Monitoring.
+* AUG 2011 - UI re-write in Sproutcore 2.0.
+
+* OCT 2011 - Tentative alpha release.
+
+* DEC 2011 - Monitoring.
 
 
 Links
