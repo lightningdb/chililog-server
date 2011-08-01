@@ -30,6 +30,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.common.SystemProperties;
 import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.RepositoryService;
+import org.chililog.server.pubsub.PubSubService;
 import org.chililog.server.workbench.WorkbenchService;
 
 
@@ -97,8 +98,9 @@ public class App
 
         MqService.getInstance().start();
         RepositoryService.getInstance().start(true);
+        PubSubService.getInstance().start();
         WorkbenchService.getInstance().start();
-
+        
         Thread.sleep(2000);
 
         _logger.info("CHILILOG Server Started");
@@ -113,9 +115,10 @@ public class App
     {
         _logger.info("CHILILOG Server shutting down.");
 
+        WorkbenchService.getInstance().stop();
+        PubSubService.getInstance().stop();
         RepositoryService.getInstance().stop();
         MqService.getInstance().stop();
-        WorkbenchService.getInstance().stop();
 
         // Wait 2 seconds for everything to stop properly
         Thread.sleep(2000);

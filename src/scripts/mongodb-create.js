@@ -80,47 +80,47 @@ var adminUser = {
 db.users.insert(adminUser);
 
 var sandpitRepositoryAdminUser = {
-		username: "sandpitadmin",
-		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.administrator" ],
-		status: "Enabled",
-		display_name: "Sandpit Repository Administrator",
-		email_address: "sandpitadmin@chililog.com",
-		doc_version: new NumberLong(1) 
-	};
+    username: "sandpitadmin",
+    password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+    roles: [ "repo.sandpit.administrator" ],
+    status: "Enabled",
+    display_name: "Sandpit Repository Administrator",
+    email_address: "sandpitadmin@chililog.com",
+    doc_version: new NumberLong(1) 
+};
 db.users.insert(sandpitRepositoryAdminUser);
 
 var sandpitRepositoryWorkbenchUser = {
-		username: "sandpitworkbench",
-		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.workbench" ],
-		status: "Enabled",
-		display_name: "Sandpit Repository Workbench User",
-		email_address: "sandpitworkbenchuser@chililog.com",
-		doc_version: new NumberLong(1) 
-	};
+	username: "sandpitworkbench",
+	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+	roles: [ "repo.sandpit.workbench" ],
+	status: "Enabled",
+	display_name: "Sandpit Repository Workbench User",
+	email_address: "sandpitworkbenchuser@chililog.com",
+	doc_version: new NumberLong(1) 
+};
 db.users.insert(sandpitRepositoryWorkbenchUser);
 
 var sandpitRepositoryPublisherUser = {
-		username: "sandpitpublisher",
-		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.publisher" ],
-		status: "Enabled",
-		display_name: "Sandpit Repository Publisher User",
-		email_address: "sandpitpublisher@chililog.com",
-		doc_version: new NumberLong(1) 
-	};
+	username: "sandpitpublisher",
+	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+	roles: [ "repo.sandpit.publisher" ],
+	status: "Enabled",
+	display_name: "Sandpit Repository Publisher User",
+	email_address: "sandpitpublisher@chililog.com",
+	doc_version: new NumberLong(1) 
+};
 db.users.insert(sandpitRepositoryPublisherUser);
 
 var sandpitRepositorySubscriberUser = {
-		username: "sandpitsubscriber",
-		password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
-		roles: [ "repo.sandpit.subscriber" ],
-		status: "Enabled",
-		display_name: "Sandpit Repository Subscriber User",
-		email_address: "sandpitsubscriber@chililog.com",
-		doc_version: new NumberLong(1) 
-	};
+	username: "sandpitsubscriber",
+	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
+	roles: [ "repo.sandpit.subscriber" ],
+	status: "Enabled",
+	display_name: "Sandpit Repository Subscriber User",
+	email_address: "sandpitsubscriber@chililog.com",
+	doc_version: new NumberLong(1) 
+};
 db.users.insert(sandpitRepositorySubscriberUser);
 
 // *************************************************************
