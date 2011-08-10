@@ -143,7 +143,7 @@ public class WorkbenchService
             _logger.info("Workbench Web Sever Already Started.");
             return;
         }
-        
+
         if (!appProperties.getWorkbenchEnabled())
         {
             _logger.info("Workbench Web Sever not enabled and will not be started.");
@@ -183,12 +183,9 @@ public class WorkbenchService
                     continue;
                 }
             }
-            if (h.equalsIgnoreCase("0.0.0.0"))
-            {
-                // Set to any local address
-                h = null;
-            }
-            SocketAddress address = new InetSocketAddress(h, appProperties.getWorkbenchPort());
+
+            SocketAddress address = h.equals("0.0.0.0") ? new InetSocketAddress(appProperties.getWorkbenchPort())
+                    : new InetSocketAddress(h, appProperties.getWorkbenchPort());
             Channel channel = bootstrap.bind(address);
             _allChannels.add(channel);
         }

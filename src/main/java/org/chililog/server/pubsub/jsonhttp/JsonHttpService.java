@@ -39,7 +39,6 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
-
 /**
  * <p>
  * The PubSubService controls the embedded Netty web server used to provide publication and sububscription services
@@ -182,16 +181,13 @@ public class JsonHttpService
                     continue;
                 }
             }
-            if (h.equalsIgnoreCase("0.0.0.0"))
-            {
-                // Set to any local address
-                h = null;
-            }
-            SocketAddress address = new InetSocketAddress(h, appProperties.getPubSubJsonHttpProtocolPort());
+            
+            SocketAddress address = h.equals("0.0.0.0") ? new InetSocketAddress(appProperties.getPubSubJsonHttpProtocolPort())
+                    : new InetSocketAddress(h, appProperties.getPubSubJsonHttpProtocolPort());
             Channel channel = bootstrap.bind(address);
             _allChannels.add(channel);
         }
-        
+
         _logger.info("PubSub JSON HTTP Web Sever Started.");
     }
 
@@ -223,7 +219,7 @@ public class JsonHttpService
     {
         return _mqProducerSessionPool;
     }
-    
+
     /**
      * Returns the group holding all channels so we can shutdown without hanging
      */
