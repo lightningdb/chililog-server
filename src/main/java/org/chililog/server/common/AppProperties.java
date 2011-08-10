@@ -660,7 +660,7 @@ public class AppProperties
     // PUB SUB
     // *****************************************************************************************************************
     // *****************************************************************************************************************
-    
+
     /**
      * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled for pubsub use
      */
@@ -710,104 +710,6 @@ public class AppProperties
     }
 
     /**
-     * Returns Flag to indicate if the STOMP protocol is to be enabled for pubsub use
-     */
-    public boolean getPubSubStompProtocolEnabled()
-    {
-        return _pubSubStompProtocolEnabled;
-    }
-
-    static final String PUB_SUB_STOMP_PROTOCOL_ENABLED = "pubsub.stomp.enabled";
-
-    private boolean _pubSubStompProtocolEnabled = false;
-
-    static boolean loadPubSubStompProtocolEnabled(Properties properties)
-    {
-        return loadBoolean(properties, PUB_SUB_STOMP_PROTOCOL_ENABLED, false);
-    }
-
-    /**
-     * Returns configuration settings for the message queue STOMP protocol
-     */
-    public Hashtable<String, Object> getPubSubStompProtocolConfig()
-    {
-        return _pubSubStompProtocolConfig;
-    }
-
-    static final String PUB_SUB_STOMP_PROTOCOL_CONFIG = "pubsub.stomp.";
-
-    private Hashtable<String, Object> _pubSubStompProtocolConfig = null;
-
-    static Hashtable<String, Object> loadPubSubStompProtocolConfig(Properties properties)
-    {
-        Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
-            String keyAsString = (String) key;
-            if (keyAsString.startsWith(PUB_SUB_STOMP_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("pubsub.stomp.enabled"))
-            {
-                String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
-                    m.put(keyAsString.substring(PUB_SUB_STOMP_PROTOCOL_CONFIG.length()), value);
-                }
-            }
-        }
-        m.put("protocol", "stomp");
-        return m;
-    }
-
-    /**
-     * Returns Flag to indicate if the STOMP WEB SOCKET protocol is to be enabled for pubsub use
-     */
-    public boolean getPubSubStompWebSocketProtocolEnabled()
-    {
-        return _pubSubStompWebSocketProtocolEnabled;
-    }
-
-    static final String PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_ENABLED = "pubsub.stomp-ws.enabled";
-
-    private boolean _pubSubStompWebSocketProtocolEnabled = false;
-
-    static boolean loadPubSubStompWebSocketProtocolEnabled(Properties properties)
-    {
-        return loadBoolean(properties, PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_ENABLED, false);
-    }
-
-    /**
-     * Returns configuration settings for the message queue STOMP WEB SOCKET protocol
-     */
-    public Hashtable<String, Object> getPubSubStompWebSocketProtocolConfig()
-    {
-        return _pubSubStompWebSocketProtocolConfig;
-    }
-
-    static final String PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG = "pubsub.stomp-ws.";
-
-    private Hashtable<String, Object> _pubSubStompWebSocketProtocolConfig = null;
-
-    static Hashtable<String, Object> loadPubSubStompWebSocketProtocolConfig(Properties properties)
-    {
-        Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
-            String keyAsString = (String) key;
-            if (keyAsString.startsWith(PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("pubsub.stomp-ws.enabled"))
-            {
-                String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
-                    m.put(keyAsString.substring(PUB_SUB_STOMP_WEB_SOCKET_PROTOCOL_CONFIG.length()), value);
-                }
-            }
-        }
-        m.put("protocol", "stomp_ws");
-        return m;
-    }
-
-    /**
      * Returns Flag to indicate if the JSON HTTP protocol is to be enabled for pubsub use
      */
     public boolean getPubSubJsonHttpProtocolEnabled()
@@ -823,7 +725,7 @@ public class AppProperties
     {
         return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED, false);
     }
-    
+
     /**
      * Returns the IP address to use for binding our UI web server
      */
@@ -874,7 +776,7 @@ public class AppProperties
     {
         return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE, 16);
     }
-    
+
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
@@ -891,7 +793,7 @@ public class AppProperties
     {
         return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
-    
+
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
@@ -908,7 +810,7 @@ public class AppProperties
     {
         return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
-    
+
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
@@ -925,7 +827,7 @@ public class AppProperties
     {
         return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
-    
+
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
@@ -1034,7 +936,30 @@ public class AppProperties
     // *****************************************************************************************************************
     // *****************************************************************************************************************
     /**
+     * Returns Flag to indicate if the workbench service is to be enabled
+     */
+    public boolean getWorkbenchEnabled()
+    {
+        return _workbenchEnabled;
+    }
+
+    static final String WORKBENCH_ENABLED = "workbench.enabled";
+
+    private boolean _workbenchEnabled = true;
+
+    static boolean loadWorkbenchEnabled(Properties properties)
+    {
+        return loadBoolean(properties, WORKBENCH_ENABLED, true);
+    }
+
+    /**
+     * <p>
      * Returns the IP address to use for binding our WorkBench web server
+     * </p>
+     * <p>
+     * Can specify <tt>0.0.0.0</tt> which means any address. Can also specify comma separated hostnames/ip address. e.g.
+     * <tt>localhost,192.168.1.1</tt>
+     * </p>
      */
     public String getWorkbenchHost()
     {
@@ -1083,7 +1008,7 @@ public class AppProperties
     {
         return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_SIZE, 16);
     }
-    
+
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
@@ -1100,7 +1025,7 @@ public class AppProperties
     {
         return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
-    
+
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
@@ -1117,7 +1042,7 @@ public class AppProperties
     {
         return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
-    
+
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
@@ -1134,7 +1059,7 @@ public class AppProperties
     {
         return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
-    
+
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
@@ -1319,7 +1244,6 @@ public class AppProperties
         }
     }
 
-    
     // *************************************************************************************************************
     // LOAD METHODS
     // *************************************************************************************************************
@@ -1431,7 +1355,6 @@ public class AppProperties
         return Long.parseLong(s);
     }
 
-    
     /**
      * Loads an boolean value. If not set, an exception is thrown
      * 

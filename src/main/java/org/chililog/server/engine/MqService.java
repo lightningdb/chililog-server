@@ -48,7 +48,6 @@ import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.integration.logging.Log4jLogDelegateFactory;
 import org.hornetq.spi.core.security.JAASSecurityManager;
 
-
 /**
  * <p>
  * The Message Queue Service hides the complexities of the embedded HornetQ server. It provides a simple API to manage
@@ -168,7 +167,7 @@ public class MqService
         config.setPagingDirectory(appProperties.getMqPagingDirectory());
         config.setSecurityEnabled(true);
         config.setSecurityInvalidationInterval(appProperties.getMqSecurityInvalidationInterval());
-        
+
         // Logging
         config.setLogDelegateFactoryClassName(Log4jLogDelegateFactory.class.getName());
 
@@ -235,23 +234,27 @@ public class MqService
             transports.add(transport);
         }
 
-        // Stomp
-        if (appProperties.getPubSubStompProtocolEnabled())
-        {
-            _logger.info("Configuring Stomp Protocol");
-            transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                    appProperties.getPubSubStompProtocolConfig());
-            transports.add(transport);
-        }
-
-        // Stomp Web Socket
-        if (appProperties.getPubSubStompWebSocketProtocolEnabled())
-        {
-            _logger.info("Configuring Stomp Web Socket Protocol");
-            transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
-                    appProperties.getPubSubStompWebSocketProtocolConfig());
-            transports.add(transport);
-        }
+        // ***************************************************************************
+        // Not support stomp because it relies on hard coded jms.topic destinations
+        // We don't use jms but hornetq core
+        // ***************************************************************************
+        // // Stomp
+        // if (appProperties.getPubSubStompProtocolEnabled())
+        // {
+        // _logger.info("Configuring Stomp Protocol");
+        // transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
+        // appProperties.getPubSubStompProtocolConfig());
+        // transports.add(transport);
+        // }
+        //
+        // // Stomp Web Socket
+        // if (appProperties.getPubSubStompWebSocketProtocolEnabled())
+        // {
+        // _logger.info("Configuring Stomp Web Socket Protocol");
+        // transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
+        // appProperties.getPubSubStompWebSocketProtocolConfig());
+        // transports.add(transport);
+        // }
 
         return transports;
     }
@@ -458,7 +461,7 @@ public class MqService
     public void addSecuritySettings(String address, String publisherRoles, String subscriberRoles) throws Exception
     {
         String adminRoleName = UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME;
-        
+
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.removeSecuritySettings(address);
 

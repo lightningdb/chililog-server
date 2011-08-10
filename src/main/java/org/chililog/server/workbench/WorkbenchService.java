@@ -19,11 +19,14 @@
 package org.chililog.server.workbench;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
+import org.hornetq.api.core.TransportConfiguration;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -33,7 +36,6 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
-
 
 /**
  * <p>
@@ -141,6 +143,12 @@ public class WorkbenchService
             _logger.info("Workbench Web Sever Already Started.");
             return;
         }
+        
+        if (!appProperties.getWorkbenchEnabled())
+        {
+            _logger.info("Workbench Web Sever not enabled and will not be started.");
+            return;
+        }
 
         _logger.info("Starting Workbench Web Sever on " + appProperties.getWorkbenchHost() + ":"
                 + appProperties.getWorkbenchPort() + "...");
@@ -161,11 +169,29 @@ public class WorkbenchService
         bootstrap.setPipelineFactory(new HttpServerPipelineFactory(executionHandler));
 
         // Bind and start to accept incoming connections.
-        InetSocketAddress socket = new InetSocketAddress(AppProperties.getInstance().getWorkbenchHost(), AppProperties
-                .getInstance().getWorkbenchPort());
-        Channel channel = bootstrap.bind(socket);
-
-        _allChannels.add(channel);
+        String[] hosts = TransportConfiguration.splitHosts(appProperties.getWorkbenchHost());
+        for (String h : hosts)
+        {
+            if (StringUtils.isBlank(h))
+            {
+                if (hosts.length == 1)
+                {
+                    h = "0.0.0.0";
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            if (h.equalsIgnoreCase("0.0.0.0"))
+            {
+                // Set to any local address
+                h = null;
+            }
+            SocketAddress address = new InetSocketAddress(h, appProperties.getWorkbenchPort());
+            Channel channel = bootstrap.bind(address);
+            _allChannels.add(channel);
+        }
 
         _logger.info("Workbench Web Sever Started.");
     }
@@ -185,7 +211,7 @@ public class WorkbenchService
 
         _logger.info("Workbench Web Sever Stopped.");
     }
-    
+
     /**
      * Returns the group holding all channels so we can shutdown without hanging
      */
@@ -193,5 +219,5 @@ public class WorkbenchService
     {
         return _allChannels;
     }
-    
+
 }

@@ -294,7 +294,8 @@ public class MqServiceTransportTest
      * 
      * @throws Exception
      */
-    @Test
+    // Stomp no longer supported because of assumption of jms.topic queue name
+    // @Test
     public void testOK_Stomp() throws Exception
     {
 
@@ -409,7 +410,8 @@ public class MqServiceTransportTest
      * 
      * @throws Exception
      */
-    @Test
+    // Stomp no longer supported because of assumption of jms.topic queue name
+    // @Test
     public void testOK_StompToCore() throws Exception
     {
 
@@ -519,7 +521,8 @@ public class MqServiceTransportTest
      * 
      * @throws Exception
      */
-    @Test
+    // Stomp no longer supported because of assumption of jms.topic queue name
+    // @Test
     public void testOK_CoreToStomp() throws Exception
     {
         // ************************************

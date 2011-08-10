@@ -19,13 +19,16 @@
 package org.chililog.server.pubsub.jsonhttp;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.pubsub.MqProducerSessionPool;
 import org.chililog.server.pubsub.jsonhttp.JsonHttpServerPipelineFactory;
+import org.hornetq.api.core.TransportConfiguration;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -165,12 +168,30 @@ public class JsonHttpService
         bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(executionHandler));
 
         // Bind and start to accept incoming connections.
-        InetSocketAddress socket = new InetSocketAddress(AppProperties.getInstance().getPubSubJsonHttpProtocolHost(),
-                AppProperties.getInstance().getPubSubJsonHttpProtocolPort());
-        Channel channel = bootstrap.bind(socket);
-
-        _allChannels.add(channel);
-
+        String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpProtocolHost());
+        for (String h : hosts)
+        {
+            if (StringUtils.isBlank(h))
+            {
+                if (hosts.length == 1)
+                {
+                    h = "0.0.0.0";
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            if (h.equalsIgnoreCase("0.0.0.0"))
+            {
+                // Set to any local address
+                h = null;
+            }
+            SocketAddress address = new InetSocketAddress(h, appProperties.getPubSubJsonHttpProtocolPort());
+            Channel channel = bootstrap.bind(address);
+            _allChannels.add(channel);
+        }
+        
         _logger.info("PubSub JSON HTTP Web Sever Started.");
     }
 

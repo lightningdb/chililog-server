@@ -201,28 +201,16 @@ public class AppPropertiesTest
     }
 
     @Test
-    public void testPubSubStompProtocolEnabled() throws UnknownHostException
-    {
-        assertTrue(AppProperties.getInstance().getPubSubStompProtocolEnabled());
-    }
-
-    @Test
-    public void testPubSubStompWebSocketProtocolEnabled() throws UnknownHostException
-    {
-        assertFalse(AppProperties.getInstance().getPubSubStompWebSocketProtocolEnabled());
-    }
-
-    @Test
     public void testPubSubJsonHttpProtocolEnabled() throws UnknownHostException
     {
-        assertFalse(AppProperties.getInstance().getPubSubJsonHttpProtocolEnabled());
+        assertTrue(AppProperties.getInstance().getPubSubJsonHttpProtocolEnabled());
     }
     
     @Test
     public void testPubSubJsonHttpProtocolHost() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getPubSubJsonHttpProtocolHost();
-        assertEquals("localhost", s);
+        assertEquals("0.0.0.0", s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_HOST));
     }
 
@@ -299,6 +287,12 @@ public class AppPropertiesTest
     }
 
     
+    
+    @Test
+    public void testWorkbenchEnabled() throws UnknownHostException
+    {
+        assertTrue(AppProperties.getInstance().getWorkbenchEnabled());
+    }
     
     @Test
     public void testWorkbenchHost() throws UnknownHostException

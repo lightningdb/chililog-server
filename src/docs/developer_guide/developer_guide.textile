@@ -275,8 +275,6 @@ The code for the PubSub service is located in @org.chililog.server.pubsub@ Java 
 
 The PubSub service supports a number of different protocols that can be used to publish or subscribe to log entries.
 * Hornet Q core - proprietary Hornet Q protocol
-* STOMP over TCP/IP
-* STOMP over WebSockets
 * JSON over HTTP - publishing only
 * JSON over WebSockets
 
@@ -306,36 +304,12 @@ Deploy a temporary queue named 'repo.<repository name>.<uuid>' to the Hornet Q a
 You can then consume messages delivered to the queue.
 
 
-h3. 5.2 STOMP
-
-STOMP over TCP/IP and web socket protocols are directly handled by HornetQ. 
-
-h4. 5.2.1 Publishing
-
-Publish to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
-
-The username and password must be for a user that has publisher or administrator role. 
-
-Each message must contain the following:
-* @Timestamp@ Property - time when log entry was created in; must be formatted like '2001-12-31T23:01:01.000Z'
-* @Source@ Property - name of the device or application that generated the log entry
-* @Host@ Property - host name or ip address of the device 
-* @Severity@ Property - 0 is higest and 7 is lowest
-* Message - log entry
-
-h4. 5.2.1 Subscribing
- 
-Deploy a temporary queue named 'repo.<repository name>.<uuid>' to the Hornet Q address "repo.<repository name>". For example, if the repository is named "abc", the address is "repo.abc".
-
-You can then consume messages delivered to the queue.
-
-
-h3. 5.3 JSON HTTP and WebSocket
+h3. 5.2 JSON HTTP and WebSocket
 
 JSON over HTTP and WebSocket is handled by a custom Netty based HTTP web server that proxies connection to HornetQ using the HornetQ core protocol. 
 The code is located in @org.chililog.server.pubsub.jsonhttp@ Java package. "Netty":http://www.jboss.org/netty is used because it is light weight, embeddable, fast and also used by HornetQ.
 
-h4. 5.3.1 Publishing
+h4. 5.2.1 Publishing
 
 Publishing is performed using the following JSON data.
 
@@ -380,7 +354,7 @@ pre(code)..
     }
 p.   
 
-h4. 5.3.1 Subscribing
+h4. 5.2.2 Subscribing
  
 Subscribing is only supported over web sockets.
 
