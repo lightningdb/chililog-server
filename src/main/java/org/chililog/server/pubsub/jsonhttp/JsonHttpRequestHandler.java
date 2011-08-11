@@ -67,7 +67,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
 
     private static final String PUBLISH_PATH = "/publish";
 
-    private static final String WEBSOCKET_HYBI_00_PATH = "/websocket-hybi-00";
+    private static final String WEBSOCKET_PATH = "/websocket";
 
     private static final Charset UTF_8_CHARSET = Charset.forName("UTF-8");
 
@@ -121,9 +121,9 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         if (req.getMethod() == GET)
         {
             // Websocket handshake
-            if (req.getUri().equals(WEBSOCKET_HYBI_00_PATH))
+            if (req.getUri().equals(WEBSOCKET_PATH))
             {
-                handleHttpHybi00HandShakeRequest(ctx, req);
+                handleWebSocketHandShakeRequest(ctx, req);
                 return;
             }
         }
@@ -221,68 +221,69 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      *            HTTP request
      * @throws NoSuchAlgorithmException
      */
-    private void handleHttpHybi00HandShakeRequest(ChannelHandlerContext ctx, HttpRequest req)
+    private void handleWebSocketHandShakeRequest(ChannelHandlerContext ctx, HttpRequest req)
             throws NoSuchAlgorithmException
     {
         // Serve the WebSocket handshake request.
-        if (Values.UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION))
-                && WEBSOCKET.equalsIgnoreCase(req.getHeader(Names.UPGRADE)))
+        if (!Values.UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION))
+                || !WEBSOCKET.equalsIgnoreCase(req.getHeader(Names.UPGRADE)))
         {
-
-            // Create the WebSocket handshake response.
-            HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101,
-                    "Web Socket Protocol Handshake"));
-            res.addHeader(Names.UPGRADE, WEBSOCKET);
-            res.addHeader(CONNECTION, Values.UPGRADE);
-
-            // Fill in the headers and contents depending on handshake method.
-            if (req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2))
-            {
-                // New handshake method with a challenge:
-                res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
-                res.addHeader(SEC_WEBSOCKET_LOCATION, getWebSocketLocation(req));
-                String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
-                if (protocol != null)
-                {
-                    res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
-                }
-
-                // Calculate the answer of the challenge.
-                String key1 = req.getHeader(SEC_WEBSOCKET_KEY1);
-                String key2 = req.getHeader(SEC_WEBSOCKET_KEY2);
-                int a = (int) (Long.parseLong(key1.replaceAll("[^0-9]", "")) / key1.replaceAll("[^ ]", "").length());
-                int b = (int) (Long.parseLong(key2.replaceAll("[^0-9]", "")) / key2.replaceAll("[^ ]", "").length());
-                long c = req.getContent().readLong();
-                ChannelBuffer input = ChannelBuffers.buffer(16);
-                input.writeInt(a);
-                input.writeInt(b);
-                input.writeLong(c);
-                ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(
-                        input.array()));
-                res.setContent(output);
-            }
-            else
-            {
-                // Old handshake method with no challenge:
-                res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
-                res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
-                String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
-                if (protocol != null)
-                {
-                    res.addHeader(WEBSOCKET_PROTOCOL, protocol);
-                }
-            }
-
-            // Upgrade the connection and send the handshake response.
-            ChannelPipeline p = ctx.getChannel().getPipeline();
-            p.remove("aggregator");
-            p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
-
-            ctx.getChannel().write(res);
-
-            p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
             return;
         }
+
+        // Create the WebSocket handshake response.
+        HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101,
+                "Web Socket Protocol Handshake"));
+        res.addHeader(Names.UPGRADE, WEBSOCKET);
+        res.addHeader(CONNECTION, Values.UPGRADE);
+
+        // Fill in the headers and contents depending on handshake method.
+        if (req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2))
+        {
+            // New handshake method with a challenge:
+            res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
+            res.addHeader(SEC_WEBSOCKET_LOCATION, getWebSocketLocation(req));
+            String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
+            if (protocol != null)
+            {
+                res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
+            }
+
+            // Calculate the answer of the challenge.
+            String key1 = req.getHeader(SEC_WEBSOCKET_KEY1);
+            String key2 = req.getHeader(SEC_WEBSOCKET_KEY2);
+            int a = (int) (Long.parseLong(key1.replaceAll("[^0-9]", "")) / key1.replaceAll("[^ ]", "").length());
+            int b = (int) (Long.parseLong(key2.replaceAll("[^0-9]", "")) / key2.replaceAll("[^ ]", "").length());
+            long c = req.getContent().readLong();
+            ChannelBuffer input = ChannelBuffers.buffer(16);
+            input.writeInt(a);
+            input.writeInt(b);
+            input.writeLong(c);
+            ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(
+                    input.array()));
+            res.setContent(output);
+        }
+        else
+        {
+            // Old handshake method with no challenge:
+            res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
+            res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
+            String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
+            if (protocol != null)
+            {
+                res.addHeader(WEBSOCKET_PROTOCOL, protocol);
+            }
+        }
+
+        // Upgrade the connection and send the handshake response.
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        p.remove("aggregator");
+        p.replace("decoder", "wsdecoder", new WebSocketFrameDecoder());
+
+        ctx.getChannel().write(res);
+
+        p.replace("encoder", "wsencoder", new WebSocketFrameEncoder());
+        return;
     }
 
     /**
@@ -293,7 +294,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private String getWebSocketLocation(HttpRequest req)
     {
-        return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_HYBI_00_PATH;
+        return "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
     }
 
     /**
@@ -307,11 +308,14 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame)
     {
         String requestJson = frame.getTextData();
+        String responseJson = null;
 
         if (StringUtils.isBlank(requestJson))
         {
             return;
         }
+        
+        _logger.debug("Request JSON: %s", requestJson);
 
         // Process according to request type
         // We do a quick peek in the json in order to dispatch to the required worker
@@ -320,9 +324,9 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         {
             PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
 
-            StringBuilder responseJson = new StringBuilder();
-            worker.process(requestJson, responseJson);
-            ctx.getChannel().write(new DefaultWebSocketFrame(responseJson.toString()));
+            StringBuilder sb = new StringBuilder();
+            worker.process(requestJson, sb);
+            responseJson = sb.toString();
         }
         else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0)
         {
@@ -334,11 +338,17 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
 
             _subscriptionWorker = new SubscriptionWorker(ctx.getChannel());
 
-            StringBuilder responseJson = new StringBuilder();
-            _subscriptionWorker.process(requestJson, responseJson);
-            ctx.getChannel().write(new DefaultWebSocketFrame(responseJson.toString()));
+            StringBuilder sb = new StringBuilder();
+            _subscriptionWorker.process(requestJson, sb);
+            responseJson = sb.toString();
+        }
+        else 
+        {
+            throw new UnsupportedOperationException("Unsupported request: " + requestJson);
         }
 
+        _logger.debug("Response JSON: %s", responseJson);
+        ctx.getChannel().write(new DefaultWebSocketFrame(responseJson));
     }
 
     /**

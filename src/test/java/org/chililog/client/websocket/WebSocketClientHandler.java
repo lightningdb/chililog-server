@@ -1,5 +1,5 @@
 
-package org.chililog.client.websocket.hybi00;
+package org.chililog.client.websocket;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;

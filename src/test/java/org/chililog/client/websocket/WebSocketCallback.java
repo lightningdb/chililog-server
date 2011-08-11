@@ -1,5 +1,5 @@
 
-package org.chililog.client.websocket.hybi00;
+package org.chililog.client.websocket;
 
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 

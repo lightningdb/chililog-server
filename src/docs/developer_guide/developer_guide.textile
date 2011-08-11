@@ -294,7 +294,7 @@ Each message must contain the following:
 * @Timestamp@ Property - time when log entry was created in; must be formatted like '2001-12-31T23:01:01.000Z'
 * @Source@ Property - name of the device or application that generated the log entry
 * @Host@ Property - host name or ip address of the device 
-* @Severity@ Property - 0 is higest and 7 is lowest
+* @Severity@ Property - 0 is highest and 7 is lowest
 * Message - log entry
 
 h4. 5.1.1 Subscribing

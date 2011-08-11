@@ -1,5 +1,5 @@
 
-package org.chililog.client.websocket.hybi00;
+package org.chililog.client.websocket;
 
 import java.io.IOException;
 

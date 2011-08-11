@@ -8,9 +8,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import org.chililog.client.websocket.hybi00.WebSocketCallback;
-import org.chililog.client.websocket.hybi00.WebSocketClient;
-import org.chililog.client.websocket.hybi00.WebSocketClientFactory;
+import org.chililog.client.websocket.WebSocketCallback;
+import org.chililog.client.websocket.WebSocketClient;
+import org.chililog.client.websocket.WebSocketClientFactory;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
@@ -44,7 +44,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonWebSocketHybi00Test
+public class JsonWebSocketTest
 {
     private static DB _db;
     private static RepositoryInfoBO _repoInfo;
@@ -214,13 +214,14 @@ public class JsonWebSocketHybi00Test
         assertNull(response.getErrorStackTrace());
     }
 
+   
     @Test
     public void testPublishOneLogEntry() throws Exception
     {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -245,7 +246,7 @@ public class JsonWebSocketHybi00Test
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -270,7 +271,7 @@ public class JsonWebSocketHybi00Test
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -317,7 +318,7 @@ public class JsonWebSocketHybi00Test
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"),
+        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"),
                 callbackHandler);
         subcriberClient.connect().awaitUninterruptibly();
         Thread.sleep(500);
@@ -373,12 +374,171 @@ public class JsonWebSocketHybi00Test
     }
 
     @Test
+    public void testUnsupportRequest() throws Exception
+    {
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+    
+        // Send request
+        callbackHandler.messageReceived = null;
+        String requestJson = JsonTranslator.getInstance().toJson("this is a string so that it cannot be recognised as a message");
+                
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Check response
+        // Server should just shutdown socket because it does not recognise the request
+        assertNull(callbackHandler.messageReceived);
+        assertFalse(callbackHandler.connected);
+
+        // Check database
+        // Error in parsing means not stored entry
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(0, coll.find().count());
+    }
+    
+    @Test
+    public void testPublishBadJSON() throws Exception
+    {
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        // Publish
+        PublicationRequestAO request = new PublicationRequestAO();
+        request.setMessageID("testPublishBadLogEntry");
+        request.setUsername("JsonWsTestUser_Publisher");
+        request.setPassword("222");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        LogEntryAO[] logEntries = new LogEntryAO[1];
+
+        for (int i = 0; i < 1; i++)
+        {
+            LogEntryAO logEntry = new LogEntryAO();
+            logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
+            logEntry.setSource("junit");
+            logEntry.setHost("localhost");
+            logEntry.setSeverity("4");
+            logEntry.setMessage("test message " + i);
+            logEntries[i] = logEntry;
+        }
+        request.setLogEntries(logEntries);
+
+        // Send request
+        callbackHandler.messageReceived = null;
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        requestJson = requestJson.replace("MessageID", "MessageID: \"big stuff up to json syntax\" ");
+                
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Check response
+        assertNotNull(callbackHandler.messageReceived);
+        PublicationResponseAO response = JsonTranslator.getInstance().fromJson(callbackHandler.messageReceived,
+                PublicationResponseAO.class);
+        
+        // Still OK because the error is in the parsing done by subscribers
+        assertFalse(response.isSuccess());
+        assertNotNull(response.getErrorMessage());
+        assertNotNull(response.getErrorStackTrace());
+
+        // Disconnect
+        client.disconnect();
+
+        // Check database
+        // Error in parsing means not stored entry
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(0, coll.find().count());
+    }
+    
+    @Test
+    public void testPublishBadLogEntry() throws Exception
+    {
+        PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+
+        // Connect
+        client.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(callbackHandler.connected);
+
+        // Publish
+        PublicationRequestAO request = new PublicationRequestAO();
+        request.setMessageID("testPublishBadLogEntry");
+        request.setUsername("JsonWsTestUser_Publisher");
+        request.setPassword("222");
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        LogEntryAO[] logEntries = new LogEntryAO[1];
+
+        for (int i = 0; i < 1; i++)
+        {
+            LogEntryAO logEntry = new LogEntryAO();
+            logEntry.setTimestamp("xxxx");          // Unparsable Date 
+            logEntry.setSource("junit");
+            logEntry.setHost("localhost");
+            logEntry.setSeverity("4");
+            logEntry.setMessage("test message " + i);
+            logEntries[i] = logEntry;
+        }
+        request.setLogEntries(logEntries);
+
+        // Send request
+        callbackHandler.messageReceived = null;
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+                
+        client.send(new DefaultWebSocketFrame(requestJson));
+
+        // Wait for it to be processed
+        Thread.sleep(1000);
+
+        // Check response
+        assertNotNull(callbackHandler.messageReceived);
+        PublicationResponseAO response = JsonTranslator.getInstance().fromJson(callbackHandler.messageReceived,
+                PublicationResponseAO.class);
+        assertEquals("testPublishBadLogEntry", response.getMessageID());
+        
+        // Still OK because the error is in the parsing done by subscribers
+        assertTrue(response.isSuccess());
+        assertNull(response.getErrorMessage());
+        assertNull(response.getErrorStackTrace());
+
+        // Disconnect
+        // Test that all is OK when shutting down server with open connections
+
+        // Check database
+        // Error in parsing means not stored entry
+        DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
+        assertEquals(0, coll.find().count());
+    }
+
+    @Test
     public void testPublishBadUsername() throws Exception
     {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -433,7 +593,7 @@ public class JsonWebSocketHybi00Test
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -488,7 +648,7 @@ public class JsonWebSocketHybi00Test
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -543,7 +703,7 @@ public class JsonWebSocketHybi00Test
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -584,7 +744,7 @@ public class JsonWebSocketHybi00Test
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -625,7 +785,7 @@ public class JsonWebSocketHybi00Test
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -679,7 +839,7 @@ public class JsonWebSocketHybi00Test
                 PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
                 WebSocketClientFactory factory = new WebSocketClientFactory();
 
-                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket-hybi-00"),
+                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"),
                         callbackHandler);
 
                 // Connect
