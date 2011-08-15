@@ -180,8 +180,9 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
 
     /**
      * <p>
-     * Handle the web socket handshake for web socket specification <a
-     * href="http://en.wikipedia.org/wiki/WebSockets">hybi-00</a>.
+     * Handle the web socket handshake for the older web socket specification <a
+     * href="http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-75">hixie-75</a> and <a
+     * href="http://tools.ietf.org/html/draft-hixie-thewebsocketprotocol-76">hixie-76</a>.
      * </p>
      * 
      * <p>
@@ -230,15 +231,18 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         {
             return;
         }
+        
+        // Hixie 75 does not contain these headers while Hixie 76 does
+        boolean isHixie76 = req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
 
         // Create the WebSocket handshake response.
         HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101,
-                "Web Socket Protocol Handshake"));
+                isHixie76 ? "WebSocket Protocol Handshake" : "Web Socket Protocol Handshake"));
         res.addHeader(Names.UPGRADE, WEBSOCKET);
         res.addHeader(CONNECTION, Values.UPGRADE);
 
         // Fill in the headers and contents depending on handshake method.
-        if (req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2))
+        if (isHixie76)
         {
             // New handshake method with a challenge:
             res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
@@ -265,7 +269,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         }
         else
         {
-            // Old handshake method with no challenge:
+            // Old Hixie 75 handshake method with no challenge:
             res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
             res.addHeader(WEBSOCKET_LOCATION, getWebSocketLocation(req));
             String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
