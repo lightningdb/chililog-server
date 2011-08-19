@@ -1,0 +1,74 @@
+body {
+    background-color: #f4f1ec;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font: 13px;
+}
+
+/* =============================================================================
+   Standard controls
+   ========================================================================== */
+input.text {
+    padding: 1px 0;
+}
+
+input[type="text"], input[type="password"], textarea {
+    border: 1px solid Gainsboro;
+    padding: 5px;
+    font: 99% helvetica,arial,freesans,sans-serif;
+}
+
+
+/* =============================================================================
+   Header and footer
+   ========================================================================== */
+.headerBar {
+    background-color: #476e8c;
+    height: 50px;
+}
+
+/* =============================================================================
+   Login Page
+   ========================================================================== */
+body.login {
+    position: absolute;
+    left: 50%;
+    margin-left: -200px;
+    width: 400px;
+}
+
+.login .header {
+    margin-top: 200px;
+    -moz-border-radius: 3px 3px 0 0;
+    background-color: #356AA0;
+    border-color: Gainsboro;
+    border-style: solid;
+    border-width: 1px 1px 1px;
+    color: #FFFFFF;
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 8px 18px;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.7);
+}
+
+.login .content {
+    -moz-border-radius: 0 0 3px 3px;
+    background-color: #FFFFFF;
+    border-color: WhiteSmoke Gainsboro Gainsboro Gainsboro  ;
+    border-style: solid;
+    border-width: 1px 1px 1px;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.login label {
+    color: #2F424E;
+    cursor: text;
+    display: inline-block;
+    font-size: 1.1em;
+    text-shadow: 0 -1px 0 rgba(100, 100, 100, 0.1);
+}
+
+.login label input {
+    margin: 4px 0px 16px 0px;
+}
+

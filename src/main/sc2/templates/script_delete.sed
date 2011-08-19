@@ -1,0 +1,5 @@
+/<\!-- START COMMON SCRIPT BLOCK -->/,/<\!-- END COMMON SCRIPT BLOCK -->/ {
+ /<\!-- START COMMON SCRIPT BLOCK -->/! {
+   /<\!-- END COMMON SCRIPT BLOCK -->/!d
+ }
+}
