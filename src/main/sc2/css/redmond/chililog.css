@@ -70,5 +70,6 @@ body.login {
 
 .login label input {
     margin: 4px 0px 16px 0px;
+    width: 345px;
 }
 

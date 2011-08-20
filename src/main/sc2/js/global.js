@@ -23,7 +23,7 @@
 var App = SC.Application.create();
 
 // --------------------------------------------------------------------------------------------------------------------
-// JQuery UI
+// JQuery UI Integration. Thanks to Yehuda. http://yehudakatz.com/2011/06/11/using-sproutcore-2-0-with-jquery-ui/
 // --------------------------------------------------------------------------------------------------------------------
 // Put jQuery UI inside its own namespace
 JQ = {};
@@ -116,7 +116,9 @@ JQ.Widget = SC.Mixin.create({
         // You can register a handler for a jQuery UI event by passing
         // it in along with the creation options. Update the options hash
         // to include any event callbacks.
-        options[event] = function(event, ui) { callback.call(self, event, ui); };
+        options[event] = function(event, ui) {
+          callback.call(self, event, ui);
+        };
       }
     });
   }
@@ -149,7 +151,9 @@ JQ.Menu = SC.CollectionView.extend(JQ.Widget, {
     this._super(content, start, removed, added);
 
     var ui = this.get('ui');
-    if(ui) { ui.refresh(); }
+    if (ui) {
+      ui.refresh();
+    }
   }
 });
 
@@ -158,4 +162,81 @@ JQ.ProgressBar = SC.View.extend(JQ.Widget, {
   uiType: 'progressbar',
   uiOptions: ['value', 'max'],
   uiEvents: ['change', 'complete']
+});
+
+// --------------------------------------------------------------------------------------------------------------------
+// Chililog Controlls
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Our own text field supports additional attributes on the textbox
+ */
+App.TextField = SC.TextField.extend({
+  /**
+   * Specify additional attributes
+   */
+  attributeBindings: ['type', 'placeholder', 'value', 'name', 'tabindex', 'disabled'],
+
+  /**
+   * Additional CSS classes
+   */
+  classBinding: 'disabled',
+
+  /**
+   * Name of the text box
+   */
+  name: '',
+
+  /**
+   * Tabindex
+   */
+  tabindex: '1',
+
+  /**
+   * Flag to indicate if this is disabled or not
+   */
+  disabled: NO
+});
+
+/**
+ * Our own image field with visibility attribute
+ */
+App.ImgView = SC.View.extend({
+  tagName: 'img',
+
+  attributeBindings: ['src', 'alt'],
+
+  /**
+   * URL to the image
+   */
+  src: '',
+
+  /**
+   * Alternate text
+   */
+  alt: ' ',
+
+  /**
+   * Indicator for if the img is visible or not
+   */
+  visible: YES,
+
+  /**
+   * Handle changes in visibilitiy
+   */
+  didVisibilityChange: function() {
+    var visible = this.get('visible');
+    if (visible){
+      this.$().show();
+    } else {
+      this.$().hide();
+    }
+  }.observes('visible'),
+
+  /**
+   * Before inserting, handle visibility because didVisibilityChange() only gets called after a change
+   */
+  willInsertElement: function() {
+    this.didVisibilityChange();
+  }
 });

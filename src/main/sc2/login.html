@@ -21,7 +21,7 @@
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
-  <!-- END COMMON HEAD BLOCK -->dd
+  <!-- END COMMON HEAD BLOCK -->
 </head>
 <body class="login">
 
@@ -29,18 +29,18 @@
   Chililog Workbench Login
 </div>
 <div class="content">
-  <label for="username">
-    Login or Email
-    <br/>
-    <input id="username" class="text" type="text" value="" tabindex="1" style="width: 345px;" name="username">
-  </label>
-  <label for="password">
-    Password
-    <br/>
-    <input id="password" class="text" type="password" value="" tabindex="2" style="width: 345px;" name="password">
-  </label>
   <script type="text/x-handlebars">
-    {{view App.Button label="Login"}}
+    <label for="username">
+      Login or Email
+      <br/>
+      {{view App.UsernameTextField id="username" }}
+    </label>
+    <label for="password">
+      Password
+      <br/>
+      {{view App.PasswordTextField id="password" }}
+    </label>
+    {{view App.LoginButton label="Login"}}&nbsp;&nbsp;&nbsp;{{view App.WorkingImage src="images/working.gif" }}
   </script>
 </div>
 
@@ -48,6 +48,9 @@
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>
 <script type="text/javascript" src="js/libs/jquery-ui-1.9M5.min.js"></script>
 <script type="text/javascript" src="js/libs/sproutcore-2.0.beta.3.js"></script>
+<script type="text/javascript" src="js/libs/sproutcore-utils.js"></script>
+<script type="text/javascript" src="js/libs/sproutcore-statechart.js"></script>
+<script type="text/javascript" src="js/libs/sproutcore-datastore.js"></script>
 <script type="text/javascript" src="js/global.js"></script>
 <!-- END COMMON SCRIPT BLOCK -->
 
