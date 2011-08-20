@@ -16,11 +16,9 @@
 // limitations under the License.
 //
 
-
-// --------------------------------------------------------------------------------------------------------------------
-// Sproutcore
-// --------------------------------------------------------------------------------------------------------------------
-var App = SC.Application.create();
+//
+// Contains common code applicable for all HTML pages
+//
 
 // --------------------------------------------------------------------------------------------------------------------
 // JQuery UI Integration. Thanks to Yehuda. http://yehudakatz.com/2011/06/11/using-sproutcore-2-0-with-jquery-ui/
@@ -165,13 +163,14 @@ JQ.ProgressBar = SC.View.extend(JQ.Widget, {
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-// Chililog Controlls
+// Chililog Controls
 // --------------------------------------------------------------------------------------------------------------------
 
-/**
- * Our own text field supports additional attributes on the textbox
+/** @Class
+ *
+ * Our own text box supports additional attributes on the textbox
  */
-App.TextField = SC.TextField.extend({
+App.TextBoxView = SC.TextField.extend({
   /**
    * Specify additional attributes
    */
@@ -198,7 +197,8 @@ App.TextField = SC.TextField.extend({
   disabled: NO
 });
 
-/**
+/**  @Class
+ * 
  * Our own image field with visibility attribute
  */
 App.ImgView = SC.View.extend({
@@ -214,29 +214,6 @@ App.ImgView = SC.View.extend({
   /**
    * Alternate text
    */
-  alt: ' ',
-
-  /**
-   * Indicator for if the img is visible or not
-   */
-  visible: YES,
-
-  /**
-   * Handle changes in visibilitiy
-   */
-  didVisibilityChange: function() {
-    var visible = this.get('visible');
-    if (visible){
-      this.$().show();
-    } else {
-      this.$().hide();
-    }
-  }.observes('visible'),
-
-  /**
-   * Before inserting, handle visibility because didVisibilityChange() only gets called after a change
-   */
-  willInsertElement: function() {
-    this.didVisibilityChange();
-  }
+  alt: ' '
 });
+

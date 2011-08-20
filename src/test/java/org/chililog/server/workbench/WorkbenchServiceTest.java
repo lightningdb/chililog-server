@@ -52,7 +52,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 /**
  * Test the UI web server
  * 
@@ -63,9 +62,16 @@ public class WorkbenchServiceTest
 {
     private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchServiceTest.class);
 
+    private static String _workbenchStaticFilesDirectory = null;
+
     @BeforeClass
     public static void classSetup() throws Exception
     {
+        _workbenchStaticFilesDirectory = AppProperties.getInstance().getWorkbenchStaticFilesDirectory() + "/testdata";
+        
+        File dir = deleteDirectory(_workbenchStaticFilesDirectory);
+        dir.mkdirs();
+
         WorkbenchService.getInstance().start();
     }
 
@@ -73,8 +79,22 @@ public class WorkbenchServiceTest
     public static void classTeardown()
     {
         WorkbenchService.getInstance().stop();
+        deleteDirectory(_workbenchStaticFilesDirectory);
     }
 
+    private static File deleteDirectory(String dirPath) {
+        File dir = new File(dirPath);
+        if (dir.exists())
+        {
+            for (String f : dir.list())
+            {
+                new File(dir, f).delete();
+            }
+            dir.delete();        
+        }
+        return dir;
+    }
+    
     @Test
     public void testEchoGET2() throws IOException
     {
@@ -120,9 +140,8 @@ public class WorkbenchServiceTest
     {
         String TEXT = "abc\n123";
 
-        String dir = AppProperties.getInstance().getWorkbenchStaticFilesDirectory();
         String fileName = UUID.randomUUID().toString() + ".txt";
-        File file = new File(dir, fileName);
+        File file = new File(_workbenchStaticFilesDirectory, fileName);
 
         FileOutputStream fos = new FileOutputStream(file);
         OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
@@ -136,7 +155,7 @@ public class WorkbenchServiceTest
         // Initial request
         // ******************************************************
         // Create a URL for the desired page
-        URL url = new URL("http://localhost:8989/static/" + fileName);
+        URL url = new URL("http://localhost:8989/static/testdata/" + fileName);
         URLConnection conn = url.openConnection();
 
         // Read all the text returned by the server
@@ -191,7 +210,7 @@ public class WorkbenchServiceTest
         // ******************************************************
         // Cache Validation
         // ******************************************************
-        url = new URL("http://localhost:8989/static/" + fileName);
+        url = new URL("http://localhost:8989/static/testdata" + fileName);
         conn = url.openConnection();
         conn.setIfModifiedSince(fmt.parse(headers.get("Last-Modified")).getTime());
 
@@ -258,9 +277,8 @@ public class WorkbenchServiceTest
 
         for (String fileExtension : fileExtensions)
         {
-            String dir = AppProperties.getInstance().getWorkbenchStaticFilesDirectory();
             String fileName = UUID.randomUUID().toString() + fileExtension;
-            File file = new File(dir, fileName);
+            File file = new File(_workbenchStaticFilesDirectory, fileName);
 
             FileOutputStream fos = new FileOutputStream(file);
             OutputStreamWriter out = new OutputStreamWriter(fos, "UTF-8");
@@ -271,7 +289,7 @@ public class WorkbenchServiceTest
             file = new File(file.getPath());
 
             // Create a URL for the desired page
-            URL url = new URL("http://localhost:8989/static/" + fileName + "?testquerystring=abc");
+            URL url = new URL("http://localhost:8989/static/testdata" + fileName + "?testquerystring=abc");
             URLConnection conn = url.openConnection();
             conn.setRequestProperty("Accept-Encoding", "gzip,deflate");
 
@@ -346,7 +364,7 @@ public class WorkbenchServiceTest
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
 
-        //_logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
+        // _logger.debug(WebServerManagerTest.formatResponseForLogging(responseCode, headers, content));
 
         assertEquals("HTTP/1.1 404 Not Found", responseCode);
         assertTrue(!StringUtils.isBlank(headers.get("Date")));
