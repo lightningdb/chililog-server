@@ -168,6 +168,19 @@ App.AUTHENTICATED_USER_RECORD_MAP = [
   ['gravatarMD5Hash', 'GravatarMD5Hash']
 ];
 
+/**
+ * Map of severity text for code
+ */
+App.REPOSITORY_ENTRY_SEVERITY_MAP = [
+  '_repositoryEntryRecord.Severity.Emergency'.loc(),
+  '_repositoryEntryRecord.Severity.Action'.loc(),
+  '_repositoryEntryRecord.Severity.Critical'.loc(),
+  '_repositoryEntryRecord.Severity.Error'.loc(),
+  '_repositoryEntryRecord.Severity.Warning'.loc(),
+  '_repositoryEntryRecord.Severity.Notice'.loc(),
+  '_repositoryEntryRecord.Severity.Information'.loc(),
+  '_repositoryEntryRecord.Severity.Debug'.loc()
+];
 
 /** @class
  *
@@ -227,18 +240,6 @@ App.RepositoryEntryRecord = SC.Record.extend({
     this.set('fields', a);
 
     // Set the severity text. Prepare map if first time because have to wait for strings to load before we can localize
-    if (App.REPOSITORY_ENTRY_SEVERITY_MAP == null) {
-      App.REPOSITORY_ENTRY_SEVERITY_MAP = [
-        '_repositoryEntryRecord.Severity.Emergency'.loc(),
-        '_repositoryEntryRecord.Severity.Action'.loc(),
-        '_repositoryEntryRecord.Severity.Critical'.loc(),
-        '_repositoryEntryRecord.Severity.Error'.loc(),
-        '_repositoryEntryRecord.Severity.Warning'.loc(),
-        '_repositoryEntryRecord.Severity.Notice'.loc(),
-        '_repositoryEntryRecord.Severity.Information'.loc(),
-        '_repositoryEntryRecord.Severity.Debug'.loc()
-      ];
-    }
     this.set('severityText', App.REPOSITORY_ENTRY_SEVERITY_MAP[this.get('severity')]);
 
     // Set repository id
@@ -286,11 +287,6 @@ App.REPOSITORY_ENTRY_RECORD_MAP = [
   ['message' ,'message'],
   ['keywords' ,'keywords']
 ];
-
-/**
- * Map of severity text for code
- */
-App.REPOSITORY_ENTRY_SEVERITY_MAP = null;
 
 
 /** @class

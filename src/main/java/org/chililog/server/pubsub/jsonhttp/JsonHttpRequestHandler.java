@@ -224,6 +224,8 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     private void handleWebSocketHandShakeRequest(ChannelHandlerContext ctx, HttpRequest req)
             throws NoSuchAlgorithmException
     {
+        _logger.debug("Channel %s web socket handshake", ctx.getChannel().getId());
+
         // Serve the WebSocket handshake request.
         if (!Values.UPGRADE.equalsIgnoreCase(req.getHeader(CONNECTION))
                 || !WEBSOCKET.equalsIgnoreCase(req.getHeader(Names.UPGRADE)))
@@ -309,6 +311,16 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame)
     {
+        _logger.debug("Channel %s got frame type %s %s %s.", ctx.getChannel().getId(), frame.getType(), frame.isBinary(), frame.isText());
+
+        // Check for closing frame - according to the standard, we just return the same frame
+        if (((frame.getType() & 0xFF) == 0xFF) && frame.isBinary())
+        {
+            _logger.debug("Channel %s got web socket closing frame. Echoing it back.", ctx.getChannel().getId());
+            ctx.getChannel().write(frame);
+            return;
+        }
+
         String requestJson = frame.getTextData();
         String responseJson = null;
 
@@ -317,7 +329,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             return;
         }
 
-        _logger.debug("Request JSON: %s", requestJson);
+        _logger.debug("Channel %s Request JSON: %s", ctx.getChannel().getId(), requestJson);
 
         // Process according to request type
         // We do a quick peek in the json in order to dispatch to the required worker
@@ -424,6 +436,8 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     @Override
     public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
     {
+        _logger.debug("Channel %s disconnected", ctx.getChannel().getId());
+
         if (_subscriptionWorker != null)
         {
             _subscriptionWorker.stop();

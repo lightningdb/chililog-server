@@ -270,14 +270,24 @@ App.SelectView = SC.CollectionView.extend({
   _elementValueDidChange: function() {
     var views = SC.View.views,
       selectedOptions = this.$('option:selected'),
-      value;
+      value = null;
 
     if (SC.get(this, 'multiple') && SC.get(this, 'multiple') !== "false") {
       value = selectedOptions.toArray().map(function(el) {
         return SC.get(views[el.id], 'content');
       });
     } else {
-      value = SC.get(views[selectedOptions.prop('id')], 'content');
+      if (selectedOptions) {
+        var id = selectedOptions.prop('id');
+        if (SC.none(id)) {
+          // Get the first option if there is one
+          if (this.get('content').get) {
+            value = this.get('content').get('firstObject');
+          }
+        } else {
+          value = SC.get(views[selectedOptions.prop('id')], 'content');
+        }
+      }
     }
 
     set(this, 'value', value);
@@ -291,13 +301,18 @@ App.SelectView = SC.CollectionView.extend({
       for (idx = start; idx < start + removed; idx++) {
         obj = content.objectAt(idx);
 
-        if (selected.contains(obj)) {
+        if (selected && selected.contains && selected.contains(obj)) {
           selected.removeObject(obj);
         }
       }
     }
 
     this._super(content, start, removed);
+  },
+
+  arrayDidChange: function(content, start, removed, added) {
+    this._super(content, start, removed, added);
+    this._elementValueDidChange();
   }
 });
 

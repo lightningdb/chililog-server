@@ -69,14 +69,17 @@
     {{/view}}
   </script>
   <div class="results">
-    <table>
-      <tr>
-          <th style="width: 100px;">Timestamp</th>
-          <th style="width: 100px;">Source</th>
-          <th style="width: 100px;">Host</th>
-          <th style="width: 100px;">Severity</th>
-          <th>Message</th>
-      </tr>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+            <th style="width: 200px;">Timestamp</th>
+            <th style="width: 150px;">Source</th>
+            <th style="width: 150px;">Host</th>
+            <th style="width: 120px;">Severity</th>
+            <th>Message</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
     </table>
   </div>
 </div>

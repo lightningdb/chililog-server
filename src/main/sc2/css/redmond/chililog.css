@@ -200,8 +200,6 @@ body .standard {
 
 .content.stream .results {
     margin-top: 16px;
-    height: 500px;
-    overflow-y: auto;
 }
 
 .content.stream .results table {
@@ -213,4 +211,26 @@ body .standard {
     padding: 4px;
     background-color: #356AA0;
     color: white;
+}
+.content.stream .results td {
+    border: Gainsboro solid 1px;
+    text-align: left;
+    padding: 4px;
+    font-family: "Andale Mono", "Courier New", Courier, monospace;
+    font-size: 0.85em;
+}
+
+.content.stream .results tr {
+    background-color: white;
+    color: black;
+}
+
+.content.stream .results tr.red {
+    background-color: firebrick;
+    color: white;
+}
+
+.content.stream .results tr.amber {
+    background-color: golden;
+    color: black;
 }

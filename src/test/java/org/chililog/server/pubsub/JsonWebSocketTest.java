@@ -776,7 +776,7 @@ public class JsonWebSocketTest
         assertFalse(response.isSuccess());
         assertNotNull(response.getErrorMessage());
         assertNotNull(response.getErrorStackTrace());
-        assertEquals("Access denied.", response.getErrorMessage());
+        assertEquals("PubSub.SubscriberAuthenticationError", response.getErrorMessage());
     }
 
     @Test

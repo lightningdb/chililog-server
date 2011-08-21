@@ -210,7 +210,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoDataController.endSynchronizeWithServer: ' + err.message);
+      SC.Logger.error('repositoryMetaInfoEngine.endLoad: ' + err.message);
     }
 
     // Finish sync'ing

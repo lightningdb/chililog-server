@@ -78,10 +78,10 @@ App.ActionButton = JQ.Button.extend({
   click: function() {
     if (App.pageData.get('isStreaming')) {
       App.pageData.set('isStreaming', NO);
-      //App.statechart.sendAction('doStop');
+      App.statechart.sendAction('doStop');
     } else {
       App.pageData.set('isStreaming', YES);
-      //App.statechart.sendAction('doStart');
+      App.statechart.sendAction('doStart');
     }
     return;
   }
@@ -118,15 +118,20 @@ App.pageData = SC.Object.create({
    * Options for displaying in the severity dropdown
    */
   severityOptions: [
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Emergency'.loc(), value: '0'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Action'.loc(), value: '1'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Critical'.loc(), value: '2'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Error'.loc(), value: '3'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Warning'.loc(), value: '4'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Notice'.loc(), value: '5'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Information'.loc(), value: '6'}),
-      SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7', selected: YES})
-  ]
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Emergency'.loc(), value: '0'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Action'.loc(), value: '1'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Critical'.loc(), value: '2'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Error'.loc(), value: '3'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Warning'.loc(), value: '4'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Notice'.loc(), value: '5'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Information'.loc(), value: '6'}),
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7', selected: YES})
+  ],
+
+  /**
+   * Websocket that we use to talk to the server
+   */
+  webSocket: null
 
 });
 
@@ -139,7 +144,7 @@ App.statechart = SC.Statechart.create({
   rootState: SC.State.extend({
 
     initialSubstate: 'notStreaming',
-  
+
     /**
      * Prompt the user to enter username and password
      */
@@ -163,16 +168,89 @@ App.statechart = SC.Statechart.create({
     streaming: SC.State.extend({
       enterState: function() {
         App.pageData.set('isStreaming', YES);
-        return;
-      },
 
-      /**
-       * Asynchronous call back when we get a log entry
-       *
-       * @param {Object} callbackParams this is null because it is not set when login is called
-       * @param {SC.Error} error object. null if no error
-       */
-      onReceiveLogEntry: function(logEntry, error) {
+        try {
+          var domain = document.domain;
+          var webSocket = new WebSocket('ws://' + domain + ':61615/websocket');
+
+          webSocket.onopen = function () {
+            SC.Logger.log('Socket opening');
+
+            var request = {
+              MessageType: 'SubscriptionRequest',
+              MessageID: new Date().getTime() + '',
+              RepositoryName: App.pageData.getPath('repository.name'),
+              Username: App.sessionEngine.getPath('loggedInUser.username'),
+              Password: 'token:' + App.sessionEngine.get('authenticationToken')
+            };
+            var requestJSON = JSON.stringify(request);
+            webSocket.send(requestJSON);
+          };
+
+          webSocket.onmessage = function (evt) {
+            SC.Logger.log('Socket received message: ' + evt.data);
+            try {
+              var response = JSON.parse(evt.data);
+              if (!response.Success) {
+                // Turn our error into a message for display
+                response.LogEntry = {
+                  Timestamp: '',
+                  Source: 'Chililog',
+                  Host: 'Chililog',
+                  Severity: '3',
+                  Message: response.ErrorMessage
+                };
+              }
+
+              if (response.LogEntry != null) {
+                var scDate = '';
+                if (response.LogEntry.Timestamp === '') {
+                  scDate = new SC.DateTime();
+                } else {
+                  var d = new Date();
+                  var timezoneOffsetMinutes = d.getTimezoneOffset();
+                  scDate = SC.DateTime.parse(response.LogEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
+                  scDate.set('timezone', timezoneOffsetMinutes);
+                }
+
+                var className = '';
+                if (response.LogEntry.Severity == '0' || response.LogEntry.Severity == '1' ||
+                  response.LogEntry.Severity == '2' || response.LogEntry.Severity == '3') {
+                  className = ' class="red" ';
+                } else if (response.LogEntry.Severity == '4' || response.LogEntry.Severity == '5') {
+                  className = ' class="amber" ';
+                }
+
+                var newRowHtml = '<tr' + className + '>' +
+                  '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
+                  '<td>' + response.LogEntry.Source + '</td>' +
+                  '<td>' + response.LogEntry.Host + '</td>' +
+                  '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[response.LogEntry.Severity] + '</td>' +
+                  '<td>' + response.LogEntry.Message + '</td>' +
+                  '</tr>';
+                $('#resultsTable > tbody:last').append(newRowHtml);
+              }
+
+              window.scrollTo(0, document.body.scrollHeight);
+            }
+            catch (exception) {
+              SC.Logger.log('Error parsing log entry. ' + exception);
+            }
+          };
+
+          webSocket.onclose = function (evt) {
+            SC.Logger.log('Socket close');
+          };
+
+          webSocket.onerror = function (evt) {
+            SC.Logger.log('Socket error: ' + evt.data);
+          };
+
+          App.pageData.set('webSocket', webSocket);
+        } catch (exception) {
+          App.pageData.errorMessage = exception;
+          this.gotoState('notStreaming');
+        }
       },
 
       /**
@@ -184,6 +262,12 @@ App.statechart = SC.Statechart.create({
       },
 
       exitState: function() {
+        try {
+          App.pageData.get('webSocket').close();
+        } catch (exception) {
+          SC.Logger.log('Error closing web socket: ' + exception);
+        }
+
         App.pageData.set('isStreaming', NO);
       }
     })
@@ -196,14 +280,21 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 App.pageFileName = "stream.html";
 
+if (!window.WebSocket) {
+  App.pageData.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');
+}
+
 if (App.sessionEngine.load()) {
   App.setupStandardPage(App.pageFileName);
 
   App.statechart.initStatechart();
 
   // Load repositories
-  App.repositoryMetaInfoEngine.load();
-  App.pageData.repositoryOptions = App.store.find(App.RepositoryMetaInfoRecord);
+  App.repositoryMetaInfoEngine.load(this, function() {
+    var arrayProxy = App.store.find(App.RepositoryMetaInfoRecord);
+    App.pageData.set('repositoryOptions', arrayProxy);
+  }, null);
+
 } else {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);

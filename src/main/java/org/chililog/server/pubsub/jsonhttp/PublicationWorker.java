@@ -177,7 +177,7 @@ public class PublicationWorker
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
         String publicationRole = UserBO.createRepositoryPublisherRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole))
+        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole) && !user.isSystemAdministrator())
         {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }

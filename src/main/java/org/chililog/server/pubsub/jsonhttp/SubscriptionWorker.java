@@ -34,6 +34,7 @@ import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.RepositoryStorageWorker;
 import org.chililog.server.pubsub.Strings;
+import org.chililog.server.workbench.workers.AuthenticationTokenAO;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
@@ -95,12 +96,10 @@ public class SubscriptionWorker
             // Authenticate
             authenticate(requestAO);
 
-            // Subscribe
+            // Subscribe using system user because sometimes a token is supplied from the workbench
             String queueAddress = RepositoryInfoBO.buildPubSubAddress(requestAO.getRepositoryName());
             String queueName = queueAddress + ".json-http-" + _channel.getId() + "." + UUID.randomUUID().toString();
-
-            _session = MqService.getInstance().getNonTransactionalClientSession(requestAO.getUsername(),
-                    requestAO.getPassword());
+            _session = MqService.getInstance().getNonTransactionalSystemClientSession();
 
             _session.createTemporaryQueue(queueAddress, queueName);
 
@@ -166,15 +165,32 @@ public class SubscriptionWorker
         // Make user repository exists
         RepositoryInfoController.getInstance().getByName(db, repoName);
 
-        // Make sure user exists and password is valid
+        // Check user
         UserBO user = UserController.getInstance().getByUsername(db, subscriptionAO.getUsername());
-        user.validatePassword(subscriptionAO.getPassword());
-
+        boolean passwordOK = false;
+        if (subscriptionAO.getPassword().startsWith("token:"))
+        {
+            // Password is a token so we need to check the token
+            // Must have come from the workbench
+            String jsonToken = subscriptionAO.getPassword().substring(6);
+            AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
+            passwordOK = token.getUserID().equals(user.getDocumentID().toString());
+        }
+        else
+        {
+            // Make sure user exists and password is valid
+            passwordOK = user.validatePassword(subscriptionAO.getPassword());
+        }        
+        if (!passwordOK)
+        {
+            throw new ChiliLogException(Strings.SUBSCRIBER_AUTHENTICATION_ERROR);
+        }
+        
         // Make sure the user can publish to the repository
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
         String subscriptionRole = UserBO.createRepositorySubscriberRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(subscriptionRole))
+        if (!user.hasRole(administratorRole) && !user.hasRole(subscriptionRole) && !user.isSystemAdministrator())
         {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR, subscriptionAO.getUsername(), repoName);
         }
@@ -211,20 +227,20 @@ public class SubscriptionWorker
             {
                 if (!_channel.isOpen() || !_channel.isConnected())
                 {
-                    return;                    
+                    return;
                 }
-                
+
                 LogEntryAO logEntry = new LogEntryAO();
                 logEntry.setTimestamp(message.getStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME));
                 logEntry.setSource(message.getStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME));
                 logEntry.setHost(message.getStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME));
                 logEntry.setSeverity(message.getStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME));
                 logEntry.setMessage(message.getBodyBuffer().readNullableSimpleString().toString());
-                
+
                 SubscriptionResponseAO responseAO = new SubscriptionResponseAO(_messageID, logEntry);
                 String responseJson = JsonTranslator.getInstance().toJson(responseAO);
                 _channel.write(new DefaultWebSocketFrame(responseJson));
-                
+
                 return;
             }
             catch (Exception ex)
