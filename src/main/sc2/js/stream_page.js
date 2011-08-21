@@ -23,17 +23,26 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Views
 // --------------------------------------------------------------------------------------------------------------------
+/**
+ * Error messages
+ */
 App.ErrorMessage = SC.View.extend({
   classNames: 'ui-state-error ui-corner-all error'.w(),
   messageBinding: 'App.pageData.errorMessage',
   isVisibleBinding: SC.Binding.from('App.pageData.errorMessage').oneWay().bool()
 });
 
+/**
+ * Repository options
+ */
 App.RepositorySelectOption = App.SelectOption.extend({
   labelBinding: '*content.displayNameOrName',
   valueBinding: '*content.name'
 });
 
+/**
+ * Repository
+ */
 App.RepositoryField = SC.View.extend({
   classNames: 'field'.w(),
 
@@ -48,6 +57,9 @@ App.RepositoryField = SC.View.extend({
   })
 });
 
+/**
+ * Severity filter
+ */
 App.SeverityField = SC.View.extend({
   classNames: 'field'.w(),
 
@@ -61,6 +73,9 @@ App.SeverityField = SC.View.extend({
   })
 });
 
+/**
+ * Button to start/stop streaming
+ */
 App.ActionButton = JQ.Button.extend({
   label: '_start'.loc(),
 
@@ -87,6 +102,75 @@ App.ActionButton = JQ.Button.extend({
   }
 });
 
+/**
+ * Click to send test messages to the server
+ */
+App.TestMessageButton = JQ.Button.extend({
+  label: '_stream.test'.loc(),
+
+  click: function() {
+    this.set('disabled', YES);
+
+    var username = App.sessionEngine.getPath('loggedInUser.username');
+    var scDate = SC.DateTime.create({ timezone: 0});
+    var ts = scDate.toFormattedString('%Y-%m-%dT%H:%M:%S.%sZ');
+    var request = {
+      MessageType: 'PublicationRequest',
+      MessageID: new Date().getTime() + '',
+      RepositoryName: App.pageData.getPath('repository.name'),
+      Username: App.sessionEngine.getPath('loggedInUser.username'),
+      Password: 'token:' + App.sessionEngine.get('authenticationToken'),
+      LogEntries: [
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '7', Message: 'Test message sent by ' + username}
+      ]
+    };
+
+    try {
+      var me = this;
+      var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
+
+      webSocket.onopen = function () {
+        SC.Logger.log('Test Socket opening');
+        var requestJSON = JSON.stringify(request);
+        webSocket.send(requestJSON);
+      };
+
+      webSocket.onmessage = function (evt) {
+        SC.Logger.log('Socket received message: ' + evt.data);
+        try {
+          var response = JSON.parse(evt.data);
+          if (!response.Success) {
+            response.LogEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: response.ErrorMessage };
+            App.writeLogEntry(response.LogEntry, true);
+          }
+
+          // Close after we get a response so that button is enabled and the user can send another message
+          webSocket.close();
+        }
+        catch (exception) {
+          SC.Logger.log('Error parsing log entry. ' + exception);
+        }
+      };
+
+      webSocket.onclose = function (evt) {
+        SC.Logger.log('Test Socket close');
+        me.set('disabled', NO); //cannot use this because it is the websocket
+      };
+
+      webSocket.onerror = function (evt) {
+        SC.Logger.log('Test Socket error: ' + evt.data);
+        var logEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: evt.data };
+        App.writeLogEntry(logEntry, true);
+      };
+    } catch (exception) {
+      SC.Logger.log('Test Socket error: ' + evt.data);
+      var logEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: exception };
+      App.writeLogEntry(logEntry, true);
+    }
+
+    return;
+  }
+});
 
 App.pageData = SC.Object.create({
   /**
@@ -131,7 +215,12 @@ App.pageData = SC.Object.create({
   /**
    * Websocket that we use to talk to the server
    */
-  webSocket: null
+  webSocket: null,
+
+  /**
+   * Flag to indicate if we want the bottom bar to show or not
+   */
+  showActionButton2: NO
 
 });
 
@@ -170,8 +259,7 @@ App.statechart = SC.Statechart.create({
         App.pageData.set('isStreaming', YES);
 
         try {
-          var domain = document.domain;
-          var webSocket = new WebSocket('ws://' + domain + ':61615/websocket');
+          var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
 
           webSocket.onopen = function () {
             SC.Logger.log('Socket opening');
@@ -185,6 +273,14 @@ App.statechart = SC.Statechart.create({
             };
             var requestJSON = JSON.stringify(request);
             webSocket.send(requestJSON);
+
+            App.writeLogEntry({
+              Timestamp: '',
+              Source: 'workbench',
+              Host: 'local',
+              Severity: '6',
+              Message: 'Started.  Waiting for messages ...'
+            }, false);
           };
 
           webSocket.onmessage = function (evt) {
@@ -201,37 +297,7 @@ App.statechart = SC.Statechart.create({
                   Message: response.ErrorMessage
                 };
               }
-
-              if (response.LogEntry != null) {
-                var scDate = '';
-                if (response.LogEntry.Timestamp === '') {
-                  scDate = new SC.DateTime();
-                } else {
-                  var d = new Date();
-                  var timezoneOffsetMinutes = d.getTimezoneOffset();
-                  scDate = SC.DateTime.parse(response.LogEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
-                  scDate.set('timezone', timezoneOffsetMinutes);
-                }
-
-                var className = '';
-                if (response.LogEntry.Severity == '0' || response.LogEntry.Severity == '1' ||
-                  response.LogEntry.Severity == '2' || response.LogEntry.Severity == '3') {
-                  className = ' class="red" ';
-                } else if (response.LogEntry.Severity == '4' || response.LogEntry.Severity == '5') {
-                  className = ' class="amber" ';
-                }
-
-                var newRowHtml = '<tr' + className + '>' +
-                  '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
-                  '<td>' + response.LogEntry.Source + '</td>' +
-                  '<td>' + response.LogEntry.Host + '</td>' +
-                  '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[response.LogEntry.Severity] + '</td>' +
-                  '<td>' + response.LogEntry.Message + '</td>' +
-                  '</tr>';
-                $('#resultsTable > tbody:last').append(newRowHtml);
-              }
-
-              window.scrollTo(0, document.body.scrollHeight);
+              App.writeLogEntry(response.LogEntry, true);
             }
             catch (exception) {
               SC.Logger.log('Error parsing log entry. ' + exception);
@@ -240,6 +306,13 @@ App.statechart = SC.Statechart.create({
 
           webSocket.onclose = function (evt) {
             SC.Logger.log('Socket close');
+            App.writeLogEntry({
+              Timestamp: '',
+              Source: 'workbench',
+              Host: 'local',
+              Severity: '6',
+              Message: 'Stopped'
+            }, false);
           };
 
           webSocket.onerror = function (evt) {
@@ -274,6 +347,52 @@ App.statechart = SC.Statechart.create({
   })
 });
 
+App.writeLogEntry = function (logEntry, doSeverityCheck) {
+  if (logEntry == null) {
+    return;
+  }
+
+  var severity = parseInt(logEntry.Severity);
+  var maxSeverity = parseInt(App.pageData.getPath('severity.value'));
+  if (doSeverityCheck && severity > maxSeverity) {
+    return;
+  }
+
+  var scDate = null;
+  if (logEntry.Timestamp === '') {
+    scDate = SC.DateTime.create();
+  } else {
+    var d = new Date();
+    var timezoneOffsetMinutes = d.getTimezoneOffset();
+    scDate = SC.DateTime.parse(logEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
+    scDate.set('timezone', timezoneOffsetMinutes);
+  }
+
+  var className = '';
+  if (severity <= 3) {
+    className = ' class="red" ';
+  } else if (severity == 4 || severity == 5) {
+    className = ' class="amber" ';
+  }
+
+  var newRowHtml = '<tr' + className + '>' +
+    '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
+    '<td>' + logEntry.Source + '</td>' +
+    '<td>' + logEntry.Host + '</td>' +
+    '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</td>' +
+    '<td>' + logEntry.Message + '</td>' +
+    '</tr>';
+  $('#resultsTable > tbody:last').append(newRowHtml);
+  window.scrollTo(0, document.body.scrollHeight);
+
+  // Check if we want to show the bottom buttons ...
+  if (!App.pageData.get('showActionButton2')) {
+    var rowCount = $('#resultsTable tr').length;
+    if (rowCount > 1) {
+      App.pageData.set('showActionButton2', YES);
+    }
+  }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
@@ -291,7 +410,11 @@ if (App.sessionEngine.load()) {
 
   // Load repositories
   App.repositoryMetaInfoEngine.load(this, function() {
-    var arrayProxy = App.store.find(App.RepositoryMetaInfoRecord);
+    var query = SC.Query.local(App.RepositoryMetaInfoRecord, {
+      conditions: 'name != "chililog"',
+      orderBy: 'name'
+    });
+    var arrayProxy = App.store.find(query);
     App.pageData.set('repositoryOptions', arrayProxy);
   }, null);
 

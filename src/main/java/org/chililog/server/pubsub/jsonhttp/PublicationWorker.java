@@ -37,6 +37,7 @@ import org.chililog.server.engine.RepositoryStorageWorker;
 import org.chililog.server.pubsub.MqProducerSessionPool;
 import org.chililog.server.pubsub.Strings;
 import org.chililog.server.pubsub.MqProducerSessionPool.Pooled;
+import org.chililog.server.workbench.workers.AuthenticationTokenAO;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.api.core.client.ClientMessage;
@@ -168,7 +169,21 @@ public class PublicationWorker
 
         // Make sure user exists and password is valid
         UserBO user = UserController.getInstance().getByUsername(db, publicationAO.getUsername());
-        if (!user.validatePassword(publicationAO.getPassword()))
+        boolean passwordOK = false;
+        if (publicationAO.getPassword().startsWith("token:"))
+        {
+            // Password is a token so we need to check the token
+            // Must have come from the workbench
+            String jsonToken = publicationAO.getPassword().substring(6);
+            AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
+            passwordOK = token.getUserID().equals(user.getDocumentID().toString());
+        }
+        else
+        {
+            // Make sure user exists and password is valid
+            passwordOK = user.validatePassword(publicationAO.getPassword());
+        }        
+        if (!passwordOK)
         {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }

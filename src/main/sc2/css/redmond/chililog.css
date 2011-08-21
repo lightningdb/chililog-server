@@ -234,3 +234,7 @@ body .standard {
     background-color: golden;
     color: black;
 }
+
+.content.stream .bottomBar {
+    margin-top: 16px;
+}

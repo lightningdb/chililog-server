@@ -82,6 +82,16 @@
       <tbody></tbody>
     </table>
   </div>
+  <script type="text/x-handlebars">
+    {{#view id="bottomBar" class="bottomBar"}}
+      <div style="float: right;">
+        {{view App.ActionButton id="actionButton2" isVisibleBinding="App.pageData.showActionButton2" }}
+      </div>
+      <div style="float: left;">
+        {{view App.TestMessageButton id="testMessageButton" isVisibleBinding="App.pageData.isStreaming" }}
+      </div>
+    {{/view}}
+  </script>
 </div>
 
 <!-- START COMMON FOOTER BLOCK -->

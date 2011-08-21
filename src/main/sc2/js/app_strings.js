@@ -84,10 +84,11 @@ SC.STRINGS = {
   // ********************************************************
   '_stream.repository': 'Repository',
   '_stream.severity': 'Severity',
+  '_stream.test': 'Send Test Log Entries',
 
 
   // ********************************************************
-  // Other Page
+  // OLD STUFF to be converted
   // ********************************************************
   '_mainPane.Title': 'Chililog',
   '_mainPane.Search': 'Search',
