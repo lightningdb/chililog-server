@@ -21,7 +21,6 @@ package org.chililog.server.pubsub.jsonhttp;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
@@ -36,8 +35,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * <p>
@@ -133,7 +130,7 @@ public class JsonHttpService
     /**
      * Start all pubsub services
      */
-    public void start()
+    public synchronized void start()
     {
         // Create producer session pool equivalent to the number of threads for Json HTTP so that each thread does not
         // have to wait for a session
@@ -157,14 +154,7 @@ public class JsonHttpService
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
-        // Set up the event pipeline factory.
-        ExecutionHandler executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(
-                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolSize(),
-                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(),
-                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(),
-                appProperties.getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS));
-
-        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(executionHandler));
+        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory());
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpProtocolHost());
@@ -194,7 +184,7 @@ public class JsonHttpService
     /**
      * Stop all pubsub services
      */
-    public void stop()
+    public synchronized void stop()
     {
         if (_mqProducerSessionPool != null)
         {

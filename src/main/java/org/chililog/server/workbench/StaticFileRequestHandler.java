@@ -274,15 +274,20 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
             uri = URLDecoder.decode(uri, "ISO-8859-1");
         }
 
-        // Remove the initial /static prefix
-        uri = uri.substring(7);
+        // Remove the initial /static/ or /workbench/ prefix
+        int idx = uri.indexOf('/', 1);
+        if (idx < 0)
+        {
+            return null;
+        }
+        uri = uri.substring(idx);
         if (StringUtils.isBlank(uri))
         {
             return null;
         }
 
         // Remove query string if any
-        int idx = uri.indexOf('?');
+        idx = uri.indexOf('?');
         if (idx > 0)
         {
             uri = uri.substring(0, idx);

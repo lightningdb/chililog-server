@@ -21,7 +21,6 @@ package org.chililog.server.workbench;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
@@ -34,8 +33,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * <p>
@@ -88,6 +85,14 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  * request URI. Example of servers are {@link EchoRequestHandler} and {@link StaticFileRequestHandler}.
  * </p>
  * 
+ * <p>
+ * We stopped using the {@lin OrderedMemoryAwareThreadPoolExecutor} and it gave <a
+ * href="http://www.jboss.org/netty/community#nabble-td6303816">errors with compression</a> and <a
+ * href="http://web.archiveorange.com/archive/v/ZVMdIF9d6poqpmuvDOuq">performance issues</a>. We've since removed it.
+ * Not sure if we really need to run in another thread since we are using the Executors.newCachedThreadPool().
+ * 
+ * </p>
+ * 
  * @author vibul
  * 
  */
@@ -134,7 +139,7 @@ public class WorkbenchService
     /**
      * Start the web server
      */
-    public void start()
+    public synchronized void start()
     {
         AppProperties appProperties = AppProperties.getInstance();
 
@@ -160,13 +165,7 @@ public class WorkbenchService
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
         // Set up the event pipeline factory.
-        ExecutionHandler executionHandler = new ExecutionHandler(new OrderedMemoryAwareThreadPoolExecutor(
-                appProperties.getWorkbenchTaskThreadPoolSize(),
-                appProperties.getWorkbenchTaskThreadPoolMaxChannelMemorySize(),
-                appProperties.getWorkbenchTaskThreadPoolMaxThreadMemorySize(),
-                appProperties.getWorkbenchTaskThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS));
-
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(executionHandler));
+        bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getWorkbenchHost());
@@ -196,7 +195,7 @@ public class WorkbenchService
     /**
      * Stop the web server
      */
-    public void stop()
+    public synchronized void stop()
     {
         _logger.info("Stopping Workbench Web Sever ...");
 

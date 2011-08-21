@@ -229,6 +229,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      */
     private ApiResult instanceApiWorker() throws Exception
     {
+        // TODO - Invoke in another thread because we are mostly reading and writing to mongodb 
         String className = null;
         try
         {

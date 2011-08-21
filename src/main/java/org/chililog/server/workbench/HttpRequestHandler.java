@@ -20,11 +20,8 @@ package org.chililog.server.workbench;
 
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 
-import java.io.File;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
@@ -42,7 +39,6 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 import org.jboss.netty.util.CharsetUtil;
-
 
 /**
  * <p>
@@ -95,15 +91,16 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             {
                 _workbenchRequestHandler = new ApiRequestHandler();
             }
-            else if (uri.equalsIgnoreCase("/ui") || uri.equalsIgnoreCase("/ui/"))
+            else if (uri.equalsIgnoreCase("/workbench") || uri.equalsIgnoreCase("/workbench/"))
             {
-                redirectToUiHtml(e);
+                redirectToWorkBenchIndexHtml(e);
+                return;
             }
-            else if (uri.startsWith("/static/"))
+            else if (uri.startsWith("/static") || uri.startsWith("/workbench"))
             {
                 _workbenchRequestHandler = new StaticFileRequestHandler();
             }
-            else if (uri.startsWith("/echo/"))
+            else if (uri.startsWith("/echo"))
             {
                 _workbenchRequestHandler = new EchoRequestHandler();
             }
@@ -177,9 +174,16 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
         }
 
         // Close the channel
-        if (!willBeClosed)
+        try
         {
-            e.getChannel().close();
+            if (!willBeClosed)
+            {
+                e.getChannel().close();
+            }
+        }
+        catch (Exception ex2)
+        {
+            _logger.error(ex2, "ERROR while trying close socket. %1", ex2.getMessage());
         }
     }
 
@@ -198,11 +202,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
 
     /**
      * <p>
-     * The /ui URI path is a virtual path. We redirect to our Sproutcore UI HTML page.
-     * </p>
-     * <p>
-     * Sproutcore build create directory structure below so that old files don't get cached:
-     * /static/chililog/en/c9e99324b8f9b02834ca5ce4902393aefe100322/index.html
+     * The /workbench URI path is a virtual path. We redirect to our Sproutcore UI HTML page.
      * </p>
      * <p>
      * We have to find the index.html file and redirect to it.
@@ -210,29 +210,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * 
      * @param e
      */
-    private void redirectToUiHtml(MessageEvent e)
+    private void redirectToWorkBenchIndexHtml(MessageEvent e)
     {
-        String dirPath = AppProperties.getInstance().getWorkbenchStaticFilesDirectory() + "/chililog/en";
-        File dir = new File(dirPath);
-        if (!dir.exists() || !dir.isDirectory())
-        {
-            send404NotFound(e);
-            return;
-        }
-
-        String[] versionDir = dir.list();
-        if (versionDir.length == 0)
-        {
-            send404NotFound(e);
-            return;
-        }
-
-        String indexHTML = "/static/chililog/en/" + versionDir[0] + "index.html";
+        String indexHTML = "/workbench/index.html";
 
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND);
         response.addHeader("Location", indexHTML);
-        ChannelFuture future = e.getChannel().write(response);
-        future.addListener(ChannelFutureListener.CLOSE);
+        e.getChannel().write(response);
+        e.getChannel().close(); //future.addListener(ChannelFutureListener.CLOSE);
+        
     }
 
     /**

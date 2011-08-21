@@ -27,7 +27,6 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
@@ -39,17 +38,14 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory
 {
-    private final ExecutionHandler _executionHandler;
-
     /**
      * Constructor
      * 
      * @param executionHandler
      *            Thread pool to use to execute handlers
      */
-    public HttpServerPipelineFactory(ExecutionHandler executionHandler)
+    public HttpServerPipelineFactory()
     {
-        _executionHandler = executionHandler;
     }
 
     /**
@@ -88,9 +84,6 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
 
         // Compress
         pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
-
-        // Execution handler to move blocking tasks into another thread pool
-        pipeline.addLast("executionHandler", _executionHandler);
         
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());

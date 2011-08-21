@@ -28,7 +28,6 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 
@@ -39,17 +38,14 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory
 {
-    private final ExecutionHandler _executionHandler;
-
     /**
      * Constructor
      * 
      * @param executionHandler
      *            Thread pool to use to execute handlers
      */
-    public JsonHttpServerPipelineFactory(ExecutionHandler executionHandler)
+    public JsonHttpServerPipelineFactory()
     {
-        _executionHandler = executionHandler;
     }
 
     /**
@@ -78,9 +74,6 @@ public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory
 
         // Encodes HTTTPRequest message to ChannelBuffer
         pipeline.addLast("encoder", new HttpResponseEncoder());
-
-        // Execution handler to move blocking tasks into another thread pool
-        pipeline.addLast("executionHandler", _executionHandler);
 
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new JsonHttpRequestHandler());

@@ -32,6 +32,8 @@ import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.RepositoryService;
 import org.chililog.server.pubsub.PubSubService;
 import org.chililog.server.workbench.WorkbenchService;
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Log4JLoggerFactory;
 
 
 /**
@@ -91,6 +93,9 @@ public class App
      */
     public static void startChiliLogServer() throws Exception
     {
+        // Turn on netty logging
+        InternalLoggerFactory.setDefaultFactory(new Log4JLoggerFactory());
+        
         _logger.info("CHILILOG Server Starting Up...");
         _logger.info("System Properties\n" + SystemProperties.getInstance().toString());
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());

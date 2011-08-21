@@ -55,7 +55,6 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
 import org.jboss.netty.util.CharsetUtil;
 
-
 /**
  * Handler for JSON log entries send over HTTP request and web socket.
  * 
@@ -231,7 +230,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         {
             return;
         }
-        
+
         // Hixie 75 does not contain these headers while Hixie 76 does
         boolean isHixie76 = req.containsHeader(SEC_WEBSOCKET_KEY1) && req.containsHeader(SEC_WEBSOCKET_KEY2);
 
@@ -263,8 +262,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             input.writeInt(a);
             input.writeInt(b);
             input.writeLong(c);
-            ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(
-                    input.array()));
+            ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(input.array()));
             res.setContent(output);
         }
         else
@@ -318,7 +316,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
         {
             return;
         }
-        
+
         _logger.debug("Request JSON: %s", requestJson);
 
         // Process according to request type
@@ -346,7 +344,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
             _subscriptionWorker.process(requestJson, sb);
             responseJson = sb.toString();
         }
-        else 
+        else
         {
             throw new UnsupportedOperationException("Unsupported request: " + requestJson);
         }
@@ -399,8 +397,15 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
     {
-        _logger.error(e.getCause(), "Error handling PubSub JSON HTTP Request");
-        e.getChannel().close();
+        try
+        {
+            _logger.error(e.getCause(), "Error handling PubSub JSON HTTP Request");
+            e.getChannel().close();
+        }
+        catch (Exception ex)
+        {
+            _logger.debug(ex, "Error closing channel in exception");
+        }
     }
 
     /**

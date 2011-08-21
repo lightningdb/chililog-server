@@ -210,7 +210,7 @@ public class WorkbenchServiceTest
         // ******************************************************
         // Cache Validation
         // ******************************************************
-        url = new URL("http://localhost:8989/static/testdata" + fileName);
+        url = new URL("http://localhost:8989/static/testdata/" + fileName);
         conn = url.openConnection();
         conn.setIfModifiedSince(fmt.parse(headers.get("Last-Modified")).getTime());
 
@@ -289,7 +289,7 @@ public class WorkbenchServiceTest
             file = new File(file.getPath());
 
             // Create a URL for the desired page
-            URL url = new URL("http://localhost:8989/static/testdata" + fileName + "?testquerystring=abc");
+            URL url = new URL("http://localhost:8989/static/testdata/" + fileName + "?testquerystring=abc");
             URLConnection conn = url.openConnection();
             conn.setRequestProperty("Accept-Encoding", "gzip,deflate");
 
