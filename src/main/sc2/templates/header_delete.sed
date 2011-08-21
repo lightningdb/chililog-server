@@ -1,0 +1,5 @@
+/<\!-- START COMMON HEADER BLOCK -->/,/<\!-- END COMMON HEADER BLOCK -->/ {
+ /<\!-- START COMMON HEADER BLOCK -->/! {
+   /<\!-- END COMMON HEADER BLOCK -->/!d
+ }
+}

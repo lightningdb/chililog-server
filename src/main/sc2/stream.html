@@ -47,8 +47,38 @@
 </div>
 <!-- END COMMON DIVIDER BLOCK -->
 
-<div class="content">
-
+<div class="content stream">
+  <h1>Stream</h1>
+  <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
+  <div class="criteria">
+    <script type="text/x-handlebars">
+      {{#view App.RepositoryField id="repositoryField" }}
+        <label for="repositoryData">{{label}}</label><br/>
+        {{view Data id="repositoryData"}}
+      {{/view}}
+      {{#view App.SeverityField id="severityField" }}
+        <label for="severityData">{{label}}</label><br/>
+        {{view Data id="severityData"}}
+      {{/view}}
+      {{view App.ActionButton id="actionButton"}}&nbsp;&nbsp;&nbsp;
+    </script>
+  </div>
+  <script type="text/x-handlebars">
+    {{#view App.ErrorMessage }}
+      <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
+    {{/view}}
+  </script>
+  <div class="results">
+    <table>
+      <tr>
+          <th style="width: 100px;">Timestamp</th>
+          <th style="width: 100px;">Source</th>
+          <th style="width: 100px;">Host</th>
+          <th style="width: 100px;">Severity</th>
+          <th>Message</th>
+      </tr>
+    </table>
+  </div>
 </div>
 
 <!-- START COMMON FOOTER BLOCK -->
@@ -72,7 +102,7 @@
 <script type="text/javascript" src="js/app_engine.js"></script>
 <!-- END COMMON SCRIPT BLOCK -->
 
-<script type="text/javascript" src="js/index_page.js"></script>
+<script type="text/javascript" src="js/stream_page.js"></script>
 
 </body>
 </html>

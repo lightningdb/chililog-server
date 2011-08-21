@@ -16,10 +16,15 @@ processHTML()
   
   sed -f head_delete.sed $FILENAME | sed -f head_insert.sed > ./tmp/$BASENAME.1
   sed -f script_delete.sed ./tmp/$BASENAME.1 | sed -f script_insert.sed > ./tmp/$BASENAME.2
+  sed -f header_delete.sed ./tmp/$BASENAME.2 | sed -f header_insert.sed > ./tmp/$BASENAME.3
+  sed -f divider_delete.sed ./tmp/$BASENAME.3 | sed -f divider_insert.sed > ./tmp/$BASENAME.4
+  sed -f footer_delete.sed ./tmp/$BASENAME.4 | sed -f footer_insert.sed > ./tmp/$BASENAME.5
 
-  cp -f ./tmp/$BASENAME.2 $FILENAME
+  cp -f ./tmp/$BASENAME.5 $FILENAME
   rm -rf ./tmp  
 }
 
-#processHTML ../index.html .min
 processHTML ../login.html
+processHTML ../index.html
+processHTML ../stream.html
+

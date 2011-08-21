@@ -1,7 +1,7 @@
 //
 // Copyright 2010 Cinch Logic Pty Ltd.
 //
-// http://www.chililog.com
+// http://www.App.com
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -83,6 +83,347 @@ App.EngineMixin = {
   }
 
 };
+
+
+/** @class
+ *
+ * Manages repository meta information records and keeps them in sync with the server
+ *
+ * @extends SC.Object
+ */
+App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
+
+  /**
+   * YES if we are performing a server synchronization
+   * @type Boolean
+   */
+  isLoading: NO,
+
+  /**
+   * Removes all repository meta info records in the data store
+   */
+  clearServerData: function() {
+    var records = App.store.find(App.RepositoryMetaInfoRecord);
+    records.forEach(function(record) {
+      record.destroy()
+    });
+    App.store.commitRecords();
+  },
+
+  /**
+   * Synchronize data in the store with the data on the server
+   * We sync repository status after we get all the repository info
+   *
+   * @param {Boolean} clearLocalData YES will delete data from local store before loading.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  load: function(callbackTarget, callbackFunction, callbackParams) {
+    // If operation already under way, just exit
+    var isLoading = this.get('isLoading');
+    if (isLoading) {
+      return;
+    }
+
+    // Remove all data
+    this.clearServerData();
+
+    // We are working
+    this.set('isLoading', YES);
+
+    // Get data
+    var url = '/api/repository_info';
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
+    
+    $.ajax({
+      type: 'GET',
+      url: '/api/repository_info',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: headers, 
+      error: this.ajaxError,
+      success: this.endLoad
+    });
+  },
+
+  /**
+   * Process data when user information returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endLoad: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Set data
+      var repoMetaInfoAOArray = data;
+      if (!SC.none(repoMetaInfoAOArray) && SC.isArray(repoMetaInfoAOArray)) {
+        for (var i = 0; i < repoMetaInfoAOArray.length; i++) {
+          var repoMetaInfoAO = repoMetaInfoAOArray[i];
+
+          // See if record exists
+          var repoMetaInfoRecord = App.store.find(App.RepositoryMetaInfoRecord, repoMetaInfoAO.DocumentID);
+          if (SC.none(repoMetaInfoRecord) || (repoMetaInfoRecord.get('status') & SC.Record.DESTROYED)) {
+            repoMetaInfoRecord = App.store.createRecord(App.RepositoryMetaInfoRecord, {}, repoMetaInfoAO.DocumentID);
+          }
+
+          // Find corresponding repository runtime record
+          var query = SC.Query.local(App.RepositoryRuntimeInfoRecord, 'name={name}', {name: repoMetaInfoAO.Name});
+          var repoRecords = App.store.find(query);
+          if (repoRecords.get('length') > 0) {
+            repoMetaInfoRecord.updateStatus(repoRecords.objectAt(0));
+          }
+          repoMetaInfoRecord.fromApiObject(repoMetaInfoAO);
+        }
+        App.store.commitRecords();
+      }
+
+      // Delete records that have not been returned
+      var records = App.store.find(App.RepositoryMetaInfoRecord);
+      records.forEach(function(record) {
+        var doDelete = YES;
+        if (!SC.none(repoMetaInfoAOArray) && SC.isArray(repoMetaInfoAOArray)) {
+          for (var i = 0; i < repoMetaInfoAOArray.length; i++) {
+            var repoMetaInfoAO = repoMetaInfoAOArray[i];
+            if (repoMetaInfoAO[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+              doDelete = NO;
+              break;
+            }
+          }
+        }
+        if (doDelete) {
+          record.destroy()
+        }
+      });
+      App.store.commitRecords();
+
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryInfoDataController.endSynchronizeWithServer: ' + err.message);
+    }
+
+    // Finish sync'ing
+    App.repositoryMetaInfoEngine.set('isLoading', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Returns a new user record for editing
+   *
+   * @returns {App.UserRecord}
+   */
+  create: function(documentID) {
+    var nestedStore = App.store.chain();
+    var record = nestedStore.createRecord(App.RepositoryMetaInfoRecord, {});
+    record.set(App.DOCUMENT_VERSION_RECORD_FIELD_NAME, 0);
+    record.set('maxKeywords', 20);
+    record.set('writeQueueWorkerCount', 1);
+    record.set('writeQueueMaxMemory', 20971520); //20MB
+    record.set('writeQueuePageSize', 4194304);  //4MB
+    record.set('writeQueuePageCountCache', 3);
+    return record;
+  },
+
+  /**
+   * Returns an existing the user record for editing
+   *
+   * @param {String} documentID Document ID of the user record to edit
+   * @returns {App.UserRecord}
+   */
+  edit: function(documentID) {
+    var nestedStore = App.store.chain();
+    var record = nestedStore.find(App.RepositoryMetaInfoRecord, documentID);
+    return record;
+  },
+
+  /**
+   * Saves the user record to the server
+   * @param {App.RepositoryMetaInfoRecord} record record to save
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was saved
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  save: function(record, callbackTarget, callbackFunction, callbackParams) {
+
+    var documentID = record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+    var documentVersion = record.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    var isAdding = (SC.none(documentVersion) || documentVersion === 0);
+    var data = record.toApiObject();
+    var request;
+
+    var url = '';
+    var httpType = '';
+    if (isAdding) {
+      url = '/api/repository_info/';
+      httpType = 'POST';
+    } else {
+      url = '/api/repository_info/' + documentID;
+      httpType = 'PUT';
+    }
+    var context = { isAdding: isAdding, documentID: documentID,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
+    
+    // Call server
+    $.ajax({
+      type: httpType,
+      url: url,
+      data: JSON.stringify(data),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: headers,
+      error: this.ajaxError,
+      success: this.endSave
+    });
+    
+    return;
+  },
+
+  /**
+   * Callback from save() after we get a response from the server to process
+   * the returned info.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endSave: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Save new authenticated user details
+      var apiObject = data;
+      if (this.isAdding) {
+        this.documentID = apiObject[App.DOCUMENT_ID_AO_FIELD_NAME];
+      } else if (this.documentID !== apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw App.$error('_documentIDError', [ this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]]);
+      }
+
+      var record = null;
+      if (this.isAdding) {
+        record = App.store.createRecord(App.RepositoryMetaInfoRecord, {}, this.documentID);
+      } else {
+        record = App.store.find(App.RepositoryMetaInfoRecord, this.documentID);
+      }
+      record.fromApiObject(apiObject);
+      App.store.commitRecords();
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryInfoDataController.endSaveRecord: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(params.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Discard changes
+   * @param {App.RepositoryMetaInfoRecord} record record to discard
+   */
+  discardChanges: function(record) {
+    if (!SC.none(record)) {
+      var nestedStore = record.get('store');
+      nestedStore.destroy();
+    }
+    return;
+  },
+
+  /**
+   * Deletes the repository info record on the server
+   *
+   * @param {String} documentID id of record to delete
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was saved
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
+    var url = '/api/repository_info/' + documentID;
+    var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
+    $.ajax({
+      type: 'DELETE',
+      url: url,
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: headers,
+      error: this.ajaxError,
+      success: this.endErase
+    });
+
+    return;
+  },
+
+  /**
+   * Callback from save() after we get a response from the server to process
+   * the returned info.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endErase: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      var record = App.store.find(App.RepositoryMetaInfoRecord, this.documentID);
+      record.destroy();
+
+      App.store.commitRecords();
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryInfoDataController.endErase: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  }
+});
+
 
 /** @class
  *
@@ -322,9 +663,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     this.set('authenticationToken', token);
     localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
 
-    // Get data from server
-    this.synchronizeServerData(YES);
-
     // Return YES to signal handling of callback
     return YES;
   },
@@ -429,9 +767,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       SC.Logger.error('endLogin: ' + err.message);
     }
 
-    // Get new data from server
-    App.sessionEngine.synchronizeServerData(YES);
-
     // Callback
     if (!SC.none(this.callbackFunction)) {
       this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
@@ -488,7 +823,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     this.notifyPropertyChange('authenticationToken');
 
     // Clear local data
-    this.synchronizeServerData(YES);
+    this.clearServerData();
 
     return;
   },
@@ -663,16 +998,8 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     return YES;
   },
 
-  /**
-   * Synchornizes the data in the local store with that on the server
-   *
-   * @param {Boolean} clearLoadData YES if we want to clear the store of local data
-   */
-  synchronizeServerData: function(clearLoadData) {
-    //App.userEngine.synchronizeWithServer(clearLoadData, null, null);
+  clearServerData: function() {
 
-    // repositoryRuntimeEngine will call repositoryInfoDataController
-    //App.repositoryRuntime.synchronizeWithServer(clearLoadData, YES, null, null);
   }
 
 });

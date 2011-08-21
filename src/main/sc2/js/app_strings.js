@@ -79,10 +79,15 @@ SC.STRINGS = {
   '_login.rememberMe': 'Remember Me',
   '_login.login': 'Login',
 
+  // ********************************************************
+  // Stream Page
+  // ********************************************************
+  '_stream.repository': 'Repository',
+  '_stream.severity': 'Severity',
 
 
   // ********************************************************
-  // Login Page
+  // Other Page
   // ********************************************************
   '_mainPane.Title': 'Chililog',
   '_mainPane.Search': 'Search',

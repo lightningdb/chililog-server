@@ -1,0 +1,3 @@
+<div class="footer">
+  Chililog V1.1.1. &copy; 2011 Cinch Logic.
+</div>

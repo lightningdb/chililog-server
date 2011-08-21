@@ -198,7 +198,7 @@ App.TextBoxView = SC.TextField.extend({
 });
 
 /**  @Class
- * 
+ *
  * Our own image field with visibility attribute
  */
 App.ImgView = SC.View.extend({
@@ -215,6 +215,90 @@ App.ImgView = SC.View.extend({
    * Alternate text
    */
   alt: ' '
+});
+
+/** @class
+ *
+ * Select control that is waiting to be pulled
+ * Thanks to https://github.com/ebryn/sproutcore20
+ */
+App.SelectOption = SC.View.extend({
+  tagName: 'option',
+  classNames: ['sc-select-option'],
+
+  /*
+   Note: we can't use a template with {{label}} here because it
+   uses a BindableSpan. The browser will eat the span inside of
+   an option tag.
+   */
+  template: function(context, options) {
+    options.data.buffer.push(context.get('label'));
+  },
+  attributeBindings: ['value', 'selected'],
+
+  labelBinding: '*content.label',
+  valueBinding: '*content.value',
+  selectedBinding: '*content.selected',
+
+  _labelDidChange: function() {
+    this.rerender();
+  }.observes('label')
+});
+
+/** @class
+ *
+ * Select control that is waiting to be pulled
+ * Thanks to https://github.com/ebryn/sproutcore20
+ */
+App.SelectView = SC.CollectionView.extend({
+  tagName: 'select',
+  classNames: ['sc-select'],
+  attributeBindings: ['multiple'],
+
+  itemViewClass: App.SelectOption,
+
+  value: null,
+
+  willInsertElement: function() {
+    this._elementValueDidChange();
+  },
+
+  change: function() {
+    this._elementValueDidChange();
+  },
+
+  _elementValueDidChange: function() {
+    var views = SC.View.views,
+      selectedOptions = this.$('option:selected'),
+      value;
+
+    if (SC.get(this, 'multiple') && SC.get(this, 'multiple') !== "false") {
+      value = selectedOptions.toArray().map(function(el) {
+        return SC.get(views[el.id], 'content');
+      });
+    } else {
+      value = SC.get(views[selectedOptions.prop('id')], 'content');
+    }
+
+    set(this, 'value', value);
+    set(SC.get(this, 'content'), 'selection', value);
+  },
+
+  arrayWillChange: function(content, start, removed) {
+    var selected = SC.get(content, 'selection'), idx, obj;
+
+    if (content && removed) {
+      for (idx = start; idx < start + removed; idx++) {
+        obj = content.objectAt(idx);
+
+        if (selected.contains(obj)) {
+          selected.removeObject(obj);
+        }
+      }
+    }
+
+    this._super(content, start, removed);
+  }
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -234,7 +318,7 @@ App.setupStandardPage = function(pageFileName) {
   } else if (pageFileName === 'myprofile.html') {
     $('#navMyProfile').addClass('active');
   }
-  
+
   // User
   var loggedInUser = App.sessionEngine.get('loggedInUser');
   $('#dividerUser').append(loggedInUser.get('displayNameOrUsername'));

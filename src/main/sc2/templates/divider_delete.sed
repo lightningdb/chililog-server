@@ -1,0 +1,5 @@
+/<\!-- START COMMON DIVIDER BLOCK -->/,/<\!-- END COMMON DIVIDER BLOCK -->/ {
+ /<\!-- START COMMON DIVIDER BLOCK -->/! {
+   /<\!-- END COMMON DIVIDER BLOCK -->/!d
+ }
+}

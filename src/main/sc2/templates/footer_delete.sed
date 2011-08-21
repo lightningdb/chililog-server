@@ -1,0 +1,5 @@
+/<\!-- START COMMON FOOTER BLOCK -->/,/<\!-- END COMMON FOOTER BLOCK -->/ {
+ /<\!-- START COMMON FOOTER BLOCK -->/! {
+   /<\!-- END COMMON FOOTER BLOCK -->/!d
+ }
+}

@@ -33,7 +33,6 @@ App.UsernameField = SC.View.extend({
   label: '_login.username'.loc(),
 
   Data : App.TextBoxView.extend({
-    id: 'usernameData',
     valueBinding: 'App.pageData.username',
     name: 'username',
     tabindex: '1',
