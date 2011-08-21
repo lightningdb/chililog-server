@@ -101,6 +101,15 @@ In end, your IDE should look as follows.
 !EclipseIDE.png! 
 
 
+h3. 1.5 Debugging Config
+
+Edit @src/main/resource.filters/debug.properties@. 
+
+Change @web.static_files.directory@ to absolute path for @src/main/sc2@.
+
+When running the server, you can access the workbench via "http://localhost:61615/workbench":http://localhost:61615/workbench.
+
+
 
 h2. 2. Components
 

@@ -1,3 +1,16 @@
+
+Special Note for SproutCore Competition Judges
+==============================================
+
+I'm in the process of setting up a demo site [http://demo.chililog.com](http://demo.chililog.com). You can login as admin/admin.
+
+It will be done by (late) Sunday night ready for you to review Monday morning.
+
+This will save you time from downloading and installing everything.
+
+However, if you do wish to download it and have a go, the instructions are in src/main/docs/developer_guide/developer_guide.textile.
+
+
 What?
 =====
 ChiliLog is a real time log aggregation, analysis and monitoring tool.
@@ -37,7 +50,7 @@ The current road map is:
 
 * MAY 2011 - Chiliog Log server without UI. (Done)
 
-* JUL 2011 - Original release date posposed because I am not happy with UI in Sproutcore 1.0. Tables for displaying log entries are work working very well. (Milestone missed).
+* JUL 2011 - Original release date posposed because I am not happy with UI in Sproutcore 1.0. Tables for displaying log entries are not work working very well. (Milestone missed).
 
 * AUG 2011 - UI re-write in Sproutcore 2.0.
 
