@@ -145,7 +145,7 @@ App.statechart = SC.Statechart.create({
         var username = App.pageData.get('username');
         var password = App.pageData.get('password');
 
-        App.sessionEngine.login(username, password, false, true,
+        App.sessionEngine.login(username, password, true, true,
           this, this.loginCallback, null);
 
         return;

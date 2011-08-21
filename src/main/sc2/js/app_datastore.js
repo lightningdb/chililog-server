@@ -109,6 +109,14 @@ App.AuthenticatedUserRecord = SC.Record.extend({
   role: SC.Record.attr(),
   gravatarMD5Hash: SC.Record.attr(String),
 
+  displayNameOrUsername: function() {
+    var displayName = this.get('displayName');
+    if (SC.none(displayName)) {
+      displayName = this.get('username');
+    }
+    return displayName;
+  }.property('username', 'displayName').cacheable(),
+  
   /**
    * Maps server api data into this user record
    *

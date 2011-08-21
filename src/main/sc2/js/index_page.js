@@ -17,7 +17,7 @@
 //
 
 //
-// Javascript for login.html
+// Javascript for index.html
 //
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -31,4 +31,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.sessionEngine.load();
+App.pageFileName = "index.html";
+
+if (App.sessionEngine.load()) {
+  App.setupStandardPage(App.pageFileName);
+  //App.statechart.initStatechart();
+} else {
+  // Not logged in so go to login page
+  window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);
+}

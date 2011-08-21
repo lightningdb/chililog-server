@@ -251,13 +251,13 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       }
     }
 
-    setTimeout('App.sessionDataController.checkExpiry()', pollSeconds)
+    setTimeout('App.sessionEngine.checkExpiry()', pollSeconds)
   },
 
   /**
    * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
    *
-   * @returns {Boolean} YES if successfully loaded, NO if token not loaded and the user has to sign in again.
+   * @returns {Boolean} YES if authenticated user details successfully loaded, NO if token not loaded and the user has to sign in again.
    */
   load: function() {
     // Get token from local store
@@ -276,7 +276,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       return NO;
     }
     var jsonString = token.substr(0, delimiterIndex);
-    var json = SC.json.decode(jsonString);
+    var json = JSON.parse(jsonString);
     if (SC.none(json)) {
       return NO;
     }
@@ -292,22 +292,32 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Synchronously get user from server
-    var url = '/api/Authentication';
-    var request = SC.Request.getUrl(url).async(NO).json(YES).header(App.AUTHENTICATION_HEADER_NAME, token);
-    var response = request.send();
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = token;
+    var authenticatedUserAO = null;
+    var responseJqXHR = null;
 
-    // Check status
-    this.checkResponse(response);
+    $.ajax({
+      url: '/api/Authentication',
+      type: 'GET',
+      async: false,
+      dataType: 'json',
+      headers: headers,
+      error: this.ajaxError,
+      success: function (data, textStatus, jqXHR) {
+        authenticatedUserAO = data;
+        responseJqXHR = jqXHR;
+      }
+    });
 
     // Save authenticated user details
-    var authenticatedUserAO = response.get('body');
     var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
       authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
     authenticatedUserRecord.fromApiObject(authenticatedUserAO);
     App.store.commitRecords();
 
     // Save what we have so far
-    this.loadVersionAndBuildInfo(response.get('headers'));
+    this.loadVersionAndBuildInfo(responseJqXHR);
     this.set('authenticationTokenExpiry', expiry);
     this.set('authenticationToken', token);
     localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
@@ -489,7 +499,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    */
   editProfile: function() {
     var nestedStore = App.store.chain();
-    var authenticatedUserRecord = App.sessionDataController.get('loggedInUser');
+    var authenticatedUserRecord = App.sessionEngine.get('loggedInUser');
     if (SC.none(authenticatedUserRecord)) {
       // Not logged in ... better unload
       return null;

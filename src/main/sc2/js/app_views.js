@@ -217,3 +217,25 @@ App.ImgView = SC.View.extend({
   alt: ' '
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+// Utility methods
+// --------------------------------------------------------------------------------------------------------------------
+/**
+ * Setup the fields on an authenticated page
+ */
+App.setupStandardPage = function(pageFileName) {
+  // Selected nav
+  if (pageFileName === 'stream.html') {
+    $('#navStream').addClass('active');
+  } else if (pageFileName === 'search.html') {
+    $('#navSearch').addClass('active');
+  } else if (pageFileName.indexOf('admin') === 0) {
+    $('#navAdmin').addClass('active');
+  } else if (pageFileName === 'myprofile.html') {
+    $('#navMyProfile').addClass('active');
+  }
+  
+  // User
+  var loggedInUser = App.sessionEngine.get('loggedInUser');
+  $('#dividerUser').append(loggedInUser.get('displayNameOrUsername'));
+}

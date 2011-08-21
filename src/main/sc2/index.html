@@ -25,31 +25,37 @@
 </head>
 <body class="standard">
 
+<!-- START COMMON HEADER BLOCK -->
 <div class="header">
   <div class="nav">
     <ul>
-      <li><a class="active" href="abc.html">Stream</a></li>
-      <li><a href="abc.html">Search</a></li>
-      <li><a href="abc.html">Administration</a></li>
-      <li><a href="abc.html">My Profile</a></li>
-      <li><a href="abc.html">Logout</a></li>
+      <li><a href="stream.html" id="naveStream">Stream</a></li>
+      <li><a href="search.html" id="navSearch">Search</a></li>
+      <li><a href="admin_users.html" id="navAdmin">Administration</a></li>
+      <li><a href="myprofile.html" id="navMyProfile">My Profile</a></li>
+      <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
     </ul>
   </div>
   <h1>ChiliLog</h1>
 </div>
+<!-- END COMMON HEADER BLOCK -->
 
+<!-- START COMMON DIVIDER BLOCK -->
 <div class="divider">
-  <div class="user">Vibul</div>
-  <div class="page">&nbsp;</div>
+  <div class="user" id="dividerUser">&nbsp;</div>
+  <div class="crumbs" id="dividerCrumbs">&nbsp;</div>
 </div>
+<!-- END COMMON DIVIDER BLOCK -->
 
 <div class="content">
 
 </div>
 
+<!-- START COMMON FOOTER BLOCK -->
 <div class="footer">
-  Chililog V1.1.1. &copy 2011 Cinch Logic. 
+  Chililog V1.1.1. &copy; 2011 Cinch Logic.
 </div>
+<!-- END COMMON FOOTER BLOCK -->
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>
