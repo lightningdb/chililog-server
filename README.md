@@ -1,14 +1,14 @@
 
-Special Note for SproutCore Competition Judges
+Special Note for Sproutcore Competition Judges
 ==============================================
 
 I'm in the process of setting up a demo site [http://demo.chililog.com](http://demo.chililog.com). You can login as admin/admin.
 
-It will be done by (late) Sunday night ready for you to review Monday morning.
-
-This will save you time from downloading and installing everything.
+It will be done by (late) Sunday night ready for you to review Monday morning. This will save you time from downloading and installing everything.
 
 However, if you do wish to download it and have a go, the instructions are in src/main/docs/developer_guide/developer_guide.textile.
+
+The Sproutcore 2 source files are in [src/main/sc2](https://github.com/chililog/chililog-server/tree/master/src/main/sc2).
 
 
 What?
