@@ -411,7 +411,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
     {
         try
         {
-            _logger.error(e.getCause(), "Error handling PubSub JSON HTTP Request");
+            _logger.debug(e.getCause(), "Error handling PubSub JSON HTTP Request");
             e.getChannel().close();
         }
         catch (Exception ex)

@@ -279,7 +279,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
 
         if (isChunked)
         {
-            // Chunked so requeste data is stored in streams
+            // Chunked so request data is stored in streams
             if (requestContentIOStyle == ContentIOStyle.ByteArray)
             {
                 // byte[]

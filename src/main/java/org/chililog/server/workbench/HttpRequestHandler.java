@@ -18,14 +18,9 @@
 
 package org.chililog.server.workbench;
 
-import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
-
-import java.nio.channels.ClosedChannelException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.Log4JLogger;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -40,7 +35,6 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
-import org.jboss.netty.util.CharsetUtil;
 
 /**
  * <p>
@@ -149,59 +143,15 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
     {
-        if (e.getCause() instanceof ClosedChannelException)
+        try
         {
-            _logger.debug("Got ClosedChannelException so closing channel");
-            try
-            {
-                e.getChannel().close();
-            }
-            catch (Exception ex3)
-            {
-                _logger.debug("Got ClosedChannelException but got error while trying to close the channel. "
-                        + ex3.toString());
-            }
+            _logger.debug(e.getCause(), "ERROR: Unhandled exception: " + e.getCause().getMessage()
+                    + ". Closing channel " + ctx.getChannel().getId());
+            e.getChannel().close();
         }
-        else
+        catch (Exception ex)
         {
-            boolean willBeClosed = false;
-            try
-            {
-                Throwable cause = e.getCause();
-                HttpResponseStatus responseStatus = HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
-                _logger.error(cause, "ERROR handling request. %1", cause.getMessage());
-
-                HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, responseStatus);
-
-                response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
-
-                StringBuffer sb = new StringBuffer();
-                sb.append("ERROR: " + e.getCause().getMessage() + "\n\n");
-                sb.append("STACK TRACE: " + e.getCause().toString());
-                response.setContent(ChannelBuffers.copiedBuffer(sb.toString(), CharsetUtil.UTF_8));
-
-                ChannelFuture future = e.getChannel().write(response);
-                future.addListener(ChannelFutureListener.CLOSE);
-                willBeClosed = true;
-            }
-            catch (Exception ex)
-            {
-                _logger.error(ex, "ERROR while trying to send 500 - Internal Server Error. %1", ex.getMessage());
-            }
-
-            // Close the channel
-            try
-            {
-                if (!willBeClosed)
-                {
-                    e.getChannel().close();
-                }
-            }
-            catch (Exception ex2)
-            {
-                _logger.error(ex2, "ERROR while trying close socket. %1", ex2.getMessage());
-            }
+            _logger.debug(ex, "ERROR trying to close socket because we got an unhandled exception");
         }
     }
 

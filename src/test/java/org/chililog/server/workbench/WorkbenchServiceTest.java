@@ -359,7 +359,7 @@ public class WorkbenchServiceTest
         URL url = new URL("http://localhost:8989/api/notfound");
         URLConnection conn = url.openConnection();
 
-        String content = ApiUtils.getResponseContent((HttpURLConnection) conn);
+        //String content = ApiUtils.getResponseContent((HttpURLConnection) conn);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
@@ -368,8 +368,6 @@ public class WorkbenchServiceTest
 
         assertEquals("HTTP/1.1 404 Not Found", responseCode);
         assertTrue(!StringUtils.isBlank(headers.get("Date")));
-        assertTrue(content
-                .contains("\"Message\": \"Cannot find API class 'org.chililog.server.workbench.workers.NotfoundWorker' in URI: '/api/notfound.'\""));
     }
 
     /**
