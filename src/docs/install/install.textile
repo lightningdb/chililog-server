@@ -40,7 +40,9 @@ pre(code)..
     Adding ChiliLog Repository
 
     Finish
-p.     
+    
+p. 
+
 
 
 h2. 3. Install Chililog
@@ -53,7 +55,16 @@ h2. 3. Install Chililog
 
 To stop, execute @stop.bat@ or @stop.sh@
 
-To configure, edit @config\app.properties@ and uncomment our your desired setting(s). Save your changes and restart Chililog server.
+
+h2. 4. Configuring Chililog
+
+# To configure, edit @config\app.properties@
+# Uncomment and change your desired setting(s). 
+# Edit @run.bat@ or @run.sh@ to add the java system setting @-Dchililog.config.directory=\path\to\config\directory@. 
+# Restart Chililog server.
 
 Find more documentation in the @docs@ directory.
+
+
+
 

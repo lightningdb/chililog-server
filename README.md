@@ -24,7 +24,7 @@ Other technical titbits:
 
 __Demo Site__
 
-I'm in the process of setting up a demo site [http://demo.chililog.com:8989](http://demo.chililog.com). You can login as admin/admin.
+A demo site [http://demo.chililog.com](http://demo.chililog.com) has been setup. You can login as admin/admin.
 
 It will be done by (late) Sunday night ready for you to review Monday morning. This will save you time from installing and configuring everything.
 

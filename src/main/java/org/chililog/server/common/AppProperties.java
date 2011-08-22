@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * 
  * <p>
  * To override the default configuration, create your own <code>app.properties</code> file and set your JVM system
- * property option "chililog.config.dir" to the directory where your file is located.
+ * property option "chililog.config.directory" to the directory where your file is located.
  * </p>
  * 
  * <p>
