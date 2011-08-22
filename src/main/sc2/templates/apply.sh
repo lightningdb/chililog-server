@@ -29,5 +29,6 @@ processHTML ../index.html
 processHTML ../stream.html
 processHTML ../search.html
 processHTML ../admin_users.html
+processHTML ../admin_repos.html
 processHTML ../my_profile.html
 

@@ -156,7 +156,7 @@ App.TestMessageButton = JQ.Button.extend({
           var response = JSON.parse(evt.data);
           if (!response.Success) {
             response.LogEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: response.ErrorMessage };
-            App.writeLogEntry(response.LogEntry, true);
+            App.pageController.writeLogEntry(response.LogEntry, true);
           }
 
           // Close after we get a response so that button is enabled and the user can send another message
@@ -175,18 +175,25 @@ App.TestMessageButton = JQ.Button.extend({
       webSocket.onerror = function (evt) {
         SC.Logger.log('Test Socket error: ' + evt.data);
         var logEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: evt.data };
-        App.writeLogEntry(logEntry, true);
+        App.pageController.writeLogEntry(logEntry, true);
       };
     } catch (exception) {
       SC.Logger.log('Test Socket error: ' + evt.data);
       var logEntry = { Timestamp: '', Source: 'Chililog', Host: 'Chililog', Severity: '3', Message: exception };
-      App.writeLogEntry(logEntry, true);
+      App.pageController.writeLogEntry(logEntry, true);
     }
 
     return;
   }
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+// Controllers
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+ * Mediates between state charts and views
+ */
 App.pageController = SC.Object.create({
   /**
    * Value of the repository text field
@@ -228,17 +235,158 @@ App.pageController = SC.Object.create({
   ],
 
   /**
+   * Flag to indicate if we want the bottom bar to show or not
+   */
+  showActionButton2: NO,
+
+  /**
+   * Writes a log entry to the results area
+   * @param {Object} logEntry data to write to page
+   * @param {Boolean} doSeverityCheck YES to perform severity check to decide if log entry is to be dispalyed or not
+   */
+  writeLogEntry: function (logEntry, doSeverityCheck) {
+    if (logEntry == null) {
+      return;
+    }
+
+    var severity = parseInt(logEntry.Severity);
+    var maxSeverity = parseInt(App.pageController.getPath('severity.value'));
+    if (doSeverityCheck && severity > maxSeverity) {
+      return;
+    }
+
+    var scDate = null;
+    if (logEntry.Timestamp === '') {
+      scDate = SC.DateTime.create();
+    } else {
+      var d = new Date();
+      var timezoneOffsetMinutes = d.getTimezoneOffset();
+      scDate = SC.DateTime.parse(logEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
+      scDate.set('timezone', timezoneOffsetMinutes);
+    }
+
+    var className = '';
+    if (severity <= 3) {
+      className = ' class="red" ';
+    } else if (severity == 4 || severity == 5) {
+      className = ' class="amber" ';
+    }
+
+    var newRowHtml = '<tr' + className + '>' +
+      '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
+      '<td>' + logEntry.Source + '</td>' +
+      '<td>' + logEntry.Host + '</td>' +
+      '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</td>' +
+      '<td>' + logEntry.Message + '</td>' +
+      '</tr>';
+    $('#resultsTable > tbody:last').append(newRowHtml);
+    window.scrollTo(0, document.body.scrollHeight);
+
+    // Check if we want to show the bottom buttons ...
+    if (!App.pageController.get('showActionButton2')) {
+      var rowCount = $('#resultsTable tr').length;
+      if (rowCount > 1) {
+        App.pageController.set('showActionButton2', YES);
+      }
+    }
+  }
+});
+
+/**
+ * Controls streaming.
+ *
+ * Rather than writing back to the page controller, write directly to DOM for speed.
+ */
+App.streamingController = SC.Object.create({
+  /**
    * Websocket that we use to talk to the server
    */
   webSocket: null,
 
   /**
-   * Flag to indicate if we want the bottom bar to show or not
+   * Make web socket connection and wait for log entries to come down
    */
-  showActionButton2: NO
+  startStreaming: function() {
+    try {
+      $('#results').css('display', 'block');
+      var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
 
+      webSocket.onopen = function () {
+        SC.Logger.log('Socket opening');
+
+        var request = {
+          MessageType: 'SubscriptionRequest',
+          MessageID: new Date().getTime() + '',
+          RepositoryName: App.pageController.getPath('repository.name'),
+          Username: App.sessionEngine.getPath('loggedInUser.username'),
+          Password: 'token:' + App.sessionEngine.get('authenticationToken')
+        };
+        var requestJSON = JSON.stringify(request);
+        webSocket.send(requestJSON);
+
+        App.pageController.writeLogEntry({
+          Timestamp: '',
+          Source: 'workbench',
+          Host: 'local',
+          Severity: '6',
+          Message: 'Started.  Waiting for messages ...'
+        }, false);
+      };
+
+      webSocket.onmessage = function (evt) {
+        SC.Logger.log('Socket received message: ' + evt.data);
+        try {
+          var response = JSON.parse(evt.data);
+          if (!response.Success) {
+            // Turn our error into a message for display
+            response.LogEntry = {
+              Timestamp: '',
+              Source: 'Chililog',
+              Host: 'Chililog',
+              Severity: '3',
+              Message: response.ErrorMessage
+            };
+          }
+          App.pageController.writeLogEntry(response.LogEntry, true);
+        }
+        catch (exception) {
+          SC.Logger.log('Error parsing log entry. ' + exception);
+        }
+      };
+
+      webSocket.onclose = function (evt) {
+        SC.Logger.log('Socket close');
+        App.pageController.writeLogEntry({
+          Timestamp: '',
+          Source: 'workbench',
+          Host: 'local',
+          Severity: '6',
+          Message: 'Stopped'
+        }, false);
+      };
+
+      webSocket.onerror = function (evt) {
+        SC.Logger.log('Socket error: ' + evt.data);
+      };
+
+      App.streamingController.set('webSocket', webSocket);
+    } catch (exception) {
+      App.pageController.errorMessage = exception;
+      this.gotoState('notStreaming');
+    }
+  },
+
+  /**
+   * Stop streaming
+   */
+  stopStreaming: function() {
+    try {
+      App.streamingController.get('webSocket').close();
+    } catch (exception) {
+      SC.Logger.log('Error closing web socket: ' + exception);
+    }
+  }
 });
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // States
@@ -250,7 +398,7 @@ App.statechart = SC.Statechart.create({
     initialSubstate: 'notStreaming',
 
     /**
-     * Prompt the user to enter username and password
+     * Prompt the user for criteria
      */
     notStreaming: SC.State.extend({
       enterState: function() {
@@ -266,79 +414,12 @@ App.statechart = SC.Statechart.create({
     }),
 
     /**
-     * Lets the engine validates credentials with the server in an asynchronous manner.
-     * The screen is disabled and a wait icon is displayed.
+     * Startup web socket and wait for incoming messages
      */
     streaming: SC.State.extend({
       enterState: function() {
         App.pageController.set('isStreaming', YES);
-
-        try {
-          var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
-
-          webSocket.onopen = function () {
-            SC.Logger.log('Socket opening');
-
-            var request = {
-              MessageType: 'SubscriptionRequest',
-              MessageID: new Date().getTime() + '',
-              RepositoryName: App.pageController.getPath('repository.name'),
-              Username: App.sessionEngine.getPath('loggedInUser.username'),
-              Password: 'token:' + App.sessionEngine.get('authenticationToken')
-            };
-            var requestJSON = JSON.stringify(request);
-            webSocket.send(requestJSON);
-
-            App.writeLogEntry({
-              Timestamp: '',
-              Source: 'workbench',
-              Host: 'local',
-              Severity: '6',
-              Message: 'Started.  Waiting for messages ...'
-            }, false);
-          };
-
-          webSocket.onmessage = function (evt) {
-            SC.Logger.log('Socket received message: ' + evt.data);
-            try {
-              var response = JSON.parse(evt.data);
-              if (!response.Success) {
-                // Turn our error into a message for display
-                response.LogEntry = {
-                  Timestamp: '',
-                  Source: 'Chililog',
-                  Host: 'Chililog',
-                  Severity: '3',
-                  Message: response.ErrorMessage
-                };
-              }
-              App.writeLogEntry(response.LogEntry, true);
-            }
-            catch (exception) {
-              SC.Logger.log('Error parsing log entry. ' + exception);
-            }
-          };
-
-          webSocket.onclose = function (evt) {
-            SC.Logger.log('Socket close');
-            App.writeLogEntry({
-              Timestamp: '',
-              Source: 'workbench',
-              Host: 'local',
-              Severity: '6',
-              Message: 'Stopped'
-            }, false);
-          };
-
-          webSocket.onerror = function (evt) {
-            SC.Logger.log('Socket error: ' + evt.data);
-          };
-
-          App.pageController.set('webSocket', webSocket);
-        } catch (exception) {
-          App.pageController.errorMessage = exception;
-          this.gotoState('notStreaming');
-        }
+        App.streamingController.startStreaming();
       },
 
       /**
@@ -350,64 +431,12 @@ App.statechart = SC.Statechart.create({
       },
 
       exitState: function() {
-        try {
-          App.pageController.get('webSocket').close();
-        } catch (exception) {
-          SC.Logger.log('Error closing web socket: ' + exception);
-        }
-
+        App.streamingController.stopStreaming();
         App.pageController.set('isStreaming', NO);
       }
     })
   })
 });
-
-App.writeLogEntry = function (logEntry, doSeverityCheck) {
-  if (logEntry == null) {
-    return;
-  }
-
-  var severity = parseInt(logEntry.Severity);
-  var maxSeverity = parseInt(App.pageController.getPath('severity.value'));
-  if (doSeverityCheck && severity > maxSeverity) {
-    return;
-  }
-
-  var scDate = null;
-  if (logEntry.Timestamp === '') {
-    scDate = SC.DateTime.create();
-  } else {
-    var d = new Date();
-    var timezoneOffsetMinutes = d.getTimezoneOffset();
-    scDate = SC.DateTime.parse(logEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
-    scDate.set('timezone', timezoneOffsetMinutes);
-  }
-
-  var className = '';
-  if (severity <= 3) {
-    className = ' class="red" ';
-  } else if (severity == 4 || severity == 5) {
-    className = ' class="amber" ';
-  }
-
-  var newRowHtml = '<tr' + className + '>' +
-    '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
-    '<td>' + logEntry.Source + '</td>' +
-    '<td>' + logEntry.Host + '</td>' +
-    '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</td>' +
-    '<td>' + logEntry.Message + '</td>' +
-    '</tr>';
-  $('#resultsTable > tbody:last').append(newRowHtml);
-  window.scrollTo(0, document.body.scrollHeight);
-
-  // Check if we want to show the bottom buttons ...
-  if (!App.pageController.get('showActionButton2')) {
-    var rowCount = $('#resultsTable tr').length;
-    if (rowCount > 1) {
-      App.pageController.set('showActionButton2', YES);
-    }
-  }
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing

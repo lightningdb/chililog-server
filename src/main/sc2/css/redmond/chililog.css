@@ -148,9 +148,10 @@ body .standard {
 }
 
 .standard .footer {
-    padding: 300px 20px 0px 20px;
+    padding: 60px 20px 0px 20px;
     font-size: 0.8em;
     text-align: center;
+    clear: both;
 }
 
 .standard .content {
@@ -199,6 +200,7 @@ body .standard {
 }
 
 .content.stream .results {
+    clear: both;
     margin-top: 16px;
 }
 
@@ -236,5 +238,132 @@ body .standard {
 }
 
 .content.stream .bottomBar {
+    margin-top: 16px;
+}
+
+
+/* =============================================================================
+   Search Page
+   ========================================================================= */
+
+.content.search .criteria {
+    clear: both;
+    height: 50px;
+}
+
+.content.search .criteria .field {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+}
+
+.content.search .criteria .field label {
+    font-weight: bold;
+}
+
+.content.search .criteria .field #repositoryData {
+    min-width: 200px;
+}
+
+.content.search .criteria input {
+    width: 120px;
+}
+
+.content.search .criteria .field #fromTimeData {
+    width: 80px;
+}
+.content.search .criteria .field #toTimeData {
+    width: 80px;
+}
+.content.search .criteria #keywordsData {
+    width: 750px;
+}
+.content.search .criteria #messageData {
+    width: 750px;
+}
+.content.search .criteria #conditionData {
+    width: 750px;
+}
+
+.content.search .criteria button {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+    margin-top: 1.1em;
+}
+.content.search .criteria button span {
+    padding: 3px 1em;
+}
+
+.content.search .error {
+    clear: both;
+    width: 750px;
+    padding:  0.7em;
+    margin-top: 16px;
+    margin-bottom: 1em;
+}
+
+.content.search .results {
+    clear: both;
+    margin-top: 16px;
+    padding-top: 16px;
+}
+
+.content.search .results table {
+    width: 100%;
+}
+.content.search .results td {
+    border: Gainsboro solid 1px;
+    text-align: left;
+    padding: 4px;
+    font-family: "Andale Mono", "Courier New", Courier, monospace;
+    font-size: 0.85em;
+}
+
+.content.search .results .divTable {
+    display: table;
+    width: 100%;
+}
+.content.search .results .divTableRow {
+    display: table-row;
+}
+
+.content.search .results .divTableCell {
+    border: Gainsboro solid 1px;
+    text-align: left;
+    padding: 4px;
+    font-family: "Andale Mono", "Courier New", Courier, monospace;
+    font-size: 0.85em;
+    display: table-cell;
+    background-color: white;
+    color: black;
+}
+
+.content.search .results .divTableCell.tableheader {
+    border: DarkGray solid 1px;
+    text-align: left;
+    padding: 4px;
+    background-color: #356AA0;
+    font-size: 1em;
+    color: white;
+    font-weight: bold;
+}
+
+.content.search .results tr {
+    background-color: white;
+    color: black;
+}
+
+.content.search .results tr.red {
+    background-color: firebrick;
+    color: white;
+}
+
+.content.search .results tr.amber {
+    background-color: gold;
+    color: black;
+}
+
+.content.search .bottomBar {
     margin-top: 16px;
 }

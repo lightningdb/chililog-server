@@ -31,7 +31,7 @@
     <ul>
       <li><a href="stream.html" id="navStream">Stream</a></li>
       <li><a href="search.html" id="navSearch">Search</a></li>
-      <li><a href="admin_users.html" id="navAdmin">Administration</a></li>
+      <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
       <li><a href="my_profile.html" id="navMyProfile">My Profile</a></li>
       <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
     </ul>
@@ -69,7 +69,7 @@
       <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
     {{/view}}
   </script>
-  <div class="results">
+  <div id="results" class="results" style="display: none;">
     <table id="resultsTable">
       <thead>
         <tr>
@@ -99,7 +99,7 @@
 
 <!-- START COMMON FOOTER BLOCK -->
 <div class="footer">
-  Chililog V1.1.1. &copy; 2011 Cinch Logic.
+  Chililog V0.0.1. &copy; 2011 Cinch Logic.
 </div>
 <!-- END COMMON FOOTER BLOCK -->
 

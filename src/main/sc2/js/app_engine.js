@@ -80,9 +80,585 @@ App.EngineMixin = {
     }
 
     return YES;
+  },
+
+  /**
+   * Get the standard headers loaded with our authentication token
+   */
+  getAjaxRequestHeaders: function() {
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
+    return headers;
   }
 
+
 };
+
+
+
+/** @class
+ *
+ * Manages repository records and keeps them in sync with the server
+ * 
+ * @extends SC.Object
+ */
+App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
+  /**
+   * YEs if we are performing a server synchronization
+   * @type Boolean
+   */
+  isLoading: NO,
+
+  clearServerData: function() {
+    var records = App.store.find(App.RepositoryRuntimeInfoRecord);
+    records.forEach(function(record) {
+      record.destroy()
+    });
+    App.store.commitRecords();
+
+    records = App.store.find(App.RepositoryEntryRecord);
+    records.forEach(function(record) {
+      record.destroy()
+    });
+    App.store.commitRecords();
+  },
+
+  /**
+   * Synchronize data in the store with the data on the server
+   *
+   * @param {Boolean} loadRepositoryMetaInfo YES will chain a repository meta info refresh after this sync has finished.
+   * In this event, callback will only be called after synchronization with RepositoryInfo has finished.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  load: function(loadRepositoryMetaInfo, callbackTarget, callbackFunction, callbackParams) {
+    // If operation already under way, just exit
+    var isLoading = this.get('isLoading');
+    if (isLoading) {
+      return;
+    }
+
+    // Remove all data
+    this.clearServerData();
+
+    // We are working
+    this.set('isLoading', YES);
+
+    // Get data
+    var context = {
+      loadRepositoryMetaInfo: loadRepositoryMetaInfo,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    $.ajax({
+      type: 'GET',
+      url: '/api/repositories',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endLoad
+    });
+  },
+
+
+  /**
+   * Process data when repository run time information returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endLoad: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Set data
+      var repoRuntimeInfoAOArray = data;
+      this._processAOArray(repoRuntimeInfoAOArray);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endLoad: ' + err.message);
+    }
+
+    // Finish sync'ing
+    App.repositoryRuntimeInfoEngine.set('isLoading', NO);
+
+    // Chain sync or not
+    if (SC.none(this.loadRepositoryMetaInfo)) {
+      // Callback
+      if (!SC.none(this.callbackFunction)) {
+        this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+      }
+    } else {
+      // Chain sync
+      App.repositoryMetaInfoEngine.load(params.callbackTarget, params.callbackFunction, params.callbackParams);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Merge new AO array status with the current data in the store
+   *
+   * @param repoAOArray
+   */
+  _processAOArray: function (repoAOArray) {
+    // Set data
+    if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
+      for (var i = 0; i < repoAOArray.length; i++) {
+        var repoAO = repoAOArray[i];
+
+        // See if record exists
+        var repoRecord = App.store.find(App.RepositoryRuntimeInfoRecord, repoAO.DocumentID);
+        if (SC.none(repoRecord) || (repoRecord.get('status') & SC.Record.DESTROYED)) {
+          repoRecord = App.store.createRecord(App.RepositoryRuntimeInfoRecord, {}, repoAO.DocumentID);
+        }
+        repoRecord.fromApiObject(repoAO);
+      }
+      App.store.commitRecords();
+    }
+
+    // Delete records that have not been returned
+    var records = App.store.find(App.RepositoryRuntimeInfoRecord);
+    records.forEach(function(record) {
+      var doDelete = YES;
+      if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
+        for (var i = 0; i < repoAOArray.length; i++) {
+          var repoAO = repoAOArray[i];
+          if (repoAO[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+            doDelete = NO;
+            break;
+          }
+        }
+      }
+      if (doDelete) {
+        record.destroy()
+      }
+    });
+    App.store.commitRecords();
+
+    // Make sure that all repository info records have the correct repository record
+    var repoMetaInfoRecords = App.store.find(App.RepositoryMetaInfoRecord);
+    repoMetaInfoRecords.forEach(function(repoMetaInfoRecord) {
+      // Find corresponding repository record
+      var query = SC.Query.local(App.RepositoryRuntimeInfoRecord, 'name={name}', {name: repoMetaInfoRecord.get('name')});
+      var repoMetaRecords = App.store.find(query);
+      if (repoMetaRecords.get('length') > 0) {
+        repoMetaInfoRecord.updateStatus(repoMetaRecords.objectAt(0));
+      }
+    });
+    App.store.commitRecords();
+
+  },
+
+  /**
+   * YEs if we are performing a server synchronization
+   * @type Boolean
+   */
+  isStartingOrStopping: NO,
+
+  /**
+   * Starts a specific repository
+   * @param {String} documentID of repository record to start
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the document that was to be started.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  start: function(documentID, callbackTarget, callbackFunction, callbackParams) {
+    // Don't run if we are doing stuff
+    if (this.get('isStartingOrStopping')) {
+      return;
+    }
+    this.set('isStartingOrStopping', YES);
+
+    var context = { documentID: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    $.ajax({
+      type: 'POST',
+      url: '/api/repositories/' + documentID + '?action=start',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endStart
+    });
+
+    return;
+  },
+
+  /**
+   * Callback from start() after we get a response from the server to process
+   * the returned info.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endStart: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Get and check data
+      var repoAO = data;
+      if (this.documentID !== repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw App.$error('_documentIDError', [ this.documentID, repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]]);
+      }
+
+      // Process response
+      this._processAOArray([repoAO]);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endStart: ' + err);
+    }
+
+    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Stops a specific repository
+   * @param {String} documentID of repository record to stop
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentID will be set to the id of the repository to be stopped.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  stop: function(documentID, callbackTarget, callbackFunction, callbackParams) {
+    // Don't run if we are doing stuff
+    if (this.get('isStartingOrStopping')) {
+      return;
+    }
+    this.set('isStartingOrStopping', YES);
+
+    var context = { documentID: documentID, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    $.ajax({
+      type: 'POST',
+      url: '/api/repositories/' + documentID + '?action=stop',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endStop
+    });
+
+    return;
+  },
+
+  /**
+   * Callback from stop() after we get a response from the server to process
+   * the returned info.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endStop: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Get and check data
+      var repoAO = data;
+      if (this.documentID !== repoAO[this.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw App.$error('_documentIDError', [ this.documentID, repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]]);
+      }
+
+      // Merge the data
+      this._processAOArray([repoAO]);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endStop: ' + err);
+    }
+
+    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Starts all repositories
+   * 
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  startAll: function(callbackTarget, callbackFunction, callbackParams) {
+    // Don't run if we are doing stuff
+    if (this.get('isStartingOrStopping')) {
+      return;
+    }
+    this.set('isStartingOrStopping', YES);
+
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+
+    $.ajax({
+      type: 'POST',
+      url: '/api/repositories?action=start',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endStartAll
+    });
+    
+    return;
+  },
+
+  /**
+   * Process data when repository meta information returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endStartAll: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Check status
+      this.checkResponse(response);
+
+      // Set data
+      var repoAOArray = response.get('body');
+      this._processAOArray(repoAOArray);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endStartAll: ' + err);
+    }
+
+    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Stops all repositories
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  stopAll: function(callbackTarget, callbackFunction, callbackParams) {
+    // Don't run if we are doing stuff
+    if (this.get('isStartingOrStopping')) {
+      return;
+    }
+    this.set('isStartingOrStopping', YES);
+
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+
+    $.ajax({
+      type: 'POST',
+      url: '/api/repositories?action=stop',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endStopAll
+    });
+    
+    return;
+  },
+
+  /**
+   * Process data when return from startStopAll
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endStopAll: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Set data
+      var repoAOArray = data;
+      this._processAOArray(repoAOArray);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endStopAll: ' + err);
+    }
+
+    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Find entries in the specified repository
+   *
+   * @param {Hash} criteria Hash containing the following values
+   *  - documentID: unique id of repository info to find entries in
+   *  - keywordUsage: 'All' to match entries with all of the listed keywords; or 'Any' to match entries with any of the listed keywords
+   *  - keywords: list of keywords to entries must contain
+   *  - conditions: hash of mongodb criteria
+   *  -
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentId, recordCount, callbackParams, error) {}.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  find: function(criteria, callbackTarget, callbackFunction, callbackParams) {
+    var conditionsJson = '';
+    if (!SC.empty(criteria.conditions)) {
+      conditionsJson = JSON.stringify(criteria.conditions);
+    }
+
+    var headers = this.getAjaxRequestHeaders();
+    headers['X-Chililog-Query-Type'] = 'Find';
+    headers['X-Chililog-Conditions'] = conditionsJson;
+    headers['X-Chililog-Keywords-Usage'] = criteria.keywordUsage;
+    headers['X-Chililog-Keywords'] = criteria.keywords;
+    headers['X-Chililog-Start-Page'] = criteria.startPage + '';
+    headers['X-Chililog-Records-Per-Page'] = criteria.recordsPerPage + '';
+    headers['X-Chililog-Do-Page-Count'] = 'false';
+
+    var context = { criteria: criteria, callbackTarget: callbackTarget,
+      callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    $.ajax({
+      type: 'GET',
+      url: '/api/repositories/' + criteria.documentID + '/entries',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: headers,
+      error: this.ajaxError,
+      success: this.endFind
+    });
+    
+    return;
+  },
+
+  /**
+   * Process data when startFind() returns.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endFind: function(data, textStatus, jqXHR) {
+  var error = null;
+    var recordCount = 0;
+    try {
+      // Delete existing records if this is the 1st page
+      // Otherwise assume we want more records
+      if (this.criteria.startPage === 1) {
+        var records = App.store.find(App.RepositoryEntryRecord);
+        records.forEach(function(record) {
+          record.destroy()
+        });
+        App.store.commitRecords();
+      }
+
+      // Fill with new data
+      var repoEntriesAO = data;
+      if (!SC.none(data)) {
+        var repoEntryAOArray = repoEntriesAO['find'];
+        if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
+          // Make keywords into an array of text to highlight
+          var keywordsRegexArray = [];
+          if (!SC.empty(this.criteria.keywords)) {
+            var tempArray = this.criteria.keywords.w();
+            for (var i = 0; i < tempArray.length; i++) {
+              var keyword = tempArray[i];
+              if (!SC.empty(keyword)) {
+                keywordsRegexArray.push(new RegExp('(' + keyword + ')', 'gi'));
+              }
+            }
+          }
+
+          // Add record
+          recordCount = repoEntryAOArray.length;
+          for (var i = 0; i < recordCount; i++) {
+            var repoEntryAO = repoEntryAOArray[i];
+            var repoEntryRecord = App.store.createRecord(App.RepositoryEntryRecord, {}, repoEntryAO['_id']);
+            repoEntryRecord.fromApiObject(repoEntryAO, this.criteria.documentID, keywordsRegexArray);
+          }
+          App.store.commitRecords();
+        }
+      }
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryRuntimeInfoEngine.endFind: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, recordCount, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  }
+});
 
 
 /** @class
@@ -135,25 +711,22 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     this.set('isLoading', YES);
 
     // Get data
-    var url = '/api/repository_info';
     var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    var headers = {};
-    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
-    
+
     $.ajax({
       type: 'GET',
       url: '/api/repository_info',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: headers, 
+      headers: this.getAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endLoad
     });
   },
 
   /**
-   * Process data when user information returns
+   * Process data when repository meta information returns
    *
    * The 'this' object is the context data object.
    *
@@ -284,9 +857,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     var context = { isAdding: isAdding, documentID: documentID,
       callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
     };
-    var headers = {};
-    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
-    
+
     // Call server
     $.ajax({
       type: httpType,
@@ -295,7 +866,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: headers,
+      headers: this.getAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endSave
     });
@@ -374,15 +945,14 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     var url = '/api/repository_info/' + documentID;
     var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    var headers = {};
-    headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
+
     $.ajax({
       type: 'DELETE',
       url: url,
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: headers,
+      headers: this.getAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endErase
     });
@@ -633,10 +1203,10 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Synchronously get user from server
-    var headers = {};
-    headers[App.AUTHENTICATION_HEADER_NAME] = token;
     var authenticatedUserAO = null;
     var responseJqXHR = null;
+    var headers = {};
+    headers[App.AUTHENTICATION_HEADER_NAME] = token;
 
     $.ajax({
       url: '/api/Authentication',

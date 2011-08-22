@@ -177,9 +177,30 @@ App.TextBoxView = SC.TextField.extend({
   attributeBindings: ['type', 'placeholder', 'value', 'name', 'tabindex', 'disabled'],
 
   /**
-   * Additional CSS classes
+   * Name of the text box
    */
-  classBinding: 'disabled',
+  name: '',
+
+  /**
+   * Tabindex
+   */
+  tabindex: '1',
+
+  /**
+   * Flag to indicate if this is disabled or not
+   */
+  disabled: NO
+});
+
+/** @Class
+ *
+ * Our own text box supports additional attributes on the textbox
+ */
+App.TextAreaView = SC.TextArea.extend({
+  /**
+   * Specify additional attributes
+   */
+  attributeBindings: ['placeholder', 'value', 'name', 'tabindex', 'disabled'],
 
   /**
    * Name of the text box
@@ -196,6 +217,7 @@ App.TextBoxView = SC.TextField.extend({
    */
   disabled: NO
 });
+
 
 /**  @Class
  *
@@ -330,7 +352,7 @@ App.setupStandardPage = function(pageFileName) {
     $('#navSearch').addClass('active');
   } else if (pageFileName.indexOf('admin') === 0) {
     $('#navAdmin').addClass('active');
-  } else if (pageFileName === 'myprofile.html') {
+  } else if (pageFileName === 'my_profile.html') {
     $('#navMyProfile').addClass('active');
   }
 

@@ -206,6 +206,10 @@ App.RepositoryEntryRecord = SC.Record.extend({
   keywords: SC.Record.attr(Array),
   fields: SC.Record.attr(Array),
 
+  localTimestampString: function() {
+    return this.get('timestamp').toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z');
+  }.property('timestamp'),
+
   /**
    * Only need to map one way because we don't update entries
    *
@@ -260,7 +264,7 @@ App.RepositoryEntryRecord = SC.Record.extend({
       }
 
       // Markup and then replace tokens with tags (so that injected tags don't get marked up)
-      var highlightedMsg = SC.RenderContext.escapeHTML(msg);
+      var highlightedMsg = msg; //SC.RenderContext.escapeHTML(msg);
 
       if (keywordsRegexArray.length > 0) {
         highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');

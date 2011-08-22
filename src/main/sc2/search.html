@@ -31,7 +31,7 @@
     <ul>
       <li><a href="stream.html" id="navStream">Stream</a></li>
       <li><a href="search.html" id="navSearch">Search</a></li>
-      <li><a href="admin_users.html" id="navAdmin">Administration</a></li>
+      <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
       <li><a href="my_profile.html" id="navMyProfile">My Profile</a></li>
       <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
     </ul>
@@ -47,22 +47,110 @@
 </div>
 <!-- END COMMON DIVIDER BLOCK -->
 
-<div class="content">
+<div class="content search">
   <h1>Search</h1>
-  <p>
-    Click <a href="stream.html">Stream</a> to see real time logs from your repository.
-  </p>
-  <p>
-    Click <a href="search.html">Search</a> to find and analyse historical log entries in your repository.
-  </p>
-  <p>
-    Administration and My Profile are still work in progress.
-  </p>
+  <p>Search for historical log entries.</p>
+  <div class="criteria">
+    <script type="text/x-handlebars">
+      {{#view App.RepositoryField id="repositoryField" }}
+        <label for="repositoryData">{{label}}</label><br/>
+        {{view Data id="repositoryData"}}
+      {{/view}}
+      {{#view App.TimespanField id="timespanField" }}
+        <label for="timespanData">{{label}}</label><br/>
+        {{view Data id="timespanData"}}
+      {{/view}}
+      {{#view App.SeverityField id="severityField" }}
+        <label for="severityData">{{label}}</label><br/>
+        {{view Data id="severityData"}}
+      {{/view}}
+      {{view App.SearchButton id="searchButton"}}
+      {{view App.AdvancedButton id="advancedButton"}}
+    </script>
+  </div>
+  <div style="">
+    <script type="text/x-handlebars">
+      {{#view App.AdvancedCriteria }}
+        {{#view App.FromDateField id="fromDateField" }}
+          <label for="fromDateData">{{label}}</label><br/>
+          {{view Data id="fromDateData"}}
+        {{/view}}
+        {{#view App.FromTimeField id="fromTimeField" }}
+          <label for="fromTimeData">{{label}}</label><br/>
+          {{view Data id="fromTimeData"}}
+        {{/view}}
+        {{#view App.ToDateField id="toDateField" }}
+          <label for="toDateData">{{label}}</label><br/>
+          {{view Data id="toDateData"}}
+        {{/view}}
+        {{#view App.ToTimeField id="toTimeField" }}
+          <label for="toTimeData">{{label}}</label><br/>
+          {{view Data id="toTimeData"}}
+        {{/view}}
+        {{#view App.SourceField id="sourceField" }}
+          <label for="sourceyData">{{label}}</label><br/>
+          {{view Data id="sourceData"}}
+        {{/view}}
+        {{#view App.HostField id="hostField" }}
+          <label for="hostData">{{label}}</label><br/>
+          {{view Data id="hostData"}}
+        {{/view}}
+        <div style="padding-top: 8px;">&nbsp;
+          {{#view App.KeywordsField id="keywordsField" }}
+            <label for="keywordsData">{{label}}</label><br/>
+            {{view Data id="keywordsData"}}
+          {{/view}}
+        </div>
+        <div style="padding-top: 8px;">
+          {{#view App.MessageField id="messageField" }}
+            <label for="messageData">{{label}}</label><br/>
+            {{view Data id="messageData"}}
+          {{/view}}
+        </div>
+        <div style="padding-top: 8px;">
+          {{#view App.ConditionField id="conditionField" }}
+            <label for="conditionData">{{label}}</label><br/>
+            {{view Data id="conditionData"}}
+          {{/view}}
+        </div>
+        <div style="clear: both;">
+          {{view App.SearchButton2 id="searchButton2"}}
+        </div>
+      {{/view}}
+    </script>
+  </div>
+  <div style="clear: both; padding-top: 8px; ">
+    <script type="text/x-handlebars">
+      {{#view App.ErrorMessage }}
+        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
+      {{/view}}
+    </script>
+  </div>
+  <div class="results" sytle="display: none;">
+    <div class="divTable">
+      <div class="divTableRow">
+        <div class="divTableCell tableheader" style="width: 220px;">Timestamp</div>
+        <div class="divTableCell tableheader" style="width: 150px;">Source</div>
+        <div class="divTableCell tableheader" style="width: 150px;">Host</div>
+        <div class="divTableCell tableheader" style="width: 100px;">Severity</div>
+        <div class="divTableCell tableheader" >Message</div>
+      </div>
+    </div>
+    <script type="text/x-handlebars">
+      {{#collection App.LogEntryCollectionView }}
+        <div class="divTableCell" style="width: 220px;">{{content.localTimestampString}}</div>
+        <div class="divTableCell" style="width: 150px;">{{content.source}}</div>
+        <div class="divTableCell" style="width: 150px;">{{content.host}}</div>
+        <div class="divTableCell" style="width: 100px;">{{content.severityText}}</div>
+        <div class="divTableCell" style="">{{content.message}}</div>
+      {{/collection}}
+    </script>
+  </div>
 </div>
 
 <!-- START COMMON FOOTER BLOCK -->
 <div class="footer">
-  Chililog V1.1.1. &copy; 2011 Cinch Logic.
+  Chililog V0.0.1. &copy; 2011 Cinch Logic.
 </div>
 <!-- END COMMON FOOTER BLOCK -->
 

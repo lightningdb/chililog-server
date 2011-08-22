@@ -4,15 +4,15 @@ Special Note for Sproutcore Competition
 
 The Sproutcore 2 source files are in [src/main/sc2](https://github.com/chililog/chililog-server/tree/master/src/main/sc2).
 
-Sproutcore functionality used in the code:
+Sproutcore functionality used in the code include:
 
 * Templates
-* SC2 jQuery UI integration
+* jQuery UI integration
 * Data Store
 * State Charts
 * DateTime
-* Bindings and binding transforms
-* SC Strings and localisation
+* Bindings and custom binding transforms
+* Strings
 
 Other technical titbits:
 
