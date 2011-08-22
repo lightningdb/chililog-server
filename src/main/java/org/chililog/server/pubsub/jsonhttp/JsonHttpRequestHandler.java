@@ -311,7 +311,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler
      */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame)
     {
-        _logger.debug("Channel %s got frame type %s %s %s.", ctx.getChannel().getId(), frame.getType(), frame.isBinary(), frame.isText());
+        //_logger.debug("Channel %s got frame type %s %s %s.", ctx.getChannel().getId(), frame.getType(), frame.isBinary(), frame.isText());
 
         // Check for closing frame - according to the standard, we just return the same frame
         if (((frame.getType() & 0xFF) == 0xFF) && frame.isBinary())

@@ -4,7 +4,7 @@
 processHTML()
 {
   FILENAME=$1
-  BASENAME=$(echo $FILENAME | sed 's/[^a-z0-9]*\([a-z]*\)\.html/\1/g')
+  BASENAME=$(echo $FILENAME | sed 's/[^a-z0-9]*\([a-z_]*\)\.html/\1/g')
 
   echo "Processing $FILENAME"
 
@@ -27,4 +27,7 @@ processHTML()
 processHTML ../login.html
 processHTML ../index.html
 processHTML ../stream.html
+processHTML ../search.html
+processHTML ../admin_users.html
+processHTML ../my_profile.html
 

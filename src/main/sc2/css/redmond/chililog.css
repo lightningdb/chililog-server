@@ -148,7 +148,7 @@ body .standard {
 }
 
 .standard .footer {
-    padding-top: 40px;
+    padding: 300px 20px 0px 20px;
     font-size: 0.8em;
     text-align: center;
 }
@@ -180,13 +180,13 @@ body .standard {
     min-width: 200px;
 }
 
-.content.stream .criteria #actionButton {
+.content.stream .criteria button {
     float: left;
     display: inline;
     margin-right: 10px;
     margin-top: 1.1em;
 }
-.content.stream .criteria #actionButton span {
+.content.stream .criteria button span {
     padding: 3px 1em;
 }
 
@@ -231,7 +231,7 @@ body .standard {
 }
 
 .content.stream .results tr.amber {
-    background-color: golden;
+    background-color: gold;
     color: black;
 }
 

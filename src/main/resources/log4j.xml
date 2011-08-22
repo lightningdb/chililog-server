@@ -12,7 +12,7 @@
   </appender>
 
   <!-- Internal appender to write straight to mongoDB -->
-  <appender name="internal" class="com.chililog.server.engine.InternalLog4JAppender">
+  <appender name="internal" class="org.chililog.server.engine.InternalLog4JAppender">
   </appender>
 
   <!-- Asynchronous appender to make sure we don't block just for writing logs -->

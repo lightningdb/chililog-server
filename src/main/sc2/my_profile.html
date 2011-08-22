@@ -47,54 +47,11 @@
 </div>
 <!-- END COMMON DIVIDER BLOCK -->
 
-<div class="content stream">
-  <h1>Stream</h1>
-  <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
-  <div class="criteria">
-    <script type="text/x-handlebars">
-      {{#view App.RepositoryField id="repositoryField" }}
-        <label for="repositoryData">{{label}}</label><br/>
-        {{view Data id="repositoryData"}}
-      {{/view}}
-      {{#view App.SeverityField id="severityField" }}
-        <label for="severityData">{{label}}</label><br/>
-        {{view Data id="severityData"}}
-      {{/view}}
-      {{view App.ActionButton id="actionButton"}}&nbsp;&nbsp;&nbsp;
-      {{view App.ClearButton id="clearButton" isVisibleBinding="App.pageController.showActionButton2" }}
-    </script>
-  </div>
-  <script type="text/x-handlebars">
-    {{#view App.ErrorMessage }}
-      <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
-    {{/view}}
-  </script>
-  <div class="results">
-    <table id="resultsTable">
-      <thead>
-        <tr>
-            <th style="width: 200px;">Timestamp</th>
-            <th style="width: 150px;">Source</th>
-            <th style="width: 150px;">Host</th>
-            <th style="width: 120px;">Severity</th>
-            <th>Message</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <script type="text/x-handlebars">
-    {{#view id="bottomBar" class="bottomBar"}}
-      <div style="float: right;">
-        {{view App.ClearButton id="clearButton2" isVisibleBinding="App.pageController.showActionButton2" }}
-        &nbsp;&nbsp;&nbsp;
-        {{view App.ActionButton id="actionButton2" isVisibleBinding="App.pageController.showActionButton2" }}
-      </div>
-      <div style="float: left;">
-        {{view App.TestMessageButton id="testMessageButton" isVisibleBinding="App.pageController.isStreaming" }}
-      </div>
-    {{/view}}
-  </script>
+<div class="content">
+  <h1>My Profile</h1>
+  <p>
+    This page is still a work in progress.
+  </p>
 </div>
 
 <!-- START COMMON FOOTER BLOCK -->
@@ -118,7 +75,7 @@
 <script type="text/javascript" src="js/app_engine.js"></script>
 <!-- END COMMON SCRIPT BLOCK -->
 
-<script type="text/javascript" src="js/stream_page.js"></script>
+<script type="text/javascript" src="js/my_profile_page.js"></script>
 
 </body>
 </html>

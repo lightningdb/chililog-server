@@ -4,7 +4,7 @@
       <li><a href="stream.html" id="navStream">Stream</a></li>
       <li><a href="search.html" id="navSearch">Search</a></li>
       <li><a href="admin_users.html" id="navAdmin">Administration</a></li>
-      <li><a href="myprofile.html" id="navMyProfile">My Profile</a></li>
+      <li><a href="my_profile.html" id="navMyProfile">My Profile</a></li>
       <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
     </ul>
   </div>

@@ -364,6 +364,10 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      */
     private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, ApiResult result)
     {
+        // Log it
+        _logger.info("%s %s REMOTE_IP=%s STATUS=%s", _request.getMethod(), _request.getUri(), 
+                e.getRemoteAddress().toString(), result.getResponseStatus());
+        
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
 

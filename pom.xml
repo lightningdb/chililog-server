@@ -68,25 +68,6 @@
           </filesets>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2</version>
-        <executions>
-          <execution>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-            <configuration>
-              <executable>sc-build</executable>
-              <!-- mode is 'debug' or 'production' -->
-              <commandlineArgs>--mode=production</commandlineArgs>
-              <workingDirectory>${basedir}/src/main/sc</workingDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <!-- Create source code jar -->
       <plugin>

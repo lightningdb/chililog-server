@@ -25,18 +25,18 @@
 // --------------------------------------------------------------------------------------------------------------------
 App.ErrorMessage = SC.View.extend({
   classNames: 'ui-state-error ui-corner-all error'.w(),
-  messageBinding: 'App.pageData.errorMessage',
-  isVisibleBinding: SC.Binding.from('App.pageData.errorMessage').oneWay().bool()
+  messageBinding: 'App.pageController.errorMessage',
+  isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
 
 App.UsernameField = SC.View.extend({
   label: '_login.username'.loc(),
 
   Data : App.TextBoxView.extend({
-    valueBinding: 'App.pageData.username',
+    valueBinding: 'App.pageController.username',
     name: 'username',
     tabindex: '1',
-    disabledBinding: SC.Binding.from('App.pageData.isLoggingIn').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
 
@@ -44,18 +44,18 @@ App.PasswordField = SC.View.extend({
   label: '_login.password'.loc(),
 
   Data : App.TextBoxView.extend({
-    valueBinding: 'App.pageData.password',
+    valueBinding: 'App.pageController.password',
     type: 'password',
     name: 'password',
     tabindex: '2',
-    disabledBinding: SC.Binding.from('App.pageData.isLoggingIn').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
 
 App.LoginButton = JQ.Button.extend({
   label: '_login.login'.loc(),
 
-  disabledBinding: SC.Binding.from('App.pageData.isLoggingIn').oneWay().bool(),
+  disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
 
   click: function() {
     App.statechart.sendAction('doLogin');
@@ -66,10 +66,10 @@ App.LoginButton = JQ.Button.extend({
 App.WorkingImage = App.ImgView.extend({
   src: 'images/working.gif',
   visible: NO,
-  isVisibleBinding: SC.Binding.from('App.pageData.isLoggingIn').oneWay().bool()
+  isVisibleBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
 });
 
-App.pageData = SC.Object.create({
+App.pageController = SC.Object.create({
   /**
    * Value of the username text field
    */
@@ -111,19 +111,19 @@ App.statechart = SC.Statechart.create({
       },
 
       doLogin: function() {
-        App.pageData.set('errorMessage', '');
+        App.pageController.set('errorMessage', '');
 
         // Check data first
-        var username = App.pageData.get('username');
+        var username = App.pageController.get('username');
         if (SC.empty(username)) {
-          App.pageData.set('errorMessage', '_login.username.required'.loc());
+          App.pageController.set('errorMessage', '_login.username.required'.loc());
           $('#usernameData').focus();
           return;
         }
 
-        var password = App.pageData.get('password');
+        var password = App.pageController.get('password');
         if (SC.empty(password)) {
-          App.pageData.set('errorMessage', '_login.password.required'.loc());
+          App.pageController.set('errorMessage', '_login.password.required'.loc());
           $('#passwordData').focus();
           return;
         }
@@ -139,10 +139,10 @@ App.statechart = SC.Statechart.create({
      */
     loggingIn: SC.State.extend({
       enterState: function() {
-        App.pageData.set('isLoggingIn', YES);
+        App.pageController.set('isLoggingIn', YES);
 
-        var username = App.pageData.get('username');
-        var password = App.pageData.get('password');
+        var username = App.pageController.get('username');
+        var password = App.pageController.get('password');
 
         App.sessionEngine.login(username, password, true, true,
           this, this.loginCallback, null);
@@ -171,13 +171,13 @@ App.statechart = SC.Statechart.create({
           }
         } else {
           // Error so back to the logged out state to show error
-          App.pageData.set('errorMessage', error.message);
+          App.pageController.set('errorMessage', error.message);
           this.gotoState('loggedOut');
         }
       },
 
       exitState: function() {
-        App.pageData.set('isLoggingIn', NO);
+        App.pageController.set('isLoggingIn', NO);
       }
     })
 

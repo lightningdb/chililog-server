@@ -28,8 +28,8 @@
  */
 App.ErrorMessage = SC.View.extend({
   classNames: 'ui-state-error ui-corner-all error'.w(),
-  messageBinding: 'App.pageData.errorMessage',
-  isVisibleBinding: SC.Binding.from('App.pageData.errorMessage').oneWay().bool()
+  messageBinding: 'App.pageController.errorMessage',
+  isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
 
 /**
@@ -50,10 +50,10 @@ App.RepositoryField = SC.View.extend({
 
   Data : App.SelectView.extend({
     content: [],
-    contentBinding: 'App.pageData.repositoryOptions',
+    contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
-    valueBinding: 'App.pageData.repository',
-    disabledBinding: SC.Binding.from('App.pageData.isStreaming').oneWay().bool()
+    valueBinding: 'App.pageController.repository',
+    disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
 
@@ -67,9 +67,9 @@ App.SeverityField = SC.View.extend({
 
   Data : App.SelectView.extend({
     content: [],
-    contentBinding: 'App.pageData.severityOptions',
-    valueBinding: 'App.pageData.severity',
-    disabledBinding: SC.Binding.from('App.pageData.isStreaming').oneWay().bool()
+    contentBinding: 'App.pageController.severityOptions',
+    valueBinding: 'App.pageController.severity',
+    disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
 
@@ -80,7 +80,7 @@ App.ActionButton = JQ.Button.extend({
   label: '_start'.loc(),
 
   didStreamingChange: function() {
-    if (App.pageData.get('isStreaming')) {
+    if (App.pageController.get('isStreaming')) {
       this.set('label', '_stop'.loc());
       this.$().addClass('ui-state-error');
     } else {
@@ -88,17 +88,28 @@ App.ActionButton = JQ.Button.extend({
       this.$().removeClass('ui-state-error');
     }
 
-  }.observes('App.pageData.isStreaming'),
+  }.observes('App.pageController.isStreaming'),
 
   click: function() {
-    if (App.pageData.get('isStreaming')) {
-      App.pageData.set('isStreaming', NO);
+    if (App.pageController.get('isStreaming')) {
+      App.pageController.set('isStreaming', NO);
       App.statechart.sendAction('doStop');
     } else {
-      App.pageData.set('isStreaming', YES);
+      App.pageController.set('isStreaming', YES);
       App.statechart.sendAction('doStart');
     }
     return;
+  }
+});
+
+/**
+ * Button to clear the log entries on the page
+ */
+App.ClearButton = JQ.Button.extend({
+  label: '_clear'.loc(),
+
+  click: function() {
+    var rowCount = $('#resultsTable tbody tr').remove();
   }
 });
 
@@ -117,11 +128,13 @@ App.TestMessageButton = JQ.Button.extend({
     var request = {
       MessageType: 'PublicationRequest',
       MessageID: new Date().getTime() + '',
-      RepositoryName: App.pageData.getPath('repository.name'),
+      RepositoryName: App.pageController.getPath('repository.name'),
       Username: App.sessionEngine.getPath('loggedInUser.username'),
       Password: 'token:' + App.sessionEngine.get('authenticationToken'),
       LogEntries: [
-        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '7', Message: 'Test message sent by ' + username}
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '7', Message: 'Test DEBUG message sent from browser ' + navigator.userAgent},
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '4', Message: 'Test WARNING message with a timestamp ' + new Date() },
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '3', Message: 'Test ERROR message sent by ' + username}
       ]
     };
 
@@ -132,6 +145,8 @@ App.TestMessageButton = JQ.Button.extend({
       webSocket.onopen = function () {
         SC.Logger.log('Test Socket opening');
         var requestJSON = JSON.stringify(request);
+
+        // Sent it
         webSocket.send(requestJSON);
       };
 
@@ -172,7 +187,7 @@ App.TestMessageButton = JQ.Button.extend({
   }
 });
 
-App.pageData = SC.Object.create({
+App.pageController = SC.Object.create({
   /**
    * Value of the repository text field
    */
@@ -245,7 +260,7 @@ App.statechart = SC.Statechart.create({
       },
 
       doStart: function() {
-        App.pageData.set('errorMessage', '');
+        App.pageController.set('errorMessage', '');
         this.gotoState('streaming');
       }
     }),
@@ -256,7 +271,7 @@ App.statechart = SC.Statechart.create({
      */
     streaming: SC.State.extend({
       enterState: function() {
-        App.pageData.set('isStreaming', YES);
+        App.pageController.set('isStreaming', YES);
 
         try {
           var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
@@ -267,7 +282,7 @@ App.statechart = SC.Statechart.create({
             var request = {
               MessageType: 'SubscriptionRequest',
               MessageID: new Date().getTime() + '',
-              RepositoryName: App.pageData.getPath('repository.name'),
+              RepositoryName: App.pageController.getPath('repository.name'),
               Username: App.sessionEngine.getPath('loggedInUser.username'),
               Password: 'token:' + App.sessionEngine.get('authenticationToken')
             };
@@ -319,9 +334,9 @@ App.statechart = SC.Statechart.create({
             SC.Logger.log('Socket error: ' + evt.data);
           };
 
-          App.pageData.set('webSocket', webSocket);
+          App.pageController.set('webSocket', webSocket);
         } catch (exception) {
-          App.pageData.errorMessage = exception;
+          App.pageController.errorMessage = exception;
           this.gotoState('notStreaming');
         }
       },
@@ -330,18 +345,18 @@ App.statechart = SC.Statechart.create({
        * Stop streaming
        */
       doStop: function() {
-        App.pageData.set('errorMessage', '');
+        App.pageController.set('errorMessage', '');
         this.gotoState('notStreaming');
       },
 
       exitState: function() {
         try {
-          App.pageData.get('webSocket').close();
+          App.pageController.get('webSocket').close();
         } catch (exception) {
           SC.Logger.log('Error closing web socket: ' + exception);
         }
 
-        App.pageData.set('isStreaming', NO);
+        App.pageController.set('isStreaming', NO);
       }
     })
   })
@@ -353,7 +368,7 @@ App.writeLogEntry = function (logEntry, doSeverityCheck) {
   }
 
   var severity = parseInt(logEntry.Severity);
-  var maxSeverity = parseInt(App.pageData.getPath('severity.value'));
+  var maxSeverity = parseInt(App.pageController.getPath('severity.value'));
   if (doSeverityCheck && severity > maxSeverity) {
     return;
   }
@@ -386,10 +401,10 @@ App.writeLogEntry = function (logEntry, doSeverityCheck) {
   window.scrollTo(0, document.body.scrollHeight);
 
   // Check if we want to show the bottom buttons ...
-  if (!App.pageData.get('showActionButton2')) {
+  if (!App.pageController.get('showActionButton2')) {
     var rowCount = $('#resultsTable tr').length;
     if (rowCount > 1) {
-      App.pageData.set('showActionButton2', YES);
+      App.pageController.set('showActionButton2', YES);
     }
   }
 };
@@ -400,7 +415,7 @@ App.writeLogEntry = function (logEntry, doSeverityCheck) {
 App.pageFileName = "stream.html";
 
 if (!window.WebSocket) {
-  App.pageData.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');
+  App.pageController.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');
 }
 
 if (App.sessionEngine.load()) {
@@ -415,7 +430,7 @@ if (App.sessionEngine.load()) {
       orderBy: 'name'
     });
     var arrayProxy = App.store.find(query);
-    App.pageData.set('repositoryOptions', arrayProxy);
+    App.pageController.set('repositoryOptions', arrayProxy);
   }, null);
 
 } else {
