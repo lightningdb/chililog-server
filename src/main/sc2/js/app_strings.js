@@ -119,6 +119,7 @@ SC.STRINGS = {
   '_search.condition': 'Conditions',
   '_search.condition.help': '(mongodb JSON format must be used.)',
   '_search.condition.invalid': 'Conditions must be in valid JSON format. Check mongodb script for examples.',
+  '_search.showMore': 'Show More Rows',
 
   // ********************************************************
   // OLD STUFF to be converted

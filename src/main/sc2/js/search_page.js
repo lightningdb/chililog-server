@@ -195,21 +195,6 @@ App.KeywordsField = SC.View.extend({
 });
 
 /**
- * Message filter
- */
-App.MessageField = SC.View.extend({
-  classNames: 'field'.w(),
-
-  label: '_search.message'.loc(),
-
-  Data : App.TextBoxView.extend({
-    valueBinding: 'App.pageController.message',
-    name: 'message',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
-  })
-});
-
-/**
  * Condition
  */
 App.ConditionField = SC.View.extend({
@@ -228,7 +213,8 @@ App.ConditionField = SC.View.extend({
  */
 App.SearchButton = JQ.Button.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool().not(),
-
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+  
   label: '_search'.loc(),
 
   click: function() {
@@ -241,6 +227,8 @@ App.SearchButton = JQ.Button.extend({
  * Button to search
  */
 App.SearchButton2 = JQ.Button.extend({
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
   label: '_search'.loc(),
 
   click: function() {
@@ -250,10 +238,26 @@ App.SearchButton2 = JQ.Button.extend({
 });
 
 /**
+ * Show more rows
+ */
+App.ShowMoreButton = JQ.Button.extend({
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool(),
+
+  label: '_search.showMore'.loc(),
+
+  click: function() {
+    App.statechart.sendAction('doShowMore');
+    return;
+  }
+});
+
+/**
  * Button to show advanced criteria
  */
 App.AdvancedButton = JQ.Button.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool().not(),
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
 
   label: '_search.advancedCriteria'.loc(),
 
@@ -282,6 +286,14 @@ App.LogEntryCollectionView = SC.CollectionView.extend({
   })
 });
 
+/**
+ * Show message when on rows found
+ */
+App.NoRowsView = SC.View.extend({
+  classNames: 'divTable'.w(),
+  isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
+});
+
 // --------------------------------------------------------------------------------------------------------------------
 // Controllers
 // --------------------------------------------------------------------------------------------------------------------
@@ -304,6 +316,36 @@ App.pageController = SC.Object.create({
    * Value of the from time field
    */
   fromTime: '',
+
+  /**
+   * FROM Date and time combined
+   */
+  fromDateTime: function() {
+    var d = this.get('fromDate');
+    if (SC.empty(d)) {
+      return '';
+    }
+    var t = this.get('fromTime');
+    if (SC.empty(t)) {
+      t = "00:00:00";
+    }
+    return d + ' ' + t;
+  }.property('fromDate, fromTime'),
+
+  /**
+   * TO Date and time combined
+   */
+  toDateTime: function() {
+    var d = this.get('toDate');
+    if (SC.empty(d)) {
+      return '';
+    }
+    var t = this.get('toTime');
+    if (SC.empty(t)) {
+      t = "23:59:59";
+    }
+    return d + ' ' + t;
+  }.property('toDate, toTime'),
 
   /**
    * Value of the to date field
@@ -341,11 +383,6 @@ App.pageController = SC.Object.create({
   keywords: '',
 
   /**
-   * Value of the message field
-   */
-  message: '',
-
-  /**
    * JSON conditions
    */
   condition: '',
@@ -359,6 +396,16 @@ App.pageController = SC.Object.create({
    * Indicates if we are currently streaming or not
    */
   isSearching: NO,
+
+  /**
+   * Flag to indicate if row found or not
+   */
+  rowsFound: YES,
+
+  /**
+   * Flag to indicate if there are more rows to show
+   */
+  canShowMore: NO,
 
   /**
    * Options for displaying in the repository dropdown
@@ -502,11 +549,13 @@ App.engineController = SC.Object.create({
    */
   endSearch: function(documentID, recordCount, params, error) {
     if (SC.none(error)) {
-      App.pageController.set('rowsFoundAfterSearch', recordCount > 0);
+      App.pageController.set('rowsFound', recordCount > 0);
       App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
     } else {
       App.pageController.set('errorMessage', error);
     }
+
+    $('#results').css('display', 'block');
 
     App.statechart.sendAction('finishSearch');
   },
@@ -544,6 +593,11 @@ App.statechart = SC.Statechart.create({
       startSearch: function() {
         App.pageController.set('errorMessage', '');
         this.gotoState('searching');
+      },
+
+      doShowMore: function() {
+        App.pageController.set('errorMessage', '');
+        this.gotoState('showingMore');
       }
     }),
 
@@ -563,7 +617,21 @@ App.statechart = SC.Statechart.create({
       finishSearch: function() {
         this.gotoState('notSearching');
       }
+    }),
 
+    showingMore: SC.State.extend({
+      enterState: function() {
+        App.pageController.set('isSearching', YES);
+        App.engineController.doShowMore();
+      },
+
+      exitState: function() {
+        App.pageController.set('isSearching', NO);
+      },
+
+      finishSearch: function() {
+        this.gotoState('notSearching');
+      }
     })
   })
 });

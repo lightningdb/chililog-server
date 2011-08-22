@@ -102,12 +102,6 @@
           {{/view}}
         </div>
         <div style="padding-top: 8px;">
-          {{#view App.MessageField id="messageField" }}
-            <label for="messageData">{{label}}</label><br/>
-            {{view Data id="messageData"}}
-          {{/view}}
-        </div>
-        <div style="padding-top: 8px;">
           {{#view App.ConditionField id="conditionField" }}
             <label for="conditionData">{{label}}</label><br/>
             {{view Data id="conditionData"}}
@@ -126,7 +120,7 @@
       {{/view}}
     </script>
   </div>
-  <div class="results" sytle="display: none;">
+  <div id="results" class="results" style="display: none;">
     <div class="divTable">
       <div class="divTableRow">
         <div class="divTableCell tableheader" style="width: 220px;">Timestamp</div>
@@ -144,6 +138,14 @@
         <div class="divTableCell" style="width: 100px;">{{content.severityText}}</div>
         <div class="divTableCell" style="">{{content.message}}</div>
       {{/collection}}
+      {{#view App.NoRowsView }}
+        <div class="divTableRow">
+          <div class="divTableCell" style="width: 100%;">No Rows Found</div>
+        </div>
+      {{/view}}
+      <div style="text-align: right; padding-top: 16px;">
+        {{view App.ShowMoreButton}}
+      </div>
     </script>
   </div>
 </div>
