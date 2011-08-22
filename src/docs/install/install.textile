@@ -1,0 +1,59 @@
+h1. ChiliLog Installation Instructions
+
+h2. 1. Install Java
+
+Download Java SE 6 JDK from "Oracle":http://www.oracle.com/technetwork/java/javase/downloads/index-jsp-138363.html and follow its installation instructions.
+
+
+h2. 2 Install mongoDB
+
+# Download "mongoDB":http://www.mongodb.org/downloads.
+# Follow the "instructions":http://www.mongodb.org/display/DOCS/Quickstart to install and start mongoDB.
+# Initialise ChiliLog by running the @scripts/mongodb-create.js@ script.
+** It will create a new database called @chililog@ on your mongoDB server.
+** A new ChiliLog user with the username @admin@ and password @admin@ is also created.
+
+pre(code)..      
+    $ mongo mongodb-create.js 
+    MongoDB shell version: 1.6.5
+    connecting to: test
+        
+    Adding db.system.user 'chililog'
+    {
+        "_id" : ObjectId("4d200e387f2dea40d435b113"),
+        "user" : "chililog",
+        "readOnly" : false,
+        "pwd" : "47865e05bc9a72f4add54ce2b0a1bae8"
+    }
+    
+    Creating Config collection
+    
+    Adding Config 'schemaversion'
+    {
+        "_id" : ObjectId("4d56241698c2b62ac88f5c4d"),
+        "name" : "schemaversion",
+        "value" : 1
+    }
+    
+    Creating ChiliLog Admin User
+        
+    Adding ChiliLog Repository
+
+    Finish
+p.     
+
+
+h2. 3. Install Chililog
+
+# Unzip Chililog into a directory 
+# Open a command line window and go to the Chililog directory.
+# To start, change directory to @bin@ and execute @run.bat@ or @./run.sh@
+# Open a browser and navigate to http://localhost:8989/workbench.  
+# Login with username @admin@ and password @admin@.
+
+To stop, execute @stop.bat@ or @stop.sh@
+
+To configure, edit @config\app.properties@ and uncomment our your desired setting(s). Save your changes and restart Chililog server.
+
+Find more documentation in the @docs@ directory.
+

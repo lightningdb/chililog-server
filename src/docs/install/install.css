@@ -1,0 +1,61 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {
+margin: 0;
+padding: 0;
+border: 0;
+outline: 0;
+font-size: 100%;
+background: transparent;
+}
+
+body {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 14px;
+    background: #FFFFFF;
+	color: #000000;
+	line-height: 22px;
+	margin: 22px;
+}
+
+h1 {
+    font-size: 32px;
+}
+
+h2 {
+    font-size: 28px;
+    padding-top: 44px;
+    padding-bottom: 14px;
+}
+
+h3 {
+    font-size: 22px;
+    padding-top: 22px;
+    padding-bottom: 14px;
+}
+
+p {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+pre.code {
+    border-style: solid;
+    border-color:  #CCCCCC;
+    border-width: 1px;
+    background-color: #EEEEEE;
+    font-family: monospace;
+    padding: 8px;
+}
+
+code {
+    font-family: monospace;
+    color: #880000;
+}
+
+a {
+    color: blue;
+    text-decoration: underline;
+}
+a.visited {
+    color: blue;
+    text-decoration: underline;
+}

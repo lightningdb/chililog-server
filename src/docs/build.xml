@@ -27,7 +27,7 @@
 
 	<taskdef classpathref="wikitext.classpath" resource="org/eclipse/mylyn/wikitext/core/util/anttask/tasks.properties" />
 
-	<target name="all" depends="clean, developer_guide, user_guide">
+	<target name="all" depends="clean, developer_guide, user_guide, install_guide">
 	</target>
 
 	<target name="clean" description="Delete existing html output">
@@ -39,6 +39,25 @@
 		<delete dir="${target.dir}" />
 		<mkdir dir="${target.dir}" />
 	</target>
+
+   <target name="install_guide" description="Generate the installation instructions">
+        <wikitext-to-html markupLanguage="Textile" formatOutput="true" xhtmlStrict="true" overwrite="true">
+            <fileset dir="${src.dir}/install">
+                <include name="*.textile" />
+            </fileset>
+            <stylesheet url="install.css" />
+        </wikitext-to-html>
+        <copy todir="${target.dir}/install">
+            <fileset dir="${src.dir}/install">
+                <exclude name="**/*.textile" />
+            </fileset>
+        </copy>
+        <delete>
+            <fileset dir="${src.dir}/install">
+                <include name="*.html" />
+            </fileset>
+        </delete>
+    </target>
 
 	<target name="developer_guide" description="Generate the developer guide doc">
 		<wikitext-to-html markupLanguage="Textile" formatOutput="true" xhtmlStrict="true" overwrite="true">
