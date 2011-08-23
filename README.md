@@ -1,4 +1,3 @@
-
 Special Note for Sproutcore Competition
 =======================================
 
@@ -24,7 +23,7 @@ Other technical titbits:
 
 __Demo Site__
 
-A demo site [http://demo.chililog.com](http://demo.chililog.com) has been setup. You can login as admin/admin.
+A [demo site](http://demo.chililog.com/workbench) has been setup. You can login as admin/admin.
 
 It will be done by (late) Sunday night ready for you to review Monday morning. This will save you time from installing and configuring everything.
 
@@ -35,7 +34,7 @@ __Walk Through__
 
 1. Open Safari version 5.0+ or Chrome versions 7 to 13 (not 14). Only these browsers support the correct version web sockets. Please make sure your firewall allows traffic through port 8989 for HTTP and port 61615 for HTTP web socket traffic.
 
-2. Goto http://demo.chililog.com:8989. 
+2. Goto http://demo.chililog.com/workbench. 
 
 3. Login as admin/admin
 
