@@ -55,6 +55,7 @@ public class Log4JLogger
             File overrideLog4JXML = new File(configDir, "log4j.xml");
             if (overrideLog4JXML.exists())
             {
+                System.out.println("Loading override logging configuration from: " + overrideLog4JXML.getPath());
                 DOMConfigurator config = new DOMConfigurator();
                 config.doConfigure(overrideLog4JXML.getPath(), LogManager.getLoggerRepository());
             }

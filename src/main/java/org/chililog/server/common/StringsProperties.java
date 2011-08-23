@@ -22,11 +22,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -48,7 +47,7 @@ import org.apache.log4j.Logger;
  */
 public class StringsProperties
 {
-    private static Logger _logger = Logger.getLogger(StringsProperties.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(StringsProperties.class);
     private static final String PROPERTY_FILE_NAME = "strings.properties";
 
     private Properties _properties;
@@ -118,12 +117,14 @@ public class StringsProperties
             Properties properties = new Properties();
 
             // Load from class path
-            URL url = ClassLoader.getSystemResource(PROPERTY_FILE_NAME);
-            fis = new FileInputStream(new File(url.getFile()));
-            properties.load(fis);
-            fis.close();
-            fis = null;
-
+            InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(PROPERTY_FILE_NAME);
+            if (is == null)
+            {
+                throw new FileNotFoundException("Default strings.properties file inside JAR not found");
+            }
+            properties.load(is);
+            is.close();
+            
             // Load overrides
             File configDirectory = SystemProperties.getInstance().getChiliLogConfigDirectory();
             if (configDirectory != null)
@@ -131,6 +132,7 @@ public class StringsProperties
                 File configFile = new File(configDirectory, PROPERTY_FILE_NAME);
                 if (configFile.exists())
                 {
+                    _logger.info("Loading overide strings.properties configuration from: " + configFile.getPath());
                     fis = new FileInputStream(configFile);
                     properties.load(fis);
                     fis.close();

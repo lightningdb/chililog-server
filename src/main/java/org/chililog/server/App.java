@@ -27,6 +27,7 @@ import java.util.TimerTask;
 
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
+import org.chililog.server.common.StringsProperties;
 import org.chililog.server.common.SystemProperties;
 import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.RepositoryService;
@@ -100,6 +101,9 @@ public class App
         _logger.info("System Properties\n" + SystemProperties.getInstance().toString());
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());
         _logger.info("Current Directory: " + new File(".").getCanonicalPath());
+        
+        // Init strings
+        StringsProperties.getInstance();
 
         MqService.getInstance().start();
         RepositoryService.getInstance().start(true);

@@ -31,7 +31,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -49,7 +48,7 @@ import org.apache.log4j.Logger;
  * 
  * <p>
  * For example, if you created the file <code>/usr/local/chililog/config/app.properties</code>, then set the following
- * JVM option. <code>-Dchililog.config.dir=/usr/local/chililog/config</code>.
+ * JVM option. <code>-Dchililog.config.directory=/usr/local/chililog/config</code>.
  * </p>
  * 
  * <h3>Example</h3>
@@ -76,7 +75,7 @@ import org.apache.log4j.Logger;
  */
 public class AppProperties
 {
-    private static Logger _logger = Logger.getLogger(AppProperties.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(AppProperties.class);
     private static final String APP_PROPERTY_FILE_NAME = "app.properties";
 
     /**
@@ -179,6 +178,7 @@ public class AppProperties
                 File configFile = new File(configDirectory, APP_PROPERTY_FILE_NAME);
                 if (configFile.exists())
                 {
+                    _logger.info("Loading overide app.properties configuration from: " + configFile.getPath());
                     fis = new FileInputStream(configFile);
                     properties.load(fis);
                     fis.close();

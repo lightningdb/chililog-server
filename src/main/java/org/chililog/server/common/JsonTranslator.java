@@ -22,7 +22,7 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.chililog.server.workbench.HttpRequestHandler;
 
 import com.google.gson.FieldNamingStrategy;
 import com.google.gson.Gson;
@@ -41,8 +41,8 @@ import com.google.gson.GsonBuilder;
  */
 public class JsonTranslator
 {
-    private static Logger _logger = Logger.getLogger(JsonTranslator.class);
-
+    private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
+    
     private Gson _gson = null;
 
     /**
