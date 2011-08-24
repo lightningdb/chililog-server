@@ -104,7 +104,7 @@ The current road map is:
 Links
 =====
 
-* [Documentation](https://github.com/chililog/server/wiki) 
+* [Documentation](https://github.com/chililog/chililog-server/wikii) 
 
 * [Issues](https://github.com/chililog/server/issues)
 
