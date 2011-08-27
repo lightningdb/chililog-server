@@ -4,7 +4,7 @@
 
   <groupId>org.chililog.server</groupId>
   <artifactId>chililog-server</artifactId>
-  <version>00.00.01-ALHPA</version>
+  <version>00.00.02-ALHPA</version>
   <packaging>jar</packaging>
 
   <name>ChiliLog Server</name>
