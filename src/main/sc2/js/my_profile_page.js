@@ -31,7 +31,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.pageFileName = "my_profile.html";
+App.pageFileName = Auth.getPageName();
 
 if (App.sessionEngine.load()) {
   App.setupStandardPage(App.pageFileName);

@@ -1,3 +1,5 @@
+<script type="text/javascript" src="js/authentication.js"></script>
+<script type="text/javascript">Auth.checkIfLoggedIn();</script>
 <div class="header">
   <div class="nav">
     <ul>

@@ -639,7 +639,7 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.pageFileName = "search.html";
+App.pageFileName = Auth.getPageName();
 
 if (App.sessionEngine.load()) {
   App.setupStandardPage(App.pageFileName);

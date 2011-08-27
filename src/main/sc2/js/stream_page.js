@@ -441,7 +441,7 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.pageFileName = "stream.html";
+App.pageFileName = Auth.getPageName();
 
 if (!window.WebSocket) {
   App.pageController.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');

@@ -31,8 +31,10 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.pageFileName = "index.html";
+App.pageFileName = Auth.getPageName();
 
+var path = window.location.pathname;
+  var pageName = path.substring(path.lastIndexOf('/') + 1);
 if (App.sessionEngine.load()) {
   App.setupStandardPage(App.pageFileName);
   //App.statechart.initStatechart();
