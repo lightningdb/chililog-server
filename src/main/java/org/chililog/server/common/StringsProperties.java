@@ -18,7 +18,6 @@
 
 package org.chililog.server.common;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -89,7 +88,7 @@ public class StringsProperties
         }
         catch (Exception e)
         {
-            _logger.error("Error loading application properties: " + e.getMessage(), e);
+            _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -123,22 +122,7 @@ public class StringsProperties
                 throw new FileNotFoundException("Default strings.properties file inside JAR not found");
             }
             properties.load(is);
-            is.close();
-            
-            // Load overrides
-            File configDirectory = SystemProperties.getInstance().getChiliLogConfigDirectory();
-            if (configDirectory != null)
-            {
-                File configFile = new File(configDirectory, PROPERTY_FILE_NAME);
-                if (configFile.exists())
-                {
-                    _logger.info("Loading overide strings.properties configuration from: " + configFile.getPath());
-                    fis = new FileInputStream(configFile);
-                    properties.load(fis);
-                    fis.close();
-                    fis = null;
-                }
-            }
+            is.close();           
 
             return properties;
         }

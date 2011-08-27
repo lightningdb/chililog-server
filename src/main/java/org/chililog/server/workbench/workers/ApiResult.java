@@ -24,7 +24,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
-import org.chililog.server.common.AppProperties;
+import org.chililog.server.common.BuildProperties;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.workbench.workers.AuthenticationAO.ExpiryType;
 import org.chililog.server.workbench.workers.Worker.ContentIOStyle;
@@ -90,7 +90,7 @@ public class ApiResult
      */
     public ApiResult(AuthenticationTokenAO authenticationToken, String contentType, Object content)
     {
-        AppProperties appProperties = AppProperties.getInstance();
+        BuildProperties buildProperties = BuildProperties.getInstance();
 
         _responseStatus = (content == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
         _responseContentType = contentType;
@@ -101,8 +101,8 @@ public class ApiResult
             authenticationToken.updateExpiresOn();
         }
         _headers.put(Worker.AUTHENTICATION_TOKEN_HEADER, authenticationToken.toString());
-        _headers.put(Worker.AUTHENTICATION_SERVER_VERSION, appProperties.getAppVersion());
-        _headers.put(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP, appProperties.getBuildTimestamp());
+        _headers.put(Worker.AUTHENTICATION_SERVER_VERSION, buildProperties.getAppVersion());
+        _headers.put(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP, buildProperties.getBuildTimestamp());
 
         if (content != null)
         {

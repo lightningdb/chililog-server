@@ -36,7 +36,6 @@ import org.chililog.server.workbench.WorkbenchService;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Log4JLoggerFactory;
 
-
 /**
  * ChiliLog Server Application.
  * <p>
@@ -64,7 +63,7 @@ public class App
     {
         try
         {
-            startChiliLogServer();
+            start(args);
 
             addShutdownPoller();
 
@@ -90,18 +89,20 @@ public class App
     /**
      * Start ChiliLog server
      * 
+     * @param args
+     *            Startup command line args
      * @throws Exception
      */
-    public static void startChiliLogServer() throws Exception
+    public static void start(String args[]) throws Exception
     {
         // Turn on netty logging
         InternalLoggerFactory.setDefaultFactory(new Log4JLoggerFactory());
-        
+
         _logger.info("CHILILOG Server Starting Up...");
         _logger.info("System Properties\n" + SystemProperties.getInstance().toString());
         _logger.info("App Properties\n" + AppProperties.getInstance().toString());
         _logger.info("Current Directory: " + new File(".").getCanonicalPath());
-        
+
         // Init strings
         StringsProperties.getInstance();
 
@@ -109,7 +110,7 @@ public class App
         RepositoryService.getInstance().start(true);
         PubSubService.getInstance().start();
         WorkbenchService.getInstance().start();
-        
+
         Thread.sleep(2000);
 
         _logger.info("CHILILOG Server Started");
@@ -118,9 +119,11 @@ public class App
     /**
      * Stop ChiliLog server
      * 
+     * @param args
+     *            Parameters for shutdown. Not used. Only present to that this method can be called from procrun.
      * @throws Exception
      */
-    public static void stopChiliLogServer() throws Exception
+    public static void stop(String args[]) throws Exception
     {
         _logger.info("CHILILOG Server shutting down.");
 
@@ -156,12 +159,12 @@ public class App
                 {
                     try
                     {
-                        stopChiliLogServer();
+                        stop(null);
                         timer.cancel();
                     }
                     catch (Exception e)
                     {
-                        _logger.error("Shutdown error: " + e.getMessage(), e);
+                        _logger.error(e, "Shutdown error: " + e.getMessage());
                     }
                     finally
                     {

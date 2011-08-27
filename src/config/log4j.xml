@@ -23,12 +23,12 @@
     <!-- If buffer full, then don't block but drop packets. Internal are not that important compared to performance. -->
     <param name="Blocking" value="false" />
 
-    ${log4j.appender-ref.internal}
+    <appender-ref ref="internal" />
     <appender-ref ref="console" />
   </appender>
 
   <root>
-    <priority value="${log4j.priority}" />
+    <priority value="info" />
     <appender-ref ref="async" />
   </root>
 

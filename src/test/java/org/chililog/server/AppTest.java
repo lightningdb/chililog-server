@@ -196,7 +196,7 @@ public class AppTest
     public void test10000() throws Exception
     {
         // Start
-        App.startChiliLogServer();
+        App.start(null);
 
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
@@ -229,7 +229,7 @@ public class AppTest
         assertEquals(10000, coll.find().count());
 
         // Stop
-        App.stopChiliLogServer();
+        App.stop(null);
     }
 
 }

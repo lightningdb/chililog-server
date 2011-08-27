@@ -18,14 +18,13 @@
 
 package org.chililog.server.common;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Enumeration;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
-import org.apache.log4j.Logger;
 
 /**
  * <p>
@@ -35,7 +34,7 @@ import org.apache.log4j.Logger;
  * <h3>Example</h3>
  * 
  * <code>
- * SystemProperties.getInstance().getChiliLogConfigDirectory();
+ * SystemProperties.getInstance().getJavaHome();
  * </code>
  * 
  * <h3>Property Loading</h3>
@@ -44,22 +43,18 @@ import org.apache.log4j.Logger;
  * <ol>
  * <li>We search for all fields with upper case letters in their names. For example, <code>APP_NAME<code>.</li>
  * <li>We search for the corresponding field cache variable. The field name is converted to camel case and prefixed with
- * underscore. For example, <code>_appName</code>li>
+ * underscore. For example, <code>_appName</code></li>
  * <li>Next, we search for a load method to parse the entry in the property file. The field name is converted to camel
  * case and prefixed with "load". For example, <code>loadAppName</code></li>
  * <li>If the method is found, it is called and the result is used to set the cache variable identified in step #2.</li>
  * </ol>
- * 
- * <h3>Setting a System Property</h3>
- * 
- * Start your JVM with -D command line flag. For example: <code>-Dchililog.config.directory=/home/chililog/config</code>.
  * 
  * @author vibul
  * @since 1.0
  */
 public class SystemProperties
 {
-    private static Logger _logger = Logger.getLogger(SystemProperties.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(SystemProperties.class);
 
     /**
      * Returns the singleton instance for this class
@@ -98,7 +93,7 @@ public class SystemProperties
         }
         catch (Exception e)
         {
-            _logger.error("Error loading system properties: " + e.getMessage(), e);
+            _logger.error(e, "Error loading system properties: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -155,50 +150,105 @@ public class SystemProperties
     }
 
     /**
-     * <p>
-     * Returns the directory containing the application configuration files that overrides the default configuration
-     * files as stored in the classpath.
-     * </p>
-     * 
-     * @return The directory encapsulated as a <code>File</code> object; or null if not set.
+     * @return The Java home directory
      */
-    public File getChiliLogConfigDirectory()
+    public String getJavaHome()
     {
-        return _chiliLogConfigDirectory;
+        return _javaHome;
     }
 
-    public static final String CHILILOG_CONFIG_DIRECTORY = "chililog.config.directory";
+    public static final String JAVA_HOME = "java.home";
 
-    private File _chiliLogConfigDirectory = null;
+    private String _javaHome = null;
+
+    static String loadJavaHome()
+    {
+        return System.getProperty(JAVA_HOME);
+    }
+    
+    /**
+     * @return The Java vendor
+     */
+    public String getJavaVender()
+    {
+        return _javaVender;
+    }
+
+    public static final String JAVA_VENDER = "java.vender";
+
+    private String _javaVender = null;
+
+    static String loadJavaVender()
+    {
+        return System.getProperty(JAVA_VENDER);
+    }
+    
+    /**
+     * @return The Java version
+     */
+    public String getJavaVersion()
+    {
+        return _javaVersion;
+    }
+
+    public static final String JAVA_VERSION = "java.version";
+
+    private String _javaVersion = null;
+
+    static String loadJavaVersion()
+    {
+        return System.getProperty(JAVA_VERSION);
+    }
 
     /**
-     * Loads the application configuration directory encapsulated as a <code>File</code> object; or null if not set.
-     * 
-     * @return The directory encapsulated as a <code>File</code> object; or null if not set.
-     * @throws FileNotFoundException
-     *             if a directory is specified and it is not found or it is not a directory.
+     * @return The operating system name
      */
-    static File loadChiliLogConfigDirectory() throws FileNotFoundException
+    public String getOsName()
     {
-        String s = System.getProperty(CHILILOG_CONFIG_DIRECTORY);
-        if (StringUtils.isBlank(s))
-        {
-            return null;
-        }
+        return _osName;
+    }
 
-        s = s.trim();
-        File f = new File(s);
-        if (!f.exists())
-        {
-            throw new FileNotFoundException(s);
-        }
+    public static final String OS_NAME = "os.name";
 
-        if (!f.isDirectory())
-        {
-            throw new FileNotFoundException(s + " is not a directory");
-        }
+    private String _osName = null;
 
-        return f;
+    static String loadOsName()
+    {
+        return System.getProperty(OS_NAME);
+    }
+    
+    /**
+     * @return The operating system architecture
+     */
+    public String getOsArchitecture()
+    {
+        return _osArchitecture;
+    }
+
+    public static final String OS_ARCHITECTURE = "os.arch";
+
+    private String _osArchitecture = null;
+
+    static String loadOsArchitecture()
+    {
+        return System.getProperty(OS_ARCHITECTURE);
+    }
+    
+    /**
+     * @return The operating system version
+     */
+    public String getOsVersion()
+    {
+        return _osVersion;
+    }
+
+    public static final String OS_VERSION = "os.version";
+
+    private String _osVersion = null;
+
+    static String loadOsVersion()
+    {
+        return System.getProperty(OS_VERSION);
     }
 
     /**
@@ -208,47 +258,19 @@ public class SystemProperties
     {
         StringBuilder sb = new StringBuilder();
 
-        Class<SystemProperties> cls = SystemProperties.class;
-        for (Field f : cls.getDeclaredFields())
-        {
-            // Look for field names like APP_NAME
-            String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
-                continue;
-            }
+        // Get all system properties
+        Properties props = System.getProperties();
 
-            // Build cache field (_appName) and method (loadAppName) methods
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
-            baseName = baseName.replace("Chililog", "ChiliLog").replace("_", "");
-            String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
-
-            // If field not exist, then skip
-            Field cacheField = null;
-            try
-            {
-                cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e)
-            {
-                continue;
-            }
-
-            // Get the value
-            try
-            {
-                Object o = cacheField.get(this);
-                sb.append(f.get(null));
-                sb.append(" = ");
-                sb.append(o == null ? "<not set>" : o.toString());
-                sb.append("\n");
-            }
-            catch (Exception e)
-            {
-                sb.append("ERROR: Cannot load value for: " + propertyNameFieldName);
-            }
-
+        // Enumerate all system properties
+        Enumeration<?> e = props.propertyNames();
+        for (; e.hasMoreElements(); ) {
+            String name = (String)e.nextElement();
+            String value = (String)props.get(name);
+            
+            sb.append(name);
+            sb.append(" = ");
+            sb.append(value);
+            sb.append("\n");
         }
 
         return sb.toString();

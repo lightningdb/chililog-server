@@ -175,7 +175,7 @@ public class RepositoriesTest
         c.save(_db, entry);
 
         // Start server
-        App.startChiliLogServer();
+        App.start(null);
 
         // Login
         _systemAdminAuthToken = ApiUtils.login("TestRepo_SystemAdmin", "hello");
@@ -201,7 +201,7 @@ public class RepositoriesTest
         query.put("name", pattern);
         coll.remove(query);
 
-        App.stopChiliLogServer();
+        App.stop(null);
         
         coll = _db.getCollection("repo_test_repo");
         if (coll != null)

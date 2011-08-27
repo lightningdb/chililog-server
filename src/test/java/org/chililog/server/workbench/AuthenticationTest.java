@@ -26,7 +26,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
-import org.chililog.server.common.AppProperties;
+import org.chililog.server.common.BuildProperties;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.UserBO;
@@ -163,9 +163,9 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest", readResponseAO.getUsername());
         assertEquals("AuthenticationTest@chililog.com", readResponseAO.getEmailAddress());
 
-        AppProperties appProperties = AppProperties.getInstance();
-        assertEquals(appProperties.getAppVersion(), headers.get(Worker.AUTHENTICATION_SERVER_VERSION));
-        assertEquals(appProperties.getBuildTimestamp(), headers.get(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP));
+        BuildProperties buildProperties = BuildProperties.getInstance();
+        assertEquals(buildProperties.getAppVersion(), headers.get(Worker.AUTHENTICATION_SERVER_VERSION));
+        assertEquals(buildProperties.getBuildTimestamp(), headers.get(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP));
     } 
 
     /**

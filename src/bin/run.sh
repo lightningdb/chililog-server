@@ -2,13 +2,13 @@
  
 export JVM_ARGS="-Xmx512M"
  
-export CLASSPATH=.
+export CLASSPATH=.:../config
 for i in `ls ../lib/*.jar`; do
-  CLASSPATH=$i:$CLASSPATH
+  CLASSPATH=$CLASSPATH:$i
 done
 
 echo "***********************************************************************************"
 echo "java $JVM_ARGS -classpath $CLASSPATH org.chililog.server.App"
 echo "***********************************************************************************"
-java $JVM_ARGS -Dchililog.config.directory=../config -classpath $CLASSPATH org.chililog.server.App
+java $JVM_ARGS -classpath $CLASSPATH org.chililog.server.App
 

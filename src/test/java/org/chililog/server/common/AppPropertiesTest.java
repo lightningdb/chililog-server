@@ -20,9 +20,7 @@ package org.chililog.server.common;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.net.UnknownHostException;
-import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -44,22 +42,9 @@ public class AppPropertiesTest
 {
     private static Logger _logger = Logger.getLogger(AppPropertiesTest.class);
 
-    private static File _tempDir = null;
-
     @BeforeClass
     public static void testClassInit() throws Exception
     {
-        String baseTempPath = System.getProperty("java.io.tmpdir");
-        _tempDir = new File(baseTempPath + File.separator + "tempDir_" + new Date().getTime());
-        if (_tempDir.exists() == false)
-        {
-            _tempDir.mkdir();
-        }
-        _tempDir.deleteOnExit();
-        _logger.debug("_tempDir=" + _tempDir.getPath());
-
-        System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
-
         // Reload properties
         SystemProperties.getInstance().loadProperties();
     }
@@ -68,43 +53,8 @@ public class AppPropertiesTest
     @After
     public void testCleanup() throws Exception
     {
-        // No override
-        System.setProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY, StringUtils.EMPTY);
-        for (File f : _tempDir.listFiles())
-        {
-            f.delete();
-        }
-
         // Reload properties so that we start with default
         SystemProperties.getInstance().loadProperties();
-    }
-
-    @Test
-    public void testAppName()
-    {
-        String s = AppProperties.getInstance().getAppName();
-        assertTrue(s.equalsIgnoreCase("ChiliLog Server"));
-    }
-
-    @Test
-    public void testBuildTimestamp()
-    {
-        String s = AppProperties.getInstance().getBuildTimestamp();
-        assertTrue(StringUtils.isNotBlank(s));
-    }
-
-    @Test
-    public void testBuildMachineName() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getBuildMachineName();
-        assertEquals(java.net.InetAddress.getLocalHost().getHostName(), s);
-    }
-
-    @Test
-    public void testBuildUserName() throws UnknownHostException
-    {
-        String s = AppProperties.getInstance().getBuildUserName();
-        assertEquals(System.getProperty("user.name"), s);
     }
     
     @Test
@@ -378,7 +328,7 @@ public class AppPropertiesTest
     public void testWorkbenchKeyStaticFilesDirectory() throws UnknownHostException
     {
         String s = AppProperties.getInstance().getWorkbenchStaticFilesDirectory();
-        assertTrue(s.equals("/tmp") || s.equals("../static")); // cater for debug and release builds
+        assertTrue(s.equals("./src/main/sc2") || s.equals("../workbench")); // cater for debug and release builds
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_STATIC_FILES_DIRECTORY));
     }
 

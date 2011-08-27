@@ -18,7 +18,6 @@
 
 package org.chililog.server.common;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -34,16 +33,11 @@ import org.apache.commons.lang.WordUtils;
 
 /**
  * <p>
- * AppProperties provides strongly typed access configuration information in the <code>app.properties</code> file.
+ * AppProperties provides strongly typed access to configuration information in the <code>app.properties</code> file.
  * </p>
  * 
  * <p>
- * The <code>app.properties</code> file in the root classpath contains the default configuration.
- * </p>
- * 
- * <p>
- * To override the default configuration, create your own <code>app.properties</code> file and set your JVM system
- * property option "chililog.config.directory" to the directory where your file is located.
+ * The <code>app.properties</code> file in the classpath contains the default configuration.
  * </p>
  * 
  * <p>
@@ -54,7 +48,7 @@ import org.apache.commons.lang.WordUtils;
  * <h3>Example</h3>
  * 
  * <pre>
- * AppProperties.getInstance().getBuildTimestamp();
+ * AppProperties.getInstance().getJsonPretty();
  * </pre>
  * 
  * <h3>Property Loading</h3>
@@ -63,7 +57,7 @@ import org.apache.commons.lang.WordUtils;
  * <ol>
  * <li>We search for all fields with upper case letters in their names. For example, <code>APP_NAME<code>.</li>
  * <li>We search for the corresponding field cache variable. The field name is converted to camel case and prefixed with
- * underscore. For example, <code>_appName</code>li>
+ * underscore. For example, <code>_appName</code></li>
  * <li>Next, we search for a load method to parse the entry in the property file. The field name is converted to camel
  * case and prefixed with "load". For example, <code>loadAppName</code></li>
  * <li>If the method is found, it is called and the result is used to set the cache variable identified in step #2.</li>
@@ -115,7 +109,7 @@ public class AppProperties
         }
         catch (Exception e)
         {
-            _logger.error("Error loading application properties: " + e.getMessage(), e);
+            _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -166,25 +160,10 @@ public class AppProperties
             InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(APP_PROPERTY_FILE_NAME);
             if (is == null)
             {
-                throw new FileNotFoundException("Default app.properties file inside JAR not found");
+                throw new FileNotFoundException("'app.properties' file not found in classpath");
             }
             properties.load(is);
             is.close();
-
-            // Load overrides
-            File configDirectory = SystemProperties.getInstance().getChiliLogConfigDirectory();
-            if (configDirectory != null)
-            {
-                File configFile = new File(configDirectory, APP_PROPERTY_FILE_NAME);
-                if (configFile.exists())
-                {
-                    _logger.info("Loading overide app.properties configuration from: " + configFile.getPath());
-                    fis = new FileInputStream(configFile);
-                    properties.load(fis);
-                    fis.close();
-                    fis = null;
-                }
-            }
 
             return properties;
         }
@@ -250,92 +229,13 @@ public class AppProperties
         return;
     }
 
-    /**
-     * Returns this application's name - ChiliLog Server.
-     */
-    public String getAppName()
-    {
-        return _appName;
-    }
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
+    // Miscellaneous
+    // *****************************************************************************************************************
+    // *****************************************************************************************************************
 
-    static final String APP_NAME = "application.name";
-
-    private String _appName = null;
-
-    static String loadAppName(Properties properties)
-    {
-        return loadString(properties, APP_NAME, "ChiliLog Server");
-    }
-
-    /**
-     * Returns this application's version
-     */
-    public String getAppVersion()
-    {
-        return _appVersion;
-    }
-
-    static final String APP_VERSION = "application.version";
-
-    private String _appVersion = null;
-
-    static String loadAppVersion(Properties properties)
-    {
-        return loadString(properties, APP_VERSION);
-    }
-
-    /**
-     * Returns the date and time when this application build was performed
-     */
-    public String getBuildTimestamp()
-    {
-        return _buildTimestamp;
-    }
-
-    static final String BUILD_TIMESTAMP = "build.timestamp";
-
-    private String _buildTimestamp = null;
-
-    static String loadBuildTimestamp(Properties properties)
-    {
-        return loadString(properties, BUILD_TIMESTAMP);
-    }
-
-    /**
-     * Returns the name of machine on which this application build was performed
-     */
-    public String getBuildMachineName()
-    {
-        return _buildMachineName;
-    }
-
-    static final String BUILD_MACHINE_NAME = "build.machinename";
-
-    private String _buildMachineName = null;
-
-    static String loadBuildMachineName(Properties properties)
-    {
-        return loadString(properties, BUILD_MACHINE_NAME);
-    }
-
-    /**
-     * Returns the user account with which this application build was performed
-     */
-    public String getBuildUserName()
-    {
-        return _buildUserName;
-    }
-
-    static final String BUILD_USER_NAME = "build.username";
-
-    private String _buildUserName = null;
-
-    static String loadBuildUserName(Properties properties)
-    {
-        return loadString(properties, BUILD_USER_NAME);
-    }
-
-    /**
+     /**
      * If true, JSON serialization is to be human readable. If false, white spaces will be eliminated.
      */
     public boolean getJsonPretty()

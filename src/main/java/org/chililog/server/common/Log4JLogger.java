@@ -18,12 +18,7 @@
 
 package org.chililog.server.common;
 
-import java.io.File;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 
 /**
  * <p>
@@ -40,28 +35,6 @@ import org.apache.log4j.xml.DOMConfigurator;
 public class Log4JLogger
 {
     private final Logger _inner;
-
-    /**
-     * Initialize log4J to look for the override configuration if one exists
-     */
-    static
-    {
-        // We don't use the SystemProperties class because it triggers the logger!
-        // See code in org.apache.log4j.LogManager static block
-
-        String configDir = System.getProperty(SystemProperties.CHILILOG_CONFIG_DIRECTORY);
-        if (!StringUtils.isEmpty(configDir))
-        {
-            File overrideLog4JXML = new File(configDir, "log4j.xml");
-            if (overrideLog4JXML.exists())
-            {
-                System.out.println("Loading override logging configuration from: " + overrideLog4JXML.getPath());
-                DOMConfigurator config = new DOMConfigurator();
-                config.doConfigure(overrideLog4JXML.getPath(), LogManager.getLoggerRepository());
-            }
-        }
-
-    }
 
     /**
      * Returns an instance of this Logger to use
