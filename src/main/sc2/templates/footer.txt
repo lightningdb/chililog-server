@@ -1,3 +1,5 @@
-<div class="footer">
-  Chililog V0.0.1. &copy; 2011 Cinch Logic.
+<div class="container">
+  <div class="footerBar">
+    ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+  </div>
 </div>

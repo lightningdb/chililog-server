@@ -15,58 +15,71 @@
 
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="stylesheet" type="text/css" href="css/boilerplate.css">
-  <link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.16.custom.css" />
-  <link rel="stylesheet" type="text/css" href="css/redmond/chililog.css">
+  <link rel="stylesheet" type="text/css" href="css/default/jquery-ui.css" />
+  <link rel="stylesheet" type="text/css" href="css/default/chililog.css">
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
   <!-- END COMMON HEAD BLOCK -->
 </head>
-<body class="standard">
+<body>
 
 <!-- START COMMON HEADER BLOCK -->
 <script type="text/javascript" src="js/authentication.js"></script>
 <script type="text/javascript">Auth.checkIfLoggedIn();</script>
-<div class="header">
-  <div class="nav">
-    <ul>
-      <li><a href="stream.html" id="navStream">Stream</a></li>
-      <li><a href="search.html" id="navSearch">Search</a></li>
-      <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
-      <li><a href="my_profile.html" id="navMyProfile">My Profile</a></li>
-      <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
-    </ul>
+<div class="headerBar">
+  <div class="fill">
+    <div class="container ui-helper-clearfix">
+      <h3><a href="index.html">ChiliLog</a></h3>
+      <ul>
+        <li><a href="stream.html" id="navStream" class="selected">Stream</a></li>
+        <li><a href="search.html" id="navSearch">Search</a></li>
+        <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
+      </ul>
+      <ul class="secondary-nav">
+        <li class="menu">
+          <a href="#" class="menu">vibuli</a>
+          <ul class="menu-dropdown">
+            <li class="menu">
+              <a href="my_profile.html">My Profile</a>
+              <a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
-  <h1>ChiliLog</h1>
 </div>
 <!-- END COMMON HEADER BLOCK -->
 
-<!-- START COMMON DIVIDER BLOCK -->
-<div class="divider">
-  <div class="user" id="dividerUser">&nbsp;</div>
-  <div class="crumbs" id="dividerCrumbs">&nbsp;</div>
-</div>
-<!-- END COMMON DIVIDER BLOCK -->
 
-<div class="content">
-  <h1>Welcome</h1>
-  <p>
-    Click <a href="stream.html">Stream</a> to see real time logs from your repository.
-  </p>
-  <p>
-    Click <a href="search.html">Search</a> to find and analyse historical log entries in your repository.
-  </p>
-  <p>
-    Administration and My Profile are still work in progress.
-  </p>
+<div id="indexContent" class="content">
+  <div class="container">
+    <div class="welcome ui-corner-all">
+      <h1>ChiliLog Workbench</h1>
+      <p>
+        <a href="stream.html">Stream</a> your logs from your repository. Watch in real time.
+      </p>
+      <p>
+        <a href="search.html">Search</a> and analyse historical log entries in your repository.
+      </p>
+      <p>
+        Administration and My Profile are still work in progress.
+      </p>
+    </div>
+  </div>
 </div>
+
 
 <!-- START COMMON FOOTER BLOCK -->
-<div class="footer">
-  Chililog V0.0.1. &copy; 2011 Cinch Logic.
+<div class="container">
+  <div class="footerBar">
+    ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+  </div>
 </div>
 <!-- END COMMON FOOTER BLOCK -->
+
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>

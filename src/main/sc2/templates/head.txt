@@ -7,8 +7,8 @@
 
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="stylesheet" type="text/css" href="css/boilerplate.css">
-  <link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.16.custom.css" />
-  <link rel="stylesheet" type="text/css" href="css/redmond/chililog.css">
+  <link rel="stylesheet" type="text/css" href="css/default/jquery-ui.css" />
+  <link rel="stylesheet" type="text/css" href="css/default/chililog.css">
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>

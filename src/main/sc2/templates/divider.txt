@@ -1,4 +1,0 @@
-<div class="divider">
-  <div class="user" id="dividerUser">&nbsp;</div>
-  <div class="crumbs" id="dividerCrumbs">&nbsp;</div>
-</div>

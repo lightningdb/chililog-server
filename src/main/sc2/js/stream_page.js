@@ -265,29 +265,37 @@ App.pageController = SC.Object.create({
       scDate.set('timezone', timezoneOffsetMinutes);
     }
 
-    var className = '';
+    var severityClassName = 'severity';
     if (severity <= 3) {
-      className = ' class="red" ';
+      severityClassName = severityClassName + ' ui-state-error ui-corner-all';
     } else if (severity == 4 || severity == 5) {
-      className = ' class="amber" ';
+      severityClassName = severityClassName + ' ui-state-highlight ui-corner-all';
     }
 
-    var newRowHtml = '<tr' + className + '>' +
-      '<td>' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</td>' +
-      '<td>' + logEntry.Source + '</td>' +
-      '<td>' + logEntry.Host + '</td>' +
-      '<td>' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</td>' +
-      '<td>' + logEntry.Message + '</td>' +
-      '</tr>';
-    $('#resultsTable > tbody:last').append(newRowHtml);
+    var rowCount = $('#results div').length;
+    var odd = rowCount % 2 == 0 ? 'odd' :'';
+    
+    var newLogEntryHtml = '<div class="logEntry ' + odd + '">' +
+      '<div class="row">' +
+        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</div>' +
+        '<div class="right">' +
+          logEntry.Message +
+          '<div class="rightFooter">' +
+            '<span class="' + severityClassName + '"><span class="label">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
+            '<span class="divider">|</span>' +
+            '<span class="host"><span class="label">host:</span> ' + logEntry.Host + '</span>' +
+            '<span class="divider">|</span>' +
+            '<span class="source"><span class="label">source:</span> ' +logEntry.Source + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    
+    $('#results').append(newLogEntryHtml);
     window.scrollTo(0, document.body.scrollHeight);
 
     // Check if we want to show the bottom buttons ...
-    if (!App.pageController.get('showActionButton2')) {
-      var rowCount = $('#resultsTable tr').length;
-      if (rowCount > 1) {
-        App.pageController.set('showActionButton2', YES);
-      }
+    if (!App.pageController.get('showActionButton2') && rowCount > 1) {
+      App.pageController.set('showActionButton2', YES);
     }
   }
 });
@@ -441,7 +449,7 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.pageFileName = Auth.getPageName();
+App.pageFileName = "stream.html";
 
 if (!window.WebSocket) {
   App.pageController.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');

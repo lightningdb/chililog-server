@@ -15,8 +15,8 @@
 
   <link rel="shortcut icon" href="/favicon.ico">
   <link rel="stylesheet" type="text/css" href="css/boilerplate.css">
-  <link rel="stylesheet" type="text/css" href="css/redmond/jquery-ui-1.8.16.custom.css" />
-  <link rel="stylesheet" type="text/css" href="css/redmond/chililog.css">
+  <link rel="stylesheet" type="text/css" href="css/default/jquery-ui.css" />
+  <link rel="stylesheet" type="text/css" href="css/default/chililog.css">
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -28,80 +28,76 @@
 <!-- START COMMON HEADER BLOCK -->
 <script type="text/javascript" src="js/authentication.js"></script>
 <script type="text/javascript">Auth.checkIfLoggedIn();</script>
-<div class="header">
-  <div class="nav">
-    <ul>
-      <li><a href="stream.html" id="navStream">Stream</a></li>
-      <li><a href="search.html" id="navSearch">Search</a></li>
-      <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
-      <li><a href="my_profile.html" id="navMyProfile">My Profile</a></li>
-      <li><a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a></li>
-    </ul>
+<div class="headerBar">
+  <div class="fill">
+    <div class="container ui-helper-clearfix">
+      <h3><a href="index.html">ChiliLog</a></h3>
+      <ul>
+        <li><a href="stream.html" id="navStream" class="selected">Stream</a></li>
+        <li><a href="search.html" id="navSearch">Search</a></li>
+        <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
+      </ul>
+      <ul class="secondary-nav">
+        <li class="menu">
+          <a href="#" class="menu">vibuli</a>
+          <ul class="menu-dropdown">
+            <li class="menu">
+              <a href="my_profile.html">My Profile</a>
+              <a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
-  <h1>ChiliLog</h1>
 </div>
-<!-- END COMMON HEADER BLOCK -->
+</div><!-- END COMMON HEADER BLOCK -->
 
-<!-- START COMMON DIVIDER BLOCK -->
-<div class="divider">
-  <div class="user" id="dividerUser">&nbsp;</div>
-  <div class="crumbs" id="dividerCrumbs">&nbsp;</div>
-</div>
-<!-- END COMMON DIVIDER BLOCK -->
-
-<div class="content stream">
-  <h1>Stream</h1>
-  <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
-  <div class="criteria">
+<div id="streamContent" class="content">
+  <div class="container">
+    <h1>Stream</h1>
+    <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
+    <div class="criteria ui-corner-all ui-helper-clearfix">
+      <script type="text/x-handlebars">
+        {{#view App.RepositoryField id="repositoryField" }}
+          <label for="repositoryData">{{label}}</label><br/>
+          {{view Data id="repositoryData"}}
+        {{/view}}
+        {{#view App.SeverityField id="severityField" }}
+          <label for="severityData">{{label}}</label><br/>
+          {{view Data id="severityData"}}
+        {{/view}}
+        {{view App.ActionButton id="actionButton" class="ui-priority-primary"}}&nbsp;&nbsp;&nbsp;
+        {{view App.ClearButton id="clearButton" isVisibleBinding="App.pageController.showActionButton2" }}
+      </script>
+    </div>
     <script type="text/x-handlebars">
-      {{#view App.RepositoryField id="repositoryField" }}
-        <label for="repositoryData">{{label}}</label><br/>
-        {{view Data id="repositoryData"}}
+      {{#view App.ErrorMessage id="errorMessage" }}
+        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
       {{/view}}
-      {{#view App.SeverityField id="severityField" }}
-        <label for="severityData">{{label}}</label><br/>
-        {{view Data id="severityData"}}
+    </script>
+    <div id="results" style="display: none;">
+    </div>
+    <script type="text/x-handlebars">
+      {{#view id="bottomBar" class="ui-helper-clearfix"}}
+        <div style="float: right;">
+          {{view App.ClearButton id="clearButton2" isVisibleBinding="App.pageController.showActionButton2" }}
+          &nbsp;&nbsp;&nbsp;
+          {{view App.ActionButton id="actionButton2" class="ui-priority-primary" isVisibleBinding="App.pageController.showActionButton2" }}
+        </div>
+        <div style="float: left;">
+          {{view App.TestMessageButton id="testMessageButton" isVisibleBinding="App.pageController.isStreaming" }}
+        </div>
       {{/view}}
-      {{view App.ActionButton id="actionButton"}}&nbsp;&nbsp;&nbsp;
-      {{view App.ClearButton id="clearButton" isVisibleBinding="App.pageController.showActionButton2" }}
     </script>
   </div>
-  <script type="text/x-handlebars">
-    {{#view App.ErrorMessage }}
-      <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
-    {{/view}}
-  </script>
-  <div id="results" class="results" style="display: none;">
-    <table id="resultsTable">
-      <thead>
-        <tr>
-            <th style="width: 200px;">Timestamp</th>
-            <th style="width: 150px;">Source</th>
-            <th style="width: 150px;">Host</th>
-            <th style="width: 120px;">Severity</th>
-            <th>Message</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <script type="text/x-handlebars">
-    {{#view id="bottomBar" class="bottomBar"}}
-      <div style="float: right;">
-        {{view App.ClearButton id="clearButton2" isVisibleBinding="App.pageController.showActionButton2" }}
-        &nbsp;&nbsp;&nbsp;
-        {{view App.ActionButton id="actionButton2" isVisibleBinding="App.pageController.showActionButton2" }}
-      </div>
-      <div style="float: left;">
-        {{view App.TestMessageButton id="testMessageButton" isVisibleBinding="App.pageController.isStreaming" }}
-      </div>
-    {{/view}}
-  </script>
 </div>
 
 <!-- START COMMON FOOTER BLOCK -->
-<div class="footer">
-  Chililog V0.0.1. &copy; 2011 Cinch Logic.
+<div class="container">
+  <div class="footerBar">
+    ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+  </div>
 </div>
 <!-- END COMMON FOOTER BLOCK -->
 
