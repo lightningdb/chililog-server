@@ -206,9 +206,24 @@ App.RepositoryEntryRecord = SC.Record.extend({
   keywords: SC.Record.attr(Array),
   fields: SC.Record.attr(Array),
 
+  /**
+   *
+   */
   localTimestampString: function() {
     return this.get('timestamp').toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z');
   }.property('timestamp'),
+
+  /**
+   * Additional class names for displaying severity
+   */
+  severityClassName: function() {
+    var severity = this.get('severity');
+    if (severity <= 3) {
+      return 'ui-state-error ui-corner-all';
+    } else if (severity == 4 || severity == 5) {
+      return 'ui-state-highlight ui-corner-all';
+    }
+  }.property('severity'),
 
   /**
    * Only need to map one way because we don't update entries

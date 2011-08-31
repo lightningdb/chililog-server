@@ -365,7 +365,7 @@ select {
   font-size: 13px;
   line-height: 18px;
   height: 18px;
-  color: #777;
+  color: #505050;
   border: 1px solid #ccc;
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -749,16 +749,16 @@ body.login {
 /* =============================================================================
    Stream Page
    ============================================================================= */
-#streamContent .criteria {
+.criteria {
     background-color: #DDF4FB;
     border: solid 1px #C6EDF9;
     padding: 20px;
 }
 #streamContent #repositoryData {
-    min-width: 200px;
+    width: 200px;
 }
 #streamContent #severityData {
-    width: 100px;
+    width: 110px;
 }
 #streamContent #actionButton, #streamContent #clearButton {
     float: left;
@@ -780,56 +780,56 @@ body.login {
     margin-top: 32px;
     margin-bottom: 1em;
 }
-#streamContent #results {
+#results {
     margin-top: 32px;
     border-top: solid 1px #ddd;
 }
-#streamContent #results .logEntry {
+#results .logEntry {
     display: table;
     padding: 8px 8px;
     width: 100%;
     border-bottom: solid 1px #ddd;
 }
-#streamContent #results .logEntry.odd {
+#results .logEntry:nth-child(odd) {
     background-color: whitesmoke;
 }
-#streamContent #results .logEntry .row {
+#results .logEntry .row {
     display: table-row;
 }
-#streamContent #results .logEntry .row .left {
+#results .logEntry .row .left {
     display: table-cell;
     width: 175px;
     color: #777;
 }
-#streamContent #results .logEntry .row .right {
+#results .logEntry .row .right {
     display: table-cell;
     word-wrap: break-word;
 }
-#streamContent #results .logEntry .row .rightFooter {
+#results .logEntry .row .rightFooter {
     padding-top: 6px;
 }
-#streamContent #results .logEntry .row .rightFooter .severity {
+#results .logEntry .row .rightFooter .severity {
     width: 120px;
     display: inline-block;
     overflow: hidden;
 }
-#streamContent #results .logEntry .row .rightFooter .severity.ui-state-error {
+#results .logEntry .row .rightFooter .severity.ui-state-error {
     text-align: center;
 }
-#streamContent #results .logEntry .row .rightFooter .severity.ui-state-highlight {
+#results .logEntry .row .rightFooter .severity.ui-state-highlight {
     text-align: center;
 }
-#streamContent #results .logEntry .row .rightFooter .host {
+#results .logEntry .row .rightFooter .host {
     min-width: 100px;
     display: inline-block;
     overflow: hidden;
 }
-#streamContent #results .logEntry .row .rightFooter .divider {
+#results .logEntry .row .rightFooter .divider {
     padding: 0px 16px;
     display: inline-block;
     color: #777;
 }
-#streamContent #results .logEntry .row .rightFooter .label {
+#results .logEntry .row .rightFooter .label {
     color: #777;
     display: inline-block;
 }
@@ -841,125 +841,71 @@ body.login {
 /* =============================================================================
    Search Page
    ========================================================================= */
-
-.content.search .criteria {
-    clear: both;
-    height: 50px;
+#searchContent .criteria {
+    background-color: #DDF4FB;
+    border: solid 1px #C6EDF9;
+    padding: 20px;
 }
-
-.content.search .criteria .field {
+#searchContent .criteria .field {
+    padding-bottom: 8px;
+}
+#searchContent #repositoryData {
+    width: 230px;
+}
+#searchContent #timespanData {
+    width: 110px;
+}
+#searchContent #severityData {
+    width: 110px;
+}
+#searchContent #keywordsData {
+    width: 380px;
+}
+#searchContent #fromDateData {
+    width: 100px;
+}
+#searchContent #fromTimeData {
+    width: 100px;
+}
+#searchContent #toDateData {
+    width: 100px;
+}
+#searchContent #toTimeData {
+    width: 100px;
+}
+#searchContent #sourceData {
+    width: 180px;
+}
+#searchContent #hostData {
+    width: 180px;
+}
+#searchContent #conditionData {
+    width: 860px;
+    height: 5em;
+}
+#searchContent #searchButton, #searchContent #advancedButton {
     float: left;
     display: inline;
     margin-right: 10px;
+    margin-top: 10px;
+    padding: 0px 14px;
 }
-
-.content.search .criteria .field label {
-    font-weight: bold;
-}
-
-.content.search .criteria .field #repositoryData {
-    min-width: 200px;
-}
-
-.content.search .criteria input {
-    width: 120px;
-}
-
-.content.search .criteria .field #fromTimeData {
-    width: 80px;
-}
-.content.search .criteria .field #toTimeData {
-    width: 80px;
-}
-.content.search .criteria #keywordsData {
-    width: 750px;
-}
-.content.search .criteria #messageData {
-    width: 750px;
-}
-.content.search .criteria #conditionData {
-    width: 750px;
-}
-
-.content.search .criteria button {
-    float: left;
-    display: inline;
-    margin-right: 10px;
-    margin-top: 1.1em;
-}
-.content.search .criteria button span {
+#searchContent button span {
     padding: 3px 1em;
 }
-
-.content.search .error {
+#searchContent #errorMessage {
     clear: both;
-    width: 750px;
     padding:  0.7em;
-    margin-top: 16px;
+    margin-top: 32px;
     margin-bottom: 1em;
 }
-
-.content.search .results {
+#searchContent #noRowsMessage {
     clear: both;
-    margin-top: 16px;
-    padding-top: 16px;
+    margin-top: 32px;
+    padding:  20px;
+    margin-bottom: 1em;
 }
-
-.content.search .results table {
-    width: 100%;
-}
-.content.search .results td {
-    border: Gainsboro solid 1px;
-    text-align: left;
-    padding: 4px;
-    font-family: "Andale Mono", "Courier New", Courier, monospace;
-    font-size: 0.85em;
-}
-
-.content.search .results .divTable {
-    display: table;
-    width: 100%;
-}
-.content.search .results .divTableRow {
-    display: table-row;
-}
-
-.content.search .results .divTableCell {
-    border: Gainsboro solid 1px;
-    text-align: left;
-    padding: 4px;
-    font-family: "Andale Mono", "Courier New", Courier, monospace;
-    font-size: 0.85em;
-    display: table-cell;
-    background-color: white;
-    color: black;
-}
-
-.content.search .results .divTableCell.tableheader {
-    border: DarkGray solid 1px;
-    text-align: left;
-    padding: 4px;
-    background-color: #356AA0;
-    font-size: 1em;
-    color: white;
-    font-weight: bold;
-}
-
-.content.search .results tr {
-    background-color: white;
-    color: black;
-}
-
-.content.search .results tr.red {
-    background-color: firebrick;
-    color: white;
-}
-
-.content.search .results tr.amber {
-    background-color: gold;
-    color: black;
-}
-
-.content.search .bottomBar {
-    margin-top: 16px;
+#searchContent #bottomBar {
+    text-align: right;
+    margin-top: 32px;
 }

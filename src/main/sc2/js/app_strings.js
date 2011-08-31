@@ -115,7 +115,7 @@ SC.STRINGS = {
   '_search.host': 'Host',
   '_search.severity': 'Severity',
   '_search.message': 'Message',
-  '_search.advancedCriteria': 'Advanced Search',
+  '_search.advancedCriteria': 'Advanced Options',
   '_search.condition': 'Conditions',
   '_search.condition.help': '(mongodb JSON format must be used.)',
   '_search.condition.invalid': 'Conditions must be in valid JSON format. Check mongodb script for examples.',

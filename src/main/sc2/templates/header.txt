@@ -3,15 +3,15 @@
 <div class="headerBar">
   <div class="fill">
     <div class="container ui-helper-clearfix">
-      <h3><a href="index.html">ChiliLog</a></h3>
+      <h3><a href="index.html">chililog</a></h3>
       <ul>
-        <li><a href="stream.html" id="navStream" class="selected">Stream</a></li>
+        <li><a href="stream.html" id="navStream">Stream</a></li>
         <li><a href="search.html" id="navSearch">Search</a></li>
         <li><a href="admin_repos.html" id="navAdmin">Administration</a></li>
       </ul>
       <ul class="secondary-nav">
         <li class="menu">
-          <a href="#" class="menu">vibuli</a>
+          <a id="navUsername" href="#" class="menu">&nbsp;</a>
           <ul class="menu-dropdown">
             <li class="menu">
               <a href="my_profile.html">My Profile</a>

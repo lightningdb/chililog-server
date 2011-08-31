@@ -272,10 +272,7 @@ App.pageController = SC.Object.create({
       severityClassName = severityClassName + ' ui-state-highlight ui-corner-all';
     }
 
-    var rowCount = $('#results div').length;
-    var odd = rowCount % 2 == 0 ? 'odd' :'';
-    
-    var newLogEntryHtml = '<div class="logEntry ' + odd + '">' +
+    var newLogEntryHtml = '<div class="logEntry">' +
       '<div class="row">' +
         '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</div>' +
         '<div class="right">' +
@@ -294,6 +291,7 @@ App.pageController = SC.Object.create({
     window.scrollTo(0, document.body.scrollHeight);
 
     // Check if we want to show the bottom buttons ...
+    var rowCount = $('#results div').length;
     if (!App.pageController.get('showActionButton2') && rowCount > 1) {
       App.pageController.set('showActionButton2', YES);
     }

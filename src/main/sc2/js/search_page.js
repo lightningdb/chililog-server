@@ -68,6 +68,7 @@ App.FromDateField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.fromDate',
     name: 'fromDate',
+    placeholder: 'yyyy-mm-dd',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -83,6 +84,7 @@ App.FromTimeField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.fromTime',
     name: 'fromTime',
+    placeholder: 'hh:mm:ss',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -98,6 +100,7 @@ App.ToDateField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.toDate',
     name: 'toDate',
+    placeholder: 'yyyy-mm-dd',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -113,6 +116,7 @@ App.ToTimeField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.toTime',
     name: 'toTime',
+    placeholder: 'hh:mm:ss',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -212,23 +216,8 @@ App.ConditionField = SC.View.extend({
  * Button to search
  */
 App.SearchButton = JQ.Button.extend({
-  isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool().not(),
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
   
-  label: '_search'.loc(),
-
-  click: function() {
-    App.statechart.sendAction('startSearch');
-    return;
-  }
-});
-
-/**
- * Button to search
- */
-App.SearchButton2 = JQ.Button.extend({
-  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
   label: '_search'.loc(),
 
   click: function() {
@@ -271,7 +260,6 @@ App.AdvancedButton = JQ.Button.extend({
  * DIV for advanced criteria
  */
 App.AdvancedCriteria = SC.View.extend({
-  classNames: 'criteria'.w(),
   isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool()
 });
 
@@ -280,9 +268,14 @@ App.AdvancedCriteria = SC.View.extend({
  */
 App.LogEntryCollectionView = SC.CollectionView.extend({
   contentBinding: 'App.pageController.logEntries',
-  classNames: 'divTable'.w(),
+
+  didInsertElement: function() {
+    this._super();
+    this.$("div:even").addClass("odd");
+  },
+
   itemViewClass: SC.View.extend({
-    classNames: 'divTableRow'.w()
+    classNames: 'logEntry'.w()
   })
 });
 
@@ -290,7 +283,7 @@ App.LogEntryCollectionView = SC.CollectionView.extend({
  * Show message when on rows found
  */
 App.NoRowsView = SC.View.extend({
-  classNames: 'divTable'.w(),
+  classNames: 'ui-state-highlight ui-corner-all'.w(),
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
 });
 
@@ -555,7 +548,7 @@ App.engineController = SC.Object.create({
       App.pageController.set('errorMessage', error);
     }
 
-    $('#results').css('display', 'block');
+    $('#results').css('display', recordCount > 0 ? 'block' : 'none');
 
     App.statechart.sendAction('finishSearch');
   },

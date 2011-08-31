@@ -347,16 +347,14 @@ App.SelectView = SC.CollectionView.extend({
 App.setupStandardPage = function(pageFileName) {
   // Selected nav
   if (pageFileName === 'stream.html') {
-    $('#navStream').addClass('active');
+    $('#navStream').addClass('selected');
   } else if (pageFileName === 'search.html') {
-    $('#navSearch').addClass('active');
+    $('#navSearch').addClass('selected');
   } else if (pageFileName.indexOf('admin') === 0) {
-    $('#navAdmin').addClass('active');
-  } else if (pageFileName === 'my_profile.html') {
-    $('#navMyProfile').addClass('active');
+    $('#navAdmin').addClass('selected');
   }
 
   // User
   var loggedInUser = App.sessionEngine.get('loggedInUser');
-  $('#dividerUser').append(loggedInUser.get('displayNameOrUsername'));
+  $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
 }
