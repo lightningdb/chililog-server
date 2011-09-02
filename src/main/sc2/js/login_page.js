@@ -24,7 +24,6 @@
 // Views
 // --------------------------------------------------------------------------------------------------------------------
 App.ErrorMessage = SC.View.extend({
-  classNames: 'ui-state-error ui-corner-all error'.w(),
   messageBinding: 'App.pageController.errorMessage',
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
@@ -52,8 +51,18 @@ App.PasswordField = SC.View.extend({
   })
 });
 
-App.LoginButton = JQ.Button.extend({
-  label: '_login.login'.loc(),
+App.RememberMeField = SC.View.extend({
+
+  Data : App.CheckboxView.extend({
+    title: '_login.rememberMe'.loc(),
+    valueBinding: 'App.pageController.rememberMe',
+    tabindex: '3',
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
+  })
+});
+
+App.LoginButton = App.ButtonView.extend({
+  text: '_login.login'.loc(),
 
   disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
 
@@ -79,6 +88,11 @@ App.pageController = SC.Object.create({
    * Value of the password text field
    */
   password: '',
+
+  /**
+   * Remember the user on this computer for 14 days
+   */
+  rememberMe: NO,
 
   /**
    * Error message to display
@@ -143,8 +157,9 @@ App.statechart = SC.Statechart.create({
 
         var username = App.pageController.get('username');
         var password = App.pageController.get('password');
+        var rememberMe = App.pageController.get('rememberMe');
 
-        App.sessionEngine.login(username, password, true, true,
+        App.sessionEngine.login(username, password, rememberMe, true,
           this, this.loginCallback, null);
 
         return;

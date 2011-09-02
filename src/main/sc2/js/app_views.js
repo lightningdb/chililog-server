@@ -194,7 +194,7 @@ App.TextBoxView = SC.TextField.extend({
 
 /** @Class
  *
- * Our own text box supports additional attributes on the textbox
+ * Our own text area supports additional attributes on the textarea
  */
 App.TextAreaView = SC.TextArea.extend({
   /**
@@ -218,10 +218,9 @@ App.TextAreaView = SC.TextArea.extend({
   disabled: NO
 });
 
-
 /**  @Class
  *
- * Our own image field with visibility attribute
+ * Our own image tag
  */
 App.ImgView = SC.View.extend({
   tagName: 'img',
@@ -237,6 +236,57 @@ App.ImgView = SC.View.extend({
    * Alternate text
    */
   alt: ' '
+});
+
+/**  @Class
+ *
+ * Our own simple button view so that the label will be set as the button text
+ */
+App.ButtonView = SC.Button.extend({
+
+  /**
+   * Added disabled attribute binding
+   */
+  attributeBindings: ['type', 'disabled'],
+
+  /**
+   * Text for the button
+   */
+  text: '',
+  
+  /**
+   * Flag to indicate if this is disabled or not
+   */
+  disabled: NO,
+
+  /**
+    @private
+  */
+  willInsertElement: function() {
+    this._updateElementValue();
+  },
+
+  _updateElementValue: function() {
+    this.$().html(this.get('text'));
+  }.observes('text')
+});
+
+/** @class
+ *
+ * Checkbox view control
+ */
+App.CheckboxView = SC.Checkbox.extend({
+
+  /**
+   * Flag to indicate if this is disabled or not
+   */
+  disabled: NO,
+
+  /**
+   * Added a space in between the title and checkbox so that there is a gap
+   */
+  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}} > {{title}}</label>')
+
 });
 
 /** @class

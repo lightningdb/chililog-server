@@ -1,0 +1,426 @@
+
+.form-stacked {
+    padding-left: 0px;
+}
+
+/* =============================================================================
+   Login Page
+   ========================================================================== */
+body.login {
+    position: absolute;
+    left: 50%;
+    margin-left: -175px;
+    width: 350px;
+}
+.login .titleBar {
+    margin-top: 200px;
+    background-color: #222;
+    border: solid 1px #222;
+    color: #FFFFFF;
+    font-size: 1.5em;
+    font-weight: normal;
+    padding: 8px 30px;
+}
+.login .contentBar {
+    background-color: #DDF4FB;
+    border: solid 1px #C6EDF9;
+    border-top: none;
+    overflow: hidden;
+    padding: 30px;
+}
+.login .contentBar .error {
+    padding:  0.7em;
+    margin-bottom: 16px;
+}
+.login .buttonBar {
+    padding-top: 16px;
+}
+
+/* =============================================================================
+   Standard Headers, Content and Footers
+   ========================================================================= */
+.headerBar {
+  height: 50px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  overflow: visible;
+}
+.headerBar .fill {
+  background: #222;
+  background-color: #222222;
+  background-repeat: repeat-x;
+  background-image: -khtml-gradient(linear, left top, left bottom, from(#333333), to(#222222));
+  background-image: -moz-linear-gradient(top, #333333, #222222);
+  background-image: -ms-linear-gradient(top, #333333, #222222);
+  background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #333333), color-stop(100%, #222222));
+  background-image: -webkit-linear-gradient(top, #333333, #222222);
+  background-image: -o-linear-gradient(top, #333333, #222222);
+  background-image: linear-gradient(top, #333333, #222222);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+.headerBar a {
+  color: #ccc;
+}
+.headerBar h3 {
+  color: #fff;
+  position: relative;
+}
+.headerBar h3 a {
+  float: left;
+  display: block;
+  padding: 13px 30px 12px 0px;
+  font-size: 22px;
+  font-weight: 200;
+  line-height: 1;
+  color: #fff;
+}
+.headerBar h3 a:hover {
+  background-color: #444;
+}
+.headerBar ul {
+  display: block;
+  float: left;
+  margin: 0 10px 0 0;
+  position: relative;
+}
+.headerBar ul.secondary-nav {
+  float: right;
+  margin-left: 10px;
+  margin-right: 0;
+}
+.headerBar ul li {
+  display: block;
+  float: left;
+}
+.headerBar ul li a {
+  display: block;
+  float: none;
+  padding: 17px 10px 11px;
+  line-height: 19px;
+  text-decoration: none;
+}
+.headerBar ul li a.selected {
+    color: #FDF5D9;
+    font-weight: bold;
+}
+.headerBar ul li a:hover {
+  background-color: #444;
+  color: #fff;
+}
+.headerBar ul.primary-nav li ul {
+  left: 0;
+}
+.headerBar ul.secondary-nav li ul {
+  right: 0;
+}
+.headerBar ul li.menu {
+  position: relative;
+}
+.headerBar ul li.menu a.menu:after {
+  width: 0px;
+  height: 0px;
+  display: inline-block;
+  content: "&darr;";
+  text-indent: -99999px;
+  vertical-align: top;
+  margin-top: 8px;
+  margin-left: 4px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid #fff;
+  filter: alpha(opacity=50);
+  -khtml-opacity: 0.5;
+  -moz-opacity: 0.5;
+  opacity: 0.5;
+}
+.headerBar ul li.menu.open a.menu, .topbar ul li.menu.open a:hover {
+  background-color: #444;
+  background-color: rgba(255, 255, 255, 0.1);
+  *background-color: #444;
+  /* IE6-7 */
+
+  color: #fff;
+}
+.headerBar ul li.menu.open ul {
+  display: block;
+}
+.headerBar ul li.menu.open ul li a {
+  background-color: transparent;
+  font-weight: normal;
+}
+.topbar ul li.menu.open ul li a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  *background-color: #444;
+  /* IE6-7 */
+
+  color: #fff;
+}
+.headerBar ul li.menu.open ul li.active a {
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+}
+.headerBar ul li ul {
+  background-color: #333;
+  float: left;
+  display: none;
+  position: absolute;
+  top: 46px;
+  min-width: 160px;
+  max-width: 220px;
+  _width: 160px;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 0;
+  text-align: left;
+  border: 0;
+  zoom: 1;
+  -webkit-border-radius: 0 0 5px 5px;
+  -moz-border-radius: 0 0 5px 5px;
+  border-radius: 0 0 5px 5px;
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+.headerBar ul li ul li {
+  float: none;
+  clear: both;
+  display: block;
+  background: none;
+  font-size: 12px;
+}
+.headerBar ul li ul li a {
+  display: block;
+  padding: 6px 15px;
+  clear: both;
+  font-weight: normal;
+  line-height: 19px;
+  color: #bbb;
+}
+.headerBar ul li ul li a:hover {
+  background-color: #333;
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+.headerBar ul li ul li.divider {
+  height: 1px;
+  overflow: hidden;
+  background: #222;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 5px 0;
+}
+.headerBar ul li ul li span {
+  clear: both;
+  display: block;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 15px;
+  cursor: default;
+  color: #808080;
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.content {
+  margin-top: 70px;
+  padding-bottom: 20px;
+}
+
+.content h1 {
+    border-bottom: 1px solid #eee;
+}
+
+.footerBar {
+  margin-top: 32px;
+  padding-top: 17px;
+  border-top: 1px solid #eee;
+}
+
+.field {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+}
+
+.field label {
+    float: none;
+    font-weight: bold;
+    line-height: 20px;
+}
+
+
+/* =============================================================================
+   Index Page
+   ============================================================================= */
+#indexContent .welcome {
+    background-color: whiteSmoke;
+    padding: 60px;
+}
+
+
+/* =============================================================================
+   Stream Page
+   ============================================================================= */
+.criteria {
+    background-color: #DDF4FB;
+    border: solid 1px #C6EDF9;
+    padding: 20px;
+}
+#streamContent #repositoryData {
+    width: 200px;
+}
+#streamContent #severityData {
+    width: 110px;
+}
+#streamContent #actionButton, #streamContent #clearButton {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+    margin-top: 20px;
+    padding: 0px 14px;
+}
+#streamContent #actionButton2, #streamContent #clearButton2 {
+    display: inline;
+    padding: 0px 14px;
+}
+#streamContent button span {
+    padding: 3px 1em;
+}
+#streamContent #errorMessage {
+    clear: both;
+    padding:  0.7em;
+    margin-top: 32px;
+    margin-bottom: 1em;
+}
+#results {
+    margin-top: 32px;
+    border-top: solid 1px #ddd;
+}
+#results .logEntry {
+    display: table;
+    padding: 8px 8px;
+    width: 100%;
+    border-bottom: solid 1px #ddd;
+}
+#results .logEntry:nth-child(odd) {
+    background-color: whitesmoke;
+}
+#results .logEntry .row {
+    display: table-row;
+}
+#results .logEntry .row .left {
+    display: table-cell;
+    width: 175px;
+    color: #777;
+}
+#results .logEntry .row .right {
+    display: table-cell;
+    word-wrap: break-word;
+}
+#results .logEntry .row .rightFooter {
+    padding-top: 6px;
+}
+#results .logEntry .row .rightFooter .severity {
+    width: 120px;
+    display: inline-block;
+    overflow: hidden;
+}
+#results .logEntry .row .rightFooter .severity.ui-state-error {
+    text-align: center;
+}
+#results .logEntry .row .rightFooter .severity.ui-state-highlight {
+    text-align: center;
+}
+#results .logEntry .row .rightFooter .host {
+    min-width: 100px;
+    display: inline-block;
+    overflow: hidden;
+}
+#results .logEntry .row .rightFooter .divider {
+    padding: 0px 16px;
+    display: inline-block;
+    color: #777;
+}
+#results .logEntry .row .rightFooter .label {
+    color: #777;
+    display: inline-block;
+}
+
+#streamContent #bottomBar {
+    margin-top: 32px;
+}
+
+/* =============================================================================
+   Search Page
+   ========================================================================= */
+#searchContent .criteria {
+    background-color: #DDF4FB;
+    border: solid 1px #C6EDF9;
+    padding: 20px;
+}
+#searchContent .criteria .field {
+    padding-bottom: 8px;
+}
+#searchContent #repositoryData {
+    width: 230px;
+}
+#searchContent #timespanData {
+    width: 110px;
+}
+#searchContent #severityData {
+    width: 110px;
+}
+#searchContent #keywordsData {
+    width: 380px;
+}
+#searchContent #fromDateData {
+    width: 100px;
+}
+#searchContent #fromTimeData {
+    width: 100px;
+}
+#searchContent #toDateData {
+    width: 100px;
+}
+#searchContent #toTimeData {
+    width: 100px;
+}
+#searchContent #sourceData {
+    width: 180px;
+}
+#searchContent #hostData {
+    width: 180px;
+}
+#searchContent #conditionData {
+    width: 860px;
+    height: 5em;
+}
+#searchContent #searchButton, #searchContent #advancedButton {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 0px 14px;
+}
+#searchContent button span {
+    padding: 3px 1em;
+}
+#searchContent #errorMessage {
+    clear: both;
+    padding:  0.7em;
+    margin-top: 32px;
+    margin-bottom: 1em;
+}
+#searchContent #noRowsMessage {
+    clear: both;
+    margin-top: 32px;
+    padding:  20px;
+    margin-bottom: 1em;
+}
+#searchContent #bottomBar {
+    text-align: right;
+    margin-top: 32px;
+}

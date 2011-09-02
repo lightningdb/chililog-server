@@ -14,9 +14,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="stylesheet" type="text/css" href="css/boilerplate.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap-1.1.1.css">
+  <link rel="stylesheet" type="text/css" href="css/chililog.css">
   <link rel="stylesheet" type="text/css" href="css/default/jquery-ui.css" />
-  <link rel="stylesheet" type="text/css" href="css/default/chililog.css">
+  <link rel="stylesheet" type="text/css" href="css/default/theme.css">
 
   <!--[if lt IE 9]>
   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -30,22 +31,28 @@
 </div>
 <div class="contentBar">
   <script type="text/x-handlebars">
-    {{#view App.ErrorMessage }}
-      <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
+    {{#view App.ErrorMessage class="alert-message block-message error" }}
+      <span class="ui-state-error"><span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span></span>{{message}}
     {{/view}}
 
-    {{#view App.UsernameField id="usernameField" class="field" }}
-      <label for="usernameData">{{label}}</label>
-      {{view Data id="usernameData"}}
-    {{/view}}
+    <div class="form-stacked">
+      {{#view App.UsernameField id="usernameField" class="clearfix" }}
+        <label for="usernameData">{{label}}</label>
+        <div class="input">{{view Data id="usernameData" class="xlarge"}}</div>
+      {{/view}}
 
-    {{#view App.PasswordField id="passwordField" class="field"}}
-      <label for="passwordData">{{label}}</label>
-      {{view Data id="passwordData"}}
-    {{/view}}
+      {{#view App.PasswordField id="passwordField" class="clearfix"}}
+        <label for="passwordData">{{label}}</label>
+        <div class="input">{{view Data id="passwordData" class="xlarge"}}</div>
+      {{/view}}
+
+      {{#view App.RememberMeField id="rememberMeField" class="clearfix"}}
+        {{view Data id="rememberMeData"}}
+      {{/view}}
+    </div>
 
     <div class="buttonBar">
-      {{view App.LoginButton class="ui-priority-primary"}}&nbsp;&nbsp;&nbsp;{{view App.WorkingImage}}
+      {{view App.LoginButton class="btn primary"}}&nbsp;&nbsp;&nbsp;{{view App.WorkingImage}}
     </div>
   </script>
 </div>
