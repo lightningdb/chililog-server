@@ -252,7 +252,7 @@ App.ButtonView = SC.Button.extend({
   /**
    * Text for the button
    */
-  text: '',
+  label: '',
   
   /**
    * Flag to indicate if this is disabled or not
@@ -267,8 +267,8 @@ App.ButtonView = SC.Button.extend({
   },
 
   _updateElementValue: function() {
-    this.$().html(this.get('text'));
-  }.observes('text')
+    this.$().html(this.get('label'));
+  }.observes('label')
 });
 
 /** @class

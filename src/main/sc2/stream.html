@@ -14,7 +14,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="stylesheet" type="text/css" href="css/boilerplate.css">
+  <link rel="stylesheet" type="text/css" href="css/bootstrap-1.1.1.css">
+  <link rel="stylesheet" type="text/css" href="css/chililog.css">
   <link rel="stylesheet" type="text/css" href="css/default/jquery-ui.css" />
   <link rel="stylesheet" type="text/css" href="css/default/theme.css">
 
@@ -28,7 +29,7 @@
 <!-- START COMMON HEADER BLOCK -->
 <script type="text/javascript" src="js/authentication.js"></script>
 <script type="text/javascript">Auth.checkIfLoggedIn();</script>
-<div class="headerBar">
+<div class="topbar">
   <div class="fill">
     <div class="container ui-helper-clearfix">
       <h3><a href="index.html">chililog</a></h3>
@@ -53,53 +54,51 @@
 </div>
 <!-- END COMMON HEADER BLOCK -->
 
-<div id="streamContent" class="content">
-  <div class="container">
+<script type="text/x-handlebars">
+<div class="container">
+  <div id="streamContent" class="content">
     <h1>Stream</h1>
     <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
-    <div class="criteria ui-corner-all ui-helper-clearfix">
-      <script type="text/x-handlebars">
-        {{#view App.RepositoryField id="repositoryField" }}
-          <label for="repositoryData">{{label}}</label><br/>
-          {{view Data id="repositoryData"}}
-        {{/view}}
-        {{#view App.SeverityField id="severityField" }}
-          <label for="severityData">{{label}}</label><br/>
-          {{view Data id="severityData"}}
-        {{/view}}
-        {{view App.ActionButton id="actionButton" class="ui-priority-primary"}}&nbsp;&nbsp;&nbsp;
-        {{view App.ClearButton id="clearButton" isVisibleBinding="App.pageController.showActionButton2" }}
-      </script>
-    </div>
-    <script type="text/x-handlebars">
-      {{#view App.ErrorMessage id="errorMessage" }}
-        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
+    <div class="alert-message block-message info form-stacked">
+      {{#view App.RepositoryField id="repositoryField" class="floating" }}
+        <label for="repositoryData">{{label}}</label>
+        <div class="input">{{view Data id="repositoryData"}}</div>
       {{/view}}
-    </script>
-    <div id="results" style="display: none;">
+      {{#view App.SeverityField id="severityField" class="floating" }}
+        <label for="severityData">{{label}}</label>
+        <div class="input">{{view Data id="severityData"}}</div>
+      {{/view}}
+      {{view App.ActionButton id="actionButton" class="btn primary"}}&nbsp;&nbsp;&nbsp;
+      {{view App.ClearButton id="clearButton" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
+      <div class="clearfix"></div>
     </div>
-    <script type="text/x-handlebars">
-      {{#view id="bottomBar" class="ui-helper-clearfix"}}
+    {{#view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
+      <span class="ui-state-error"><span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span></span>{{message}}
+    {{/view}}
+    <div id="results" style="display: none;">
+      <div class="heading ui-corner-all">Log Entries</div>
+    </div>
+      {{#view id="bottomBar" class="clearfix"}}
         <div style="float: right;">
-          {{view App.ClearButton id="clearButton2" isVisibleBinding="App.pageController.showActionButton2" }}
+          {{view App.ClearButton id="clearButton2" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
           &nbsp;&nbsp;&nbsp;
-          {{view App.ActionButton id="actionButton2" class="ui-priority-primary" isVisibleBinding="App.pageController.showActionButton2" }}
+          {{view App.ActionButton id="actionButton2" class="btn primary" isVisibleBinding="App.pageController.showActionButton2" }}
         </div>
         <div style="float: left;">
-          {{view App.TestMessageButton id="testMessageButton" isVisibleBinding="App.pageController.isStreaming" }}
+          {{view App.TestMessageButton id="testMessageButton" class="btn" isVisibleBinding="App.pageController.isStreaming" }}
         </div>
       {{/view}}
-    </script>
   </div>
-</div>
 
-<!-- START COMMON FOOTER BLOCK -->
-<div class="container">
-  <div class="footerBar">
-    ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
-  </div>
+  <!-- START COMMON FOOTER BLOCK -->
+  <footer>
+    <div>
+      ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+    </div>
+  </footer>
+  <!-- END COMMON FOOTER BLOCK -->
 </div>
-<!-- END COMMON FOOTER BLOCK -->
+</script>
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>

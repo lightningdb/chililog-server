@@ -27,7 +27,6 @@
  * Error messages
  */
 App.ErrorMessage = SC.View.extend({
-  classNames: 'ui-state-error ui-corner-all error'.w(),
   messageBinding: 'App.pageController.errorMessage',
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
@@ -76,16 +75,18 @@ App.SeverityField = SC.View.extend({
 /**
  * Button to start/stop streaming
  */
-App.ActionButton = JQ.Button.extend({
+App.ActionButton = App.ButtonView.extend({
   label: '_start'.loc(),
 
   didStreamingChange: function() {
     if (App.pageController.get('isStreaming')) {
       this.set('label', '_stop'.loc());
-      this.$().addClass('ui-state-error');
+      this.$().addClass('danger');
+      this.$().removeClass('primary');
     } else {
       this.set('label', '_start'.loc());
-      this.$().removeClass('ui-state-error');
+      this.$().addClass('primary');
+      this.$().removeClass('danger');
     }
 
   }.observes('App.pageController.isStreaming'),
@@ -105,18 +106,22 @@ App.ActionButton = JQ.Button.extend({
 /**
  * Button to clear the log entries on the page
  */
-App.ClearButton = JQ.Button.extend({
+App.ClearButton = App.ButtonView.extend({
   label: '_clear'.loc(),
 
+  /**
+   * Remove all div in results and don't show the bottom buttons
+   */
   click: function() {
-    var rowCount = $('#resultsTable tbody tr').remove();
+    var rowCount = $('#results div').remove();
+    App.pageController.set('showActionButton2', NO);
   }
 });
 
 /**
  * Click to send test messages to the server
  */
-App.TestMessageButton = JQ.Button.extend({
+App.TestMessageButton = App.ButtonView.extend({
   label: '_stream.test'.loc(),
 
   click: function() {
@@ -208,7 +213,7 @@ App.pageController = SC.Object.create({
   /**
    * Error message to display
    */
-  errorMessage: '',
+  errorMessage: 'dasdfasfsdf',
 
   /**
    * Indicates if we are currently streaming or not
@@ -267,9 +272,9 @@ App.pageController = SC.Object.create({
 
     var severityClassName = 'severity';
     if (severity <= 3) {
-      severityClassName = severityClassName + ' ui-state-error ui-corner-all';
+      severityClassName = severityClassName + ' alert-message block-message error';
     } else if (severity == 4 || severity == 5) {
-      severityClassName = severityClassName + ' ui-state-highlight ui-corner-all';
+      severityClassName = severityClassName + ' alert-message block-message warning';
     }
 
     var newLogEntryHtml = '<div class="logEntry">' +

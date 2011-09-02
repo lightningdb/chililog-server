@@ -62,7 +62,7 @@ App.RememberMeField = SC.View.extend({
 });
 
 App.LoginButton = App.ButtonView.extend({
-  text: '_login.login'.loc(),
+  label: '_login.login'.loc(),
 
   disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
 
