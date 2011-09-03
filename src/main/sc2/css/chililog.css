@@ -4,7 +4,7 @@
    ========================================================================= */
 .content {
     margin-top: 60px;
-    margin-bottom: 30px;
+    padding-bottom: 30px;
 }
 
 .form-stacked {
@@ -24,10 +24,26 @@
 select {
     background-color: #fff;
 }
+input[type="text"]:disabled, textarea:disabled, select:disabled {
+  background: #f5f5f5;
+}
 
 input[type="text"], input[type="password"], textarea, select, .uneditable-input {
     color: #404040;
 }
+
+.topbar ul li a.selected {
+    color: gold;
+}
+.topbar a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+footer {
+    padding-top: 8px;
+}
+
+
 /* =============================================================================
    Login Page
    ========================================================================== */
@@ -96,7 +112,7 @@ body.login {
 }
 #streamContent #errorMessage {
     clear: both;
-    padding:  0.7em;
+    padding:  20px;
     margin-top: 32px;
     margin-bottom: 1em;
 }
@@ -115,7 +131,10 @@ body.login {
     width: 100%;
     border-bottom: solid 1px #ddd;
 }
-#results .logEntry:nth-child(odd) {
+#results > .logEntry:nth-child(odd) {
+    background-color: whitesmoke;   /* zebra stripe the css3 way */
+}
+#logEntryCollection > .logEntry:nth-child(even) {
     background-color: whitesmoke;   /* zebra stripe the css3 way */
 }
 #results .logEntry .row {
@@ -163,21 +182,14 @@ body.login {
     display: inline-block;
 }
 
-#streamContent #bottomBar {
-    margin-top: 32px;
+#streamContent #bottombar {
+    margin-top: 16px;
 }
 
 /* =============================================================================
    Search Page
    ========================================================================= */
-#searchContent .criteria {
-    background-color: #DDF4FB;
-    border: solid 1px #C6EDF9;
-    padding: 20px;
-}
-#searchContent .criteria .field {
-    padding-bottom: 8px;
-}
+
 #searchContent #repositoryData {
     width: 230px;
 }
@@ -191,13 +203,13 @@ body.login {
     width: 380px;
 }
 #searchContent #fromDateData {
-    width: 100px;
+    width: 101px;
 }
 #searchContent #fromTimeData {
     width: 100px;
 }
 #searchContent #toDateData {
-    width: 100px;
+    width: 101px;
 }
 #searchContent #toTimeData {
     width: 100px;
@@ -208,8 +220,11 @@ body.login {
 #searchContent #hostData {
     width: 180px;
 }
+#searchContent #conditionField {
+    padding-top: 8px;
+}
 #searchContent #conditionData {
-    width: 860px;
+    width: 855px;
     height: 5em;
 }
 #searchContent #searchButton, #searchContent #advancedButton {
@@ -217,14 +232,23 @@ body.login {
     display: inline;
     margin-right: 10px;
     margin-top: 10px;
-    padding: 0px 14px;
+}
+#searchContent #workingImage {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+    margin-top: 15px;
+}
+#searchContent #workingImage2 {
+    margin-right: 10px;
+    vertical-align:middle;
 }
 #searchContent button span {
     padding: 3px 1em;
 }
 #searchContent #errorMessage {
     clear: both;
-    padding:  0.7em;
+    padding:  20px;
     margin-top: 32px;
     margin-bottom: 1em;
 }
@@ -234,7 +258,7 @@ body.login {
     padding:  20px;
     margin-bottom: 1em;
 }
-#searchContent #bottomBar {
+#searchContent #bottombar {
     text-align: right;
     margin-top: 32px;
 }

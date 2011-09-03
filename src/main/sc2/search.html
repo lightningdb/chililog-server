@@ -54,105 +54,104 @@
 </div>
 <!-- END COMMON HEADER BLOCK -->
 
+<script type="text/x-handlebars">
 <div class="container">
   <div id="searchContent" class="content">
     <h1>Search</h1>
     <p>Search for historical log entries.</p>
-    <div class="criteria ui-corner-all ui-helper-clearfix">
-      <script type="text/x-handlebars">
-        <div class="ui-helper-clearfix">
-          {{#view App.RepositoryField id="repositoryField" }}
-            <label for="repositoryData">{{label}}</label><br/>
-            {{view Data id="repositoryData"}}
-          {{/view}}
-          {{#view App.TimespanField id="timespanField" }}
-            <label for="timespanData">{{label}}</label><br/>
-            {{view Data id="timespanData"}}
-          {{/view}}
-          {{#view App.SeverityField id="severityField" }}
-            <label for="severityData">{{label}}</label><br/>
-            {{view Data id="severityData"}}
-          {{/view}}
-          {{#view App.KeywordsField id="keywordsField" }}
-            <label for="keywordsData">{{label}}</label><br/>
-            {{view Data id="keywordsData"}}
-          {{/view}}
-        </div>
-        {{#view App.AdvancedCriteria class="ui-helper-clearfix" }}
-          {{#view App.FromDateField id="fromDateField" }}
-            <label for="fromDateData">{{label}}</label><br/>
-            {{view Data id="fromDateData"}}
-          {{/view}}
-          {{#view App.FromTimeField id="fromTimeField" }}
-            <label for="fromTimeData">{{label}}</label><br/>
-            {{view Data id="fromTimeData"}}
-          {{/view}}
-          {{#view App.ToDateField id="toDateField" }}
-            <label for="toDateData">{{label}}</label><br/>
-            {{view Data id="toDateData"}}
-          {{/view}}
-          {{#view App.ToTimeField id="toTimeField" }}
-            <label for="toTimeData">{{label}}</label><br/>
-            {{view Data id="toTimeData"}}
-          {{/view}}
-          {{#view App.SourceField id="sourceField" }}
-            <label for="sourceData">{{label}}</label><br/>
-            {{view Data id="sourceData"}}
-          {{/view}}
-          {{#view App.HostField id="hostField" }}
-            <label for="hostData">{{label}}</label><br/>
-            {{view Data id="hostData"}}
-          {{/view}}
-          <div style="padding-top: 8px;">
-            {{#view App.ConditionField id="conditionField" }}
-              <label for="conditionData">{{label}}</label><br/>
-              {{view Data id="conditionData"}}
-            {{/view}}
-          </div>
+    <div class="alert-message block-message info form-stacked">
+      <div class="clearfix">
+        {{#view App.RepositoryField id="repositoryField" class="floating" }}
+          <label for="repositoryData">{{label}}</label>
+          <div class="input">{{view Data id="repositoryData"}}</div>
         {{/view}}
-        <div class="ui-helper-clearfix">
-          {{view App.SearchButton id="searchButton" class="ui-priority-primary"}}
-          {{view App.AdvancedButton id="advancedButton"}}
-        </div>
-      </script>
-    </div>
-    <script type="text/x-handlebars">
-      {{#view App.ErrorMessage id="errorMessage" }}
-        <span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span>{{message}}
-      {{/view}}
-      {{#view App.NoRowsView id="noRowsMessage"}}
-        No rows found
-      {{/view}}
-      <div id="results" class="results" style="display: none;">
-        {{#collection App.LogEntryCollectionView id="logEntryCollection" }}
-          <div class="row">
-            <div class="left">{{content.localTimestampString}}</div>
-            <div class="right">
-              {{content.message}}
-              <div class="rightFooter">
-                <span class="severity"><span class="label">severity:</span> {{content.severityText}}</span>
-                <span class="divider">|</span>
-                <span class="host"><span class="label">host:</span> {{content.host}}</span>
-                <span class="divider">|</span>
-                <span class="source"><span class="label">source:</span> {{content.source}}</span>
-            </div>
-          </div>
-        {{/collection}}
-        <div id="bottomBar">
-          {{view App.ShowMoreButton class="ui-priority-primary"}}
-        </div>
+        {{#view App.TimespanField id="timespanField" class="floating" }}
+          <label for="timespanData">{{label}}</label>
+          <div class="input">{{view Data id="timespanData"}}</div>
+        {{/view}}
+        {{#view App.SeverityField id="severityField" class="floating" }}
+          <label for="severityData">{{label}}</label>
+          <div class="input">{{view Data id="severityData"}}</div>
+        {{/view}}
+        {{#view App.KeywordsField id="keywordsField" class="floating" }}
+          <label for="keywordsData">{{label}}</label>
+          <div class="input">{{view Data id="keywordsData"}}</div>
+        {{/view}}
       </div>
-    </script>
+      {{#view App.AdvancedCriteria class="clearfix" }}
+        {{#view App.FromDateField id="fromDateField" class="floating" }}
+          <label for="fromDateData">{{label}}</label>
+          <div class="input">{{view Data id="fromDateData"}}</div>
+        {{/view}}
+        {{#view App.FromTimeField id="fromTimeField" class="floating" }}
+          <label for="fromTimeData">{{label}}</label>
+          <div class="input">{{view Data id="fromTimeData"}}</div>
+        {{/view}}
+        {{#view App.ToDateField id="toDateField" class="floating" }}
+          <label for="toDateData">{{label}}</label>
+          <div class="input">{{view Data id="toDateData"}}</div>
+        {{/view}}
+        {{#view App.ToTimeField id="toTimeField" class="floating" }}
+          <label for="toTimeData">{{label}}</label>
+          <div class="input">{{view Data id="toTimeData"}}</div>
+        {{/view}}
+        {{#view App.SourceField id="sourceField" class="floating" }}
+          <label for="sourceData">{{label}}</label>
+          <div class="input">{{view Data id="sourceData"}}</div>
+        {{/view}}
+        {{#view App.HostField id="hostField" class="floating" }}
+          <label for="hostData">{{label}}</label>
+          <div class="input">{{view Data id="hostData"}}</div>
+        {{/view}}
+        {{#view App.ConditionField id="conditionField" class="floating" }}
+          <label for="conditionData">{{label}}</label>
+          <div class="input">{{view Data id="conditionData"}}</div>
+        {{/view}}
+      {{/view}}
+      <div class="clearfix">
+        {{view App.SearchButton id="searchButton" class="btn primary"}}
+        {{view App.AdvancedButton id="advancedButton" class="btn"}} 
+        {{view App.WorkingImage id="workingImage"}}
+      </div>
+    </div>
+    {{#view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
+      {{message}}
+    {{/view}}
+    {{#view App.NoRowsView id="noRowsMessage" class="alert-message block-message warning" }}
+      No rows found
+    {{/view}}
+    <div id="results" class="results" style="display: none;">
+      <div class="heading ui-corner-all">Log Entries</div>
+      {{#collection App.LogEntryCollectionView id="logEntryCollection" }}
+        <div class="row">
+          <div class="left">{{content.localTimestampString}}</div>
+          <div class="right">
+            {{content.message}}
+            <div class="rightFooter">
+              <span class="severity"><span class="label">severity:</span> {{content.severityText}}</span>
+              <span class="divider">|</span>
+              <span class="host"><span class="label">host:</span> {{content.host}}</span>
+              <span class="divider">|</span>
+              <span class="source"><span class="label">source:</span> {{content.source}}</span>
+          </div>
+        </div>
+      {{/collection}}
+      {{#view App.BottomBar id="bottombar" }}
+        {{view App.WorkingImage id="workingImage2"}}
+        {{view App.ShowMoreButton id="showMoreButton" class="btn primary"}}
+      {{/view}}
+    </div>
   </div>
 
   <!-- START COMMON FOOTER BLOCK -->
   <footer>
     <div>
-      ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+      chililog V0.0.1. &copy; 2011 Cinch Logic.
     </div>
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
+</script>
 
 
 <!-- START COMMON SCRIPT BLOCK -->

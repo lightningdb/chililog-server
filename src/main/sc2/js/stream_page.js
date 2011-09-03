@@ -213,7 +213,7 @@ App.pageController = SC.Object.create({
   /**
    * Error message to display
    */
-  errorMessage: 'dasdfasfsdf',
+  errorMessage: '',
 
   /**
    * Indicates if we are currently streaming or not

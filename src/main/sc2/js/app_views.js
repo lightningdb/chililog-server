@@ -325,9 +325,14 @@ App.SelectOption = SC.View.extend({
 App.SelectView = SC.CollectionView.extend({
   tagName: 'select',
   classNames: ['sc-select'],
-  attributeBindings: ['multiple'],
+  attributeBindings: ['multiple', 'disabled'],
 
   itemViewClass: App.SelectOption,
+
+  /**
+   * Flag to indicate if this is disabled or not
+   */
+  disabled: NO,
 
   value: null,
 

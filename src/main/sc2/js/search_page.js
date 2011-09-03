@@ -27,7 +27,6 @@
  * Error messages
  */
 App.ErrorMessage = SC.View.extend({
-  classNames: 'ui-state-error ui-corner-all error'.w(),
   messageBinding: 'App.pageController.errorMessage',
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
@@ -215,7 +214,7 @@ App.ConditionField = SC.View.extend({
 /**
  * Button to search
  */
-App.SearchButton = JQ.Button.extend({
+App.SearchButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
   
   label: '_search'.loc(),
@@ -229,9 +228,8 @@ App.SearchButton = JQ.Button.extend({
 /**
  * Show more rows
  */
-App.ShowMoreButton = JQ.Button.extend({
+App.ShowMoreButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool(),
 
   label: '_search.showMore'.loc(),
 
@@ -244,9 +242,9 @@ App.ShowMoreButton = JQ.Button.extend({
 /**
  * Button to show advanced criteria
  */
-App.AdvancedButton = JQ.Button.extend({
-  isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool().not(),
+App.AdvancedButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+  isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool().not(),
 
   label: '_search.advancedCriteria'.loc(),
 
@@ -261,6 +259,15 @@ App.AdvancedButton = JQ.Button.extend({
  */
 App.AdvancedCriteria = SC.View.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.showAdvancedCriteria').oneWay().bool()
+});
+
+/**
+ * Spinner displayed while searching
+ */
+App.WorkingImage = App.ImgView.extend({
+  src: 'images/working.gif',
+  visible: NO,
+  isVisibleBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
 });
 
 /**
@@ -279,11 +286,14 @@ App.LogEntryCollectionView = SC.CollectionView.extend({
   })
 });
 
+App.BottomBar = SC.View.extend({
+  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool(),
+});
+
 /**
  * Show message when on rows found
  */
 App.NoRowsView = SC.View.extend({
-  classNames: 'ui-state-highlight ui-corner-all'.w(),
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
 });
 
@@ -438,129 +448,17 @@ App.pageController = SC.Object.create({
   /**
    * Number of rows to return per search
    */
-  rowsPerSearch: 50,
+  rowsPerSearch: 30,
 
   /**
    * Flag to indicate if we want to show advanced criteria
    */
-  showAdvancedCriteria: NO
-
-});
-
-/**
- * Controls access to the log data via the API engine
- */
-App.engineController = SC.Object.create({
-
-  doSearch: function() {
-    try {
-      // Turn conditions json into javascript objects
-      var conditions = {};
-      var conditionString = App.pageController.get('conditions');
-      if (!SC.empty(conditionString)) {
-        conditions = JSON.parse(conditionString);
-      }
-
-      // Make up time condition
-      if (SC.none(conditions.ts) && !SC.empty(App.pageController.getPath('timespan.value'))) {
-        var minutesAgo = parseInt(App.pageController.getPath('timespan.value')) * -1;
-        conditions.ts = {
-          '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toChililogServerDateTime(),
-          '$lte': SC.DateTime.create().toChililogServerDateTime()
-        };
-      }
-      if (SC.none(conditions.ts)) {
-        var parseFormat = '%Y-%m-%d %H:%M:%S';
-        var from = App.pageController.get('fromDateTime');
-        var to = App.pageController.get('toDateTime');
-        if (!SC.empty(from) && !SC.empty(to)) {
-          conditions.ts = {
-            '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime(),
-            '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
-          };
-        } else if (!SC.empty(from)) {
-          conditions.ts = {
-            '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime()
-          };
-        } else if (!SC.empty(to)) {
-          conditions.ts = {
-            '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
-          };
-        }
-      }
-
-      // Source, host and severity
-      if (SC.none(conditions.source)) {
-        var source = App.pageController.get('source');
-        if (!SC.empty(source)) {
-          conditions.source = source;
-        }
-      }
-      if (SC.none(conditions.host)) {
-        var host = App.pageController.get('host');
-        if (!SC.empty(host)) {
-          conditions.host = host;
-        }
-      }
-      if (SC.none(conditions.severity)) {
-        var severity = App.pageController.getPath('severity.value');
-        if (!SC.empty(severity)) {
-          conditions.severity = parseInt(severity);
-        }
-      }
-
-      // Final criteria
-      var criteria = {
-        documentID: App.pageController.getPath('repository.documentID'),
-        conditions: conditions,
-        keywordUsage: 'All',
-        keywords: App.pageController.get('keywords'),
-        startPage: 1,
-        recordsPerPage: App.pageController.get('rowsPerSearch'),
-        doPageCount: 'false'
-      };
-      App.repositoryRuntimeInfoEngine.find(criteria, this, this.endSearch);
-
-      // Save criteria for show more
-      this.set('previousSearchCriteria', criteria);
-
-      // Clear table to signal to the user that we are searching
-      App.pageController.set('results', null);
-    }
-    catch (err) {
-      // End search with error
-      this.endSearch(App.pageController.get('repository'), 0, null, err);
-    }
-  },
+  showAdvancedCriteria: NO,
 
   /**
-   * Called back when search returns
-   * @param documentID
-   * @param recordCount
-   * @param params
-   * @param error
+   * Saved page criteria used when we show more records
    */
-  endSearch: function(documentID, recordCount, params, error) {
-    if (SC.none(error)) {
-      App.pageController.set('rowsFound', recordCount > 0);
-      App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
-    } else {
-      App.pageController.set('errorMessage', error);
-    }
-
-    $('#results').css('display', recordCount > 0 ? 'block' : 'none');
-
-    App.statechart.sendAction('finishSearch');
-  },
-
-  /**
-   * Show more records
-   */
-  doShowMore: function() {
-    var criteria = this.get('previousSearchCriteria');
-    criteria.startPage = criteria.startPage + 1;
-    App.repositoryRuntimeInfoEngine.find(criteria, this, this.endSearch);
-  }
+  previousSearchCriteria: null
 
 });
 
@@ -595,19 +493,118 @@ App.statechart = SC.Statechart.create({
     }),
 
     /**
-     * Block the user from entering data
+     * Block the user from entering data while executing a search
      */
     searching: SC.State.extend({
       enterState: function() {
         App.pageController.set('isSearching', YES);
-        App.engineController.doSearch();
+
+        // Run later to give time for working icon animation to run
+        SC.run.later(this, this.startSearch, 100);
       },
 
       exitState: function() {
         App.pageController.set('isSearching', NO);
       },
 
-      finishSearch: function() {
+      startSearch: function() {
+        try {
+          // Turn conditions json into javascript objects
+          var conditions = {};
+          var conditionString = App.pageController.get('conditions');
+          if (!SC.empty(conditionString)) {
+            conditions = JSON.parse(conditionString);
+          }
+
+          // Make up time condition
+          if (SC.none(conditions.ts) && !SC.empty(App.pageController.getPath('timespan.value'))) {
+            var minutesAgo = parseInt(App.pageController.getPath('timespan.value')) * -1;
+            conditions.ts = {
+              '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toChililogServerDateTime(),
+              '$lte': SC.DateTime.create().toChililogServerDateTime()
+            };
+          }
+          if (SC.none(conditions.ts)) {
+            var parseFormat = '%Y-%m-%d %H:%M:%S';
+            var from = App.pageController.get('fromDateTime');
+            var to = App.pageController.get('toDateTime');
+            if (!SC.empty(from) && !SC.empty(to)) {
+              conditions.ts = {
+                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime(),
+                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+              };
+            } else if (!SC.empty(from)) {
+              conditions.ts = {
+                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime()
+              };
+            } else if (!SC.empty(to)) {
+              conditions.ts = {
+                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+              };
+            }
+          }
+
+          // Source, host and severity
+          if (SC.none(conditions.source)) {
+            var source = App.pageController.get('source');
+            if (!SC.empty(source)) {
+              conditions.source = source;
+            }
+          }
+          if (SC.none(conditions.host)) {
+            var host = App.pageController.get('host');
+            if (!SC.empty(host)) {
+              conditions.host = host;
+            }
+          }
+          if (SC.none(conditions.severity)) {
+            var severity = App.pageController.getPath('severity.value');
+            if (!SC.empty(severity)) {
+              conditions.severity = parseInt(severity);
+            }
+          }
+
+          // Final criteria
+          var criteria = {
+            documentID: App.pageController.getPath('repository.documentID'),
+            conditions: conditions,
+            keywordUsage: 'All',
+            keywords: App.pageController.get('keywords'),
+            startPage: 1,
+            recordsPerPage: App.pageController.get('rowsPerSearch'),
+            doPageCount: 'false'
+          };
+          App.repositoryRuntimeInfoEngine.find(criteria, this, this.endSearch);
+
+          // Save criteria for show more
+          App.pageController.set('previousSearchCriteria', criteria);
+
+          // Clear table to signal to the user that we are searching
+          App.pageController.set('results', null);
+        }
+        catch (err) {
+          // End search with error
+          this.endSearch(App.pageController.get('repository'), 0, null, err);
+        }
+      },
+
+      /**
+       * Called back when search returns
+       * @param documentID
+       * @param recordCount
+       * @param params
+       * @param error
+       */
+      endSearch: function(documentID, recordCount, params, error) {
+        if (SC.none(error)) {
+          App.pageController.set('rowsFound', recordCount > 0);
+          App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
+        } else {
+          App.pageController.set('errorMessage', error);
+        }
+
+        $('#results').css('display', recordCount > 0 ? 'block' : 'none');
+
         this.gotoState('notSearching');
       }
     }),
@@ -615,14 +612,39 @@ App.statechart = SC.Statechart.create({
     showingMore: SC.State.extend({
       enterState: function() {
         App.pageController.set('isSearching', YES);
-        App.engineController.doShowMore();
+        this.startShowMore();
       },
 
       exitState: function() {
         App.pageController.set('isSearching', NO);
       },
 
-      finishSearch: function() {
+      /**
+       * Get more records from the server
+       */
+      startShowMore: function() {
+        var criteria = App.pageController.get('previousSearchCriteria');
+        criteria.startPage = criteria.startPage + 1;
+        App.repositoryRuntimeInfoEngine.find(criteria, this, this.endShowMore);
+      },
+
+      /**
+       * Called back when search returns
+       * @param documentID
+       * @param recordCount
+       * @param params
+       * @param error
+       */
+      endShowMore: function(documentID, recordCount, params, error) {
+        if (SC.none(error)) {
+          App.pageController.set('rowsFound', recordCount > 0);
+          App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
+        } else {
+          App.pageController.set('errorMessage', error);
+        }
+
+        $('#results').css('display', recordCount > 0 ? 'block' : 'none');
+
         this.gotoState('notSearching');
       }
     })

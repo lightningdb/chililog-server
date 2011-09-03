@@ -56,7 +56,7 @@
 
 <script type="text/x-handlebars">
 <div class="container">
-  <div id="streamContent" class="content">
+  <div id="streamContent" class="content clearfix">
     <h1>Stream</h1>
     <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
     <div class="alert-message block-message info form-stacked">
@@ -73,12 +73,12 @@
       <div class="clearfix"></div>
     </div>
     {{#view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
-      <span class="ui-state-error"><span class="ui-icon ui-icon-alert" style="float: left; margin-right: 0.3em;"></span></span>{{message}}
+      {{message}}
     {{/view}}
     <div id="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
     </div>
-      {{#view id="bottomBar" class="clearfix"}}
+      {{#view id="bottombar" class="clearfix"}}
         <div style="float: right;">
           {{view App.ClearButton id="clearButton2" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
           &nbsp;&nbsp;&nbsp;
@@ -93,7 +93,7 @@
   <!-- START COMMON FOOTER BLOCK -->
   <footer>
     <div>
-      ChiliLog V0.0.1. &copy; 2011 Cinch Logic.
+      chililog V0.0.1. &copy; 2011 Cinch Logic.
     </div>
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
