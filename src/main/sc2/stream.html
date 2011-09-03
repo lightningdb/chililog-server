@@ -78,16 +78,16 @@
     <div id="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
     </div>
-      {{#view id="bottombar" class="clearfix"}}
-        <div style="float: right;">
-          {{view App.ClearButton id="clearButton2" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
-          &nbsp;&nbsp;&nbsp;
-          {{view App.ActionButton id="actionButton2" class="btn primary" isVisibleBinding="App.pageController.showActionButton2" }}
-        </div>
-        <div style="float: left;">
-          {{view App.TestMessageButton id="testMessageButton" class="btn" isVisibleBinding="App.pageController.isStreaming" }}
-        </div>
-      {{/view}}
+    {{#view id="bottombar" class="clearfix"}}
+      <div style="float: right;">
+        {{view App.ClearButton id="clearButton2" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
+        &nbsp;&nbsp;&nbsp;
+        {{view App.ActionButton id="actionButton2" class="btn primary" isVisibleBinding="App.pageController.showActionButton2" }}
+      </div>
+      <div style="float: left;">
+        {{view App.TestMessageButton id="testMessageButton" class="btn" isVisibleBinding="App.pageController.isStreaming" }}
+      </div>
+    {{/view}}
   </div>
 
   <!-- START COMMON FOOTER BLOCK -->

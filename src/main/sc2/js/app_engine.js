@@ -115,12 +115,6 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       record.destroy()
     });
     App.store.commitRecords();
-
-    records = App.store.find(App.RepositoryEntryRecord);
-    records.forEach(function(record) {
-      record.destroy()
-    });
-    App.store.commitRecords();
   },
 
   /**
@@ -547,7 +541,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Find entries in the specified repository
+   * Find entries in the specified repository and returns it in the callback
    *
    * @param {Hash} criteria Hash containing the following values
    *  - documentID: unique id of repository info to find entries in
@@ -557,7 +551,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    *  -
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(documentId, recordCount, callbackParams, error) {}.
+   * Signature is: function(documentId, records, callbackParams, error) {}.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   find: function(criteria, callbackTarget, callbackFunction, callbackParams) {
@@ -605,6 +599,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    */
   endFind: function(data, textStatus, jqXHR) {
   var error = null;
+    var repoEntryAOArray;
     var recordCount = 0;
     try {
       // Delete existing records if this is the 1st page
@@ -634,14 +629,12 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
             }
           }
 
-          // Add record
+          // Inject keywords hilighting
           recordCount = repoEntryAOArray.length;
           for (var i = 0; i < recordCount; i++) {
             var repoEntryAO = repoEntryAOArray[i];
-            var repoEntryRecord = App.store.createRecord(App.RepositoryEntryRecord, {}, repoEntryAO['_id']);
-            repoEntryRecord.fromApiObject(repoEntryAO, this.criteria.documentID, keywordsRegexArray);
+            App.repositoryRuntimeInfoEngine.injectKeywordHilighting(keywordsRegexArray, repoEntryAO);
           }
-          App.store.commitRecords();
         }
       }
     }
@@ -652,11 +645,44 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.documentID, recordCount, this.callbackParams, error);
+      this.callbackFunction.call(this.callbackTarget, this.documentID, repoEntryAOArray, this.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Hilight keywords
+   * @param keywordsRegexArray
+   * @param repoEntryAO
+   */
+  injectKeywordHilighting: function(keywordsRegexArray, repoEntryAO) {
+    // Highlight keywords
+    var msg = repoEntryAO['message'];
+    if (SC.empty(msg)) {
+      repoEntryAO['messageWithKeywordsHilighted'] = '';
+    } else {
+      //Clone to protect original
+      msg = new String(msg);
+
+      // Replace keywords to tokens
+      for (var i = 0; i < keywordsRegexArray.length; i++) {
+        var keywordsRegex = keywordsRegexArray[i];
+        msg = msg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
+      }
+
+      // Markup and then replace tokens with tags (so that injected tags don't get marked up)
+      var highlightedMsg = msg; //SC.RenderContext.escapeHTML(msg);
+
+      if (keywordsRegexArray.length > 0) {
+        highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
+        highlightedMsg = highlightedMsg.replace(/###Chililog###/g, '</span>');
+      }
+
+      repoEntryAO['messageWithKeywordsHilighted'] = highlightedMsg;
+    }
+
   }
 });
 

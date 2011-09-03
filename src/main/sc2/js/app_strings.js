@@ -120,6 +120,9 @@ SC.STRINGS = {
   '_search.condition.help': '(mongodb JSON format must be used.)',
   '_search.condition.invalid': 'Conditions must be in valid JSON format. Check mongodb script for examples.',
   '_search.showMore': 'Show More Rows',
+  '_search.timeSpecifiedError': 'You have specified "In The Past" and a specific date and time. Please specify one or the other but not both.',
+  '_search.dateTimeRangeError': 'From date and time is greater than To date and time.',
+
 
   // ********************************************************
   // OLD STUFF to be converted

@@ -86,36 +86,9 @@ body.login {
     padding: 60px;
 }
 
-
 /* =============================================================================
-   Stream Page
+   Log Entry results used for stream and search
    ============================================================================= */
-#streamContent #repositoryData {
-    width: 200px;
-}
-#streamContent #severityData {
-    width: 110px;
-}
-#streamContent #actionButton, #streamContent #clearButton {
-    float: left;
-    display: inline;
-    margin-right: 10px;
-    margin-top: 24px;
-    width: 75px;
-}
-#streamContent #actionButton2, #streamContent #clearButton2 {
-    display: inline;
-    width: 75px;
-}
-#streamContent button span {
-    padding: 3px 1em;
-}
-#streamContent #errorMessage {
-    clear: both;
-    padding:  20px;
-    margin-top: 32px;
-    margin-bottom: 1em;
-}
 #results {
     margin-top: 32px;
 }
@@ -132,9 +105,6 @@ body.login {
     border-bottom: solid 1px #ddd;
 }
 #results > .logEntry:nth-child(odd) {
-    background-color: whitesmoke;   /* zebra stripe the css3 way */
-}
-#logEntryCollection > .logEntry:nth-child(even) {
     background-color: whitesmoke;   /* zebra stripe the css3 way */
 }
 #results .logEntry .row {
@@ -181,7 +151,40 @@ body.login {
     color: #777;
     display: inline-block;
 }
+#results .logEntry .keyword {
+    background-color: #D1EED1;
+    padding: 0px 2px;
+}
 
+/* =============================================================================
+   Stream Page
+   ============================================================================= */
+#streamContent #repositoryData {
+    width: 200px;
+}
+#streamContent #severityData {
+    width: 110px;
+}
+#streamContent #actionButton, #streamContent #clearButton {
+    float: left;
+    display: inline;
+    margin-right: 10px;
+    margin-top: 24px;
+    width: 75px;
+}
+#streamContent #actionButton2, #streamContent #clearButton2 {
+    display: inline;
+    width: 75px;
+}
+#streamContent button span {
+    padding: 3px 1em;
+}
+#streamContent #errorMessage {
+    clear: both;
+    padding:  20px;
+    margin-top: 32px;
+    margin-bottom: 1em;
+}
 #streamContent #bottombar {
     margin-top: 16px;
 }
@@ -262,3 +265,5 @@ body.login {
     text-align: right;
     margin-top: 32px;
 }
+
+

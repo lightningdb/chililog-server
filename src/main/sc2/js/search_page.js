@@ -51,7 +51,7 @@ App.RepositoryField = SC.View.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
-    valueBinding: 'App.pageController.repository',
+    selectedOptionBinding: 'App.pageController.repository',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -177,7 +177,7 @@ App.SeverityField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
-    valueBinding: 'App.pageController.severity',
+    selectedOptionBinding: 'App.pageController.severity',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -193,7 +193,7 @@ App.TimespanField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.timespanOptions',
-    valueBinding: 'App.pageController.timespan',
+    selectedOptionBinding: 'App.pageController.timespan',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -266,6 +266,10 @@ App.AdvancedButton = App.ButtonView.extend({
 
   click: function() {
     App.pageController.set('showAdvancedCriteria', YES);
+    App.pageController.set('timespan', App.pageController.get('timespanOptions')[0]);
+
+    //$('#timespanData')[0].selectedIndex = 0;
+    //SC.View.views['timespanData'].change();
     return;
   }
 });
@@ -450,7 +454,7 @@ App.pageController = SC.Object.create({
    * Options for displaying in the timespan dropdown
    */
   timespanOptions: [
-    SC.Object.create({label: ''.loc(), value: ''}),
+    SC.Object.create({label: '', value: ''}),
     SC.Object.create({label: '_search.timespan.5'.loc(), value: '5'}),
     SC.Object.create({label: '_search.timespan.15'.loc(), value: '15'}),
     SC.Object.create({label: '_search.timespan.30'.loc(), value: '30'}),
@@ -467,6 +471,11 @@ App.pageController = SC.Object.create({
   rowsPerSearch: 30,
 
   /**
+   * Maximum number of log entries to display
+   */
+  maxRowsToDisplay: 1000,
+
+  /**
    * Flag to indicate if we want to show advanced criteria
    */
   showAdvancedCriteria: NO,
@@ -474,7 +483,65 @@ App.pageController = SC.Object.create({
   /**
    * Saved page criteria used when we show more records
    */
-  previousSearchCriteria: null
+  previousSearchCriteria: null,
+
+  /**
+   * Writes a log entry to the results area
+   * @param {Object} logEntry data to write to page
+   * @param {Boolean} doSeverityCheck YES to perform severity check to decide if log entry is to be dispalyed or not
+   */
+  writeLogEntry: function (logEntry, doSeverityCheck) {
+    if (logEntry == null) {
+      return;
+    }
+
+    var scDate = null;
+    if (logEntry.Timestamp === '') {
+      scDate = SC.DateTime.create();
+    } else {
+      var d = new Date();
+      var timezoneOffsetMinutes = d.getTimezoneOffset();
+      scDate = SC.DateTime.parse(logEntry.ts, '%Y-%m-%dT%H:%M:%S.%s%Z');
+      scDate.set('timezone', timezoneOffsetMinutes);
+    }
+
+    var severity = logEntry.severity;
+    var severityClassName = 'severity';
+    if (severity <= 3) {
+      severityClassName = severityClassName + ' alert-message block-message error';
+    } else if (severity == 4 || severity == 5) {
+      severityClassName = severityClassName + ' alert-message block-message warning';
+    }
+
+    var newLogEntryHtml = '<div class="logEntry">' +
+      '<div class="row">' +
+        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
+        '<div class="right">' +
+          logEntry.messageWithKeywordsHilighted +
+          '<div class="rightFooter">' +
+            '<span class="' + severityClassName + '"><span class="label">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
+            '<span class="divider">|</span>' +
+            '<span class="host"><span class="label">host:</span> ' + logEntry.host + '</span>' +
+            '<span class="divider">|</span>' +
+            '<span class="source"><span class="label">source:</span> ' +logEntry.source + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    $('#results').append(newLogEntryHtml);
+
+    // Check if we want to show the bottom buttons ...
+    var rows = $('#results > div');
+    var rowCount = rows.length;
+    var maxRowsToDisplay = App.pageController.get('maxRowsToDisplay');
+    if (!App.pageController.get('showActionButton2') && rowCount > 1) {
+      App.pageController.set('showActionButton2', YES);
+    }
+    if (rowCount > maxRowsToDisplay)
+    {
+      rows.slice(1, 11).remove();
+    }
+  }
 
 });
 
@@ -525,6 +592,24 @@ App.statechart = SC.Statechart.create({
 
       startSearch: function() {
         try {
+          // Clear previous log entries
+          var rows = $('#results > div');
+          rows.slice(1).remove();
+
+          // Validate
+          var timespan = App.pageController.getPath('timespan.value');
+          var fromDate = App.pageController.getPath('fromDate');
+          var fromTime = App.pageController.getPath('fromTime');
+          var toDate = App.pageController.getPath('toDate');
+          var toTime = App.pageController.getPath('toTime');
+          if (!SC.empty(timespan) && (!SC.empty(fromDate) || !SC.empty(fromTime) || !SC.empty(toDate) || !SC.empty(toTime))) {
+            throw App.$error('_search.timeSpecifiedError', null, null);
+          }
+          this.checkDate(fromDate, '_search.fromDate.invalid', 'fromDateField');
+          this.checkTime(fromTime, '_search.fromTime.invalid', 'fromTimeField');
+          this.checkDate(toDate, '_search.toDate.invalid', 'toDateField');
+          this.checkTime(toTime, '_search.toTime.invalid', 'toTimeField');
+
           // Turn conditions json into javascript objects
           var conditions = {};
           var conditionString = App.pageController.get('conditions');
@@ -549,6 +634,9 @@ App.statechart = SC.Statechart.create({
                 '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime(),
                 '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
               };
+              if (SC.DateTime.compare(conditions.ts['$gte'], conditions.ts['$lte']) > 0) {
+                throw App.$error('_search.dateTimeRangeError', null, 'fromDateField');
+              }
             } else if (!SC.empty(from)) {
               conditions.ts = {
                 '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime()
@@ -604,23 +692,70 @@ App.statechart = SC.Statechart.create({
         }
       },
 
+      checkDate: function (dateString, errorCode, fieldId) {
+        if (SC.empty(dateString)) {
+          return;
+        }
+        if (SC.DateTime.parse(dateString, '%Y-%m-%d') === null) {
+          throw App.$error(errorCode, [dateString], fieldId);
+        }
+      },
+
+      checkTime: function (timeString, errorCode, fieldId) {
+        if (SC.empty(timeString)) {
+          return;
+        }
+        try {
+          var ss = timeString.split(':');
+          if (ss.length != 3) {
+            throw new SC.Error('err');
+          }
+          var hours = parseInt((ss[0]))
+          if (hours < 0 || hours > 24) {
+            throw new SC.Error('err');
+          }
+          var miniutes = parseInt((ss[1]))
+          if (miniutes < 0 || miniutes > 60) {
+            throw new SC.Error('err');
+          }
+          var seconds = parseInt((ss[2]))
+          if (seconds < 0 || seconds > 60) {
+            throw new SC.Error('err');
+          }
+        }
+        catch (err) {
+          throw App.$error(errorCode, [timeString], fieldId);
+        }
+      },
+
       /**
        * Called back when search returns
        * @param documentID
-       * @param recordCount
+       * @param records
        * @param params
        * @param error
        */
-      endSearch: function(documentID, recordCount, params, error) {
+      endSearch: function(documentID, records, params, error) {
         if (SC.none(error)) {
+          var recordCount = SC.none(records) ? 0 : records.length;
           App.pageController.set('rowsFound', recordCount > 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
           App.pageController.set('errorMessage', error);
+
+          // Set focus on field if specified
+          if (!SC.empty(error.errorFieldId)) {
+            var dataElementId = error.errorFieldId.replace('Field', 'Data');
+            setTimeout(function(){$('#' + dataElementId)[0].focus();}, 100);
+          }
         }
 
         $('#results').css('display', recordCount > 0 ? 'block' : 'none');
 
+        for (var i=0; i< recordCount; i++) {
+          App.pageController.writeLogEntry(records[i]);
+        }
+        
         this.gotoState('notSearching');
       }
     }),
@@ -647,12 +782,13 @@ App.statechart = SC.Statechart.create({
       /**
        * Called back when search returns
        * @param documentID
-       * @param recordCount
+       * @param records
        * @param params
        * @param error
        */
-      endShowMore: function(documentID, recordCount, params, error) {
+      endShowMore: function(documentID, records, params, error) {
         if (SC.none(error)) {
+          var recordCount = SC.none(records) ? 0 : records.length;
           App.pageController.set('rowsFound', recordCount > 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
@@ -661,8 +797,13 @@ App.statechart = SC.Statechart.create({
 
         $('#results').css('display', recordCount > 0 ? 'block' : 'none');
 
+        for (var i=0; i< recordCount; i++) {
+          App.pageController.writeLogEntry(records[i]);
+        }
+
         this.gotoState('notSearching');
       }
+
     })
   })
 });
@@ -680,18 +821,10 @@ if (App.sessionEngine.load()) {
   // Load repositories
   App.repositoryMetaInfoEngine.load(this, function() {
     var query = SC.Query.local(App.RepositoryMetaInfoRecord, {
-      conditions: 'name != "chililog"',
       orderBy: 'name'
     });
     var arrayProxy = App.store.find(query);
     App.pageController.set('repositoryOptions', arrayProxy);
-
-    var query2 = SC.Query.local(App.RepositoryEntryRecord, {
-      orderBy: 'timestamp'
-    });
-    var arrayProxy2 = App.store.find(query2);
-    App.pageController.set('logEntries', arrayProxy2);
-
   }, null);
 } else {
   // Not logged in so go to login page

@@ -185,47 +185,64 @@ App.SelectView = SC.CollectionView.extend({
   itemViewClass: App.SelectOption,
 
   /**
+   * Content must be an array or arrayproxy of SC objects
+   */
+  content: [],
+
+  /**
    * Flag to indicate if this is disabled or not
    */
   disabled: NO,
 
-  value: null,
+  /**
+   * The selected option.
+   */
+  selectedOption: null,
 
+  /**
+   * On insert into the DOM, set the selected item
+   */
   willInsertElement: function() {
     this._elementValueDidChange();
   },
 
+  /**
+   * The browser's onChange event means that we have to take data from the DOM to update our contents
+   */
   change: function() {
     this._elementValueDidChange();
   },
 
+  /**
+   * Get data from DOM to update our contents
+   */
   _elementValueDidChange: function() {
     var views = SC.View.views,
       selectedOptions = this.$('option:selected'),
-      value = null;
+      option = null;
 
-    if (SC.get(this, 'multiple') && SC.get(this, 'multiple') !== "false") {
-      value = selectedOptions.toArray().map(function(el) {
-        return SC.get(views[el.id], 'content');
-      });
-    } else {
-      if (selectedOptions) {
-        var id = selectedOptions.prop('id');
-        if (SC.none(id)) {
-          // Get the first option if there is one
-          if (this.get('content').get) {
-            value = this.get('content').get('firstObject');
-          }
-        } else {
-          value = SC.get(views[selectedOptions.prop('id')], 'content');
+    if (selectedOptions) {
+      var id = selectedOptions.prop('id');
+      if (SC.none(id)) {
+        // Get the first option if there is one
+        if (this.get('content').get) {
+          option = this.get('content').get('firstObject');
         }
+      } else {
+        option = SC.get(views[selectedOptions.prop('id')], 'content');
       }
     }
 
-    set(this, 'value', value);
-    set(SC.get(this, 'content'), 'selection', value);
+    set(this, 'selectedOption', option);
+    set(SC.get(this, 'content'), 'selection', option);
   },
 
+  /**
+   * Contents array changed in size
+   * @param content
+   * @param start
+   * @param removed
+   */
   arrayWillChange: function(content, start, removed) {
     var selected = SC.get(content, 'selection'), idx, obj;
 
@@ -242,10 +259,39 @@ App.SelectView = SC.CollectionView.extend({
     this._super(content, start, removed);
   },
 
+  /**
+   * Contents array changed in size
+   * @param content
+   * @param start
+   * @param removed
+   * @param added
+   */
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
     this._elementValueDidChange();
-  }
+  },
+
+  /**
+   * The content data has changed so we need to update the DOM
+   */
+  selectedOptionDidChange: function() {
+    var selectedOption = this.get('selectedOption');
+    if (SC.none(selectedOption)) {
+      return;
+    }
+
+    var selectedValue = selectedOption.get('value');
+    set(SC.get(this, 'content'), 'selection', selectedOption);
+
+    // Make sure that the DOM reflects the selected value
+    var options = this.$('option');
+    if (!SC.none(options)) {
+      for (var i=0; i< options.length; i++) {
+        var option = options[i];
+        option.selected = (option.value === selectedValue);
+      }
+    }
+  }.observes('selectedOption')
 });
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -51,7 +51,7 @@ App.RepositoryField = SC.View.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
-    valueBinding: 'App.pageController.repository',
+    selectedOptionBinding: 'App.pageController.repository',
     disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
@@ -67,7 +67,7 @@ App.SeverityField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
-    valueBinding: 'App.pageController.severity',
+    selectedOptionBinding: 'App.pageController.severity',
     disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
@@ -223,7 +223,7 @@ App.pageController = SC.Object.create({
   /**
    * Maximum number of log entries displayed. If this is exceeded, the earliest entries are deleted
    */
-  maxEntriesToDisplay: 1000,
+  maxRowsToDisplay: 1000,
 
   /**
    * Options for displaying in the repository dropdown
@@ -303,11 +303,11 @@ App.pageController = SC.Object.create({
     // Check if we want to show the bottom buttons ...
     var rows = $('#results > div');
     var rowCount = rows.length;
-    var maxEntriesToDisplay = App.pageController.get('maxEntriesToDisplay');
+    var maxRowsToDisplay = App.pageController.get('maxRowsToDisplay');
     if (!App.pageController.get('showActionButton2') && rowCount > 1) {
       App.pageController.set('showActionButton2', YES);
     }
-    if (rowCount > maxEntriesToDisplay)
+    if (rowCount > maxRowsToDisplay)
     {
       rows.slice(1, 11).remove();
     }

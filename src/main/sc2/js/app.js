@@ -49,24 +49,24 @@ var App = SC.Application.create({
  *
  * @param {String} errorCode Unique error code that doubles up as the code for the localised error message
  * @param {Array} [params] Optional array of parameter substitutes for the localised string
- * @param {String} [field] Optional id of field where the error occurred.
+ * @param {String} [errorFieldId] Optional id of field where the error occurred.
  * @returns {SC.Error} Error object
  */
-App.$error = function(errorCode, params, fieldId) {
+App.$error = function(errorCode, params, errorFieldId) {
   // Get localized string
   var localized = SC.String.loc(errorCode, params);
+  var message = SC.empty(localized) ? errorCode : localized;
 
-  var message = localized;
   if (!SC.none(params)) {
     message = SC.String.fmt(localized, params);
   }
 
   var err = new SC.Error(message);
   if (!SC.none(errorCode) && errorCode.charAt(0) === '_') {
-    err.set('errorCode', errorCode);
+    err.errorCode = errorCode;
   }
-  if (!SC.none(fieldId)) {
-    err.set('errorField', fieldId);
+  if (!SC.none(errorFieldId)) {
+    err.errorFieldId = errorFieldId;
   }
 
   return err;

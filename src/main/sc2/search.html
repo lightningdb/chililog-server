@@ -122,25 +122,11 @@
     {{/view}}
     <div id="results" class="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
-      {{#collection App.LogEntryCollectionView id="logEntryCollection" }}
-        <div class="row">
-          <div class="left">{{content.localTimestampString}}</div>
-          <div class="right">
-            {{content.message}}
-            <div class="rightFooter">
-              <span class="severity"><span class="label">severity:</span> {{content.severityText}}</span>
-              <span class="divider">|</span>
-              <span class="host"><span class="label">host:</span> {{content.host}}</span>
-              <span class="divider">|</span>
-              <span class="source"><span class="label">source:</span> {{content.source}}</span>
-          </div>
-        </div>
-      {{/collection}}
-      {{#view App.BottomBar id="bottombar" }}
-        {{view App.WorkingImage id="workingImage2"}}
-        {{view App.ShowMoreButton id="showMoreButton" class="btn primary"}}
-      {{/view}}
     </div>
+    {{#view App.BottomBar id="bottombar" }}
+      {{view App.WorkingImage id="workingImage2"}}
+      {{view App.ShowMoreButton id="showMoreButton" class="btn primary"}}
+    {{/view}}
   </div>
 
   <!-- START COMMON FOOTER BLOCK -->
