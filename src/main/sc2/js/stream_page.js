@@ -282,11 +282,22 @@ App.pageController = SC.Object.create({
       severityClassName = severityClassName + ' alert-message block-message warning';
     }
 
+    var formattedMessage = logEntry.Message;
+    if (SC.empty(formattedMessage)) {
+      formattedMessage = '&nbsp;';
+    } else {
+      formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
+      if (formattedMessage.length > 100) {
+        // Add spaces to break long lines (word-break not working in chrome)
+        formattedMessage = formattedMessage.replace(/([^\s-]{20})/g, '$1 ');
+      }
+    }
+
     var newLogEntryHtml = '<div class="logEntry">' +
       '<div class="row">' +
         '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
         '<div class="right">' +
-          logEntry.Message +
+          formattedMessage +
           '<div class="rightFooter">' +
             '<span class="' + severityClassName + '"><span class="label">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
             '<span class="divider">|</span>' +
