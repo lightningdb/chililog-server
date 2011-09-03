@@ -287,7 +287,7 @@ App.LogEntryCollectionView = SC.CollectionView.extend({
 });
 
 App.BottomBar = SC.View.extend({
-  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool()
 });
 
 /**

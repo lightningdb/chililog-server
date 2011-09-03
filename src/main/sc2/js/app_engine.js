@@ -620,7 +620,6 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       // Fill with new data
       var repoEntriesAO = data;
       if (!SC.none(data)) {
-        SC.beginPropertyChanges();  // Stop notifications for batch update
         var repoEntryAOArray = repoEntriesAO['find'];
         if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
           // Make keywords into an array of text to highlight
@@ -644,7 +643,6 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
           }
           App.store.commitRecords();
         }
-        SC.endPropertyChanges();
       }
     }
     catch (err) {

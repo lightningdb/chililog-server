@@ -221,6 +221,11 @@ App.pageController = SC.Object.create({
   isStreaming: NO,
 
   /**
+   * Maximum number of log entries displayed. If this is exceeded, the earliest entries are deleted
+   */
+  maxEntriesToDisplay: 1000,
+
+  /**
    * Options for displaying in the repository dropdown
    */
   repositoryOptions: [],
@@ -279,7 +284,7 @@ App.pageController = SC.Object.create({
 
     var newLogEntryHtml = '<div class="logEntry">' +
       '<div class="row">' +
-        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S %Z') + '</div>' +
+        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
         '<div class="right">' +
           logEntry.Message +
           '<div class="rightFooter">' +
@@ -296,9 +301,15 @@ App.pageController = SC.Object.create({
     window.scrollTo(0, document.body.scrollHeight);
 
     // Check if we want to show the bottom buttons ...
-    var rowCount = $('#results div').length;
+    var rows = $('#results > div');
+    var rowCount = rows.length;
+    var maxEntriesToDisplay = App.pageController.get('maxEntriesToDisplay');
     if (!App.pageController.get('showActionButton2') && rowCount > 1) {
       App.pageController.set('showActionButton2', YES);
+    }
+    if (rowCount > maxEntriesToDisplay)
+    {
+      rows.slice(1, 11).remove();
     }
   }
 });
