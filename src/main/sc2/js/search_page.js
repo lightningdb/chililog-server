@@ -68,7 +68,15 @@ App.FromDateField = SC.View.extend({
     valueBinding: 'App.pageController.fromDate',
     name: 'fromDate',
     placeholder: 'yyyy-mm-dd',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    /**
+     * Attach date picker to text box
+     */
+    didInsertElement: function() {
+      this._super();
+      this.$().datepicker({ dateFormat: 'yy-mm-dd' });
+    }
   })
 });
 
@@ -100,7 +108,15 @@ App.ToDateField = SC.View.extend({
     valueBinding: 'App.pageController.toDate',
     name: 'toDate',
     placeholder: 'yyyy-mm-dd',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    /**
+     * Attach date picker to text box
+     */
+    didInsertElement: function() {
+      this._super();
+      this.$().datepicker({ dateFormat: 'yy-mm-dd' });
+    }
   })
 });
 
@@ -681,3 +697,4 @@ if (App.sessionEngine.load()) {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);
 }
+
