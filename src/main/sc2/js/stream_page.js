@@ -289,7 +289,7 @@ App.pageController = SC.Object.create({
       formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
       if (formattedMessage.length > 100) {
         // Add spaces to break long lines (word-break not working in chrome)
-        formattedMessage = formattedMessage.replace(/([^\s-]{20})/g, '$1 ');
+        formattedMessage = formattedMessage.replace(/([^\s]{20})/g, '$1&shy;');
       }
     }
 

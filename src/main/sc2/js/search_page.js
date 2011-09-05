@@ -76,6 +76,11 @@ App.FromDateField = SC.View.extend({
     didInsertElement: function() {
       this._super();
       this.$().datepicker({ dateFormat: 'yy-mm-dd' });
+    },
+    
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
     }
   })
 });
@@ -92,7 +97,12 @@ App.FromTimeField = SC.View.extend({
     valueBinding: 'App.pageController.fromTime',
     name: 'fromTime',
     placeholder: 'hh:mm:ss',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
+    }
   })
 });
 
@@ -116,6 +126,11 @@ App.ToDateField = SC.View.extend({
     didInsertElement: function() {
       this._super();
       this.$().datepicker({ dateFormat: 'yy-mm-dd' });
+    },
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
     }
   })
 });
@@ -132,7 +147,12 @@ App.ToTimeField = SC.View.extend({
     valueBinding: 'App.pageController.toTime',
     name: 'toTime',
     placeholder: 'hh:mm:ss',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
+    }
   })
 });
 
@@ -147,7 +167,12 @@ App.SourceField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.source',
     name: 'source',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
+    }
   })
 });
 
@@ -162,7 +187,12 @@ App.HostField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.host',
     name: 'host',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
+    }
   })
 });
 
@@ -209,7 +239,12 @@ App.KeywordsField = SC.View.extend({
   Data : App.TextBoxView.extend({
     valueBinding: 'App.pageController.keywords',
     name: 'keywords',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+    insertNewline: function() {
+      App.statechart.sendAction('startSearch');
+      return;
+    }
   })
 });
 
@@ -517,7 +552,7 @@ App.pageController = SC.Object.create({
       formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
       if (formattedMessage.length > 100) {
         // Add spaces to break long lines (word-break not working in chrome)
-        formattedMessage = formattedMessage.replace(/([^\s-]{20})/g, '$1 ');
+        formattedMessage = formattedMessage.replace(/([^\s-]{20})/g, '$1&shy;');
       }
     }
 
