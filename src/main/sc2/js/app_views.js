@@ -310,7 +310,19 @@ App.setupStandardPage = function(pageFileName) {
     $('#navAdmin').addClass('selected');
   }
 
-  // User
+  // Setup User
   var loggedInUser = App.sessionEngine.get('loggedInUser');
   $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
+
+  // Open top bar menu when clicked
+  $("a.menu").click(function (e) {
+    var $li = $(this).parent("li").toggleClass('open');
+    return false;
+  });
+
+  // Close top bar menu when body clicked
+  $("body").bind("click", function (e) {
+    $('a.menu').parent("li").removeClass("open");
+  });
+
 }

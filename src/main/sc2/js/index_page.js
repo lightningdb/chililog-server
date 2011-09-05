@@ -33,11 +33,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 App.pageFileName = Auth.getPageName();
 
-var path = window.location.pathname;
-  var pageName = path.substring(path.lastIndexOf('/') + 1);
 if (App.sessionEngine.load()) {
   App.setupStandardPage(App.pageFileName);
-  //App.statechart.initStatechart();
 } else {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);
