@@ -28,48 +28,52 @@ App.ErrorMessage = SC.View.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
 
+/**
+ * Common functions for field data
+ */
+App.FieldDataMixin = {
+
+  // Login when ENTER clicked
+  insertNewline: function() {
+    App.statechart.sendAction('doLogin');
+    return;
+  }
+};
+
 App.UsernameField = SC.View.extend({
   label: '_login.username'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.username',
     name: 'username',
     tabindex: '1',
     disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
-    insertNewline: function() {
-      App.statechart.sendAction('doLogin');
-      return;
+    didInsertElement: function() {
+      this.$().focus();
     }
+
   })
 });
 
 App.PasswordField = SC.View.extend({
   label: '_login.password'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.password',
     type: 'password',
     name: 'password',
     tabindex: '2',
-    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
-    insertNewline: function() {
-      App.statechart.sendAction('doLogin');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
 
 App.RememberMeField = SC.View.extend({
 
-  Data : App.CheckboxView.extend({
+  Data : App.CheckboxView.extend(App.FieldDataMixin, {
     title: '_login.rememberMe'.loc(),
     valueBinding: 'App.pageController.rememberMe',
     tabindex: '3',
-    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
-    insertNewline: function() {
-      App.statechart.sendAction('doLogin');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
 
