@@ -140,7 +140,22 @@ App.CheckboxView = SC.Checkbox.extend({
   /**
    * Added a space in between the title and checkbox so that there is a gap
    */
-  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}} > {{title}}</label>')
+  defaultTemplate: SC.Handlebars.compile('<label><input type="checkbox" {{bindAttr checked="value" disabled="disabled"}} > {{title}}</label>'),
+
+  keyUp: function(event) {
+    this.interpretKeyEvents(event);
+  },
+
+  /**
+    @private
+  */
+  interpretKeyEvents: function(event) {
+    var map = SC.TextField.KEY_EVENTS;
+    var method = map[event.keyCode];
+
+    if (method) { return this[method](event); }
+    else { SC.run.once(this, this._updateElementValue); }
+  }
 
 });
 

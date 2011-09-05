@@ -35,7 +35,11 @@ App.UsernameField = SC.View.extend({
     valueBinding: 'App.pageController.username',
     name: 'username',
     tabindex: '1',
-    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
+    insertNewline: function() {
+      App.statechart.sendAction('doLogin');
+      return;
+    }
   })
 });
 
@@ -47,7 +51,11 @@ App.PasswordField = SC.View.extend({
     type: 'password',
     name: 'password',
     tabindex: '2',
-    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
+    insertNewline: function() {
+      App.statechart.sendAction('doLogin');
+      return;
+    }
   })
 });
 
@@ -57,7 +65,11 @@ App.RememberMeField = SC.View.extend({
     title: '_login.rememberMe'.loc(),
     valueBinding: 'App.pageController.rememberMe',
     tabindex: '3',
-    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
+    disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool(),
+    insertNewline: function() {
+      App.statechart.sendAction('doLogin');
+      return;
+    }
   })
 });
 
