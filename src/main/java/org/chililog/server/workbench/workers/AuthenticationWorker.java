@@ -107,7 +107,12 @@ public class AuthenticationWorker extends Worker
     }
 
     /**
+     * <p>
      * Login. If error, 401 Unauthorized is returned to the caller.
+     * </p>
+     * <p>
+     * If the password = refresh, then the supplied authentication header is refreshed
+     * </p>
      * 
      * @throws Exception
      */
@@ -119,40 +124,59 @@ public class AuthenticationWorker extends Worker
             AuthenticationAO requestApiObject = JsonTranslator.getInstance().fromJson(
                     bytesToString((byte[]) requestContent), AuthenticationAO.class);
 
-            // Check request data
-            if (StringUtils.isBlank(requestApiObject.getUsername()))
-            {
-                return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(
-                        Strings.REQUIRED_FIELD_ERROR, "Username"));
-            }
-            if (StringUtils.isBlank(requestApiObject.getPassword()))
-            {
-                return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(
-                        Strings.REQUIRED_FIELD_ERROR, "Password"));
-            }
+            UserBO user = null;
 
-            // Check if user exists
-            DB db = MongoConnection.getInstance().getConnection();
-            UserBO user = UserController.getInstance().tryGetByUsername(db, requestApiObject.getUsername());
-            if (user == null)
+            // See if we need to refresh the token
+            boolean isRefreshing = !StringUtils.isBlank(this.getRequest().getHeader(AUTHENTICATION_TOKEN_HEADER));
+            if (isRefreshing)
             {
-                user = UserController.getInstance().tryGetByEmailAddress(db, requestApiObject.getUsername());
+                ApiResult result = super.validateAuthenticationToken();
+                if (!result.isSuccess())
+                {
+                    return result;
+                }
+
+                user = this.getAuthenticatedUser();
+            }
+            else
+            {
+                // Check request data
+                if (StringUtils.isBlank(requestApiObject.getUsername()))
+                {
+                    return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(
+                            Strings.REQUIRED_FIELD_ERROR, "Username"));
+                }
+                if (StringUtils.isBlank(requestApiObject.getPassword()))
+                {
+                    return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(
+                            Strings.REQUIRED_FIELD_ERROR, "Password"));
+                }
+
+                // Check if user exists
+                DB db = MongoConnection.getInstance().getConnection();
+                user = UserController.getInstance().tryGetByUsername(db, requestApiObject.getUsername());
                 if (user == null)
                 {
-                    _logger.error("Authentication failed. Cannot find username '%s'", requestApiObject.getUsername());
+                    user = UserController.getInstance().tryGetByEmailAddress(db, requestApiObject.getUsername());
+                    if (user == null)
+                    {
+                        _logger.error("Authentication failed. Cannot find username '%s'",
+                                requestApiObject.getUsername());
+                        return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
+                                Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
+                    }
+                }
+
+                // Check password
+                if (!user.validatePassword(requestApiObject.getPassword()))
+                {
+                    // TODO lockout user
+
+                    _logger.error("Authentication failed. Invalid password for user '%s'",
+                            requestApiObject.getUsername());
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
                 }
-            }
-
-            // Check password
-            if (!user.validatePassword(requestApiObject.getPassword()))
-            {
-                // TODO lockout user
-
-                _logger.error("Authentication failed. Invalid password for user '%s'", requestApiObject.getUsername());
-                return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
-                        Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
             }
 
             // Check if the user is enabled
@@ -202,6 +226,13 @@ public class AuthenticationWorker extends Worker
                 return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                         Strings.AUTHENTICAITON_ACCESS_DENIED_ERROR));
             }
+
+            // Log the login
+            String msg = String.format("User '%s' logged in.", requestApiObject.getUsername());
+            if (isRefreshing) {
+                msg = msg + String.format(" Token refreshed for another %s seconds", requestApiObject.getExpirySeconds());
+            }
+            _logger.info(msg);
 
             // Generate token
             AuthenticationTokenAO token = new AuthenticationTokenAO(user, requestApiObject);

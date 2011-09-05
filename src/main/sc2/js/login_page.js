@@ -159,8 +159,7 @@ App.statechart = SC.Statechart.create({
         var password = App.pageController.get('password');
         var rememberMe = App.pageController.get('rememberMe');
 
-        App.sessionEngine.login(username, password, rememberMe, true,
-          this, this.loginCallback, null);
+        App.sessionEngine.login(username, password, rememberMe, this, this.loginCallback, null);
 
         return;
       },
@@ -204,5 +203,5 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
 // --------------------------------------------------------------------------------------------------------------------
-App.sessionEngine.load();
+App.sessionEngine.load(NO);
 App.statechart.initStatechart();

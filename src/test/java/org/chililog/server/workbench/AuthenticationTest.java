@@ -469,9 +469,6 @@ public class AuthenticationTest
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Workbench.AuthenticationTokenInvalidError", errorAO.getErrorCode());
-        
-    
-    
     }
     
     /**
@@ -511,7 +508,68 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
         assertNotNull(loggedInUser.getDocumentID());
     }
+    
+    /**
+     * Refresh authentication token  
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testPOST_RefreshToken() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
 
+        // Login OK
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.POST, null);
+
+        AuthenticationAO requestContent = new AuthenticationAO();
+        requestContent.setUsername("AuthenticationTest");
+        requestContent.setPassword("hello there");
+        requestContent.setExpiryType(ExpiryType.Absolute);
+        requestContent.setExpirySeconds(60);
+
+        ApiUtils.sendJSON(httpConn, requestContent);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        AuthenticatedUserAO authenticatedUser = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest@chililog.com", authenticatedUser.getEmailAddress());
+        assertNull(authenticatedUser.getDisplayName());
+
+        String token = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
+        assertTrue(token.contains("\"ExpirySeconds\": 60"));
+
+        // Refresh token
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.POST, token);
+
+        AuthenticationAO refreshRequestContent = new AuthenticationAO();
+        refreshRequestContent.setUsername("AuthenticationTest");
+        refreshRequestContent.setExpiryType(ExpiryType.Absolute);
+        refreshRequestContent.setExpirySeconds(120);
+
+        ApiUtils.sendJSON(httpConn, refreshRequestContent);
+        
+        StringBuilder refreshResponseContent = new StringBuilder();
+        ApiUtils.getResponse(httpConn, refreshResponseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        authenticatedUser = JsonTranslator.getInstance()
+                .fromJson(refreshResponseContent.toString(), AuthenticatedUserAO.class);
+        assertEquals("AuthenticationTest", authenticatedUser.getUsername());
+        assertEquals("AuthenticationTest@chililog.com", authenticatedUser.getEmailAddress());
+        assertNull(authenticatedUser.getDisplayName());
+
+        String token2 = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
+        assertTrue(token2.contains("\"ExpirySeconds\": 120"));
+  
+        assertNotSame(token, token2);
+    }
+    
     /**
      * POST - login successful
      * 

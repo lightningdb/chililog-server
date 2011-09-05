@@ -26,6 +26,11 @@
 App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'App.AuthenticationToken';
 
 /**
+ * Flag to indicate if the user wanted to be remembered so they don't have to login for 14 days
+ */
+App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'App.AuthenticationRememberMe';
+
+/**
  * Name of Authentication header returned in API responses
  */
 App.AUTHENTICATION_HEADER_NAME = 'X-Chililog-Authentication';
@@ -41,10 +46,20 @@ App.VERSION_HEADER_NAME = 'X-Chililog-Version';
 App.BUILD_TIMESTAMP_HEADER_NAME = 'X-Chililog-Build-Timestamp';
 
 /**
- * All tokens to expire in 14 days
+ * Authentication token to expire in 14 days if remember me
  */
-App.AUTHENTICATION_TOKEN_EXPIRY_SECONDS = 60 * 60 * 24 * 14;
+App.AUTHENTICATION_REMEMBER_ME_TOKEN_EXPIRY_SECONDS = 60 * 60 * 24 * 14;
 
+/**
+ * Authentication token to expire in 20 minutes if not remember me. We have job that will refresh this token as long as
+ * browser is open. See App.sesisonEngine.checkExpiry().
+ */
+App.AUTHENTICATION_SESSION_TOKEN_EXPIRY_SECONDS = 60 * 20;
+
+/**
+ * We want to check token every minute
+ */
+App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS = 60;
 
 /**
  * Common engine methods
@@ -90,7 +105,6 @@ App.EngineMixin = {
     headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
     return headers;
   }
-
 
 };
 
@@ -1042,6 +1056,13 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   authenticationTokenExpiry: null,
 
   /**
+   * Flag to indicate if the user wants to be remembered so they don't have to login
+   *
+   * @type Boolean
+   */
+  authenticationRememberMe: NO,
+
+  /**
    * Chililog Version sourced from the server upon login/load
    *
    * @type String
@@ -1172,31 +1193,41 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Call this only once ... it will call itself every 5 minutes
+   * Call this only once ... it will call itself every 1 minute
    */
   checkExpiry: function() {
-    var pollSeconds = 300000;
+    var pollSeconds = App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS;
     if (this.get('isLoggedIn')) {
       var now = SC.DateTime.create();
-      var expiry = this.get('authenticationTokenExpiry');
+      var expiry = App.sessionEngine.get('authenticationTokenExpiry');
 
       // Bring forward pollSeconds so that we don't miss expiry
       expiry = expiry.advance({ second: -1 * pollSeconds });
-
       if (SC.DateTime.compare(now, expiry) > 0) {
         this.logout();
+        window.location = 'login.html';
+      } else {
+        // Bring forward again to see if we need to refresh the token
+        var authenticationRememberMe = App.sessionEngine.get('authenticationRememberMe');
+        if (!authenticationRememberMe) {
+          expiry = expiry.advance({ second: -1 * pollSeconds });
+          if (SC.DateTime.compare(now, expiry) > 0) {
+            App.sessionEngine.refreshToken();
+          }
+        }
       }
     }
 
-    setTimeout('App.sessionEngine.checkExpiry()', pollSeconds)
+    setTimeout('App.sessionEngine.checkExpiry()', pollSeconds * 1000)
   },
 
   /**
    * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
    *
+   * @param {Boolean} autoCheckExpiry YES to check expiry automatically every 5 minutes
    * @returns {Boolean} YES if authenticated user details successfully loaded, NO if token not loaded and the user has to sign in again.
    */
-  load: function() {
+  load: function(autoCheckExpiry) {
     // Get token from local store
     var token = localStorage.getItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
     if (SC.none(token)) {
@@ -1259,30 +1290,68 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     this.set('authenticationToken', token);
     localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
 
+    // Check expiry
+    if (SC.none(autoCheckExpiry) || autoCheckExpiry)
+    {
+      App.sessionEngine.checkExpiry();
+    }
+
     // Return YES to signal handling of callback
     return YES;
   },
 
   /**
-   * Start async login process
+   * Refreshes the authentication token. Used for when the user does not want to be remembered.
    *
-   * @param {String} username The username to use for login
-   * @param {String} password The password to use for login
-   * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
-   * @param {Boolean} [isAsync] Optional flag to indicate if login is to be performed asynchronously or not. Defaults to YES.
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(callbackParams, error) {}.
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  login: function(username, password, rememberMe, isAsync, callbackTarget, callbackFunction, callbackParams) {
+  refreshToken: function(callbackTarget, callbackFunction, callbackParams) {
+    var postData = {
+      'Username': App.sessionEngine.getPath('loggedInUser.username'),
+      'Password': '',
+      'ExpiryType': 'Absolute',
+      'ExpirySeconds': App.AUTHENTICATION_SESSION_TOKEN_EXPIRY_SECONDS
+    };
+
+    // Call server
+    var url = '/api/Authentication';
+    var context = { rememberMe: NO, postData: postData,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+
+    $.ajax({
+      type: 'POST',
+      url: url,
+      data: JSON.stringify(postData),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.getAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endLogin
+    });
+
+    return;
+  },
+
+  /**
+   * Start login process
+   *
+   * @param {String} username The username to use for login
+   * @param {String} password The password to use for login
+   * @param {Boolean} rememberMe If YES, then token is saved as a cookie.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  login: function(username, password, rememberMe, callbackTarget, callbackFunction, callbackParams) {
     if (SC.none(rememberMe)) {
       rememberMe = NO;
-    }
-
-    if (SC.none(isAsync)) {
-      isAsync = YES;
     }
 
     // Assumes the user has logged out - if not force logout
@@ -1292,12 +1361,13 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       'Username': username,
       'Password': password,
       'ExpiryType': 'Absolute',
-      'ExpirySeconds': App.AUTHENTICATION_TOKEN_EXPIRY_SECONDS
+      'ExpirySeconds': rememberMe ? App.AUTHENTICATION_REMEMBER_ME_TOKEN_EXPIRY_SECONDS : App.AUTHENTICATION_SESSION_TOKEN_EXPIRY_SECONDS
     };
 
     // Call server
     var url = '/api/Authentication';
-    var context = { rememberMe: rememberMe, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    var context = { rememberMe: rememberMe, postData: postData,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
 
     $.ajax({
       type: 'POST',
@@ -1307,8 +1377,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       contentType: 'application/json; charset=utf-8',
       context: context,
       error: this.ajaxError,
-      success: this.endLogin,
-      async: isAsync
+      success: this.endLogin
     });
 
     return;
@@ -1328,11 +1397,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   endLogin: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Figure out the expiry
-      // Take off 1 hour so that we expire before the token does which means we have time to act
-      var expiry = SC.DateTime.create();
-      expiry.advance({ second: App.AUTHENTICATION_TOKEN_EXPIRY_SECONDS });
-
       // Get the token
       var token = jqXHR.getResponseHeader(App.AUTHENTICATION_HEADER_NAME);
       if (SC.none(token)) {
@@ -1343,10 +1407,8 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       }
       App.sessionEngine.loadVersionAndBuildInfo(jqXHR);
 
-      // Save token if rememeberMe
-      if (this.rememberMe) {
-        localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
-      }
+      localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
+      localStorage.setItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY, this.RememberMe ? 'YES' : 'NO');
 
       // Save authenticated user details
       var authenticatedUserAO = jqXHR.responseText;
@@ -1355,8 +1417,17 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       authenticatedUserRecord.fromApiObject(authenticatedUserAO);
       App.store.commitRecords();
 
+      // Figure out the expiry
+      // To save time parsing, we just guess that the ajax call cannot taken more than 1 seconds
+      var expiry = SC.DateTime.create();
+      SC.Logger.log('expiry1 ' + expiry.toChililogServerDateTime());
+      expiry = expiry.advance({second: this.postData.ExpirySeconds - 1});
+      SC.Logger.log('expiry2 ' + expiry.toChililogServerDateTime());
+      SC.Logger.log('expiry3 ' + SC.DateTime.create().toChililogServerDateTime());
+      SC.Logger.log('expiry4 ' + SC.DateTime.create().advance({second: this.postData.ExpirySeconds - 1}).toChililogServerDateTime());
+
       App.sessionEngine.set('authenticationToken', token);
-      App.sessionEngine.set('authenticationTokenExpiry', expiry);
+      App.sessionEngine.set('authenticationTokenExpiry',  expiry);
     }
     catch (err) {
       error = err;
