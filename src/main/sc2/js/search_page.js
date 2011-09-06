@@ -32,6 +32,18 @@ App.ErrorMessage = SC.View.extend({
 });
 
 /**
+ * Common functions for field data
+ */
+App.FieldDataMixin = {
+
+  // Search when ENTER clicked
+  insertNewline: function() {
+    App.statechart.sendAction('startSearch');
+    return;
+  }
+};
+
+/**
  * Repository options
  */
 App.RepositorySelectOption = App.SelectOption.extend({
@@ -51,7 +63,7 @@ App.RepositoryField = SC.View.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
-    selectedOptionBinding: 'App.pageController.repository',
+    valueBinding: 'App.pageController.repository',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -64,7 +76,7 @@ App.FromDateField = SC.View.extend({
 
   label: '_search.fromDate'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.fromDate',
     name: 'fromDate',
     placeholder: 'yyyy-mm-dd',
@@ -76,11 +88,6 @@ App.FromDateField = SC.View.extend({
     didInsertElement: function() {
       this._super();
       this.$().datepicker({ dateFormat: 'yy-mm-dd' });
-    },
-    
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
     }
   })
 });
@@ -93,16 +100,11 @@ App.FromTimeField = SC.View.extend({
 
   label: '_search.fromTime'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.fromTime',
     name: 'fromTime',
     placeholder: 'hh:mm:ss',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
 
@@ -114,7 +116,7 @@ App.ToDateField = SC.View.extend({
 
   label: '_search.toDate'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.toDate',
     name: 'toDate',
     placeholder: 'yyyy-mm-dd',
@@ -126,11 +128,6 @@ App.ToDateField = SC.View.extend({
     didInsertElement: function() {
       this._super();
       this.$().datepicker({ dateFormat: 'yy-mm-dd' });
-    },
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
     }
   })
 });
@@ -143,16 +140,11 @@ App.ToTimeField = SC.View.extend({
 
   label: '_search.toTime'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.toTime',
     name: 'toTime',
     placeholder: 'hh:mm:ss',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
 
@@ -164,15 +156,10 @@ App.SourceField = SC.View.extend({
 
   label: '_search.source'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.source',
     name: 'source',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
 
@@ -184,15 +171,10 @@ App.HostField = SC.View.extend({
 
   label: '_search.host'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.host',
     name: 'host',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
 
@@ -207,7 +189,7 @@ App.SeverityField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
-    selectedOptionBinding: 'App.pageController.severity',
+    valueBinding: 'App.pageController.severity',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -223,7 +205,7 @@ App.TimespanField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.timespanOptions',
-    selectedOptionBinding: 'App.pageController.timespan',
+    valueBinding: 'App.pageController.timespan',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
@@ -236,15 +218,10 @@ App.KeywordsField = SC.View.extend({
 
   label: '_search.keywords'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.FieldDataMixin, {
     valueBinding: 'App.pageController.keywords',
     name: 'keywords',
-    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
-    insertNewline: function() {
-      App.statechart.sendAction('startSearch');
-      return;
-    }
+    disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
 });
 
@@ -465,13 +442,12 @@ App.pageController = SC.Object.create({
   /**
    * Options for displaying in the repository dropdown
    */
-  repositoryOptions: [],
+  repositoryOptions: SC.ArrayProxy.create(),
 
   /**
    * Options for displaying in the severity dropdown
    */
   severityOptions: [
-    SC.Object.create({label: '', value: '', selected: YES}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Emergency'.loc(), value: '0'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Action'.loc(), value: '1'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Critical'.loc(), value: '2'}),
@@ -479,7 +455,7 @@ App.pageController = SC.Object.create({
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Warning'.loc(), value: '4'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Notice'.loc(), value: '5'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Information'.loc(), value: '6'}),
-    SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7'})
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7', selected: YES})
   ],
 
   /**
@@ -866,8 +842,10 @@ if (App.sessionEngine.load()) {
     var query = SC.Query.local(App.RepositoryMetaInfoRecord, {
       orderBy: 'name'
     });
-    var arrayProxy = App.store.find(query);
-    App.pageController.set('repositoryOptions', arrayProxy);
+
+    // After loading, put results into the ArrayProxy for select content and default to the first object item
+    App.pageController.get('repositoryOptions').set('content', App.store.find(query));
+    App.pageController.set('repository', App.pageController.get('repositoryOptions').firstObject);
   }, null);
 } else {
   // Not logged in so go to login page

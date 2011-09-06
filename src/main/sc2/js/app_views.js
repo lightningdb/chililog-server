@@ -101,7 +101,12 @@ App.ButtonView = SC.Button.extend({
   /**
    * Added disabled attribute binding
    */
-  attributeBindings: ['type', 'disabled'],
+  attributeBindings: ['type', 'disabled', 'tabindex'],
+
+  /**
+   * Tabindex
+   */
+  tabindex: '1',
 
   /**
    * Text for the button
@@ -131,6 +136,13 @@ App.ButtonView = SC.Button.extend({
  * Checkbox view control
  */
 App.CheckboxView = SC.Checkbox.extend({
+
+  attributeBindings: ['tabindex'],
+    
+  /**
+   * Tabindex
+   */
+  tabindex: '1',
 
   /**
    * Flag to indicate if this is disabled or not
@@ -195,7 +207,12 @@ App.SelectOption = SC.View.extend({
 App.SelectView = SC.CollectionView.extend({
   tagName: 'select',
   classNames: ['sc-select'],
-  attributeBindings: ['multiple', 'disabled'],
+  attributeBindings: ['multiple', 'disabled', 'tabindex'],
+
+  /**
+   * Tabindex
+   */
+  tabindex: '1',
 
   disabled: NO,
   
