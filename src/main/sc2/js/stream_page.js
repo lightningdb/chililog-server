@@ -493,7 +493,7 @@ if (App.sessionEngine.load()) {
 
     // After loading, put results into the ArrayProxy for select content and default to the first object item
     App.pageController.get('repositoryOptions').set('content', App.store.find(query));
-    App.pageController.set('repository', App.pageController.get('repositoryOptions').firstObject);
+    App.pageController.set('repository', App.pageController.get('repositoryOptions').get('firstObject'));
   }, null);
 
 } else {
