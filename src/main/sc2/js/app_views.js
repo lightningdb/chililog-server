@@ -169,10 +169,10 @@ App.SelectOption = SC.View.extend({
   classNames: ['sc-select-option'],
 
   /*
-   Note: we can't use a template with {{label}} here because it
-   uses a BindableSpan. The browser will eat the span inside of
-   an option tag.
-   */
+    Note: we can't use a template with {{label}} here because it
+    uses a BindableSpan. The browser will eat the span inside of
+    an option tag.
+  */
   template: function(context, options) {
     options.data.buffer.push(context.get('label'));
   },
@@ -197,116 +197,75 @@ App.SelectView = SC.CollectionView.extend({
   classNames: ['sc-select'],
   attributeBindings: ['multiple', 'disabled'],
 
+  disabled: NO,
+  
   itemViewClass: App.SelectOption,
 
-  /**
-   * Content must be an array or arrayproxy of SC objects
-   */
-  content: [],
+  _value: null,
 
-  /**
-   * Flag to indicate if this is disabled or not
-   */
-  disabled: NO,
+  value: function(key, value) {
+    if (value !== undefined) {
+      set(this, '_value', value);
 
-  /**
-   * The selected option.
-   */
-  selectedOption: null,
+      get(this, 'childViews').forEach(function(el, idx) {
+        var content = get(el, 'content');
 
-  /**
-   * On insert into the DOM, set the selected item
-   */
+        if (content === value) {
+          set(content, 'selected', true);
+        } else {
+          set(content, 'selected', false);
+        }
+      });
+    }
+
+    return get(this, '_value');
+  }.property('_value'),
+
   willInsertElement: function() {
     this._elementValueDidChange();
   },
 
-  /**
-   * The browser's onChange event means that we have to take data from the DOM to update our contents
-   */
   change: function() {
     this._elementValueDidChange();
   },
 
-  /**
-   * Get data from DOM to update our contents
-   */
   _elementValueDidChange: function() {
     var views = SC.View.views,
-      selectedOptions = this.$('option:selected'),
-      option = null;
+        selectedOptions = this.$('option:selected'),
+        value;
 
-    if (selectedOptions) {
-      var id = selectedOptions.prop('id');
-      if (SC.none(id)) {
-        // Get the first option if there is one
-        if (this.get('content').get) {
-          option = this.get('content').get('firstObject');
-        }
-      } else {
-        option = SC.get(views[selectedOptions.prop('id')], 'content');
+    if (get(this, 'multiple') && get(this, 'multiple') !== "false") {
+      value = selectedOptions.toArray().map(function(el) { return get(views[el.id], 'content'); });
+    } else {
+      var optionView = views[selectedOptions.prop('id')];
+      if (!SC.none(optionView)) {
+        value = get(optionView, 'content');
       }
     }
 
-    set(this, 'selectedOption', option);
-    set(SC.get(this, 'content'), 'selection', option);
+    set(this, 'value', value);
+    set(get(this, 'content'), 'selection', value);
   },
 
-  /**
-   * Contents array changed in size
-   * @param content
-   * @param start
-   * @param removed
-   */
   arrayWillChange: function(content, start, removed) {
-    var selected = SC.get(content, 'selection'), idx, obj;
+    var selected, idx, obj;
 
     if (content && removed) {
-      for (idx = start; idx < start + removed; idx++) {
+      for (idx = start; idx < start+removed; idx++) {
         obj = content.objectAt(idx);
 
-        if (selected && selected.contains && selected.contains(obj)) {
-          selected.removeObject(obj);
+        if (selected = get(content, 'selection')) {
+          if (SC.isArray(selected) && selected.contains(obj)) {
+            selected.removeObject(obj);
+          } else if (selected === obj) {
+            set(content, 'selection', null);
+          }
         }
       }
     }
 
     this._super(content, start, removed);
-  },
-
-  /**
-   * Contents array changed in size
-   * @param content
-   * @param start
-   * @param removed
-   * @param added
-   */
-  arrayDidChange: function(content, start, removed, added) {
-    this._super(content, start, removed, added);
-    this._elementValueDidChange();
-  },
-
-  /**
-   * The content data has changed so we need to update the DOM
-   */
-  selectedOptionDidChange: function() {
-    var selectedOption = this.get('selectedOption');
-    if (SC.none(selectedOption)) {
-      return;
-    }
-
-    var selectedValue = selectedOption.get('value');
-    set(SC.get(this, 'content'), 'selection', selectedOption);
-
-    // Make sure that the DOM reflects the selected value
-    var options = this.$('option');
-    if (!SC.none(options)) {
-      for (var i=0; i< options.length; i++) {
-        var option = options[i];
-        option.selected = (option.value === selectedValue);
-      }
-    }
-  }.observes('selectedOption')
+  }
 });
 
 // --------------------------------------------------------------------------------------------------------------------

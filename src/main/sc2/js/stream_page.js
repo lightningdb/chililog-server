@@ -51,7 +51,7 @@ App.RepositoryField = SC.View.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
-    selectedOptionBinding: 'App.pageController.repository',
+    valueBinding: 'App.pageController.repository',
     disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
@@ -67,7 +67,7 @@ App.SeverityField = SC.View.extend({
   Data : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
-    selectedOptionBinding: 'App.pageController.severity',
+    valueBinding: 'App.pageController.severity',
     disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
   })
 });
@@ -195,7 +195,6 @@ App.TestMessageButton = App.ButtonView.extend({
 // --------------------------------------------------------------------------------------------------------------------
 // Controllers
 // --------------------------------------------------------------------------------------------------------------------
-
 /**
  * Mediates between state charts and views
  */
@@ -203,12 +202,12 @@ App.pageController = SC.Object.create({
   /**
    * Value of the repository text field
    */
-  repository: '',
+  repository: null,
 
   /**
    * Value of the severity text field
    */
-  severity: '7',
+  severity: null,
 
   /**
    * Error message to display
@@ -228,8 +227,8 @@ App.pageController = SC.Object.create({
   /**
    * Options for displaying in the repository dropdown
    */
-  repositoryOptions: [],
-
+  repositoryOptions: SC.ArrayProxy.create(),
+  
   /**
    * Options for displaying in the severity dropdown
    */
@@ -241,7 +240,7 @@ App.pageController = SC.Object.create({
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Warning'.loc(), value: '4'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Notice'.loc(), value: '5'}),
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Information'.loc(), value: '6'}),
-    SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7', selected: YES})
+    SC.Object.create({label: '_repositoryEntryRecord.Severity.Debug'.loc(), value: '7', selected: YES })
   ],
 
   /**
@@ -491,8 +490,10 @@ if (App.sessionEngine.load()) {
       conditions: 'name != "chililog"',
       orderBy: 'name'
     });
-    var arrayProxy = App.store.find(query);
-    App.pageController.set('repositoryOptions', arrayProxy);
+
+    // After loading, put results into the ArrayProxy for select content and default to the first object item
+    App.pageController.get('repositoryOptions').set('content', App.store.find(query));
+    App.pageController.set('repository', App.pageController.get('repositoryOptions').firstObject);
   }, null);
 
 } else {
