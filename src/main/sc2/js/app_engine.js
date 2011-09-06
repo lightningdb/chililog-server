@@ -1420,11 +1420,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       // Figure out the expiry
       // To save time parsing, we just guess that the ajax call cannot taken more than 1 seconds
       var expiry = SC.DateTime.create();
-      SC.Logger.log('expiry1 ' + expiry.toChililogServerDateTime());
       expiry = expiry.advance({second: this.postData.ExpirySeconds - 1});
-      SC.Logger.log('expiry2 ' + expiry.toChililogServerDateTime());
-      SC.Logger.log('expiry3 ' + SC.DateTime.create().toChililogServerDateTime());
-      SC.Logger.log('expiry4 ' + SC.DateTime.create().advance({second: this.postData.ExpirySeconds - 1}).toChililogServerDateTime());
 
       App.sessionEngine.set('authenticationToken', token);
       App.sessionEngine.set('authenticationTokenExpiry',  expiry);
