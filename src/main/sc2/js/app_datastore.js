@@ -91,6 +91,10 @@ App.REPOSITORY_MAX_MEMORY_POLICY_PAGE = 'PAGE';
 App.REPOSITORY_MAX_MEMORY_POLICY_BLOCK = 'BLOCK';
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// AuthenticatedUserRecord
+// --------------------------------------------------------------------------------------------------------------------
+
 /** @class
  *
  * Authenticated User record containing user profile information that can be changed by the user
@@ -116,6 +120,66 @@ App.AuthenticatedUserRecord = SC.Record.extend({
     }
     return displayName;
   }.property('username', 'displayName').cacheable(),
+
+  /**
+   * Returns the display name of the logged in user. If not set, the username is returned.
+   *
+   * @type String
+   */
+  loggedInUserGravatarURL: function() {
+    var ghash = this.get('gravatarMD5Hash');
+    if (SC.empty(ghash)) {
+      return null;
+    }
+    return 'http://www.gravatar.com/avatar/' + ghash + '.jpg?s=18&d=mm';
+  }.property('gravatarMD5Hash').cacheable(),
+
+  /**
+   * YES if the user is a system administrator
+   *
+   * @type Boolean
+   */
+  isSystemAdministrator: function() {
+    var idx = jQuery.inArray('system.administrator', this.get('roles'));
+    return idx >= 0;
+  }.property('roles').cacheable(),
+
+  /**
+   * YES if the user is an administrator for one or more repositories
+   *
+   * @type Boolean
+   */
+  isRepositoryAdministrator: function() {
+    var roles = this.get('roles');
+    if (!SC.none(roles)) {
+      for (var i = 0; i < roles.length; i++) {
+        var role = roles[i];
+        if (role.indexOf('repo.' === 0) &&
+          role.indexOf('.' + App.REPOSITORY_ADMINISTRATOR_ROLE) > 0) {
+          return YES;
+        }
+      }
+    }
+    return NO;
+  }.property('roles').cacheable(),
+
+  /**
+   * Checks if the logged in user is the administrator the specified repository
+   * @param {App.RepositoryMetaInfoRecord} repositoryRecord
+   * @returns Boolean
+   */
+  isRepositoryAdministratorOf: function(repositoryRecord) {
+    var roles = this.get('roles');
+    if (!SC.none(roles)) {
+      var roleName = 'repo.' + repositoryRecord.get('name') + '.' + App.REPOSITORY_ADMINISTRATOR_ROLE;
+      for (var i = 0; i < roles.length; i++) {
+        if (roles[i] === roleName) {
+          return YES;
+        }
+      }
+    }
+    return NO;
+  },
   
   /**
    * Maps server api data into this user record
@@ -168,6 +232,9 @@ App.AUTHENTICATED_USER_RECORD_MAP = [
   ['gravatarMD5Hash', 'GravatarMD5Hash']
 ];
 
+// --------------------------------------------------------------------------------------------------------------------
+// RepositoryEntryRecord
+// --------------------------------------------------------------------------------------------------------------------
 /**
  * Map of severity text for code
  */
@@ -307,6 +374,9 @@ App.REPOSITORY_ENTRY_RECORD_MAP = [
   ['keywords' ,'keywords']
 ];
 
+// --------------------------------------------------------------------------------------------------------------------
+// RepositoryMetaInfoRecord
+// --------------------------------------------------------------------------------------------------------------------
 
 /** @class
  *
@@ -441,6 +511,9 @@ App.REPOSITORY_META_INFO_RECORD_MAP = [
   ['pageCountCache' ,'PageCountCache']
 ];
 
+// --------------------------------------------------------------------------------------------------------------------
+// RepositoryRuntimeInfoRecord
+// --------------------------------------------------------------------------------------------------------------------
 
 /** @class
  *
@@ -500,6 +573,11 @@ App.REPOSITORY_RUNTIME_RECORD_MAP = [
   ['name' ,'Name'],
   ['currentStatus' ,'Status']
 ];
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// UserRecord
+// --------------------------------------------------------------------------------------------------------------------
 
 /** @class
  *
@@ -637,6 +715,11 @@ App.USER_RECORD_MAP = [
   ['displayName' ,'DisplayName'],
   ['gravatarMD5Hash' ,'GravatarMD5Hash']
 ];
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// Store and dummy data source
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * Declare store

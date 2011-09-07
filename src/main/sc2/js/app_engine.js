@@ -21,14 +21,19 @@
 //
 
 /**
- * Name of cookie where we store the auth token
+ * Local store key for our authentication token
  */
-App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'App.AuthenticationToken';
+App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'AuthenticationToken';
 
 /**
- * Flag to indicate if the user wanted to be remembered so they don't have to login for 14 days
+ * Local store key for flag that indicates if the user wishes to be remembered or logged out after session closes
  */
-App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'App.AuthenticationRememberMe';
+App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'AuthenticationRememberMe';
+
+/**
+ * Local store key for the details of the logged in user
+ */
+App.LOGGED_IN_USER_LOCAL_STORE_KEY = 'LoggedInUser';
 
 /**
  * Name of Authentication header returned in API responses
@@ -60,6 +65,7 @@ App.AUTHENTICATION_SESSION_TOKEN_EXPIRY_SECONDS = 60 * 20;
  * We want to check token every minute
  */
 App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS = 60;
+
 
 /**
  * Common engine methods
@@ -98,22 +104,376 @@ App.EngineMixin = {
   },
 
   /**
-   * Get the standard headers loaded with our authentication token
+   * Creates the standard request header loaded with our authentication token
    */
-  getAjaxRequestHeaders: function() {
+  createAjaxRequestHeaders: function() {
     var headers = {};
     headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
     return headers;
+  },
+
+  /**
+   * Gets the named response header
+   * @param {jQuery HttpRequest} jqXHR
+   * @param {String} headerName name of header to retrieve
+   * @return {String} value of the named header or null if not found
+   */
+  getAjaxResponseHeader: function(jqXHR, headerName) {
+    var value = jqXHR.getResponseHeader(headerName);
+    if (SC.none(value)) {
+      value = jqXHR.getResponseHeader(headerName.toLowerCase());
+    }
+    return value;
+  },
+
+  /**
+   * Process AO and load them into the store
+   *
+   * @param {Array} aoArray array of API object returned from the server
+   * @param {Class} recordType for example App.UserRecord
+   */
+  processAOArray: function(aoArray, recordType) {
+    // Set data
+    if (!SC.none(aoArray) && SC.isArray(aoArray)) {
+      for (var i = 0; i < aoArray.length; i++) {
+        var ao = aoArray[i];
+
+        // If record exists, update it otherwise create new one
+        var record = App.store.find(recordType, ao.DocumentID);
+        if (SC.none(record) || (record.get('status') & SC.Record.DESTROYED)) {
+          record = App.store.createRecord(recordType, {}, ao.DocumentID);
+        }
+        record.fromApiObject(ao);
+      }
+      App.store.commitRecords();
+    }
+
+    // Delete records that have not been returned
+    var records = App.store.find(recordType);
+    records.forEach(function(record) {
+      var doDelete = YES;
+      if (!SC.none(aoArray) && SC.isArray(aoArray)) {
+        for (var i = 0; i < aoArray.length; i++) {
+          var ao = aoArray[i];
+          if (ao[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+            doDelete = NO;
+            break;
+          }
+        }
+      }
+      if (doDelete) {
+        record.destroy()
+      }
+    });
+    App.store.commitRecords();
   }
 
 };
 
+// --------------------------------------------------------------------------------------------------------------------
+// userEngine
+// --------------------------------------------------------------------------------------------------------------------
+/** @class
+ *
+ * Manages user records and keeps them in sync with the server
+ *
+ * @extends SC.Object
+ */
+App.userEngine = SC.Object.create(App.EngineMixin, {
+
+  /**
+   * YEs if we are performing a server synchronization
+   * @type Boolean
+   */
+  isLoading: NO,
+
+  /**
+   * Removes all repository meta info records in the data store
+   */
+  clearLocalData: function() {
+    var records = App.store.find(App.UserRecord);
+    records.forEach(function(record) {
+      record.destroy()
+    });
+    App.store.commitRecords();
+  },
+
+  /**
+   * Synchronize data in the store with the data on the server
+   *
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  load: function(callbackTarget, callbackFunction, callbackParams) {
+    // If operation already under way, just exit
+    var isLoading = this.get('isLoading');
+    if (isLoading) {
+      return;
+    }
+
+    // Remove all data
+    this.clearLocalData();
+
+    // We are working
+    this.set('isLoading', YES);
+
+    // Get data
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    $.ajax({
+      type: 'GET',
+      url: '/api/users',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.createAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endLoad
+    });
+  },
+
+  /**
+   * Process data that the server returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endLoad: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      App.userEngine.processAOArray(data, App.RepositoryMetaInfoRecord);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('userEngine.endLoad: ' + err.message);
+    }
+
+    // Finish sync'ing
+    App.userEngine.set('isLoading', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Returns a new user record for editing
+   *
+   * @returns {App.UserRecord}
+   */
+  create: function() {
+    var nestedStore = App.store.chain();
+    var record = nestedStore.createRecord(App.UserRecord, {});
+    record.set(App.DOCUMENT_VERSION_RECORD_FIELD_NAME, 0);
+    record.set('currentStatus', 'Enabled');
+    return record;
+  },
+
+  /**
+   * Returns an existing the user record for editing
+   *
+   * @param {String} documentID Document ID of the user record to edit
+   * @returns {App.UserRecord}
+   */
+  edit: function(documentID) {
+    var nestedStore = App.store.chain();
+    var record = nestedStore.find(App.UserRecord, documentID);
+    return record;
+  },
+
+  /**
+   * Saves the user record to the server
+   * @param {App.UserRecord} record record to save
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * The documentID will be set to the document ID of the saved record.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  save: function(record, callbackTarget, callbackFunction, callbackParams) {
+    var documentID = record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+    var documentVersion = record.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    var isAdding = (SC.none(documentVersion) || documentVersion === 0);
+    var data = record.toApiObject();
+
+    var url = '';
+    var httpType = '';
+    if (isAdding) {
+      url = '/api/users/';
+      httpType = 'POST';
+    } else {
+      url = '/api/users/' + documentID;
+      httpType = 'PUT';
+    }
+    var context = { isAdding: isAdding, documentID: documentID, record: record,
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    // Call server
+    $.ajax({
+      type: httpType,
+      url: url,
+      data: JSON.stringify(data),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.createAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endSave
+    });
+
+    return;
+  },
+
+  /**
+   * Callback from save() after we get a response from the server to process
+   * the returned info.
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endSave: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      // Remove temp record while creating/editing
+      this.discardChanges(this.record);
+
+      // Save user details returns from server
+      var apiObject = data;
+      if (this.isAdding) {
+        this.documentID = apiObject[App.DOCUMENT_ID_AO_FIELD_NAME];
+      } else if (this.documentID !== apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]) {
+        throw App.$error('_documentIDError', this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]);
+      }
+
+      var record = null;
+      if (this.isAdding) {
+        record = App.store.createRecord(App.UserRecord, {}, this.documentID);
+      } else {
+        record = App.store.find(App.UserRecord, this.documentID);
+      }
+      record.fromApiObject(apiObject);
+      App.store.commitRecords();
+
+      // If we are editing the logged in user, then we better update the session data
+      if (record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME) ===
+        App.sessionEngine.get('loggedInUser').get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
+        //TODO
+      }
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('userDataController.endSaveRecord: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Discard changes by removing nested store
+   *
+   * @param {App.UserRecord} record User record to discard
+   */
+  discardChanges: function(record) {
+    if (!SC.none(record)) {
+      var store = record.get('store');
+      store.destroy();
+    }
+    return;
+  },
+
+  /**
+   * Deletes the user record on the server
+   *
+   * @param {String} documentID id of record to delete
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(documentID, callbackParams, error) {}.
+   * documentId is set to the id of the user to be deleted.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
+    var url = '/api/users/' + documentID;
+    var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    $.ajax({
+      type: 'DELETE',
+      url: url,
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.createAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endErase
+    });
+
+    return;
+  },
+
+  /**
+   * Callback from erase()
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  endErase: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      var record = App.store.find(App.UserRecord, this.documentID);
+      record.destroy();
+      App.store.commitRecords();
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('userEngine.endErase: ' + err);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  }
+
+});
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// repositoryRuntimeInfoEngine
+// --------------------------------------------------------------------------------------------------------------------
 /** @class
  *
  * Manages repository records and keeps them in sync with the server
- * 
+ *
  * @extends SC.Object
  */
 App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
@@ -123,7 +483,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    */
   isLoading: NO,
 
-  clearServerData: function() {
+  clearLocalData: function() {
     var records = App.store.find(App.RepositoryRuntimeInfoRecord);
     records.forEach(function(record) {
       record.destroy()
@@ -150,7 +510,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Remove all data
-    this.clearServerData();
+    this.clearLocalData();
 
     // We are working
     this.set('isLoading', YES);
@@ -167,7 +527,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endLoad
     });
@@ -187,9 +547,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
   endLoad: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Set data
-      var repoRuntimeInfoAOArray = data;
-      this._processAOArray(repoRuntimeInfoAOArray);
+      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
     }
     catch (err) {
       error = err;
@@ -199,73 +557,8 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
     // Finish sync'ing
     App.repositoryRuntimeInfoEngine.set('isLoading', NO);
 
-    // Chain sync or not
-    if (SC.none(this.loadRepositoryMetaInfo)) {
-      // Callback
-      if (!SC.none(this.callbackFunction)) {
-        this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
-      }
-    } else {
-      // Chain sync
-      App.repositoryMetaInfoEngine.load(params.callbackTarget, params.callbackFunction, params.callbackParams);
-    }
-
     // Return YES to signal handling of callback
     return YES;
-  },
-
-  /**
-   * Merge new AO array status with the current data in the store
-   *
-   * @param repoAOArray
-   */
-  _processAOArray: function (repoAOArray) {
-    // Set data
-    if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
-      for (var i = 0; i < repoAOArray.length; i++) {
-        var repoAO = repoAOArray[i];
-
-        // See if record exists
-        var repoRecord = App.store.find(App.RepositoryRuntimeInfoRecord, repoAO.DocumentID);
-        if (SC.none(repoRecord) || (repoRecord.get('status') & SC.Record.DESTROYED)) {
-          repoRecord = App.store.createRecord(App.RepositoryRuntimeInfoRecord, {}, repoAO.DocumentID);
-        }
-        repoRecord.fromApiObject(repoAO);
-      }
-      App.store.commitRecords();
-    }
-
-    // Delete records that have not been returned
-    var records = App.store.find(App.RepositoryRuntimeInfoRecord);
-    records.forEach(function(record) {
-      var doDelete = YES;
-      if (!SC.none(repoAOArray) && SC.isArray(repoAOArray)) {
-        for (var i = 0; i < repoAOArray.length; i++) {
-          var repoAO = repoAOArray[i];
-          if (repoAO[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
-            doDelete = NO;
-            break;
-          }
-        }
-      }
-      if (doDelete) {
-        record.destroy()
-      }
-    });
-    App.store.commitRecords();
-
-    // Make sure that all repository info records have the correct repository record
-    var repoMetaInfoRecords = App.store.find(App.RepositoryMetaInfoRecord);
-    repoMetaInfoRecords.forEach(function(repoMetaInfoRecord) {
-      // Find corresponding repository record
-      var query = SC.Query.local(App.RepositoryRuntimeInfoRecord, 'name={name}', {name: repoMetaInfoRecord.get('name')});
-      var repoMetaRecords = App.store.find(query);
-      if (repoMetaRecords.get('length') > 0) {
-        repoMetaInfoRecord.updateStatus(repoMetaRecords.objectAt(0));
-      }
-    });
-    App.store.commitRecords();
-
   },
 
   /**
@@ -301,7 +594,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endStart
     });
@@ -330,7 +623,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       }
 
       // Process response
-      this._processAOArray([repoAO]);
+      App.repositoryRuntimeInfoEngine.processAOArray([repoAO], App.RepositoryRuntimeInfoRecord);
     }
     catch (err) {
       error = err;
@@ -375,7 +668,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endStop
     });
@@ -404,7 +697,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       }
 
       // Merge the data
-      this._processAOArray([repoAO]);
+      App.repositoryRuntimeInfoEngine.processAOArray([repoAO], App.RepositoryRuntimeInfoRecord);
     }
     catch (err) {
       error = err;
@@ -424,7 +717,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
   /**
    * Starts all repositories
-   * 
+   *
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(callbackParams, error) {}.
@@ -446,11 +739,11 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endStartAll
     });
-    
+
     return;
   },
 
@@ -467,12 +760,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
   endStartAll: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Check status
-      this.checkResponse(response);
-
-      // Set data
-      var repoAOArray = response.get('body');
-      this._processAOArray(repoAOArray);
+      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
     }
     catch (err) {
       error = err;
@@ -513,11 +801,11 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endStopAll
     });
-    
+
     return;
   },
 
@@ -534,9 +822,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
   endStopAll: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Set data
-      var repoAOArray = data;
-      this._processAOArray(repoAOArray);
+      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
     }
     catch (err) {
       error = err;
@@ -574,7 +860,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       conditionsJson = JSON.stringify(criteria.conditions);
     }
 
-    var headers = this.getAjaxRequestHeaders();
+    var headers = this.createAjaxRequestHeaders();
     headers['X-Chililog-Query-Type'] = 'Find';
     headers['X-Chililog-Conditions'] = conditionsJson;
     headers['X-Chililog-Keywords-Usage'] = criteria.keywordUsage;
@@ -597,7 +883,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       error: this.ajaxError,
       success: this.endFind
     });
-    
+
     return;
   },
 
@@ -612,7 +898,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @returns {Boolean} YES if successful and NO if not.
    */
   endFind: function(data, textStatus, jqXHR) {
-  var error = null;
+    var error = null;
     var repoEntryAOArray;
     var recordCount = 0;
     try {
@@ -700,6 +986,9 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
   }
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+// repositoryMetaInfoEngine
+// --------------------------------------------------------------------------------------------------------------------
 
 /** @class
  *
@@ -718,7 +1007,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   /**
    * Removes all repository meta info records in the data store
    */
-  clearServerData: function() {
+  clearLocalData: function() {
     var records = App.store.find(App.RepositoryMetaInfoRecord);
     records.forEach(function(record) {
       record.destroy()
@@ -745,28 +1034,27 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Remove all data
-    this.clearServerData();
+    this.clearLocalData();
 
     // We are working
     this.set('isLoading', YES);
 
     // Get data
     var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-
     $.ajax({
       type: 'GET',
       url: '/api/repository_info',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endLoad
     });
   },
 
   /**
-   * Process data when repository meta information returns
+   * Process data that the server returns
    *
    * The 'this' object is the context data object.
    *
@@ -778,48 +1066,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   endLoad: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Set data
-      var repoMetaInfoAOArray = data;
-      if (!SC.none(repoMetaInfoAOArray) && SC.isArray(repoMetaInfoAOArray)) {
-        for (var i = 0; i < repoMetaInfoAOArray.length; i++) {
-          var repoMetaInfoAO = repoMetaInfoAOArray[i];
-
-          // See if record exists
-          var repoMetaInfoRecord = App.store.find(App.RepositoryMetaInfoRecord, repoMetaInfoAO.DocumentID);
-          if (SC.none(repoMetaInfoRecord) || (repoMetaInfoRecord.get('status') & SC.Record.DESTROYED)) {
-            repoMetaInfoRecord = App.store.createRecord(App.RepositoryMetaInfoRecord, {}, repoMetaInfoAO.DocumentID);
-          }
-
-          // Find corresponding repository runtime record
-          var query = SC.Query.local(App.RepositoryRuntimeInfoRecord, 'name={name}', {name: repoMetaInfoAO.Name});
-          var repoRecords = App.store.find(query);
-          if (repoRecords.get('length') > 0) {
-            repoMetaInfoRecord.updateStatus(repoRecords.objectAt(0));
-          }
-          repoMetaInfoRecord.fromApiObject(repoMetaInfoAO);
-        }
-        App.store.commitRecords();
-      }
-
-      // Delete records that have not been returned
-      var records = App.store.find(App.RepositoryMetaInfoRecord);
-      records.forEach(function(record) {
-        var doDelete = YES;
-        if (!SC.none(repoMetaInfoAOArray) && SC.isArray(repoMetaInfoAOArray)) {
-          for (var i = 0; i < repoMetaInfoAOArray.length; i++) {
-            var repoMetaInfoAO = repoMetaInfoAOArray[i];
-            if (repoMetaInfoAO[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
-              doDelete = NO;
-              break;
-            }
-          }
-        }
-        if (doDelete) {
-          record.destroy()
-        }
-      });
-      App.store.commitRecords();
-
+      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryMetaInfoRecord);
     }
     catch (err) {
       error = err;
@@ -839,7 +1086,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Returns a new user record for editing
+   * Returns a new record for editing
    *
    * @returns {App.UserRecord}
    */
@@ -856,7 +1103,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Returns an existing the user record for editing
+   * Returns an existing the record for editing
    *
    * @param {String} documentID Document ID of the user record to edit
    * @returns {App.UserRecord}
@@ -868,7 +1115,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Saves the user record to the server
+   * Saves the record to the server
    * @param {App.RepositoryMetaInfoRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
@@ -883,7 +1130,6 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     var documentVersion = record.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     var isAdding = (SC.none(documentVersion) || documentVersion === 0);
     var data = record.toApiObject();
-    var request;
 
     var url = '';
     var httpType = '';
@@ -906,11 +1152,11 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endSave
     });
-    
+
     return;
   },
 
@@ -952,7 +1198,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(params.callbackTarget, this.documentID, this.callbackParams, error);
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -992,7 +1238,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endErase
     });
@@ -1001,8 +1247,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Callback from save() after we get a response from the server to process
-   * the returned info.
+   * Callback from erase()
    *
    * The 'this' object is the context data object.
    *
@@ -1016,12 +1261,11 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     try {
       var record = App.store.find(App.RepositoryMetaInfoRecord, this.documentID);
       record.destroy();
-
       App.store.commitRecords();
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoDataController.endErase: ' + err);
+      SC.Logger.error('repositoryInfoEngine.endErase: ' + err);
     }
 
     // Callback
@@ -1034,6 +1278,9 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   }
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+// sessionEngine
+// --------------------------------------------------------------------------------------------------------------------
 
 /** @class
  *
@@ -1100,100 +1347,88 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   }.property('authenticationToken').cacheable(),
 
   /**
-   * Returns the display name of the logged in user. If not set, the username is returned.
+   * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
    *
-   * @type String
+   * @param {Boolean} autoCheckExpiry YES to check expiry automatically every 5 minutes
+   * @returns {Boolean} YES if authenticated user details successfully loaded, NO if token not loaded and the user has to sign in again.
    */
-  loggedInUserDisplayName: function() {
-    var loggedInUser = this.get('loggedInUser');
-    if (loggedInUser === null) {
-      return '';
-    }
-    var displayName = loggedInUser.get('displayName');
-    if (!SC.empty(displayName)) {
-      return displayName;
-    }
-    return loggedInUser.get('username');
-  }.property('loggedInUser').cacheable(),
-
-  /**
-   * Returns the display name of the logged in user. If not set, the username is returned.
-   *
-   * @type String
-   */
-  loggedInUserGravatarURL: function() {
-    var loggedInUser = this.get('loggedInUser');
-    if (loggedInUser === null) {
-      return null;
-    }
-    var ghash = loggedInUser.get('gravatarMD5Hash');
-    if (SC.empty(ghash)) {
-      return null;
-    }
-    return 'http://www.gravatar.com/avatar/' + ghash + '.jpg?s=18&d=mm';
-  }.property('loggedInUser').cacheable(),
-
-  /**
-   * YES if the user is a system administrator
-   *
-   * @type Boolean
-   */
-  isSystemAdministrator: function() {
-    var loggedInUser = this.get('loggedInUser');
-    if (SC.none(loggedInUser)) {
+  load: function(autoCheckExpiry) {
+    // Get token from local store
+    var token = localStorage.getItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
+    if (SC.none(token)) {
+      this.logout();
       return NO;
     }
-    var idx = jQuery.inArray('system.administrator', loggedInUser.get('roles'));
-    return idx >= 0;
-  }.property('loggedInUser').cacheable(),
 
-  /**
-   * YES if the user is an administrator for one or more repositories
-   *
-   * @type Boolean
-   */
-  isRepositoryAdministrator: function() {
-    var loggedInUser = this.get('loggedInUser');
-    if (SC.none(loggedInUser)) {
+    // Decode token
+    var delimiterIndex = token.indexOf('~~~');
+    if (delimiterIndex < 0) {
       return NO;
     }
-    var roles = loggedInUser.get('roles');
-    if (!SC.none(roles)) {
-      for (var i = 0; i < roles.length; i++) {
-        var role = roles[i];
-        if (role.indexOf('repo.' === 0) &&
-          role.indexOf('.' + App.REPOSITORY_ADMINISTRATOR_ROLE) > 0) {
-          return YES;
+    var tokenInfoString = token.substr(0, delimiterIndex);
+    var tokenInfo = JSON.parse(tokenInfoString);
+    if (SC.none(tokenInfo)) {
+      return NO;
+    }
+
+    var expiryString = tokenInfo.ExpiresOn;
+    if (expiryString === null) {
+      return NO;
+    }
+    var now = SC.DateTime.create();
+    var expiry = SC.DateTime.parse(expiryString, SC.DATETIME_ISO8601);
+    if (SC.DateTime.compare(now, expiry) > 0) {
+      return NO;
+    }
+
+    // Synchronously get user from server if the user details not previously saved
+    var authenticatedUserAOString = localStorage.getItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY);
+    var authenticatedUserAO = null;
+    if (SC.empty(authenticatedUserAOString)) {
+      var responseJqXHR = null;
+      var headers = {};
+      headers[App.AUTHENTICATION_HEADER_NAME] = token;
+
+      $.ajax({
+        url: '/api/Authentication',
+        type: 'GET',
+        async: false,
+        dataType: 'json',
+        headers: headers,
+        error: this.ajaxError,
+        success: function (data, textStatus, jqXHR) {
+          authenticatedUserAO = data;
+          responseJqXHR = jqXHR;
         }
-      }
-    }
-    return NO;
-  }.property('loggedInUser').cacheable(),
+      });
 
-  /**
-   * Checks if the logged in user is the administrator the specified repository
-   * @param {App.RepositoryMetaInfoRecord} repositoryRecord
-   * @returns Boolean
-   */
-  isRepositoryAdministratorOf: function(repositoryRecord) {
-    var loggedInUser = this.get('loggedInUser');
-    if (SC.none(loggedInUser)) {
-      return NO;
+      this._loadVersionAndBuildInfo(responseJqXHR);
+    } else {
+      authenticatedUserAO = JSON.parse(authenticatedUserAOString);
     }
-    var roles = loggedInUser.get('roles');
-    if (!SC.none(roles)) {
-      var roleName = 'repo.' + repositoryRecord.get('name') + '.' + App.REPOSITORY_ADMINISTRATOR_ROLE;
-      for (var i = 0; i < roles.length; i++) {
-        if (roles[i] === roleName) {
-          return YES;
-        }
-      }
+
+    // Load user details
+    var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
+      authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
+    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+    App.store.commitRecords();
+
+    // Load what we have so far
+    this.set('authenticationToken', token);
+    this.set('authenticationTokenExpiry', expiry);
+
+    // Check expiry
+    if (SC.none(autoCheckExpiry) || autoCheckExpiry) {
+      App.sessionEngine.checkExpiry();
     }
-    return NO;
+
+    // Return YES to signal handling of callback
+    return YES;
   },
 
   /**
-   * Call this only once ... it will call itself every 1 minute
+   * Checks to see if the session has expired
+   * Call this only once ... it will call itself periodically as set in App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS
    */
   checkExpiry: function() {
     var pollSeconds = App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS;
@@ -1219,85 +1454,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
 
     setTimeout('App.sessionEngine.checkExpiry()', pollSeconds * 1000)
-  },
-
-  /**
-   * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
-   *
-   * @param {Boolean} autoCheckExpiry YES to check expiry automatically every 5 minutes
-   * @returns {Boolean} YES if authenticated user details successfully loaded, NO if token not loaded and the user has to sign in again.
-   */
-  load: function(autoCheckExpiry) {
-    // Get token from local store
-    var token = localStorage.getItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
-    if (SC.none(token)) {
-      this.logout();
-      return NO;
-    }
-
-    // Assumed logged out
-    this.logout();
-
-    // Decode token
-    var delimiterIndex = token.indexOf('~~~');
-    if (delimiterIndex < 0) {
-      return NO;
-    }
-    var jsonString = token.substr(0, delimiterIndex);
-    var json = JSON.parse(jsonString);
-    if (SC.none(json)) {
-      return NO;
-    }
-
-    var expiryString = json.ExpiresOn;
-    if (expiryString === null) {
-      return NO;
-    }
-    var now = SC.DateTime.create();
-    var expiry = SC.DateTime.parse(expiryString, SC.DATETIME_ISO8601);
-    if (SC.DateTime.compare(now, expiry) > 0) {
-      return NO;
-    }
-
-    // Synchronously get user from server
-    var authenticatedUserAO = null;
-    var responseJqXHR = null;
-    var headers = {};
-    headers[App.AUTHENTICATION_HEADER_NAME] = token;
-
-    $.ajax({
-      url: '/api/Authentication',
-      type: 'GET',
-      async: false,
-      dataType: 'json',
-      headers: headers,
-      error: this.ajaxError,
-      success: function (data, textStatus, jqXHR) {
-        authenticatedUserAO = data;
-        responseJqXHR = jqXHR;
-      }
-    });
-
-    // Save authenticated user details
-    var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-      authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-    App.store.commitRecords();
-
-    // Save what we have so far
-    this.loadVersionAndBuildInfo(responseJqXHR);
-    this.set('authenticationTokenExpiry', expiry);
-    this.set('authenticationToken', token);
-    localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
-
-    // Check expiry
-    if (SC.none(autoCheckExpiry) || autoCheckExpiry)
-    {
-      App.sessionEngine.checkExpiry();
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
   },
 
   /**
@@ -1329,7 +1485,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.getAjaxRequestHeaders(),
+      headers: this.createAjaxRequestHeaders(),
       error: this.ajaxError,
       success: this.endLogin
     });
@@ -1398,32 +1554,27 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     var error = null;
     try {
       // Get the token
-      var token = jqXHR.getResponseHeader(App.AUTHENTICATION_HEADER_NAME);
+      var token = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.AUTHENTICATION_HEADER_NAME);
       if (SC.none(token)) {
-        token = jqXHR.getResponseHeader(App.AUTHENTICATION_HEADER_NAME.toLowerCase());
-        if (SC.none(token)) {
-          throw App.$error('_sessionEngine.TokenNotFoundInResponseError');
-        }
+        throw App.$error('_sessionEngine.TokenNotFoundInResponseError');
       }
-      App.sessionEngine.loadVersionAndBuildInfo(jqXHR);
 
+      // Put authenticated user details into the store
+      App.sessionEngine._updateAuthenticatedUserRecord(data);
+
+      // Cache version and build info in this engine
+      App.sessionEngine._loadVersionAndBuildInfo(jqXHR);
+
+      // Cache authentication token in this engine
+      App.sessionEngine.set('authenticationToken', token);
       localStorage.setItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, token);
-      localStorage.setItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY, this.RememberMe ? 'YES' : 'NO');
 
-      // Save authenticated user details
-      var authenticatedUserAO = jqXHR.responseText;
-      var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-        authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-      App.store.commitRecords();
-
-      // Figure out the expiry
+      // Figure out the expiry for caching in this engine
       // To save time parsing, we just guess that the ajax call cannot taken more than 1 seconds
       var expiry = SC.DateTime.create();
       expiry = expiry.advance({second: this.postData.ExpirySeconds - 1});
-
-      App.sessionEngine.set('authenticationToken', token);
-      App.sessionEngine.set('authenticationTokenExpiry',  expiry);
+      App.sessionEngine.set('authenticationTokenExpiry', expiry);
+      localStorage.setItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY, this.rememberMe ? 'YES' : 'NO');
     }
     catch (err) {
       error = err;
@@ -1440,28 +1591,41 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
+   * Updates the authenticated user record in the store and the local store with new data from the server
+   */
+  _updateAuthenticatedUserRecord: function(authenticatedUserAO) {
+    // Delete authenticated user from store
+    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
+    authenticatedUserRecords.forEach(function(item, index, enumerable) {
+      item.destroy();
+    }, this);
+    App.store.commitRecords();
+
+    // Create new record for the store
+    var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
+      authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
+    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
+    App.store.commitRecords();
+    localStorage.setItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY, JSON.stringify(authenticatedUserAO));
+  },
+
+  /**
    * Load version and build info from response headers.
    *
    * Cannot use 'this' to represent App.sessionEngine because in a callback, this is the context object.
    *
    * @param {JQuery Xml Http Request object} jqXHR SC.Response header
    */
-  loadVersionAndBuildInfo: function(jqXHR) {
-    var version = jqXHR.getResponseHeader(App.VERSION_HEADER_NAME);
+  _loadVersionAndBuildInfo: function(jqXHR) {
+    var version = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.VERSION_HEADER_NAME);
     if (SC.none(version)) {
-      version = jqXHR.getResponseHeader(App.VERSION_HEADER_NAME.toLowerCase());
-      if (SC.none(version)) {
-        throw App.$error('_sessionEngine.VersionNotFoundInResponseError');
-      }
+      throw App.$error('_sessionEngine.VersionNotFoundInResponseError');
     }
     App.sessionEngine.set('chililogVersion', version);
 
-    var buildTimestamp = jqXHR.getResponseHeader(App.BUILD_TIMESTAMP_HEADER_NAME);
+    var buildTimestamp = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.BUILD_TIMESTAMP_HEADER_NAME);
     if (SC.none(buildTimestamp)) {
-      buildTimestamp = jqXHR.getResponseHeader(App.BUILD_TIMESTAMP_HEADER_NAME.toLowerCase());
-      if (SC.none(buildTimestamp)) {
-        throw App.$error('_sessionEngine.BuildTimestampNotFoundInResponseError');
-      }
+      throw App.$error('_sessionEngine.BuildTimestampNotFoundInResponseError');
     }
     App.sessionEngine.set('chililogBuildTimestamp', buildTimestamp);
   },
@@ -1470,24 +1634,9 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * Remove authentication tokens
    */
   logout: function() {
-    // Remove token from local store
-    localStorage.removeItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
-
-    // Delete authenticated user from store
-    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
-    authenticatedUserRecords.forEach(function(item, index, enumerable) {
-      item.destroy();
-    }, this);
-    App.store.commitRecords();
-
-    // Clear cached token
-    this.set('authenticationTokenExpiry', null);
-    this.set('authenticationToken', null);
-    this.notifyPropertyChange('authenticationToken');
-
-    // Clear local data
-    this.clearServerData();
-
+    this.clearLocalData();
+    App.repositoryMetaInfoEngine.clearLocalData();
+    App.repositoryRuntimeInfoEngine.clearLocalData();
     return;
   },
 
@@ -1517,13 +1666,23 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction, callbackParams) {
-    var postData = authenticatedUserRecord.toApiObject();
+    var data = authenticatedUserRecord.toApiObject();
+    var context = {
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
 
-    var url = '/api/Authentication?action=update_profile';
-    var authToken = this.get('authenticationToken');
-    var request = SC.Request.putUrl(url).async(YES).json(YES).header(App.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    request.notify(this, 'endSaveProfile', params).send(postData);
+    // Call server
+    $.ajax({
+      type: 'PUT',
+      url: '/api/Authentication?action=update_profile',
+      data: JSON.stringify(data),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.createAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endSaveProfile
+    });
 
     return;
   },
@@ -1532,32 +1691,15 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * Callback from saveProfile() after we get a response from the server to process
    * the returned info.
    *
-   * @param {SC.Response} response The HTTP response
-   * @param {Hash} params Hash of parameters passed into SC.Request.notify()
-   * @returns {Boolean} YES if successful
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
    */
-  endSaveProfile: function(response, params) {
+  endSaveProfile: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Check status
-      this.checkResponse(response);
-
-      // Delete authenticated user from store
-      var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
-      authenticatedUserRecords.forEach(function(item, index, enumerable) {
-        item.destroy();
-      }, this);
-      App.store.commitRecords();
-
-      // Save new authenticated user details
-      var authenticatedUserAO = response.get('body');
-      var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-        authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-      App.store.commitRecords();
-
-      // Update logged in user by simulating an authentication token change
-      this.notifyPropertyChange('authenticationToken');
+      App.sessionEngine._updateAuthenticatedUserRecord(data);
     }
     catch (err) {
       error = err;
@@ -1565,12 +1707,9 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Callback
-    if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
     }
-
-    // Sync user data
-    App.userDataController.synchronizeWithServer(NO);
 
     // Return YES to signal handling of callback
     return YES;
@@ -1589,6 +1728,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
+   * Changes the authenticated user's password
    *
    * @param oldPassword
    * @param newPassword
@@ -1600,18 +1740,29 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   changePassword: function(oldPassword, newPassword, confirmNewPassword, callbackTarget, callbackFunction, callbackParams) {
-    var postData = {
+    var data = {
       'DocumentID': this.getPath('loggedInUser.documentID'),
       'OldPassword': oldPassword,
       'NewPassword': newPassword,
       'ConfirmNewPassword': confirmNewPassword
     };
 
-    var url = '/api/Authentication?action=change_password';
-    var authToken = this.get('authenticationToken');
-    var request = SC.Request.putUrl(url).async(YES).json(YES).header(App.AUTHENTICATION_HEADER_NAME, authToken);
-    var params = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    request.notify(this, 'endChangePassword', params).send(postData);
+    var context = {
+      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+    };
+
+    // Call server
+    $.ajax({
+      type: 'PUT',
+      url: '/api/Authentication?action=change_password',
+      data: JSON.stringify(data),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this.createAjaxRequestHeaders(),
+      error: this.ajaxError,
+      success: this.endChangePassword
+    });
 
     return;
   },
@@ -1620,32 +1771,15 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * Callback from saveProfile() after we get a response from the server to process
    * the returned info.
    *
-   * @param {SC.Response} response The HTTP response
-   * @param {Hash} params Hash of parameters passed into SC.Request.notify()
-   * @returns {Boolean} YES if successful
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
    */
-  endChangePassword: function(response, params) {
+  endChangePassword: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Check status
-      this.checkResponse(response);
-
-      // Delete authenticated user from store
-      var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
-      authenticatedUserRecords.forEach(function(item, index, enumerable) {
-        item.destroy();
-      }, this);
-      App.store.commitRecords();
-
-      // Save new authenticated user details
-      var authenticatedUserAO = response.get('body');
-      var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-        authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-      authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-      App.store.commitRecords();
-
-      // Update logged in user by simulating an authentication token change
-      this.notifyPropertyChange('authenticationToken');
+      App.sessionEngine._updateAuthenticatedUserRecord(data);
     }
     catch (err) {
       error = err;
@@ -1653,16 +1787,34 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
 
     // Callback
-    if (!SC.none(params.callbackFunction)) {
-      params.callbackFunction.call(params.callbackTarget, params.callbackParams, error);
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
     return YES;
   },
 
-  clearServerData: function() {
+  /**
+   * Removes all saved data
+   */
+  clearLocalData: function() {
+    // Delete authenticated user from store
+    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
+    authenticatedUserRecords.forEach(function(item, index, enumerable) {
+      item.destroy();
+    }, this);
+    App.store.commitRecords();
 
+    // Clear cached token
+    this.set('authenticationTokenExpiry', null);
+    this.set('authenticationToken', null);
+
+    localStorage.removeItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
+    localStorage.removeItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY);
+    localStorage.removeItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY);
+
+    return;
   }
 
 });

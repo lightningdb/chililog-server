@@ -52,7 +52,7 @@ Auth.parseISO8601 = function(str) {
 
 Auth.checkToken =  function() {
   // Get token from local store
-  var token = localStorage.getItem('App.AuthenticationToken');
+  var token = localStorage.getItem('AuthenticationToken');
   if (token == null || token == '') {
     return false;
   }

@@ -98,5 +98,4 @@ SC.DateTime.reopen({
   toChililogServerDateTime: function() {
     return this.toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ');
   }
-
 });

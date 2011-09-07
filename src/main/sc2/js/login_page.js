@@ -62,7 +62,7 @@ App.PasswordField = SC.View.extend({
     valueBinding: 'App.pageController.password',
     type: 'password',
     name: 'password',
-    tabindex: '2',
+    tabindex: '1',
     disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
@@ -72,7 +72,7 @@ App.RememberMeField = SC.View.extend({
   Data : App.CheckboxView.extend(App.FieldDataMixin, {
     title: '_login.rememberMe'.loc(),
     valueBinding: 'App.pageController.rememberMe',
-    tabindex: '3',
+    tabindex: '1',
     disabledBinding: SC.Binding.from('App.pageController.isLoggingIn').oneWay().bool()
   })
 });
