@@ -24,13 +24,13 @@ import org.chililog.server.engine.Repository;
 
 /**
  * <p>
- * Repository API Object details the status of a repository
+ * Repository Runtime Info API Object details the status of an instance of a repository
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryAO extends AO
+public class RepositoryStatusAO extends AO
 {
     private String _documentID;
 
@@ -43,7 +43,7 @@ public class RepositoryAO extends AO
     /**
      * Basic constructor
      */
-    public RepositoryAO()
+    public RepositoryStatusAO()
     {
         return;
     }
@@ -54,7 +54,7 @@ public class RepositoryAO extends AO
      * @param repo
      *            Repository
      */
-    public RepositoryAO(Repository repo)
+    public RepositoryStatusAO(Repository repo)
     {
         _documentID = repo.getRepoInfo().getDocumentID().toString();
         _documentVersion = repo.getRepoInfo().getDocumentVersion();

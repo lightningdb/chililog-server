@@ -29,13 +29,13 @@ import org.chililog.server.data.RepositoryInfoBO.Status;
 
 /**
  * <p>
- * RepositoryInfo API object is used as part of the repository info service.
+ * Repository Config API object is used as part of the {@link RepositoryConfigWorker} service.
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryInfoAO extends AO
+public class RepositoryConfigAO extends AO
 {
     private String _documentID;
     private Long _documentVersion;
@@ -54,12 +54,12 @@ public class RepositoryInfoAO extends AO
     private long _pageSize = 1024 * 1024 * 10; // 10 MB
     private long _pageCountCache = 3; // max 3 pages in memory when paging
 
-    private RepositoryParserInfoAO[] _parsers = null;
+    private RepositoryParserConfigAO[] _parsers = null;
 
     /**
      * Basic constructor
      */
-    public RepositoryInfoAO()
+    public RepositoryConfigAO()
     {
         return;
     }
@@ -70,7 +70,7 @@ public class RepositoryInfoAO extends AO
      * @param repoInfo
      *            Repository info business object
      */
-    public RepositoryInfoAO(RepositoryInfoBO repoInfo)
+    public RepositoryConfigAO(RepositoryInfoBO repoInfo)
     {
         _documentID = repoInfo.getDocumentID().toString();
         _documentVersion = repoInfo.getDocumentVersion();
@@ -96,12 +96,12 @@ public class RepositoryInfoAO extends AO
         }
         else
         {
-            ArrayList<RepositoryParserInfoAO> parserList = new ArrayList<RepositoryParserInfoAO>();
+            ArrayList<RepositoryParserConfigAO> parserList = new ArrayList<RepositoryParserConfigAO>();
             for (RepositoryParserInfoBO parserInfo : repoInfo.getParsers())
             {
-                parserList.add(new RepositoryParserInfoAO(parserInfo));
+                parserList.add(new RepositoryParserConfigAO(parserInfo));
             }
-            _parsers = parserList.toArray(new RepositoryParserInfoAO[] {});
+            _parsers = parserList.toArray(new RepositoryParserConfigAO[] {});
         }
 
         return;
@@ -136,7 +136,7 @@ public class RepositoryInfoAO extends AO
         repoInfo.getParsers().clear();
         if (_parsers != null && _parsers.length > 0)
         {
-            for (RepositoryParserInfoAO parserInfo : _parsers)
+            for (RepositoryParserConfigAO parserInfo : _parsers)
             {
                 RepositoryParserInfoBO bo = new RepositoryParserInfoBO();
                 parserInfo.toBO(bo);
@@ -287,12 +287,12 @@ public class RepositoryInfoAO extends AO
         _pageCountCache = pageCountCache;
     }
 
-    public RepositoryParserInfoAO[] getParsers()
+    public RepositoryParserConfigAO[] getParsers()
     {
         return _parsers;
     }
 
-    public void setParsers(RepositoryParserInfoAO[] parsers)
+    public void setParsers(RepositoryParserConfigAO[] parsers)
     {
         _parsers = parsers;
     }

@@ -36,7 +36,7 @@ import org.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
  * @author vibul
  * 
  */
-public class RepositoryParserInfoAO extends AO
+public class RepositoryParserConfigAO extends AO
 {
     private String _name;
     private AppliesTo _appliesTo = AppliesTo.None;
@@ -45,13 +45,13 @@ public class RepositoryParserInfoAO extends AO
     private String _className;
     private long _maxKeywords = -1;
    private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
-    private RepositoryFieldInfoAO[] _fields = null;
-    private RepositoryPropertyInfoAO[] _properties = null;
+    private RepositoryFieldConfigAO[] _fields = null;
+    private RepositoryPropertyConfigAO[] _properties = null;
 
     /**
      * Basic constructor
      */
-    public RepositoryParserInfoAO()
+    public RepositoryParserConfigAO()
     {
         return;
     }
@@ -62,7 +62,7 @@ public class RepositoryParserInfoAO extends AO
      * @param repoParserInfo
      *            Repository info business object
      */
-    public RepositoryParserInfoAO(RepositoryParserInfoBO repoParserInfo)
+    public RepositoryParserConfigAO(RepositoryParserInfoBO repoParserInfo)
     {
         _name = repoParserInfo.getName();
         _appliesTo = repoParserInfo.getAppliesTo();
@@ -79,12 +79,12 @@ public class RepositoryParserInfoAO extends AO
         }
         else
         {
-            ArrayList<RepositoryFieldInfoAO> fieldList = new ArrayList<RepositoryFieldInfoAO>();
+            ArrayList<RepositoryFieldConfigAO> fieldList = new ArrayList<RepositoryFieldConfigAO>();
             for (RepositoryFieldInfoBO fieldInfo : repoParserInfo.getFields())
             {
-                fieldList.add(new RepositoryFieldInfoAO(fieldInfo));
+                fieldList.add(new RepositoryFieldConfigAO(fieldInfo));
             }
-            _fields = fieldList.toArray(new RepositoryFieldInfoAO[] {});
+            _fields = fieldList.toArray(new RepositoryFieldConfigAO[] {});
         }
 
         if (repoParserInfo.getProperties() == null || repoParserInfo.getProperties().isEmpty())
@@ -93,12 +93,12 @@ public class RepositoryParserInfoAO extends AO
         }
         else
         {
-            ArrayList<RepositoryPropertyInfoAO> propertyList = new ArrayList<RepositoryPropertyInfoAO>();
+            ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
             for (Entry<String, String> e : repoParserInfo.getProperties().entrySet())
             {
-                propertyList.add(new RepositoryPropertyInfoAO(e.getKey(), e.getValue()));
+                propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
-            _properties = propertyList.toArray(new RepositoryPropertyInfoAO[] {});
+            _properties = propertyList.toArray(new RepositoryPropertyConfigAO[] {});
         }
 
         return;
@@ -125,7 +125,7 @@ public class RepositoryParserInfoAO extends AO
         repoParserInfo.getFields().clear();
         if (_fields != null && _fields.length > 0)
         {
-            for (RepositoryFieldInfoAO fieldInfo : _fields)
+            for (RepositoryFieldConfigAO fieldInfo : _fields)
             {
                 RepositoryFieldInfoBO bo = new RepositoryFieldInfoBO();
                 fieldInfo.toBO(bo);
@@ -136,7 +136,7 @@ public class RepositoryParserInfoAO extends AO
         repoParserInfo.getProperties().clear();
         if (_properties != null && _properties.length > 0)
         {
-            for (RepositoryPropertyInfoAO property : _properties)
+            for (RepositoryPropertyConfigAO property : _properties)
             {
                 repoParserInfo.getProperties().put(property.getKey(), property.getValue());
             }
@@ -215,22 +215,22 @@ public class RepositoryParserInfoAO extends AO
         _parseFieldErrorHandling = parseFieldErrorHandling;
     }
 
-    public RepositoryFieldInfoAO[] getFields()
+    public RepositoryFieldConfigAO[] getFields()
     {
         return _fields;
     }
 
-    public void setFields(RepositoryFieldInfoAO[] fields)
+    public void setFields(RepositoryFieldConfigAO[] fields)
     {
         _fields = fields;
     }
 
-    public RepositoryPropertyInfoAO[] getProperties()
+    public RepositoryPropertyConfigAO[] getProperties()
     {
         return _properties;
     }
 
-    public void setProperties(RepositoryPropertyInfoAO[] properties)
+    public void setProperties(RepositoryPropertyConfigAO[] properties)
     {
         _properties = properties;
     }

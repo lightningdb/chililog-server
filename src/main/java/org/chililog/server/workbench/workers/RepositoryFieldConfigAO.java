@@ -34,18 +34,18 @@ import org.chililog.server.data.RepositoryFieldInfoBO.DataType;
  * @author vibul
  * 
  */
-public class RepositoryFieldInfoAO extends AO
+public class RepositoryFieldConfigAO extends AO
 {
     private String _name;
     private String _displayName;
     private String _description;
     private DataType _dataType;
-    private RepositoryPropertyInfoAO[] _properties = null;
+    private RepositoryPropertyConfigAO[] _properties = null;
 
     /**
      * Basic constructor
      */
-    public RepositoryFieldInfoAO()
+    public RepositoryFieldConfigAO()
     {
         return;
     }
@@ -56,7 +56,7 @@ public class RepositoryFieldInfoAO extends AO
      * @param repoFieldInfo
      *            Repository info business object
      */
-    public RepositoryFieldInfoAO(RepositoryFieldInfoBO repoFieldInfo)
+    public RepositoryFieldConfigAO(RepositoryFieldInfoBO repoFieldInfo)
     {
         _name = repoFieldInfo.getName();
         _displayName = repoFieldInfo.getDisplayName();
@@ -69,12 +69,12 @@ public class RepositoryFieldInfoAO extends AO
         }
         else
         {
-            ArrayList<RepositoryPropertyInfoAO> propertyList = new ArrayList<RepositoryPropertyInfoAO>();
+            ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
             for (Entry<String, String> e : repoFieldInfo.getProperties().entrySet())
             {
-                propertyList.add(new RepositoryPropertyInfoAO(e.getKey(), e.getValue()));
+                propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
-            _properties = propertyList.toArray(new RepositoryPropertyInfoAO[] {});
+            _properties = propertyList.toArray(new RepositoryPropertyConfigAO[] {});
         }
 
         return;
@@ -97,7 +97,7 @@ public class RepositoryFieldInfoAO extends AO
         repoFieldInfo.getProperties().clear();
         if (_properties != null && _properties.length > 0)
         {
-            for (RepositoryPropertyInfoAO property : _properties)
+            for (RepositoryPropertyConfigAO property : _properties)
             {
                 repoFieldInfo.getProperties().put(property.getKey(), property.getValue());
             }
@@ -146,12 +146,12 @@ public class RepositoryFieldInfoAO extends AO
         _dataType = dataType;
     }
 
-    public RepositoryPropertyInfoAO[] getProperties()
+    public RepositoryPropertyConfigAO[] getProperties()
     {
         return _properties;
     }
 
-    public void setProperties(RepositoryPropertyInfoAO[] properties)
+    public void setProperties(RepositoryPropertyConfigAO[] properties)
     {
         _properties = properties;
     }

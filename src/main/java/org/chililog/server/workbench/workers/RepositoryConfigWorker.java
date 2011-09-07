@@ -37,7 +37,7 @@ import com.mongodb.DB;
 
 /**
  * <p>
- * Repository Information Worker provides the following API services:
+ * Repository Configuration Worker provides the following API services to define and configure repositories:
  * <ul>
  * <li>create - HTTP POST /api/repository_info</li>
  * <li>read all - HTTP GET /api/repository_info</li>
@@ -45,15 +45,18 @@ import com.mongodb.DB;
  * <li>update - HTTP PUT /api/repository_info/{id}</li>
  * <li>delete - HTTP DELETE /api/repository_info/{id}</li>
  * </p>
+ * <p>
+ * Meta information refers to the information that defines a repository - name, parsers, fields, etc.
+ * </p>
  */
-public class RepositoryInfoWorker extends Worker
+public class RepositoryConfigWorker extends Worker
 {
     public static final String NAME_URI_QUERYSTRING_PARAMETER_NAME = "name";
 
     /**
      * Constructor
      */
-    public RepositoryInfoWorker(HttpRequest request)
+    public RepositoryConfigWorker(HttpRequest request)
     {
         super(request);
         return;
@@ -116,8 +119,8 @@ public class RepositoryInfoWorker extends Worker
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
-            RepositoryInfoAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
-                    RepositoryInfoAO.class);
+            RepositoryConfigAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+                    RepositoryConfigAO.class);
 
             RepositoryInfoBO repoInfoBO = new RepositoryInfoBO();
             repoInfoAO.toBO(repoInfoBO);
@@ -126,7 +129,7 @@ public class RepositoryInfoWorker extends Worker
             RepositoryInfoController.getInstance().save(db, repoInfoBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(repoInfoBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoInfoBO));
         }
         catch (Exception ex)
         {
@@ -190,14 +193,14 @@ public class RepositoryInfoWorker extends Worker
                         Strings.NOT_AUTHORIZED_ERROR));
             }
 
-            RepositoryInfoAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
-                    RepositoryInfoAO.class);
+            RepositoryConfigAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+                    RepositoryConfigAO.class);
             repoInfoAO.toBO(repoInfoBO);
 
             RepositoryInfoController.getInstance().save(db, repoInfoBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryInfoAO(repoInfoBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoInfoBO));
         }
         catch (Exception ex)
         {
@@ -236,12 +239,12 @@ public class RepositoryInfoWorker extends Worker
                 ArrayList<RepositoryInfoBO> boList = RepositoryInfoController.getInstance().getList(db, criteria);
                 if (!boList.isEmpty())
                 {
-                    ArrayList<RepositoryInfoAO> aoList = new ArrayList<RepositoryInfoAO>();
+                    ArrayList<RepositoryConfigAO> aoList = new ArrayList<RepositoryConfigAO>();
                     for (RepositoryInfoBO repoInfoBO : boList)
                     {
-                        aoList.add(new RepositoryInfoAO(repoInfoBO));
+                        aoList.add(new RepositoryConfigAO(repoInfoBO));
                     }
-                    responseContent = aoList.toArray(new RepositoryInfoAO[] {});
+                    responseContent = aoList.toArray(new RepositoryConfigAO[] {});
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
                     if (criteria.getDoPageCount())
                     {
@@ -263,7 +266,7 @@ public class RepositoryInfoWorker extends Worker
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                responseContent = new RepositoryInfoAO(repoInfoBO);
+                responseContent = new RepositoryConfigAO(repoInfoBO);
             }
 
             // Return response

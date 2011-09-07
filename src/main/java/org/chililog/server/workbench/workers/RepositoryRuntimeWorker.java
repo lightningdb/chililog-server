@@ -45,7 +45,7 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * Repositories worker provides the following services:
+ * Repository Runtime Info worker provides the following services to manage repositories at run time:
  * <ul>
  * <li>start all - HTTP POST /api/repositories?action=start</li>
  * <li>start one - HTTP POST /api/repositories/{id}?action=start</li>
@@ -56,8 +56,11 @@ import com.mongodb.DBObject;
  * <li>read one - HTTP GET /api/repositories/{id}</li>
  * <li>read entry - HTTP GET /api/repositories/{id}/entries?query_type=find</li>
  * </p>
+ * <p>
+ * Runtime information refers to the current status of an instance of a repository. 
+ * </p>
  */
-public class RepositoriesWorker extends Worker
+public class RepositoryRuntimeWorker extends Worker
 {
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
     public static final String START_OPERATION = "start";
@@ -87,7 +90,7 @@ public class RepositoriesWorker extends Worker
     /**
      * Constructor
      */
-    public RepositoriesWorker(HttpRequest request)
+    public RepositoryRuntimeWorker(HttpRequest request)
     {
         super(request);
         return;
@@ -158,15 +161,15 @@ public class RepositoriesWorker extends Worker
                 Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {
-                    ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
+                    ArrayList<RepositoryStatusAO> aoList = new ArrayList<RepositoryStatusAO>();
                     for (Repository repo : list)
                     {
-                        aoList.add(new RepositoryAO(repo));
+                        aoList.add(new RepositoryStatusAO(repo));
                     }
 
                     if (!aoList.isEmpty())
                     {
-                        responseContent = aoList.toArray(new RepositoryAO[] {});
+                        responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
             }
@@ -197,7 +200,7 @@ public class RepositoriesWorker extends Worker
                 }
 
                 // Return the status of the repository on which the action was performed
-                responseContent = new RepositoryAO(repo);
+                responseContent = new RepositoryStatusAO(repo);
             }
 
             // Return response
@@ -233,18 +236,18 @@ public class RepositoriesWorker extends Worker
                 Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {
-                    ArrayList<RepositoryAO> aoList = new ArrayList<RepositoryAO>();
+                    ArrayList<RepositoryStatusAO> aoList = new ArrayList<RepositoryStatusAO>();
                     for (Repository repo : list)
                     {
                         if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName()))
                         {
-                            aoList.add(new RepositoryAO(repo));
+                            aoList.add(new RepositoryStatusAO(repo));
                         }
                     }
 
                     if (!aoList.isEmpty())
                     {
-                        responseContent = aoList.toArray(new RepositoryAO[] {});
+                        responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
             }
@@ -257,7 +260,7 @@ public class RepositoriesWorker extends Worker
                 if (repo != null
                         && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
                 {
-                    responseContent = new RepositoryAO(repo);
+                    responseContent = new RepositoryStatusAO(repo);
                 }
                 else
                 {
