@@ -90,6 +90,19 @@ App.REPOSITORY_MAX_MEMORY_POLICY_PAGE = 'PAGE';
  */
 App.REPOSITORY_MAX_MEMORY_POLICY_BLOCK = 'BLOCK';
 
+/**
+ * Map of severity text for code
+ */
+App.REPOSITORY_ENTRY_SEVERITY_MAP = [
+  '_repositoryEntryRecord.Severity.Emergency'.loc(),
+  '_repositoryEntryRecord.Severity.Action'.loc(),
+  '_repositoryEntryRecord.Severity.Critical'.loc(),
+  '_repositoryEntryRecord.Severity.Error'.loc(),
+  '_repositoryEntryRecord.Severity.Warning'.loc(),
+  '_repositoryEntryRecord.Severity.Notice'.loc(),
+  '_repositoryEntryRecord.Severity.Information'.loc(),
+  '_repositoryEntryRecord.Severity.Debug'.loc()
+];
 
 // --------------------------------------------------------------------------------------------------------------------
 // AuthenticatedUserRecord
@@ -165,7 +178,7 @@ App.AuthenticatedUserRecord = SC.Record.extend({
 
   /**
    * Checks if the logged in user is the administrator the specified repository
-   * @param {App.RepositoryMetaInfoRecord} repositoryRecord
+   * @param {App.RepositoryConfigRecord} repositoryRecord
    * @returns Boolean
    */
   isRepositoryAdministratorOf: function(repositoryRecord) {
@@ -233,149 +246,7 @@ App.AUTHENTICATED_USER_RECORD_MAP = [
 ];
 
 // --------------------------------------------------------------------------------------------------------------------
-// RepositoryEntryRecord
-// --------------------------------------------------------------------------------------------------------------------
-/**
- * Map of severity text for code
- */
-App.REPOSITORY_ENTRY_SEVERITY_MAP = [
-  '_repositoryEntryRecord.Severity.Emergency'.loc(),
-  '_repositoryEntryRecord.Severity.Action'.loc(),
-  '_repositoryEntryRecord.Severity.Critical'.loc(),
-  '_repositoryEntryRecord.Severity.Error'.loc(),
-  '_repositoryEntryRecord.Severity.Warning'.loc(),
-  '_repositoryEntryRecord.Severity.Notice'.loc(),
-  '_repositoryEntryRecord.Severity.Information'.loc(),
-  '_repositoryEntryRecord.Severity.Debug'.loc()
-];
-
-/** @class
- *
- * Repository Entry record contains information about a log entry
- *
- * @extends SC.Record
- */
-App.RepositoryEntryRecord = SC.Record.extend({
-
-  primaryKey: App.DOCUMENT_ID_RECORD_FIELD_NAME,
-
-  documentID: SC.Record.attr(String),
-  repositoryInfoDocumentID: SC.Record.attr(String),
-  timestampString: SC.Record.attr(String),
-  timestamp: SC.Record.attr(SC.DateTime, { format: '%Y-%m-%dT%H:%M:%S.%s%Z' }),
-  savedTimestamp: SC.Record.attr(SC.DateTime, { format:'%Y-%m-%dT%H:%M:%S.%s%Z' }),
-  source: SC.Record.attr(String),
-  host: SC.Record.attr(String),
-  severity: SC.Record.attr(Number),
-  severityText: SC.Record.attr(String),
-  message: SC.Record.attr(String),
-  messageWithKeywordsHilighted: SC.Record.attr(String),
-  keywords: SC.Record.attr(Array),
-  fields: SC.Record.attr(Array),
-
-  /**
-   *
-   */
-  localTimestampString: function() {
-    return this.get('timestamp').toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z');
-  }.property('timestamp'),
-
-  /**
-   * Additional class names for displaying severity
-   */
-  severityClassName: function() {
-    var severity = this.get('severity');
-    if (severity <= 3) {
-      return 'ui-state-error ui-corner-all';
-    } else if (severity == 4 || severity == 5) {
-      return 'ui-state-highlight ui-corner-all';
-    }
-  }.property('severity'),
-
-  /**
-   * Only need to map one way because we don't update entries
-   *
-   * @param {Object} repoEntryAO Entry API object returned from server
-   * @param {Object} repositoryInfoDocumentID Repository to which this entry belong
-   * @param {Array} keywordsRegexArray Array of keywords regular expression to match so that we can highlight them
-   */
-  fromApiObject: function(repoEntryAO, repositoryInfoDocumentID, keywordsRegexArray) {
-    var d = new Date();
-    var timezoneOffsetMinutes = d.getTimezoneOffset();
-
-    for (var i = 0; i < App.REPOSITORY_ENTRY_RECORD_MAP.length; i++) {
-      var map = App.REPOSITORY_ENTRY_RECORD_MAP[i];
-      var recordPropertyName = map[0];
-      var apiObjectPropertyName = map[1];
-
-      var apiObjectValue = repoEntryAO[apiObjectPropertyName];
-      if (recordPropertyName === 'timestamp' || recordPropertyName === 'savedTimestamp') {
-        apiObjectValue = SC.DateTime.parse(apiObjectValue, '%Y-%m-%dT%H:%M:%S.%s%Z');
-        apiObjectValue.set('timezone', timezoneOffsetMinutes);
-      }
-      this.set(recordPropertyName, apiObjectValue);
-    }
-
-    // Set fields
-    var a = [];
-    for (var propertyName in repoEntryAO) {
-      if (!SC.empty(propertyName) && typeof(propertyName) === 'string' && propertyName.indexOf('fld_') === 0) {
-        a.push({ name: propertyName.substr(4), value: repoEntryAO[propertyName]});
-      }
-    }
-    this.set('fields', a);
-
-    // Set the severity text. Prepare map if first time because have to wait for strings to load before we can localize
-    this.set('severityText', App.REPOSITORY_ENTRY_SEVERITY_MAP[this.get('severity')]);
-
-    // Set repository id
-    this.set('repositoryInfoDocumentID', repositoryInfoDocumentID);
-
-    // Highlight keywords
-    var msg = repoEntryAO['message'];
-    if (SC.empty(msg)) {
-      this.set('messageWithKeywordsHilighted', '');
-    } else {
-      //Clone to protect original
-      msg = new String(msg);
-
-      // Replace keywords to tokens
-      for (var i = 0; i < keywordsRegexArray.length; i++) {
-        var keywordsRegex = keywordsRegexArray[i];
-        msg = msg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
-      }
-
-      // Markup and then replace tokens with tags (so that injected tags don't get marked up)
-      var highlightedMsg = msg; //SC.RenderContext.escapeHTML(msg);
-
-      if (keywordsRegexArray.length > 0) {
-        highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
-        highlightedMsg = highlightedMsg.replace(/###Chililog###/g, '</span>');
-      }
-
-      this.set('messageWithKeywordsHilighted', highlightedMsg);
-    }
-  }
-
-});
-
-/**
- * Maps App.RepositoryEntry property names to property names used by the server API objects
- */
-App.REPOSITORY_ENTRY_RECORD_MAP = [
-  [App.DOCUMENT_ID_RECORD_FIELD_NAME, '_id' ],
-  ['timestampString' ,'ts'],
-  ['timestamp' ,'ts'],
-  ['savedTimestamp' ,'saved_ts'],
-  ['source' ,'source'],
-  ['host' ,'host'],
-  ['severity', 'severity'],
-  ['message' ,'message'],
-  ['keywords' ,'keywords']
-];
-
-// --------------------------------------------------------------------------------------------------------------------
-// RepositoryMetaInfoRecord
+// RepositoryConfigRecord
 // --------------------------------------------------------------------------------------------------------------------
 
 /** @class
@@ -385,7 +256,7 @@ App.REPOSITORY_ENTRY_RECORD_MAP = [
  *
  * @extends SC.Record
  */
-App.RepositoryMetaInfoRecord = SC.Record.extend({
+App.RepositoryConfigRecord = SC.Record.extend({
 
   primaryKey: App.DOCUMENT_ID_RECORD_FIELD_NAME,
 
@@ -463,8 +334,8 @@ App.RepositoryMetaInfoRecord = SC.Record.extend({
       return;
     }
 
-    for (var i = 0; i < App.REPOSITORY_META_INFO_RECORD_MAP.length; i++) {
-      var map = App.REPOSITORY_META_INFO_RECORD_MAP[i];
+    for (var i = 0; i < App.REPOSITORY_CONFIG_RECORD_MAP.length; i++) {
+      var map = App.REPOSITORY_CONFIG_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       this.set(recordPropertyName, repoInfoAO[apiObjectPropertyName]);
@@ -478,8 +349,8 @@ App.RepositoryMetaInfoRecord = SC.Record.extend({
    */
   toApiObject: function() {
     var apiObject = new Object();
-    for (var i = 0; i < App.REPOSITORY_META_INFO_RECORD_MAP.length; i++) {
-      var map = App.REPOSITORY_META_INFO_RECORD_MAP[i];
+    for (var i = 0; i < App.REPOSITORY_CONFIG_RECORD_MAP.length; i++) {
+      var map = App.REPOSITORY_CONFIG_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
@@ -492,7 +363,7 @@ App.RepositoryMetaInfoRecord = SC.Record.extend({
 /**
  * Maps App.UserRecord property names to property names used by the server API objects
  */
-App.REPOSITORY_META_INFO_RECORD_MAP = [
+App.REPOSITORY_CONFIG_RECORD_MAP = [
   [App.DOCUMENT_ID_RECORD_FIELD_NAME, App.DOCUMENT_ID_AO_FIELD_NAME ],
   [App.DOCUMENT_VERSION_RECORD_FIELD_NAME, App.DOCUMENT_VERSION_AO_FIELD_NAME],
   ['name' ,'Name'],
@@ -521,14 +392,23 @@ App.REPOSITORY_META_INFO_RECORD_MAP = [
  *
  *  @extends SC.Record
  */
-App.RepositoryRuntimeInfoRecord = SC.Record.extend({
+App.RepositoryStatusRecord = SC.Record.extend({
 
   primaryKey: App.DOCUMENT_ID_RECORD_FIELD_NAME,
 
   documentID: SC.Record.attr(String),
   documentVersion: SC.Record.attr(Number),
   name: SC.Record.attr(String),
+  displayName: SC.Record.attr(String),
   currentStatus: SC.Record.attr(String),
+
+  displayNameOrName: function() {
+    var displayName = this.get('displayName');
+    if (SC.none(displayName)) {
+      displayName = this.get('name');
+    }
+    return displayName;
+  }.property('name', 'displayName').cacheable(),
 
   /**
    * Maps server api data into this record
@@ -538,8 +418,8 @@ App.RepositoryRuntimeInfoRecord = SC.Record.extend({
   fromApiObject: function(repoInfoAO) {
     // Ignore version check because this is a status update. We always want the latest status.
     // The documentID and documentVersion is that of the repo info record
-    for (var i = 0; i < App.REPOSITORY_RUNTIME_RECORD_MAP.length; i++) {
-      var map = App.REPOSITORY_RUNTIME_RECORD_MAP[i];
+    for (var i = 0; i < App.REPOSITORY_STATUS_RECORD_MAP.length; i++) {
+      var map = App.REPOSITORY_STATUS_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       this.set(recordPropertyName, repoInfoAO[apiObjectPropertyName]);
@@ -553,8 +433,8 @@ App.RepositoryRuntimeInfoRecord = SC.Record.extend({
    */
   toApiObject: function() {
     var apiObject = new Object();
-    for (var i = 0; i < App.REPOSITORY_RUNTIME_RECORD_MAP.length; i++) {
-      var map = App.REPOSITORY_RUNTIME_RECORD_MAP[i];
+    for (var i = 0; i < App.REPOSITORY_STATUS_RECORD_MAP.length; i++) {
+      var map = App.REPOSITORY_STATUS_RECORD_MAP[i];
       var recordPropertyName = map[0];
       var apiObjectPropertyName = map[1];
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
@@ -567,10 +447,11 @@ App.RepositoryRuntimeInfoRecord = SC.Record.extend({
 /**
  * Maps App.UserRecord property names to property names used by the server API objects
  */
-App.REPOSITORY_RUNTIME_RECORD_MAP = [
+App.REPOSITORY_STATUS_RECORD_MAP = [
   [App.DOCUMENT_ID_RECORD_FIELD_NAME, App.DOCUMENT_ID_AO_FIELD_NAME ],
   [App.DOCUMENT_VERSION_RECORD_FIELD_NAME, App.DOCUMENT_VERSION_AO_FIELD_NAME],
   ['name' ,'Name'],
+  ['displayName' ,'DisplayName'],
   ['currentStatus' ,'Status']
 ];
 

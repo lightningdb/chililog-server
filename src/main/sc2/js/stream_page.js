@@ -484,15 +484,10 @@ if (App.sessionEngine.load()) {
 
   App.statechart.initStatechart();
 
-  // Load repositories
-  App.repositoryMetaInfoEngine.load(this, function() {
-    var query = SC.Query.local(App.RepositoryMetaInfoRecord, {
-      conditions: 'name != "chililog"',
-      orderBy: 'name'
-    });
-
-    // After loading, put results into the ArrayProxy for select content and default to the first object item
-    App.pageController.get('repositoryOptions').set('content', App.store.find(query));
+  // Load repository status so as to setup the dropdown list
+  App.repositoryRuntimeEngine.load(this, function() {
+    var recordArray = App.repositoryRuntimeEngine.getRecords('name != "chililog"');
+    App.pageController.get('repositoryOptions').set('content', recordArray);
     App.pageController.set('repository', App.pageController.get('repositoryOptions').get('firstObject'));
   }, null);
 

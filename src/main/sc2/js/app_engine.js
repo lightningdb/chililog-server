@@ -21,21 +21,6 @@
 //
 
 /**
- * Local store key for our authentication token
- */
-App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'AuthenticationToken';
-
-/**
- * Local store key for flag that indicates if the user wishes to be remembered or logged out after session closes
- */
-App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'AuthenticationRememberMe';
-
-/**
- * Local store key for the details of the logged in user
- */
-App.LOGGED_IN_USER_LOCAL_STORE_KEY = 'LoggedInUser';
-
-/**
  * Name of Authentication header returned in API responses
  */
 App.AUTHENTICATION_HEADER_NAME = 'X-Chililog-Authentication';
@@ -66,6 +51,36 @@ App.AUTHENTICATION_SESSION_TOKEN_EXPIRY_SECONDS = 60 * 20;
  */
 App.AUTHENTICATION_SESSION_TOKEN_REFRESH_POLL_SECONDS = 60;
 
+/**
+ * Local store key for our authentication token
+ */
+App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY = 'AuthenticationToken';
+
+/**
+ * Local store key for flag that indicates if the user wishes to be remembered or logged out after session closes
+ */
+App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'AuthenticationRememberMe';
+
+/**
+ * Local store key for the details of the logged in user
+ */
+App.AUTHENTICATED_USER_LOCAL_STORE_KEY = 'AuthenticatedUser';
+
+/**
+ * Local store key for repository status
+ */
+App.REPOSITORY_STATUS_LOCAL_STORE_KEY = 'RepositoryStatus';
+
+/**
+ * Local store key for repository status
+ */
+App.USERS_LOCAL_STORE_KEY = 'Users';
+
+/**
+ * Local store key for repository status
+ */
+App.REPOSITORY_CONFIG_LOCAL_STORE_KEY = 'RepositoryConfig';
+
 
 /**
  * Common engine methods
@@ -78,7 +93,7 @@ App.EngineMixin = {
    * @param {jQuery HttpRequest} jqXHR
    * @return YES if successful
    */
-  ajaxError: function(jqXHR, textStatus, errorThrown) {
+  _ajaxError: function(jqXHR, textStatus, errorThrown) {
 
     var error = null;
     SC.Logger.error('HTTP error status code: ' + jqXHR.status);
@@ -106,7 +121,7 @@ App.EngineMixin = {
   /**
    * Creates the standard request header loaded with our authentication token
    */
-  createAjaxRequestHeaders: function() {
+  _createAjaxRequestHeaders: function() {
     var headers = {};
     headers[App.AUTHENTICATION_HEADER_NAME] = App.sessionEngine.get('authenticationToken');
     return headers;
@@ -118,7 +133,7 @@ App.EngineMixin = {
    * @param {String} headerName name of header to retrieve
    * @return {String} value of the named header or null if not found
    */
-  getAjaxResponseHeader: function(jqXHR, headerName) {
+  _getAjaxResponseHeader: function(jqXHR, headerName) {
     var value = jqXHR.getResponseHeader(headerName);
     if (SC.none(value)) {
       value = jqXHR.getResponseHeader(headerName.toLowerCase());
@@ -132,7 +147,7 @@ App.EngineMixin = {
    * @param {Array} aoArray array of API object returned from the server
    * @param {Class} recordType for example App.UserRecord
    */
-  processAOArray: function(aoArray, recordType) {
+  _convertApiObjectsToRecords: function(aoArray, recordType) {
     // Set data
     if (!SC.none(aoArray) && SC.isArray(aoArray)) {
       for (var i = 0; i < aoArray.length; i++) {
@@ -147,25 +162,55 @@ App.EngineMixin = {
       }
       App.store.commitRecords();
     }
+  },
 
-    // Delete records that have not been returned
+  /**
+   * Converts records in the data store to an array of API objects
+   * 
+   * @param {Class} recordType type of record in the store to convert
+   * @return {Array} Array of API objects
+   */
+  _convertRecordsToApiObjects: function (recordType) {
+    var aoArray = [];
     var records = App.store.find(recordType);
     records.forEach(function(record) {
-      var doDelete = YES;
-      if (!SC.none(aoArray) && SC.isArray(aoArray)) {
-        for (var i = 0; i < aoArray.length; i++) {
-          var ao = aoArray[i];
-          if (ao[App.DOCUMENT_ID_AO_FIELD_NAME] === record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
-            doDelete = NO;
-            break;
-          }
-        }
-      }
-      if (doDelete) {
-        record.destroy()
-      }
+      aoArray.push(record.toApiObject());
     });
-    App.store.commitRecords();
+
+    return aoArray;
+  },
+
+  /**
+   * Put API objects into local storage for caching
+   *
+   * If there are more than 1 entry, then we must have been called from load() so we can save the aoArray,
+   * otherwise, we flush from the data store
+   * @param {String} localStorageKey key to use for saving
+   * @param {Array} aoArray array to save; null to flush from data store
+   * @param {Class} recordType record type
+   */
+  _putApiObjectsIntoLocalStorage: function(localStorageKey, aoArray, recordType) {
+    if (SC.none(aoArray) || aoArray.length === 1) {
+      aoArray = [];
+      var records = App.store.find(recordType);
+      records.forEach(function(record) {
+        aoArray.push(record.toApiObject());
+      });
+    }
+    localStorage.setItem(localStorageKey, JSON.stringify(aoArray));
+  },
+
+  /**
+   * Retrieves the records from the local storage
+   * @param localStorageKey
+   */
+  _getApiObjectsFromLocalStorage: function(localStorageKey) {
+    var aoArray = [];
+    var jsonString = localStorage.getItem(localStorageKey);
+    if (!SC.empty(jsonString)) {
+      aoArray = JSON.parse(jsonString);
+    }
+    return aoArray;
   }
 
 };
@@ -190,12 +235,14 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
   /**
    * Removes all repository meta info records in the data store
    */
-  clearLocalData: function() {
+  clearData: function() {
     var records = App.store.find(App.UserRecord);
     records.forEach(function(record) {
       record.destroy()
     });
     App.store.commitRecords();
+
+    localStorage.removeItem(App.USERS_LOCAL_STORE_KEY);
   },
 
   /**
@@ -214,8 +261,16 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       return;
     }
 
-    // Remove all data
-    this.clearLocalData();
+    // Can we load from local storage?
+    var aoArray = this._getApiObjectsFromLocalStorage(App.USERS_LOCAL_STORE_KEY);
+    if (!SC.none(aoArray) && aoArray.length > 0) {
+      App.userEngine.clearData();
+      App.userEngine._convertApiObjectsToRecords(aoArray, App.UserRecord);
+      if (!SC.none(callbackFunction)) {
+        callbackFunction.call(callbackTarget, callbackParams, null);
+      }
+      return;
+    }
 
     // We are working
     this.set('isLoading', YES);
@@ -228,9 +283,9 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endLoad
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endLoad
     });
   },
 
@@ -244,17 +299,19 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endLoad: function(data, textStatus, jqXHR) {
+  _endLoad: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.userEngine.processAOArray(data, App.RepositoryMetaInfoRecord);
+      App.userEngine.clearData();
+      App.userEngine._convertApiObjectsToRecords(data, App.UserRecord);
+      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, data, App.UserRecord);
     }
     catch (err) {
       error = err;
       SC.Logger.error('userEngine.endLoad: ' + err.message);
     }
 
-    // Finish sync'ing
+    // Finish loading
     App.userEngine.set('isLoading', NO);
 
     // Callback
@@ -265,7 +322,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
     // Return YES to signal handling of callback
     return YES;
   },
-
+  
   /**
    * Returns a new user record for editing
    *
@@ -328,8 +385,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
       success: this.endSave
     });
 
@@ -350,28 +407,23 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
   endSave: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Remove temp record while creating/editing
-      this.discardChanges(this.record);
-
-      // Save user details returns from server
+      // Check
       var apiObject = data;
-      if (this.isAdding) {
+      if (!this.isAdding) {
         this.documentID = apiObject[App.DOCUMENT_ID_AO_FIELD_NAME];
       } else if (this.documentID !== apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw App.$error('_documentIDError', this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]);
+        throw App.$error('_documentIDError', [ this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]]);
       }
 
-      var record = null;
-      if (this.isAdding) {
-        record = App.store.createRecord(App.UserRecord, {}, this.documentID);
-      } else {
-        record = App.store.find(App.UserRecord, this.documentID);
-      }
-      record.fromApiObject(apiObject);
-      App.store.commitRecords();
+      // Remove temp record while creating/editing
+      App.userEngine.discardChanges(this.record);
+
+      // Save user details returned from server
+      App.userEngine._convertApiObjectsToRecords([data], App.UserRecord);
+      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, null, App.UserRecord);
 
       // If we are editing the logged in user, then we better update the session data
-      if (record.get(Chililog.DOCUMENT_ID_RECORD_FIELD_NAME) ===
+      if (this.record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) ===
         App.sessionEngine.get('loggedInUser').get(App.DOCUMENT_ID_RECORD_FIELD_NAME)) {
         //TODO
       }
@@ -425,8 +477,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
       success: this.endErase
     });
 
@@ -449,6 +501,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       var record = App.store.find(App.UserRecord, this.documentID);
       record.destroy();
       App.store.commitRecords();
+
+      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, null, App.UserRecord);
     }
     catch (err) {
       error = err;
@@ -476,19 +530,21 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
  *
  * @extends SC.Object
  */
-App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
+App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
   /**
    * YEs if we are performing a server synchronization
    * @type Boolean
    */
   isLoading: NO,
 
-  clearLocalData: function() {
-    var records = App.store.find(App.RepositoryRuntimeInfoRecord);
+  clearData: function() {
+    var records = App.store.find(App.RepositoryStatusRecord);
     records.forEach(function(record) {
       record.destroy()
     });
     App.store.commitRecords();
+
+    localStorage.removeItem(App.REPOSITORY_STATUS_LOCAL_STORE_KEY);
   },
 
   /**
@@ -502,34 +558,41 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  load: function(loadRepositoryMetaInfo, callbackTarget, callbackFunction, callbackParams) {
+  load: function(callbackTarget, callbackFunction, callbackParams) {
     // If operation already under way, just exit
     var isLoading = this.get('isLoading');
     if (isLoading) {
       return;
     }
 
-    // Remove all data
-    this.clearLocalData();
+    // Can we load from local storage?
+    var aoArray = this._getApiObjectsFromLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY);
+    if (!SC.none(aoArray) && aoArray.length > 0) {
+      App.repositoryRuntimeEngine.clearData();
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords(aoArray, App.RepositoryStatusRecord);
+      if (!SC.none(callbackFunction)) {
+        callbackFunction.call(callbackTarget, callbackParams, null);
+      }
+      return;
+    }
 
     // We are working
     this.set('isLoading', YES);
 
     // Get data
     var context = {
-      loadRepositoryMetaInfo: loadRepositoryMetaInfo,
       callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
     };
 
     $.ajax({
       type: 'GET',
-      url: '/api/repositories',
+      url: '/api/repository_runtime',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endLoad
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endLoad
     });
   },
 
@@ -544,18 +607,25 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endLoad: function(data, textStatus, jqXHR) {
+  _endLoad: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
+      App.repositoryRuntimeEngine.clearData();
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endLoad: ' + err.message);
+      SC.Logger.error('repositoryRuntimeEngine.endLoad: ' + err.message);
     }
 
     // Finish sync'ing
-    App.repositoryRuntimeInfoEngine.set('isLoading', NO);
+    App.repositoryRuntimeEngine.set('isLoading', NO);
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
 
     // Return YES to signal handling of callback
     return YES;
@@ -590,13 +660,13 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
     $.ajax({
       type: 'POST',
-      url: '/api/repositories/' + documentID + '?action=start',
+      url: '/api/repository_runtime/' + documentID + '?action=start',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endStart
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endStart
     });
 
     return;
@@ -613,7 +683,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endStart: function(data, textStatus, jqXHR) {
+  _endStart: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       // Get and check data
@@ -623,14 +693,15 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       }
 
       // Process response
-      App.repositoryRuntimeInfoEngine.processAOArray([repoAO], App.RepositoryRuntimeInfoRecord);
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endStart: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine.endStart: ' + err);
     }
 
-    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
@@ -664,13 +735,13 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
     $.ajax({
       type: 'POST',
-      url: '/api/repositories/' + documentID + '?action=stop',
+      url: '/api/repository_runtime/' + documentID + '?action=stop',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endStop
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endStop
     });
 
     return;
@@ -687,7 +758,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endStop: function(data, textStatus, jqXHR) {
+  _endStop: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       // Get and check data
@@ -697,14 +768,15 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       }
 
       // Merge the data
-      App.repositoryRuntimeInfoEngine.processAOArray([repoAO], App.RepositoryRuntimeInfoRecord);
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endStop: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine.endStop: ' + err);
     }
 
-    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
@@ -739,9 +811,9 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endStartAll
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endStartAll
     });
 
     return;
@@ -757,17 +829,19 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endStartAll: function(data, textStatus, jqXHR) {
+  _endStartAll: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
+      App.repositoryRuntimeEngine.clearData();
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endStartAll: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine.endStartAll: ' + err);
     }
 
-    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
@@ -801,9 +875,9 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endStopAll
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endStopAll
     });
 
     return;
@@ -819,17 +893,19 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endStopAll: function(data, textStatus, jqXHR) {
+  _endStopAll: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryRuntimeInfoRecord);
+      App.repositoryRuntimeEngine.clearData();
+      App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endStopAll: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine.endStopAll: ' + err);
     }
 
-    App.repositoryRuntimeInfoEngine.set('isStartingOrStopping', NO);
+    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
@@ -854,13 +930,13 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * Signature is: function(documentId, records, callbackParams, error) {}.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  find: function(criteria, callbackTarget, callbackFunction, callbackParams) {
+  findLogEntries: function(criteria, callbackTarget, callbackFunction, callbackParams) {
     var conditionsJson = '';
     if (!SC.empty(criteria.conditions)) {
       conditionsJson = JSON.stringify(criteria.conditions);
     }
 
-    var headers = this.createAjaxRequestHeaders();
+    var headers = this._createAjaxRequestHeaders();
     headers['X-Chililog-Query-Type'] = 'Find';
     headers['X-Chililog-Conditions'] = conditionsJson;
     headers['X-Chililog-Keywords-Usage'] = criteria.keywordUsage;
@@ -875,13 +951,13 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
     $.ajax({
       type: 'GET',
-      url: '/api/repositories/' + criteria.documentID + '/entries',
+      url: '/api/repository_runtime/' + criteria.documentID + '/entries',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
       headers: headers,
-      error: this.ajaxError,
-      success: this.endFind
+      error: this._ajaxError,
+      success: this._endFindLogEntries
     });
 
     return;
@@ -897,26 +973,16 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endFind: function(data, textStatus, jqXHR) {
+  _endFindLogEntries: function(data, textStatus, jqXHR) {
     var error = null;
-    var repoEntryAOArray;
+    var repoEntryAOArray = [];
     var recordCount = 0;
     try {
-      // Delete existing records if this is the 1st page
-      // Otherwise assume we want more records
-      if (this.criteria.startPage === 1) {
-        var records = App.store.find(App.RepositoryEntryRecord);
-        records.forEach(function(record) {
-          record.destroy()
-        });
-        App.store.commitRecords();
-      }
-
       // Fill with new data
-      var repoEntriesAO = data;
       if (!SC.none(data)) {
-        var repoEntryAOArray = repoEntriesAO['find'];
+        repoEntryAOArray = data['find'];
         if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
+          
           // Make keywords into an array of text to highlight
           var keywordsRegexArray = [];
           if (!SC.empty(this.criteria.keywords)) {
@@ -933,14 +999,14 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
           recordCount = repoEntryAOArray.length;
           for (var i = 0; i < recordCount; i++) {
             var repoEntryAO = repoEntryAOArray[i];
-            App.repositoryRuntimeInfoEngine.injectKeywordHilighting(keywordsRegexArray, repoEntryAO);
+            App.repositoryRuntimeEngine._injectKeywordHilighting(keywordsRegexArray, repoEntryAO);
           }
         }
       }
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeInfoEngine.endFind: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine._endFindLogEntries: ' + err);
     }
 
     // Callback
@@ -957,7 +1023,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param keywordsRegexArray
    * @param repoEntryAO
    */
-  injectKeywordHilighting: function(keywordsRegexArray, repoEntryAO) {
+  _injectKeywordHilighting: function(keywordsRegexArray, repoEntryAO) {
     // Highlight keywords
     var msg = repoEntryAO['message'];
     if (SC.empty(msg)) {
@@ -982,12 +1048,34 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
 
       repoEntryAO['messageWithKeywordsHilighted'] = highlightedMsg;
     }
+    return;
+  },
 
+  /**
+   * Returns
+   * @param [conditions] Optional conditions
+   * @param [orderBy] Optional order by property names. Defaults to 'name' if not supplied.
+   * @returns {SC.RecordArray} Returns an array of matching records
+   */
+  getRecords: function(conditions, orderBy) {
+    var params = {};
+    if (!SC.empty(conditions)) {
+      params['conditions'] = conditions;
+    }
+    if (SC.empty(orderBy)) {
+      orderBy = 'name';
+    }
+    params['orderBy'] = orderBy;
+
+    var query = SC.Query.local(App.RepositoryStatusRecord, params);
+    return App.store.find(query);
   }
+
+
 });
 
 // --------------------------------------------------------------------------------------------------------------------
-// repositoryMetaInfoEngine
+// repositoryConfigEngine
 // --------------------------------------------------------------------------------------------------------------------
 
 /** @class
@@ -996,7 +1084,7 @@ App.repositoryRuntimeInfoEngine = SC.Object.create(App.EngineMixin, {
  *
  * @extends SC.Object
  */
-App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
+App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
   /**
    * YES if we are performing a server synchronization
@@ -1007,19 +1095,21 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
   /**
    * Removes all repository meta info records in the data store
    */
-  clearLocalData: function() {
-    var records = App.store.find(App.RepositoryMetaInfoRecord);
+  clearData: function() {
+    var records = App.store.find(App.RepositoryConfigRecord);
     records.forEach(function(record) {
       record.destroy()
     });
     App.store.commitRecords();
+
+    localStorage.removeItem(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY);
   },
 
   /**
    * Synchronize data in the store with the data on the server
    * We sync repository status after we get all the repository info
    *
-   * @param {Boolean} clearLocalData YES will delete data from local store before loading.
+   * @param {Boolean} clearData YES will delete data from local store before loading.
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(callbackParams, error) {}.
@@ -1033,9 +1123,17 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       return;
     }
 
-    // Remove all data
-    this.clearLocalData();
-
+    // Can we load from local storage?
+    var aoArray = this._getApiObjectsFromLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY);
+    if (!SC.none(aoArray) && aoArray.length > 0) {
+      App.repositoryConfigEngine.clearData();
+      App.repositoryConfigEngine._convertApiObjectsToRecords(aoArray, App.RepositoryConfigRecord);
+      if (!SC.none(callbackFunction)) {
+        callbackFunction.call(callbackTarget, callbackParams, null);
+      }
+      return;
+    }
+    
     // We are working
     this.set('isLoading', YES);
 
@@ -1043,13 +1141,13 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
     $.ajax({
       type: 'GET',
-      url: '/api/repository_info',
+      url: '/api/repository_config',
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endLoad
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endLoad
     });
   },
 
@@ -1063,18 +1161,20 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endLoad: function(data, textStatus, jqXHR) {
+  _endLoad: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.repositoryRuntimeInfoEngine.processAOArray(data, App.RepositoryMetaInfoRecord);
+      App.repositoryConfigEngine.clearData();
+      App.repositoryConfigEngine._convertApiObjectsToRecords(data, App.RepositoryConfigRecord);
+      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, data, App.RepositoryConfigRecord);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryMetaInfoEngine.endLoad: ' + err.message);
+      SC.Logger.error('repositoryConfigEngine.endLoad: ' + err.message);
     }
 
     // Finish sync'ing
-    App.repositoryMetaInfoEngine.set('isLoading', NO);
+    App.repositoryConfigEngine.set('isLoading', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
@@ -1092,7 +1192,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    */
   create: function(documentID) {
     var nestedStore = App.store.chain();
-    var record = nestedStore.createRecord(App.RepositoryMetaInfoRecord, {});
+    var record = nestedStore.createRecord(App.RepositoryConfigRecord, {});
     record.set(App.DOCUMENT_VERSION_RECORD_FIELD_NAME, 0);
     record.set('maxKeywords', 20);
     record.set('writeQueueWorkerCount', 1);
@@ -1110,13 +1210,13 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    */
   edit: function(documentID) {
     var nestedStore = App.store.chain();
-    var record = nestedStore.find(App.RepositoryMetaInfoRecord, documentID);
+    var record = nestedStore.find(App.RepositoryConfigRecord, documentID);
     return record;
   },
 
   /**
    * Saves the record to the server
-   * @param {App.RepositoryMetaInfoRecord} record record to save
+   * @param {App.RepositoryConfigRecord} record record to save
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(documentID, callbackParams, error) {}.
@@ -1134,10 +1234,10 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
     var url = '';
     var httpType = '';
     if (isAdding) {
-      url = '/api/repository_info/';
+      url = '/api/repository_config/';
       httpType = 'POST';
     } else {
-      url = '/api/repository_info/' + documentID;
+      url = '/api/repository_config/' + documentID;
       httpType = 'PUT';
     }
     var context = { isAdding: isAdding, documentID: documentID,
@@ -1152,9 +1252,9 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endSave
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endSave
     });
 
     return;
@@ -1171,10 +1271,10 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endSave: function(data, textStatus, jqXHR) {
+  _endSave: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      // Save new authenticated user details
+      // Check
       var apiObject = data;
       if (this.isAdding) {
         this.documentID = apiObject[App.DOCUMENT_ID_AO_FIELD_NAME];
@@ -1182,14 +1282,12 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
         throw App.$error('_documentIDError', [ this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]]);
       }
 
-      var record = null;
-      if (this.isAdding) {
-        record = App.store.createRecord(App.RepositoryMetaInfoRecord, {}, this.documentID);
-      } else {
-        record = App.store.find(App.RepositoryMetaInfoRecord, this.documentID);
-      }
-      record.fromApiObject(apiObject);
-      App.store.commitRecords();
+      // Remove temp record while creating/editing
+      App.repositoryConfigEngine.discardChanges(this.record);
+
+      // Save
+      App.repositoryConfigEngine._convertApiObjectsToRecords([data], App.RepositoryConfigRecord);
+      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, null, App.RepositoryConfigRecord);
     }
     catch (err) {
       error = err;
@@ -1207,7 +1305,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
 
   /**
    * Discard changes
-   * @param {App.RepositoryMetaInfoRecord} record record to discard
+   * @param {App.RepositoryConfigRecord} record record to discard
    */
   discardChanges: function(record) {
     if (!SC.none(record)) {
@@ -1229,7 +1327,7 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   erase: function(documentID, callbackTarget, callbackFunction, callbackParams) {
-    var url = '/api/repository_info/' + documentID;
+    var url = '/api/repository_config/' + documentID;
     var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
 
     $.ajax({
@@ -1238,9 +1336,9 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endErase
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endErase
     });
 
     return;
@@ -1256,12 +1354,14 @@ App.repositoryMetaInfoEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endErase: function(data, textStatus, jqXHR) {
+  _endErase: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      var record = App.store.find(App.RepositoryMetaInfoRecord, this.documentID);
+      var record = App.store.find(App.RepositoryConfigRecord, this.documentID);
       record.destroy();
       App.store.commitRecords();
+
+      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, null, App.RepositoryConfigRecord);
     }
     catch (err) {
       error = err;
@@ -1310,20 +1410,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   authenticationRememberMe: NO,
 
   /**
-   * Chililog Version sourced from the server upon login/load
-   *
-   * @type String
-   */
-  chililogVersion: null,
-
-  /**
-   * Chililog build timestamp sourced from the server upon login/load
-   *
-   * @type String
-   */
-  chililogBuildTimestamp: null,
-
-  /**
    * YES if the user is logged in, NO if not.
    *
    * @type Boolean
@@ -1345,6 +1431,28 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       return userRecords.objectAt(0);
     }
   }.property('authenticationToken').cacheable(),
+
+  /**
+   * Removes all saved data
+   */
+  clearData: function() {
+    // Delete authenticated user from store
+    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
+    authenticatedUserRecords.forEach(function(item, index, enumerable) {
+      item.destroy();
+    }, this);
+    App.store.commitRecords();
+
+    // Clear cached token
+    this.set('authenticationTokenExpiry', null);
+    this.set('authenticationToken', null);
+
+    localStorage.removeItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
+    localStorage.removeItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY);
+    localStorage.removeItem(App.AUTHENTICATED_USER_LOCAL_STORE_KEY);
+
+    return;
+  },
 
   /**
    * Load the details of the authentication token from cookies (if the user selected 'Remember Me')
@@ -1381,10 +1489,10 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       return NO;
     }
 
-    // Synchronously get user from server if the user details not previously saved
-    var authenticatedUserAOString = localStorage.getItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY);
-    var authenticatedUserAO = null;
-    if (SC.empty(authenticatedUserAOString)) {
+    // Can we load from local storage?
+    var aoArray = this._getApiObjectsFromLocalStorage(App.AUTHENTICATED_USER_LOCAL_STORE_KEY);
+    if (SC.none(aoArray) || aoArray.length === 0) {
+      // Synchronously get user from server if the user details not previously saved
       var responseJqXHR = null;
       var headers = {};
       headers[App.AUTHENTICATION_HEADER_NAME] = token;
@@ -1395,29 +1503,22 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
         async: false,
         dataType: 'json',
         headers: headers,
-        error: this.ajaxError,
+        error: this._ajaxError,
         success: function (data, textStatus, jqXHR) {
-          authenticatedUserAO = data;
+          aoArray = [data];
           responseJqXHR = jqXHR;
         }
       });
 
-      this._loadVersionAndBuildInfo(responseJqXHR);
-    } else {
-      authenticatedUserAO = JSON.parse(authenticatedUserAOString);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATED_USER_LOCAL_STORE_KEY, aoArray, App.AuthenticatedUserRecord);
     }
-
-    // Load user details
-    var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-      authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-    App.store.commitRecords();
+    App.sessionEngine._convertApiObjectsToRecords(aoArray, App.AuthenticatedUserRecord);
 
     // Load what we have so far
     this.set('authenticationToken', token);
     this.set('authenticationTokenExpiry', expiry);
 
-    // Check expiry
+    // Check expiry if requested
     if (SC.none(autoCheckExpiry) || autoCheckExpiry) {
       App.sessionEngine.checkExpiry();
     }
@@ -1485,9 +1586,9 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endLogin
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endLogin
     });
 
     return;
@@ -1532,8 +1633,8 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      error: this.ajaxError,
-      success: this.endLogin
+      error: this._ajaxError,
+      success: this._endLogin
     });
 
     return;
@@ -1550,20 +1651,18 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endLogin: function(data, textStatus, jqXHR) {
+  _endLogin: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       // Get the token
-      var token = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.AUTHENTICATION_HEADER_NAME);
+      var token = App.sessionEngine._getAjaxResponseHeader(jqXHR, App.AUTHENTICATION_HEADER_NAME);
       if (SC.none(token)) {
         throw App.$error('_sessionEngine.TokenNotFoundInResponseError');
       }
 
       // Put authenticated user details into the store
-      App.sessionEngine._updateAuthenticatedUserRecord(data);
-
-      // Cache version and build info in this engine
-      App.sessionEngine._loadVersionAndBuildInfo(jqXHR);
+      App.sessionEngine._convertApiObjectsToRecords([data], App.AuthenticatedUserRecord);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATED_USER_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
 
       // Cache authentication token in this engine
       App.sessionEngine.set('authenticationToken', token);
@@ -1578,7 +1677,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('endLogin: ' + err.message);
+      SC.Logger.error('_endLogin: ' + err.message);
     }
 
     // Callback
@@ -1591,52 +1690,13 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Updates the authenticated user record in the store and the local store with new data from the server
-   */
-  _updateAuthenticatedUserRecord: function(authenticatedUserAO) {
-    // Delete authenticated user from store
-    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
-    authenticatedUserRecords.forEach(function(item, index, enumerable) {
-      item.destroy();
-    }, this);
-    App.store.commitRecords();
-
-    // Create new record for the store
-    var authenticatedUserRecord = App.store.createRecord(App.AuthenticatedUserRecord, {},
-      authenticatedUserAO[App.DOCUMENT_ID_AO_FIELD_NAME]);
-    authenticatedUserRecord.fromApiObject(authenticatedUserAO);
-    App.store.commitRecords();
-    localStorage.setItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY, JSON.stringify(authenticatedUserAO));
-  },
-
-  /**
-   * Load version and build info from response headers.
-   *
-   * Cannot use 'this' to represent App.sessionEngine because in a callback, this is the context object.
-   *
-   * @param {JQuery Xml Http Request object} jqXHR SC.Response header
-   */
-  _loadVersionAndBuildInfo: function(jqXHR) {
-    var version = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.VERSION_HEADER_NAME);
-    if (SC.none(version)) {
-      throw App.$error('_sessionEngine.VersionNotFoundInResponseError');
-    }
-    App.sessionEngine.set('chililogVersion', version);
-
-    var buildTimestamp = App.sessionEngine.getAjaxResponseHeader(jqXHR, App.BUILD_TIMESTAMP_HEADER_NAME);
-    if (SC.none(buildTimestamp)) {
-      throw App.$error('_sessionEngine.BuildTimestampNotFoundInResponseError');
-    }
-    App.sessionEngine.set('chililogBuildTimestamp', buildTimestamp);
-  },
-
-  /**
    * Remove authentication tokens
    */
   logout: function() {
-    this.clearLocalData();
-    App.repositoryMetaInfoEngine.clearLocalData();
-    App.repositoryRuntimeInfoEngine.clearLocalData();
+    this.clearData();
+    App.userEngine.clearData();
+    App.repositoryConfigEngine.clearData();
+    App.repositoryRuntimeEngine.clearData();
     return;
   },
 
@@ -1679,9 +1739,9 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endSaveProfile
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endSaveProfile
     });
 
     return;
@@ -1696,10 +1756,12 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endSaveProfile: function(data, textStatus, jqXHR) {
+  _endSaveProfile: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.sessionEngine._updateAuthenticatedUserRecord(data);
+      // Put authenticated user details into the store
+      App.sessionEngine._convertApiObjectsToRecords([data], App.AuthenticatedUserRecord);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
     }
     catch (err) {
       error = err;
@@ -1759,9 +1821,9 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
-      headers: this.createAjaxRequestHeaders(),
-      error: this.ajaxError,
-      success: this.endChangePassword
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endChangePassword
     });
 
     return;
@@ -1776,10 +1838,12 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  endChangePassword: function(data, textStatus, jqXHR) {
+  _endChangePassword: function(data, textStatus, jqXHR) {
     var error = null;
     try {
-      App.sessionEngine._updateAuthenticatedUserRecord(data);
+      // Put authenticated user details into the store
+      App.sessionEngine._convertApiObjectsToRecords([data], App.AuthenticatedUserRecord);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
     }
     catch (err) {
       error = err;
@@ -1793,28 +1857,6 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
 
     // Return YES to signal handling of callback
     return YES;
-  },
-
-  /**
-   * Removes all saved data
-   */
-  clearLocalData: function() {
-    // Delete authenticated user from store
-    var authenticatedUserRecords = App.store.find(App.AuthenticatedUserRecord);
-    authenticatedUserRecords.forEach(function(item, index, enumerable) {
-      item.destroy();
-    }, this);
-    App.store.commitRecords();
-
-    // Clear cached token
-    this.set('authenticationTokenExpiry', null);
-    this.set('authenticationToken', null);
-
-    localStorage.removeItem(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY);
-    localStorage.removeItem(App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY);
-    localStorage.removeItem(App.LOGGED_IN_USER_LOCAL_STORE_KEY);
-
-    return;
   }
 
 });

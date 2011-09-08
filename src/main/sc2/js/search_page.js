@@ -697,7 +697,7 @@ App.statechart = SC.Statechart.create({
             recordsPerPage: App.pageController.get('rowsPerSearch'),
             doPageCount: 'false'
           };
-          App.repositoryRuntimeInfoEngine.find(criteria, this, this.endSearch);
+          App.repositoryRuntimeEngine.findLogEntries(criteria, this, this.endSearch);
 
           // Save criteria for show more
           App.pageController.set('previousSearchCriteria', criteria);
@@ -795,7 +795,7 @@ App.statechart = SC.Statechart.create({
       startShowMore: function() {
         var criteria = App.pageController.get('previousSearchCriteria');
         criteria.startPage = criteria.startPage + 1;
-        App.repositoryRuntimeInfoEngine.find(criteria, this, this.endShowMore);
+        App.repositoryRuntimeEngine.find(criteria, this, this.endShowMore);
       },
 
       /**
@@ -837,16 +837,13 @@ if (App.sessionEngine.load()) {
 
   App.statechart.initStatechart();
 
-  // Load repositories
-  App.repositoryMetaInfoEngine.load(this, function() {
-    var query = SC.Query.local(App.RepositoryMetaInfoRecord, {
-      orderBy: 'name'
-    });
-
-    // After loading, put results into the ArrayProxy for select content and default to the first object item
-    App.pageController.get('repositoryOptions').set('content', App.store.find(query));
+  // Load repository status so as to setup the dropdown list
+  App.repositoryRuntimeEngine.load(this, function() {
+    var recordArray = App.repositoryRuntimeEngine.getRecords();
+    App.pageController.get('repositoryOptions').set('content', recordArray);
     App.pageController.set('repository', App.pageController.get('repositoryOptions').get('firstObject'));
   }, null);
+
 } else {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);

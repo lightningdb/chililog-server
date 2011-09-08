@@ -38,6 +38,8 @@ public class RepositoryStatusAO extends AO
 
     private String _name;
 
+    private String _displayName;
+
     private Status _status;
 
     /**
@@ -59,6 +61,7 @@ public class RepositoryStatusAO extends AO
         _documentID = repo.getRepoInfo().getDocumentID().toString();
         _documentVersion = repo.getRepoInfo().getDocumentVersion();
         _name = repo.getRepoInfo().getName();
+        _displayName = repo.getRepoInfo().getDisplayName();
         _status = repo.getStatus();
     }
 
@@ -83,7 +86,7 @@ public class RepositoryStatusAO extends AO
     }
 
     /**
-     * Returns the repository name
+     * Returns the repository's name
      */
     public String getName()
     {
@@ -93,6 +96,19 @@ public class RepositoryStatusAO extends AO
     public void setName(String name)
     {
         _name = name;
+    }
+
+    /**
+     * Returns the repository's display name
+     */
+    public String getDisplayName()
+    {
+        return _displayName;
+    }
+
+    public void setDisplayName(String displayName)
+    {
+        _displayName = displayName;
     }
 
     /**
