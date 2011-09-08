@@ -107,6 +107,9 @@ body.login {
 #results > .logEntry:nth-child(odd) {
     background-color: whitesmoke;   /* zebra stripe the css3 way */
 }
+#results .logEntry:hover {
+    background-color: gold;
+}
 #results .logEntry .row {
     display: table-row;
 }

@@ -24,7 +24,8 @@
 // Views
 // --------------------------------------------------------------------------------------------------------------------
 /**
- * Error messages
+ * @class
+ * Error message view
  */
 App.ErrorMessage = SC.View.extend({
   messageBinding: 'App.pageController.errorMessage',
@@ -32,7 +33,8 @@ App.ErrorMessage = SC.View.extend({
 });
 
 /**
- * Repository options
+ * @class
+ * Specifies the properties of a SC.RepositoryStatusRecord that should be used for the select option label and value
  */
 App.RepositorySelectOption = App.SelectOption.extend({
   labelBinding: '*content.displayNameOrName',
@@ -40,7 +42,8 @@ App.RepositorySelectOption = App.SelectOption.extend({
 });
 
 /**
- * Repository
+ * @class
+ * Repository field
  */
 App.RepositoryField = SC.View.extend({
   classNames: 'field'.w(),
@@ -57,7 +60,8 @@ App.RepositoryField = SC.View.extend({
 });
 
 /**
- * Severity filter
+ * @class
+ * Severity field
  */
 App.SeverityField = SC.View.extend({
   classNames: 'field'.w(),
@@ -73,6 +77,7 @@ App.SeverityField = SC.View.extend({
 });
 
 /**
+ * @class
  * Button to start/stop streaming
  */
 App.ActionButton = App.ButtonView.extend({
@@ -104,6 +109,7 @@ App.ActionButton = App.ButtonView.extend({
 });
 
 /**
+ * @class
  * Button to clear the log entries on the page
  */
 App.ClearButton = App.ButtonView.extend({
@@ -119,6 +125,7 @@ App.ClearButton = App.ButtonView.extend({
 });
 
 /**
+ * @class
  * Click to send test messages to the server
  */
 App.TestMessageButton = App.ButtonView.extend({
@@ -196,41 +203,56 @@ App.TestMessageButton = App.ButtonView.extend({
 // Controllers
 // --------------------------------------------------------------------------------------------------------------------
 /**
+ * @class
  * Mediates between state charts and views
  */
 App.pageController = SC.Object.create({
   /**
-   * Value of the repository text field
+   * Selected item of the repository field
+   *
+   * @type App.RepositoryStatusRecord
    */
   repository: null,
 
   /**
-   * Value of the severity text field
+   * Selected item of the severity field
+   *
+   * @type SC.Object
    */
   severity: null,
 
   /**
    * Error message to display
+   *
+   * @type String
    */
   errorMessage: '',
 
   /**
    * Indicates if we are currently streaming or not
+   *
+   * @type Boolean
    */
   isStreaming: NO,
 
   /**
    * Maximum number of log entries displayed. If this is exceeded, the earliest entries are deleted
+   *
+   * @type int
    */
   maxRowsToDisplay: 1000,
 
   /**
    * Options for displaying in the repository dropdown
+   *
+   * @type SC.ArrayProxy of SC.RepositoryStatusRecord
    */
   repositoryOptions: SC.ArrayProxy.create(),
   
   /**
    * Options for displaying in the severity dropdown
+   *
+   * @type Array of SC.Object
    */
   severityOptions: [
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Emergency'.loc(), value: '0'}),
@@ -245,6 +267,8 @@ App.pageController = SC.Object.create({
 
   /**
    * Flag to indicate if we want the bottom bar to show or not
+   *
+   * @type Boolean
    */
   showActionButton2: NO,
 
@@ -325,13 +349,19 @@ App.pageController = SC.Object.create({
 });
 
 /**
+ * @class
  * Controls streaming.
  *
- * Rather than writing back to the page controller, write directly to DOM for speed.
+ * Rather than writing back to the page controller, write directly to DOM for speed.  We found that over > 1000 items,
+ * binding slows everything down.
+ *
+ * Log entries are read-only data so binding is not so important because the data wont be changing
  */
 App.streamingController = SC.Object.create({
   /**
-   * Websocket that we use to talk to the server
+   * Current Websocket being used to talk to the server
+   *
+   * @type WebSocket
    */
   webSocket: null,
 
@@ -495,3 +525,16 @@ if (App.sessionEngine.load()) {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);
 }
+
+   $('#dialog').dialog({
+        autoOpen: false,
+        width: 600,
+        buttons: {
+            "Ok": function() {
+                $(this).dialog("close");
+            },
+            "Cancel": function() {
+                $(this).dialog("close");
+            }
+        }
+    });

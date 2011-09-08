@@ -24,7 +24,8 @@
 // Views
 // --------------------------------------------------------------------------------------------------------------------
 /**
- * Error messages
+ * @class
+ * Error message view
  */
 App.ErrorMessage = SC.View.extend({
   messageBinding: 'App.pageController.errorMessage',
@@ -32,6 +33,7 @@ App.ErrorMessage = SC.View.extend({
 });
 
 /**
+ * @class
  * Common functions for field data
  */
 App.FieldDataMixin = {
@@ -44,7 +46,8 @@ App.FieldDataMixin = {
 };
 
 /**
- * Repository options
+ * @class
+ * Specifies the properties of a SC.RepositoryStatusRecord that should be used for the select option label and value
  */
 App.RepositorySelectOption = App.SelectOption.extend({
   labelBinding: '*content.displayNameOrName',
@@ -52,7 +55,8 @@ App.RepositorySelectOption = App.SelectOption.extend({
 });
 
 /**
- * Repository
+ * @class
+ * Repository selection field
  */
 App.RepositoryField = SC.View.extend({
   classNames: 'field'.w(),
@@ -69,7 +73,8 @@ App.RepositoryField = SC.View.extend({
 });
 
 /**
- * From date
+ * @class
+ * From date field.
  */
 App.FromDateField = SC.View.extend({
   classNames: 'field'.w(),
@@ -93,7 +98,8 @@ App.FromDateField = SC.View.extend({
 });
 
 /**
- * From time
+ * @class
+ * From time field
  */
 App.FromTimeField = SC.View.extend({
   classNames: 'field'.w(),
@@ -109,7 +115,8 @@ App.FromTimeField = SC.View.extend({
 });
 
 /**
- * To date
+ * @class
+ * To date field
  */
 App.ToDateField = SC.View.extend({
   classNames: 'field'.w(),
@@ -133,7 +140,8 @@ App.ToDateField = SC.View.extend({
 });
 
 /**
- * To time
+ * @class
+ * To time field.
  */
 App.ToTimeField = SC.View.extend({
   classNames: 'field'.w(),
@@ -149,7 +157,8 @@ App.ToTimeField = SC.View.extend({
 });
 
 /**
- * Source filter
+ * @class
+ * Source field
  */
 App.SourceField = SC.View.extend({
   classNames: 'field'.w(),
@@ -164,7 +173,8 @@ App.SourceField = SC.View.extend({
 });
 
 /**
- * Host filter
+ * @class
+ * Host field
  */
 App.HostField = SC.View.extend({
   classNames: 'field'.w(),
@@ -179,7 +189,8 @@ App.HostField = SC.View.extend({
 });
 
 /**
- * Severity filter
+ * @class
+ * Severity field
  */
 App.SeverityField = SC.View.extend({
   classNames: 'field'.w(),
@@ -195,7 +206,8 @@ App.SeverityField = SC.View.extend({
 });
 
 /**
- * Timespan
+ * @class
+ * Timespan field
  */
 App.TimespanField = SC.View.extend({
   classNames: 'field'.w(),
@@ -211,7 +223,8 @@ App.TimespanField = SC.View.extend({
 });
 
 /**
- * Keywords filter
+ * @class
+ * Keywords field
  */
 App.KeywordsField = SC.View.extend({
   classNames: 'field'.w(),
@@ -226,6 +239,7 @@ App.KeywordsField = SC.View.extend({
 });
 
 /**
+ * @class
  * Condition
  */
 App.ConditionField = SC.View.extend({
@@ -240,11 +254,12 @@ App.ConditionField = SC.View.extend({
 });
 
 /**
- * Button to search
+ * @class
+ * Button to start search
  */
 App.SearchButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-  
+
   label: '_search'.loc(),
 
   click: function() {
@@ -254,7 +269,8 @@ App.SearchButton = App.ButtonView.extend({
 });
 
 /**
- * Show more rows
+ * @class
+ * Button to retrieve more rows from the server
  */
 App.ShowMoreButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
@@ -268,6 +284,7 @@ App.ShowMoreButton = App.ButtonView.extend({
 });
 
 /**
+ * @class
  * Button to show advanced criteria
  */
 App.AdvancedButton = App.ButtonView.extend({
@@ -284,6 +301,7 @@ App.AdvancedButton = App.ButtonView.extend({
 });
 
 /**
+ * @class
  * DIV for advanced criteria
  */
 App.AdvancedCriteria = SC.View.extend({
@@ -291,6 +309,7 @@ App.AdvancedCriteria = SC.View.extend({
 });
 
 /**
+ * @class
  * Spinner displayed while searching
  */
 App.WorkingImage = App.ImgView.extend({
@@ -300,7 +319,8 @@ App.WorkingImage = App.ImgView.extend({
 });
 
 /**
- * Log entries returned from search
+ * @class
+ * View for displaying log entries returned from search
  */
 App.LogEntryCollectionView = SC.CollectionView.extend({
   contentBinding: 'App.pageController.logEntries',
@@ -315,12 +335,17 @@ App.LogEntryCollectionView = SC.CollectionView.extend({
   })
 });
 
+/**
+ * @class
+ * Container view for the ShowMore button
+ */
 App.BottomBar = SC.View.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool()
 });
 
 /**
- * Show message when on rows found
+ * @class
+ * View displayed when when on rows found
  */
 App.NoRowsView = SC.View.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
@@ -331,26 +356,35 @@ App.NoRowsView = SC.View.extend({
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
+ * @class
  * Mediates between state charts and views
  */
 App.pageController = SC.Object.create({
   /**
-   * Value of the repository field
+   * Selected item of the repository field
+   *
+   * @type App.RepositoryStatusRecord
    */
-  repository: '',
+  repository: null,
 
   /**
    * Value of the from date field
+   *
+   * @type String
    */
   fromDate: '',
 
   /**
    * Value of the from time field
+   *
+   * @type String
    */
   fromTime: '',
 
   /**
    * FROM Date and time combined
+   *
+   * @type String
    */
   fromDateTime: function() {
     var d = this.get('fromDate');
@@ -366,6 +400,8 @@ App.pageController = SC.Object.create({
 
   /**
    * TO Date and time combined
+   *
+   * @type String
    */
   toDateTime: function() {
     var d = this.get('toDate');
@@ -381,71 +417,99 @@ App.pageController = SC.Object.create({
 
   /**
    * Value of the to date field
+   *
+   * @type String
    */
   toDate: '',
 
   /**
    * Value of the to time field
+   *
+   * @type String
    */
   toTime: '',
 
   /**
    * Value of the source field
+   *
+   * @type String
    */
   source: '',
 
   /**
    * Value of the host field
+   *
+   * @type String
    */
   host: '',
 
   /**
-   * Value of the severity field
+   * Selected item of the severity field
+   *
+   * @type SC.Object
    */
-  severity: 'All',
+  severity: null,
 
   /**
-   * Value of the timespan field
+   * Selected item of the timespan field
+   *
+   * @type SC.Object
    */
-  timespan: '',
+  timespan: null,
 
   /**
    * Value of the keywords field
+   *
+   * @type String
    */
   keywords: '',
 
   /**
    * JSON conditions
+   *
+   * @type String
    */
   condition: '',
 
   /**
    * Error message to display
+   *
+   * @type String
    */
   errorMessage: '',
 
   /**
    * Indicates if we are currently streaming or not
+   *
+   * @type Boolean
    */
   isSearching: NO,
 
   /**
    * Flag to indicate if row found or not
+   *
+   * @type Boolean
    */
   rowsFound: YES,
 
   /**
    * Flag to indicate if there are more rows to show
+   *
+   * @type Boolean
    */
   canShowMore: NO,
 
   /**
-   * Options for displaying in the repository dropdown
+   * Options for displaying in the repository dropdown\
+   *
+   * @type SC.ArrayProxy of SC.RepositoryStatusRecord
    */
   repositoryOptions: SC.ArrayProxy.create(),
 
   /**
    * Options for displaying in the severity dropdown
+   *
+   * @type Array of SC.Object
    */
   severityOptions: [
     SC.Object.create({label: '_repositoryEntryRecord.Severity.Emergency'.loc(), value: '0'}),
@@ -460,6 +524,8 @@ App.pageController = SC.Object.create({
 
   /**
    * Options for displaying in the timespan dropdown
+   *
+   * @type Array of SC.Object
    */
   timespanOptions: [
     SC.Object.create({label: '', value: ''}),
@@ -475,23 +541,38 @@ App.pageController = SC.Object.create({
 
   /**
    * Number of rows to return per search
+   *
+   * @type int
    */
   rowsPerSearch: 30,
 
   /**
    * Maximum number of log entries to display
+   *
+   * @type int
    */
   maxRowsToDisplay: 1000,
 
   /**
    * Flag to indicate if we want to show advanced criteria
+   *
+   * @type Boolean
    */
   showAdvancedCriteria: NO,
 
   /**
    * Saved page criteria used when we show more records
+   *
+   * @type  String
    */
   previousSearchCriteria: null,
+
+  /**
+   * Arrary of log entry objects that have been displayed on the screen
+   *
+   * @type  Array of Objects
+   */
+  displayedLogEntries: [],
 
   /**
    * Writes a log entry to the results area
@@ -532,7 +613,12 @@ App.pageController = SC.Object.create({
       }
     }
 
-    var newLogEntryHtml = '<div class="logEntry">' +
+    // Save log entry in our array
+    var displayedLogEntries = App.pageController.get('displayedLogEntries');
+    displayedLogEntries.push(logEntry);
+    var displayedLogEntryIndex = displayedLogEntries.length - 1;
+
+    var newLogEntryHtml = '<div class="logEntry" ondblclick="alert(' + displayedLogEntryIndex + ')">' +
       '<div class="row">' +
         '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
         '<div class="right">' +
@@ -542,7 +628,7 @@ App.pageController = SC.Object.create({
             '<span class="divider">|</span>' +
             '<span class="host"><span class="label">host:</span> ' + logEntry.host + '</span>' +
             '<span class="divider">|</span>' +
-            '<span class="source"><span class="label">source:</span> ' +logEntry.source + '</span>' +
+            '<span class="source"><span class="label">source:</span> ' + logEntry.source + '</span>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -614,6 +700,7 @@ App.statechart = SC.Statechart.create({
           // Clear previous log entries
           var rows = $('#results > div');
           rows.slice(1).remove();
+          App.pageController.get('displayedLogEntries').length = 0;
 
           // Validate
           var timespan = App.pageController.getPath('timespan.value');
@@ -774,7 +861,7 @@ App.statechart = SC.Statechart.create({
         for (var i=0; i< recordCount; i++) {
           App.pageController.writeLogEntry(records[i]);
         }
-        
+
         this.gotoState('notSearching');
       }
     }),
