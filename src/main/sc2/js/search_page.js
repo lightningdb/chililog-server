@@ -357,7 +357,7 @@ App.NoRowsView = SC.View.extend({
 
 /**
  * @class
- * Mediates between state charts and views
+ * Mediates between state charts and views for the main page
  */
 App.pageController = SC.Object.create({
   /**
@@ -382,7 +382,7 @@ App.pageController = SC.Object.create({
   fromTime: '',
 
   /**
-   * FROM Date and time combined
+   * FROM Date and time combined in the format '%Y-%m-%d %H:%M:%S'
    *
    * @type String
    */
@@ -399,7 +399,7 @@ App.pageController = SC.Object.create({
   }.property('fromDate, fromTime'),
 
   /**
-   * TO Date and time combined
+   * TO Date and time combined in the format '%Y-%m-%d %H:%M:%S'
    *
    * @type String
    */
@@ -588,10 +588,7 @@ App.pageController = SC.Object.create({
     if (logEntry.Timestamp === '') {
       scDate = SC.DateTime.create();
     } else {
-      var d = new Date();
-      var timezoneOffsetMinutes = d.getTimezoneOffset();
-      scDate = SC.DateTime.parse(logEntry.ts, '%Y-%m-%dT%H:%M:%S.%s%Z');
-      scDate.set('timezone', timezoneOffsetMinutes);
+      scDate = SC.DateTime.parseChililogServerDateTime(logEntry.ts);
     }
 
     var severity = logEntry.severity;
@@ -620,7 +617,7 @@ App.pageController = SC.Object.create({
 
     var newLogEntryHtml = '<div class="logEntry" ondblclick="alert(' + displayedLogEntryIndex + ')">' +
       '<div class="row">' +
-        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
+        '<div class="left">' + scDate.toChililogLocalDateTime() + '</div>' +
         '<div class="right">' +
           formattedMessage +
           '<div class="rightFooter">' +
@@ -647,6 +644,168 @@ App.pageController = SC.Object.create({
       rows.slice(1, 11).remove();
     }
   }
+
+});
+
+/**
+ * @class
+ * Mediates between state charts and views for the dialog showing details of a log entry
+ */
+App.dialogController = SC.Object.create({
+
+  /**
+   * Unique id for this log entry
+   *
+   * @type String
+   */
+  documentID: null,
+
+  /**
+   * Timestamp string, representing the time when the log entry was generated
+   *
+   * @type String
+   */
+  timestamp: null,
+
+  /**
+   * Timestamp string, representing the time when the log entry was saved into the repository
+   *
+   * @type String
+   */
+  savedTimestamp: null,
+
+  /**
+   * Name of the app or device that generated the log entry
+   *
+   * @type String
+   */
+  source: null,
+
+  /**
+   * Network host name or address of the app or device that generated the log entry
+   *
+   * @type String
+   */
+  host: null,
+
+  /**
+   * Severity code
+   *
+   * @type String
+   */
+  severity: null,
+
+  /**
+   * severity converted into display text
+   *
+   * @type String
+   */
+  severityText: function() {
+   return App.REPOSITORY_ENTRY_SEVERITY_MAP[this.get('severity')];
+  }.property('severity').cacheable(),
+
+  /**
+   * Raw log message
+   *
+   * @type String
+   */
+  message: null,
+
+  /**
+   * Array of keywords
+   *
+   * @type Array of Strings
+   */
+  keywords: null,
+
+  /**
+   * Comma separated keywords
+   *
+   * @type Strings
+   */
+  keywordsString: null,
+  
+  /**
+   * Array of field objects. Each object has a 'name' and 'value' property
+   *
+   * @type Array of Objects
+   */
+  fields: null,
+
+  /**
+   * String of field in the format "Name = Value". Each field is separated by a new line.
+   *
+   * @type Strings
+   */
+  fieldsString: null,
+
+  /**
+   * Load the details of an API object into this controller
+   *
+   * @param {Object} logEntryAO API Object representing the log entry returned by the server
+   */
+  loadFromApiObject: function(logEntryAO) {
+    var now = new Date();
+    var timezoneOffsetMinutes = now.getTimezoneOffset();
+
+    var propertyMap = this.get('propertyMap');
+    for (var i = 0; i < propertyMap.length; i++) {
+      var map = propertyMap[i];
+      var controllerPropertyName = map[0];
+      var apiObjectPropertyName = map[1];
+
+      var apiObjectValue = logEntryAO[apiObjectPropertyName];
+      if (controllerPropertyName === 'timestamp' || controllerPropertyName === 'savedTimestamp') {
+        var d = SC.DateTime.parseChililogServerDateTime(apiObjectValue);
+        apiObjectValue = d.toChililogLocalDateTime();
+      }
+      this.set(controllerPropertyName, apiObjectValue);
+    }
+
+    // Make keywords CSV
+    var keywords = this.get('keywords');
+    var keywordsString = '';
+    if (!SC.none(keywords)) {
+      for (var i = 0; i < keywords.length; i++) {
+        if (i > 0) {
+          keywordsString = keywordsString + ', ';
+        }
+        keywordsString = keywordsString + keywords[i];
+      }
+    }
+    this.set('keywordsString', keywordsString);
+
+    // Get fields - these properties have names prefixed with 'fld_'
+    var fieldsArray = [];
+    var fieldsString = '';
+    for (var propertyName in logEntryAO) {
+      if (!SC.empty(propertyName) && typeof(propertyName) === 'string' && propertyName.indexOf('fld_') === 0) {
+        var nvp = { name: propertyName.substr(4), value: logEntryAO[propertyName]};
+        fieldsArray.push(nvp);
+        fieldsString = fieldsString + nvp.name + ' = ' + nvp.value + '\n';
+      }
+    }
+    this.set('fields', fieldsArray);
+    this.set('fieldsString', fieldsString);
+
+    return;
+  },
+
+  /**
+   *
+   * @type Array of name-value pairs
+   */
+  propertyMap: [
+    [App.DOCUMENT_ID_RECORD_FIELD_NAME, '_id' ],
+    ['timestampString' ,'ts'],
+    ['timestamp' ,'ts'],
+    ['savedTimestamp' ,'saved_ts'],
+    ['source' ,'source'],
+    ['host' ,'host'],
+    ['severity', 'severity'],
+    ['message' ,'message'],
+    ['keywords' ,'keywords']
+  ]
 
 });
 

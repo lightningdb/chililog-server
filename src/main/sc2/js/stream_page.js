@@ -292,10 +292,7 @@ App.pageController = SC.Object.create({
     if (logEntry.Timestamp === '') {
       scDate = SC.DateTime.create();
     } else {
-      var d = new Date();
-      var timezoneOffsetMinutes = d.getTimezoneOffset();
-      scDate = SC.DateTime.parse(logEntry.Timestamp, '%Y-%m-%dT%H:%M:%S.%s%Z');
-      scDate.set('timezone', timezoneOffsetMinutes);
+      scDate = SC.DateTime.parseChililogServerDateTime(logEntry.ts);
     }
 
     var severityClassName = 'severity';
@@ -318,7 +315,7 @@ App.pageController = SC.Object.create({
 
     var newLogEntryHtml = '<div class="logEntry">' +
       '<div class="row">' +
-        '<div class="left">' + scDate.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z') + '</div>' +
+        '<div class="left">' + scDate.toChililogLocalDateTime() + '</div>' +
         '<div class="right">' +
           formattedMessage +
           '<div class="rightFooter">' +

@@ -48,8 +48,8 @@ public class RepositoryListCriteria extends ListCriteria
     private String _finalizeFunction = null;
 
     public static final Pattern DATE_PATTERN = Pattern
-            .compile("^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
-    public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
+            .compile("^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z)$");
+    public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     public static final Pattern LONG_NUMBER_PATTERN = Pattern.compile("^NumberLong\\(([0-9]+)\\)$");
 
     /**

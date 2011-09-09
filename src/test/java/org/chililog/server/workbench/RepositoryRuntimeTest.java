@@ -408,7 +408,7 @@ public class RepositoryRuntimeTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Find
-        String conditions = URLEncoder.encode("{ \"fld_field1\" : \"line1\" }", "UTF-8");
+        String conditions = URLEncoder.encode("{ \"fld_field1\" : \"line1\", \"ts\" : { \"$gte\" : \"2011-01-01T05:05:05.000Z\" } }", "UTF-8");
 
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "/entries?query_type=find&conditions=" + conditions, HttpMethod.GET, _systemAdminAuthToken);

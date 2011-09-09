@@ -139,6 +139,11 @@
 </div>
 </script>
 
+  <!-- ui-dialog -->
+  <div id="dialog" title="Dialog Title" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable">
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+  </div>
+  <button id="test">test</button>
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>
@@ -156,6 +161,23 @@
 <!-- END COMMON SCRIPT BLOCK -->
 
 <script type="text/javascript" src="js/search_page.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $( "#dialog" ).dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true
+    });
+
+    $( "#test" )
+    .button()
+    .click(function() {
+        $( "#dialog" ).dialog( "open" );
+    });
+  });
+</script>
+
 
 </body>
 </html>

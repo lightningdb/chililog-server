@@ -85,17 +85,38 @@ App.getQueryStringHash = function() {
   return qsObj;
 }
 
+
 /**
  * Extends the standard date and time object for our special formatter
  */
 SC.DateTime.reopen({
 
   /**
+   * Parses the timestamp returned by the server
+   *
+   * @returns {SC.DateTime} timestamp in the local 
+   */
+  parseChililogServerDateTime: function(s) {
+    var d = SC.DateTime.parse(s, '%Y-%m-%dT%H:%M:%S.%s%Z');
+    d.set('timezone', new Date().getTimezoneOffset());
+    return d;
+  },
+
+  /**
+   * Returns the timestamp as a string in the local format
+   *
+   * @returns {String} timestamp in '2011-02-20 23:22:11.123 +10.00' format
+   */
+  toChililogLocalDateTime: function() {
+    return this.toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z');
+  },
+
+  /**
    * Provides timestamp like '2011-08-02T01:02:03Z'. Chililog standardises this format.
    *
-   * @returns {String} timestamp in 'yyyy-MM-ddTHH:mm:SSZ' format using the UTC timezone
+   * @returns {String} timestamp in '2011-02-20 23:22:11.123Z' format using the UTC timezone
    */
   toChililogServerDateTime: function() {
-    return this.toTimezone(0).toFormattedString('%Y-%m-%dT%H:%M:%SZ');
+    return this.toTimezone(0).toFormattedString('%Y-%m-%d %H:%M:%S.%s %Z');
   }
 });
