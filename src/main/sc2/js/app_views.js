@@ -28,7 +28,7 @@ App.TextBoxView = SC.TextField.extend({
   /**
    * Specify additional attributes
    */
-  attributeBindings: ['type', 'placeholder', 'value', 'name', 'tabindex', 'disabled'],
+  attributeBindings: ['type', 'placeholder', 'value', 'name', 'tabindex', 'disabled', 'readonly'],
 
   /**
    * Name of the text box
@@ -43,7 +43,12 @@ App.TextBoxView = SC.TextField.extend({
   /**
    * Flag to indicate if this is disabled or not
    */
-  disabled: NO
+  disabled: NO,
+
+  /**
+   * Read only text box
+   */
+  readonly: NO
 });
 
 /** @Class
@@ -54,7 +59,7 @@ App.TextAreaView = SC.TextArea.extend({
   /**
    * Specify additional attributes
    */
-  attributeBindings: ['placeholder', 'value', 'name', 'tabindex', 'disabled'],
+  attributeBindings: ['placeholder', 'value', 'name', 'tabindex', 'disabled', 'readonly'],
 
   /**
    * Name of the text box
@@ -69,7 +74,12 @@ App.TextAreaView = SC.TextArea.extend({
   /**
    * Flag to indicate if this is disabled or not
    */
-  disabled: NO
+  disabled: NO,
+  
+  /**
+   * Read only text box
+   */
+  readonly: NO
 });
 
 /**  @Class

@@ -36,7 +36,7 @@ App.ErrorMessage = SC.View.extend({
  * @class
  * Common functions for field data
  */
-App.FieldDataMixin = {
+App.CriteriaFieldDataMixin = {
 
   // Search when ENTER clicked
   insertNewline: function() {
@@ -81,7 +81,7 @@ App.FromDateField = SC.View.extend({
 
   label: '_search.fromDate'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.fromDate',
     name: 'fromDate',
     placeholder: 'yyyy-mm-dd',
@@ -106,7 +106,7 @@ App.FromTimeField = SC.View.extend({
 
   label: '_search.fromTime'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.fromTime',
     name: 'fromTime',
     placeholder: 'hh:mm:ss',
@@ -123,7 +123,7 @@ App.ToDateField = SC.View.extend({
 
   label: '_search.toDate'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.toDate',
     name: 'toDate',
     placeholder: 'yyyy-mm-dd',
@@ -148,7 +148,7 @@ App.ToTimeField = SC.View.extend({
 
   label: '_search.toTime'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.toTime',
     name: 'toTime',
     placeholder: 'hh:mm:ss',
@@ -165,7 +165,7 @@ App.SourceField = SC.View.extend({
 
   label: '_search.source'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.source',
     name: 'source',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -181,7 +181,7 @@ App.HostField = SC.View.extend({
 
   label: '_search.host'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.host',
     name: 'host',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -231,7 +231,7 @@ App.KeywordsField = SC.View.extend({
 
   label: '_search.keywords'.loc(),
 
-  Data : App.TextBoxView.extend(App.FieldDataMixin, {
+  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.keywords',
     name: 'keywords',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -377,6 +377,25 @@ App.Dialog = SC.View.extend({
 
 /**
  * @class
+ * Common functions for field data
+ */
+App.DialogFieldDataMixin = {
+
+  // Hide dialog on ENTER key pressed
+  insertNewline: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  },
+
+  // Hide dialog on ESC key pressed
+  cancel: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  }
+};
+
+/**
+ * @class
  * Dialog timestamp
  */
 App.DialogTimestampField = SC.View.extend({
@@ -384,7 +403,7 @@ App.DialogTimestampField = SC.View.extend({
 
   label: '_search.timestamp'.loc(),
 
-  Data : App.TextBoxView.extend({
+  Data : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     valueBinding: 'App.dialogController.timestamp'
   })
 });
@@ -393,13 +412,12 @@ App.DialogTimestampField = SC.View.extend({
  * @class
  * Dialog severity
  */
-App.DialogSeverityField = SC.View.extend({
+App.DialogSeverityField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.severity'.loc(),
 
   Data : App.TextBoxView.extend({
-    classNamesBindings: 'App.dialogController.severityClassNames',
     valueBinding: 'App.dialogController.severityText',
 
     updateClassNames: function() {
@@ -420,7 +438,7 @@ App.DialogSeverityField = SC.View.extend({
  * @class
  * Dialog source
  */
-App.DialogSourceField = SC.View.extend({
+App.DialogSourceField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.source'.loc(),
@@ -434,7 +452,7 @@ App.DialogSourceField = SC.View.extend({
  * @class
  * Dialog host
  */
-App.DialogHostField = SC.View.extend({
+App.DialogHostField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.host'.loc(),
@@ -448,7 +466,7 @@ App.DialogHostField = SC.View.extend({
  * @class
  * Dialog Message
  */
-App.DialogMessageField = SC.View.extend({
+App.DialogMessageField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.message'.loc(),
@@ -462,7 +480,7 @@ App.DialogMessageField = SC.View.extend({
  * @class
  * Keywords view in the details dialog
  */
-App.DialogKeywordsField = SC.View.extend({
+App.DialogKeywordsField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.keywords'.loc(),
@@ -476,7 +494,7 @@ App.DialogKeywordsField = SC.View.extend({
  * @class
  * Fields view in the details dialog
  */
-App.DialogFieldsField = SC.View.extend({
+App.DialogFieldsField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.fields'.loc(),
@@ -490,7 +508,7 @@ App.DialogFieldsField = SC.View.extend({
  * @class
  * Dialog document id
  */
-App.DialogDocumentIDField = SC.View.extend({
+App.DialogDocumentIDField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.documentID'.loc(),
@@ -504,7 +522,7 @@ App.DialogDocumentIDField = SC.View.extend({
  * @class
  * Dialog saved timestamp
  */
-App.DialogSavedTimestampField = SC.View.extend({
+App.DialogSavedTimestampField = SC.View.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.savedTimestamp'.loc(),
