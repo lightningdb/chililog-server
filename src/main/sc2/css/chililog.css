@@ -279,7 +279,13 @@ body.login {
 #searchDialog #dialogSeverityData {
     width: 85px;
 }
-#searchDialog #dialogSourceData, #searchDialog #dialogHostData {
+#searchDialog #dialogSeverityData.error {
+    background-color: #fddfde;
+}
+#searchDialog #dialogSeverityData.warning {
+    background-color: #fdf5d9;
+}
+#searchDialog #dialogSourceData, #searchDialog #dialogHostData, #searchDialog #dialogDocumentIDData, #searchDialog #dialogSavedTimestampData {
     width: 308px;
 }
 #searchDialog #dialogMessageData {

@@ -369,7 +369,8 @@ App.Dialog = SC.View.extend({
         autoOpen: false,
         height: 630,
         width: 690,
-        modal: true
+        modal: true,
+        closeOnEscape: false
     });
   }
 });
@@ -398,7 +399,20 @@ App.DialogSeverityField = SC.View.extend({
   label: '_search.severity'.loc(),
 
   Data : App.TextBoxView.extend({
-    valueBinding: 'App.dialogController.severityText'
+    classNamesBindings: 'App.dialogController.severityClassNames',
+    valueBinding: 'App.dialogController.severityText',
+
+    updateClassNames: function() {
+      this.$().removeClass('error');
+      this.$().removeClass('warning');
+
+      var severity = App.dialogController.get('severity');
+      if (severity <= 3) {
+        this.$().addClass('error');
+      } else if (severity == 4 || severity == 5) {
+        this.$().addClass('warning');
+      }
+    }.observes('value')
   })
 });
 
