@@ -189,7 +189,13 @@
       {{/view}}
     </div>
     <div class="clearfix" id="dialogBottomBar">
-      {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+      <div style="float: left;">
+        {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
+        {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
+      </div>
+      <div style="float: right;">
+        {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+      </div>
     </div>
   </div>
 {{/view}}

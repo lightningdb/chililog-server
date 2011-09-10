@@ -44,7 +44,9 @@ SC.STRINGS = {
   '_showMore': 'Show More',
   '_done': 'Done',
   '_next': '>',
+  '_nextTooltip': 'Next',
   '_previous': '\<',
+  '_previousTooltip': 'Previous',
 
   '_thousandSeparator': ',',
 

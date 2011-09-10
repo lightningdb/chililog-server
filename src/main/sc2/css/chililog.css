@@ -273,9 +273,11 @@ body.login {
 #searchDialog #dialogContainer {
     padding: 0px 5px;
 }
-
-#searchDialog #dialogTimestampData, #searchDialog #dialogSeverityData {
+#searchDialog #dialogTimestampData {
     width: 200px;
+}
+#searchDialog #dialogSeverityData {
+    width: 85px;
 }
 #searchDialog #dialogSourceData, #searchDialog #dialogHostData {
     width: 308px;
@@ -292,9 +294,13 @@ body.login {
     width: 635px;
     height: 5em;
 }
-
 #searchDialog #dialogBottomBar{
     border-top: solid 1px #ddd;
     padding-top: 8px;
-    text-align: right;
+}
+#searchDialog #dialogPreviousButton{
+}
+#searchDialog #dialogNextsButton{
+}
+#searchDialog #dialogDoneButton{
 }

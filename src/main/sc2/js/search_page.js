@@ -502,7 +502,37 @@ App.DialogSavedTimestampField = SC.View.extend({
 
 /**
  * @class
- * Button to show advanced criteria
+ * Button to show previous log entry
+ */
+App.DialogPreviousButton = App.ButtonView.extend({
+  label: '_previous'.loc(),
+  title: '_previousTooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.dialogController.hasPreviousEntries').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('showPreviousLogEntry');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to show next log entry
+ */
+App.DialogNextButton = App.ButtonView.extend({
+  label: '_next'.loc(),
+  title: '_nextTooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.dialogController.hasLaterEntries').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('showNextLogEntry');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to close dialog window
  */
 App.DialogDoneButton = App.ButtonView.extend({
   label: '_done'.loc(),
@@ -816,6 +846,13 @@ App.pageController = SC.Object.create({
 App.dialogController = SC.Object.create({
 
   /**
+   * Index of log entry in displayedLogEntryIndex array that is currently loaded
+   *
+   * @type int
+   */
+  currentLogEntryIndex: -1,
+
+  /**
    * Unique id for this log entry
    *
    * @type String
@@ -902,6 +939,20 @@ App.dialogController = SC.Object.create({
   fieldsString: null,
 
   /**
+   * Flag to indicate if there are earlier log entries that can be displayed
+   *
+   * @type Boolean
+   */
+  hasPreviousEntries: NO,
+
+  /**
+   * Flag to indicate if there are later log entries that can be displayed
+   * 
+   * @type Boolean
+   */
+  hasLaterEntries: NO,
+
+  /**
    * Load the details of an API object into this controller
    *
    * @param {Object} logEntryAO API Object representing the log entry returned by the server
@@ -910,6 +961,10 @@ App.dialogController = SC.Object.create({
 
     var logEntries = App.pageController.get('displayedLogEntries');
     var logEntryAO = logEntries[displayedLogEntryIndex];
+
+    this.set('currentLogEntryIndex', displayedLogEntryIndex);
+    this.set('hasPreviousEntries', displayedLogEntryIndex !== 0);
+    this.set('hasLaterEntries', displayedLogEntryIndex !== logEntries.length - 1);
 
     var now = new Date();
     var timezoneOffsetMinutes = now.getTimezoneOffset();
@@ -955,6 +1010,22 @@ App.dialogController = SC.Object.create({
     this.set('fieldsString', fieldsString);
 
     return;
+  },
+
+  /**
+   * Load the previous log entry
+   */
+  loadPreviousLogEntry: function() {
+    var currentLogEntryIndex = this.get('currentLogEntryIndex');
+    this.loadFromApiObject(currentLogEntryIndex - 1);
+  },
+
+  /**
+   * Load the next log entry
+   */
+  loadNextLogEntry: function() {
+    var currentLogEntryIndex = this.get('currentLogEntryIndex');
+    this.loadFromApiObject(currentLogEntryIndex + 1);
   },
 
   /**
@@ -1023,6 +1094,14 @@ App.statechart = SC.Statechart.create({
 
       hideDialog: function() {
         this.gotoState('notSearching');
+      },
+
+      showPreviousLogEntry: function() {
+        App.dialogController.loadPreviousLogEntry();
+      },
+
+      showNextLogEntry: function() {
+        App.dialogController.loadNextLogEntry();
       }
     }),
 

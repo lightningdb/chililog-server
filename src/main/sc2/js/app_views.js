@@ -101,7 +101,12 @@ App.ButtonView = SC.Button.extend({
   /**
    * Added disabled attribute binding
    */
-  attributeBindings: ['type', 'disabled', 'tabindex'],
+  attributeBindings: ['type', 'disabled', 'tabindex', 'title'],
+
+  /**
+   * Tooltip
+   */
+  title: '',
 
   /**
    * Tabindex
