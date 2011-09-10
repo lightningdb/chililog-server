@@ -289,10 +289,10 @@ App.pageController = SC.Object.create({
     }
 
     var scDate = null;
-    if (logEntry.Timestamp === '') {
+    if (SC.empty(logEntry.Timestamp)) {
       scDate = SC.DateTime.create();
     } else {
-      scDate = SC.DateTime.parseChililogServerDateTime(logEntry.ts);
+      scDate = App.DateTime.parseChililogServerDateTime(logEntry.Timestamp);
     }
 
     var severityClassName = 'severity';
@@ -315,7 +315,7 @@ App.pageController = SC.Object.create({
 
     var newLogEntryHtml = '<div class="logEntry">' +
       '<div class="row">' +
-        '<div class="left">' + scDate.toChililogLocalDateTime() + '</div>' +
+        '<div class="left">' + App.DateTime.toChililogLocalDateTime(scDate) + '</div>' +
         '<div class="right">' +
           formattedMessage +
           '<div class="rightFooter">' +

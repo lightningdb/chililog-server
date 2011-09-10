@@ -585,10 +585,10 @@ App.pageController = SC.Object.create({
     }
 
     var scDate = null;
-    if (logEntry.Timestamp === '') {
+    if (SC.empty(logEntry.ts)) {
       scDate = SC.DateTime.create();
     } else {
-      scDate = SC.DateTime.parseChililogServerDateTime(logEntry.ts);
+      scDate = App.DateTime.parseChililogServerDateTime(logEntry.ts);
     }
 
     var severity = logEntry.severity;
@@ -617,7 +617,7 @@ App.pageController = SC.Object.create({
 
     var newLogEntryHtml = '<div class="logEntry" ondblclick="alert(' + displayedLogEntryIndex + ')">' +
       '<div class="row">' +
-        '<div class="left">' + scDate.toChililogLocalDateTime() + '</div>' +
+        '<div class="left">' + App.DateTime.toChililogLocalDateTime(scDate) + '</div>' +
         '<div class="right">' +
           formattedMessage +
           '<div class="rightFooter">' +
@@ -756,8 +756,8 @@ App.dialogController = SC.Object.create({
 
       var apiObjectValue = logEntryAO[apiObjectPropertyName];
       if (controllerPropertyName === 'timestamp' || controllerPropertyName === 'savedTimestamp') {
-        var d = SC.DateTime.parseChililogServerDateTime(apiObjectValue);
-        apiObjectValue = d.toChililogLocalDateTime();
+        var d = App.DateTime.parseChililogServerDateTime(apiObjectValue);
+        apiObjectValue = App.DateTime.toChililogLocalDateTime(d);
       }
       this.set(controllerPropertyName, apiObjectValue);
     }
@@ -886,8 +886,8 @@ App.statechart = SC.Statechart.create({
           if (SC.none(conditions.ts) && !SC.empty(App.pageController.getPath('timespan.value'))) {
             var minutesAgo = parseInt(App.pageController.getPath('timespan.value')) * -1;
             conditions.ts = {
-              '$gte': SC.DateTime.create().advance({minute: minutesAgo}).toChililogServerDateTime(),
-              '$lte': SC.DateTime.create().toChililogServerDateTime()
+              '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.create().advance({minute: minutesAgo})),
+              '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.create())
             };
           }
           if (SC.none(conditions.ts)) {
@@ -896,19 +896,19 @@ App.statechart = SC.Statechart.create({
             var to = App.pageController.get('toDateTime');
             if (!SC.empty(from) && !SC.empty(to)) {
               conditions.ts = {
-                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime(),
-                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+                '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat)),
+                '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat))
               };
               if (SC.DateTime.compare(conditions.ts['$gte'], conditions.ts['$lte']) > 0) {
                 throw App.$error('_search.dateTimeRangeError', null, 'fromDateField');
               }
             } else if (!SC.empty(from)) {
               conditions.ts = {
-                '$gte': SC.DateTime.parse(from, parseFormat).toChililogServerDateTime()
+                '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat))
               };
             } else if (!SC.empty(to)) {
               conditions.ts = {
-                '$lte': SC.DateTime.parse(to, parseFormat).toChililogServerDateTime()
+                '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat))
               };
             }
           }
