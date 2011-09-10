@@ -115,6 +115,9 @@ SC.STRINGS = {
   '_search.host': 'Host',
   '_search.severity': 'Severity',
   '_search.message': 'Message',
+  '_search.fields': 'Fields',
+  '_search.savedTimestamp': 'Saved Timestamp',
+  '_search.documentID': 'ID',
   '_search.advancedCriteria': 'Advanced Options',
   '_search.condition': 'Conditions',
   '_search.condition.help': '(mongodb JSON format must be used.)',
@@ -122,6 +125,7 @@ SC.STRINGS = {
   '_search.showMore': 'Show More Rows',
   '_search.timeSpecifiedError': 'You have specified "In The Past" and a specific date and time. Please specify one or the other but not both.',
   '_search.dateTimeRangeError': 'From date and time is greater than To date and time.',
+  '_search.logEntries': 'Log Entries',
 
 
   // ********************************************************

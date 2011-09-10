@@ -270,3 +270,31 @@ body.login {
 }
 
 
+#searchDialog #dialogContainer {
+    padding: 0px 5px;
+}
+
+#searchDialog #dialogTimestampData, #searchDialog #dialogSeverityData {
+    width: 200px;
+}
+#searchDialog #dialogSourceData, #searchDialog #dialogHostData {
+    width: 308px;
+}
+#searchDialog #dialogMessageData {
+    width: 635px;
+    height: 8em;
+}
+#searchDialog #dialogKeywordsData {
+    width: 635px;
+    height: 5em;
+}
+#searchDialog #dialogFieldsData {
+    width: 635px;
+    height: 5em;
+}
+
+#searchDialog #dialogBottomBar{
+    border-top: solid 1px #ddd;
+    padding-top: 8px;
+    text-align: right;
+}

@@ -130,8 +130,8 @@ db.users.insert(sandpitRepositorySubscriberUser);
 print("\nAdding ChiliLog Repository");
 var chililogRepoInfo = {
 	name: "chililog",
-	display_name: "ChiliLog Log",
-	description: "Log repository for ChiliLog events",
+	display_name: "Chililog Server",
+	description: "Log repository for Chililog Server events",
 	startup_status: "ONLINE",
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,

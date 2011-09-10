@@ -278,7 +278,7 @@ App.ShowMoreButton = App.ButtonView.extend({
   label: '_search.showMore'.loc(),
 
   click: function() {
-    App.statechart.sendAction('doShowMore');
+    App.statechart.sendAction('showMore');
     return;
   }
 });
@@ -349,6 +349,168 @@ App.BottomBar = SC.View.extend({
  */
 App.NoRowsView = SC.View.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
+});
+
+
+/**
+ * @class
+ * Dialog div
+ */
+App.Dialog = SC.View.extend({
+  attributeBindings: ['title'],
+  
+  title: '_search.logEntries'.loc(),
+
+  didInsertElement: function() {
+    this._super();
+
+    // JQuery UI dialog setup
+    this.$().dialog({
+        autoOpen: false,
+        height: 630,
+        width: 690,
+        modal: true
+    });
+  }
+});
+
+/**
+ * @class
+ * Dialog timestamp
+ */
+App.DialogTimestampField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.timestamp'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.timestamp'
+  })
+});
+
+/**
+ * @class
+ * Dialog severity
+ */
+App.DialogSeverityField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.severity'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.severityText'
+  })
+});
+
+/**
+ * @class
+ * Dialog source
+ */
+App.DialogSourceField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.source'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.source'
+  })
+});
+
+/**
+ * @class
+ * Dialog host
+ */
+App.DialogHostField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.host'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.host'
+  })
+});
+
+/**
+ * @class
+ * Dialog Message
+ */
+App.DialogMessageField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.message'.loc(),
+
+  Data : App.TextAreaView.extend({
+    valueBinding: 'App.dialogController.message'
+  })
+});
+
+/**
+ * @class
+ * Keywords view in the details dialog
+ */
+App.DialogKeywordsField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.keywords'.loc(),
+
+  Data : App.TextAreaView.extend({
+    valueBinding: 'App.dialogController.keywordsString'
+  })
+});
+
+/**
+ * @class
+ * Fields view in the details dialog
+ */
+App.DialogFieldsField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.fields'.loc(),
+
+  Data : App.TextAreaView.extend({
+    valueBinding: 'App.dialogController.fieldsString'
+  })
+});
+
+/**
+ * @class
+ * Dialog document id
+ */
+App.DialogDocumentIDField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.documentID'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.documentID'
+  })
+});
+
+/**
+ * @class
+ * Dialog saved timestamp
+ */
+App.DialogSavedTimestampField = SC.View.extend({
+  classNames: 'field'.w(),
+
+  label: '_search.savedTimestamp'.loc(),
+
+  Data : App.TextBoxView.extend({
+    valueBinding: 'App.dialogController.savedTimestamp'
+  })
+});
+
+/**
+ * @class
+ * Button to show advanced criteria
+ */
+App.DialogDoneButton = App.ButtonView.extend({
+  label: '_done'.loc(),
+
+  click: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  }
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -532,11 +694,11 @@ App.pageController = SC.Object.create({
     SC.Object.create({label: '_search.timespan.5'.loc(), value: '5'}),
     SC.Object.create({label: '_search.timespan.15'.loc(), value: '15'}),
     SC.Object.create({label: '_search.timespan.30'.loc(), value: '30'}),
-    SC.Object.create({label: '_search.timespan.60'.loc(), value: '60', selected: YES}),
+    SC.Object.create({label: '_search.timespan.60'.loc(), value: '60'}),
     SC.Object.create({label: '_search.timespan.1440'.loc(), value: '1440'}),
     SC.Object.create({label: '_search.timespan.10080'.loc(), value: '10080'}),
     SC.Object.create({label: '_search.timespan.20160'.loc(), value: '20160'}),
-    SC.Object.create({label: '_search.timespan.43200'.loc(), value: '43200'})
+    SC.Object.create({label: '_search.timespan.43200'.loc(), value: '43200', selected: YES})
   ],
 
   /**
@@ -615,7 +777,7 @@ App.pageController = SC.Object.create({
     displayedLogEntries.push(logEntry);
     var displayedLogEntryIndex = displayedLogEntries.length - 1;
 
-    var newLogEntryHtml = '<div class="logEntry" ondblclick="alert(' + displayedLogEntryIndex + ')">' +
+    var newLogEntryHtml = '<div class="logEntry" ondblclick="App.statechart.sendAction(\'showDialog\',' + displayedLogEntryIndex + ');">' +
       '<div class="row">' +
         '<div class="left">' + App.DateTime.toChililogLocalDateTime(scDate) + '</div>' +
         '<div class="right">' +
@@ -744,7 +906,11 @@ App.dialogController = SC.Object.create({
    *
    * @param {Object} logEntryAO API Object representing the log entry returned by the server
    */
-  loadFromApiObject: function(logEntryAO) {
+  loadFromApiObject: function(displayedLogEntryIndex) {
+
+    var logEntries = App.pageController.get('displayedLogEntries');
+    var logEntryAO = logEntries[displayedLogEntryIndex];
+
     var now = new Date();
     var timezoneOffsetMinutes = now.getTimezoneOffset();
 
@@ -833,9 +999,30 @@ App.statechart = SC.Statechart.create({
         this.gotoState('searching');
       },
 
-      doShowMore: function() {
+      showMore: function() {
         App.pageController.set('errorMessage', '');
         this.gotoState('showingMore');
+      },
+
+      showDialog: function(displayedLogEntryIndex) {
+        // Load logEntry into the dialog controller
+        App.dialogController.loadFromApiObject(displayedLogEntryIndex);
+        this.gotoState('showingDetailsDialog');
+      }
+
+    }),
+
+    showingDetailsDialog: SC.State.extend({
+      enterState: function() {
+        $('#searchDialog').dialog('open')
+      },
+
+      exitState: function() {
+        $('#searchDialog').dialog('close')
+      },
+
+      hideDialog: function() {
+        this.gotoState('notSearching');
       }
     }),
 
@@ -979,8 +1166,8 @@ App.statechart = SC.Statechart.create({
           if (hours < 0 || hours > 24) {
             throw new SC.Error('err');
           }
-          var miniutes = parseInt((ss[1]))
-          if (miniutes < 0 || miniutes > 60) {
+          var minutes = parseInt((ss[1]))
+          if (minutes < 0 || minutes > 60) {
             throw new SC.Error('err');
           }
           var seconds = parseInt((ss[2]))
@@ -1094,5 +1281,3 @@ if (App.sessionEngine.load()) {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);
 }
-
-

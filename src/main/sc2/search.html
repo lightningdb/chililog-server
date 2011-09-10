@@ -137,13 +137,63 @@
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
-</script>
 
-  <!-- ui-dialog -->
-  <div id="dialog" title="Dialog Title" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable">
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+{{#view App.Dialog id="searchDialog" title="Log Entry" style="display:none" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
+  <div id="dialogContainer" class="form-stacked">
+    <div class="clearfix">
+      {{#view App.DialogTimestampField id="dialogTimestampField" class="floating" }}
+        <label for="dialogTimestampData">{{label}}</label>
+        <div class="input">{{view Data id="dialogTimestampData"}}</div>
+      {{/view}}
+      {{#view App.DialogSeverityField id="dialogSeverityField" class="floating" }}
+        <label for="dialogSeverityData">{{label}}</label>
+        <div class="input">{{view Data id="dialogSeverityData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix">
+      {{#view App.DialogMessageField id="dialogMessageField" class="floating" }}
+        <label for="dialogMessageData">{{label}}</label>
+        <div class="input">{{view Data id="dialogMessageData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix">
+      {{#view App.DialogSourceField id="dialogSourceField" class="floating" }}
+        <label for="dialogSourceData">{{label}}</label>
+        <div class="input">{{view Data id="dialogSourceData"}}</div>
+      {{/view}}
+      {{#view App.DialogHostField id="dialogHostField" class="floating" }}
+        <label for="dialogHostData">{{label}}</label>
+        <div class="input">{{view Data id="dialogHostData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix">
+      {{#view App.DialogKeywordsField id="dialogKeywordsField" class="floating" }}
+        <label for="dialogKeywordsData">{{label}}</label>
+        <div class="input">{{view Data id="dialogKeywordsData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix">
+      {{#view App.DialogFieldsField id="dialogFieldsField" class="floating" }}
+        <label for="dialogFieldsData">{{label}}</label>
+        <div class="input">{{view Data id="dialogFieldsData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix">
+      {{#view App.DialogDocumentIDField id="dialogDocumentIDField" class="floating" }}
+        <label for="dialogDocumentIDData">{{label}}</label>
+        <div class="input">{{view Data id="dialogDocumentIDData"}}</div>
+      {{/view}}
+      {{#view App.DialogSavedTimestampField id="dialogSavedTimestampField" class="floating" }}
+        <label for="dialogSavedTimestampData">{{label}}</label>
+        <div class="input">{{view Data id="dialogSavedTimestampData"}}</div>
+      {{/view}}
+    </div>
+    <div class="clearfix" id="dialogBottomBar">
+      {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+    </div>
   </div>
-  <button id="test">test</button>
+{{/view}}
+</script>
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>
@@ -161,23 +211,6 @@
 <!-- END COMMON SCRIPT BLOCK -->
 
 <script type="text/javascript" src="js/search_page.js"></script>
-<script type="text/javascript">
-  $(document).ready(function() {
-    $( "#dialog" ).dialog({
-            autoOpen: false,
-            height: 300,
-            width: 350,
-            modal: true
-    });
-
-    $( "#test" )
-    .button()
-    .click(function() {
-        $( "#dialog" ).dialog( "open" );
-    });
-  });
-</script>
-
 
 </body>
 </html>
