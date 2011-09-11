@@ -29,6 +29,7 @@
  */
 App.ErrorMessage = SC.View.extend({
   messageBinding: 'App.pageController.errorMessage',
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
 
@@ -348,6 +349,8 @@ App.BottomBar = SC.View.extend({
  * View displayed when when on rows found
  */
 App.NoRowsView = SC.View.extend({
+  message: '_search.noRowsFound'.loc(),
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
 });
 

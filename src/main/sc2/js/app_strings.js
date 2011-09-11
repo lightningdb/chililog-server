@@ -128,8 +128,30 @@ SC.STRINGS = {
   '_search.timeSpecifiedError': 'You have specified "In The Past" and a specific date and time. Please specify one or the other but not both.',
   '_search.dateTimeRangeError': 'From date and time is greater than To date and time.',
   '_search.logEntries': 'Log Entries',
+  '_search.noRowsFound': 'No log entries found matching your specified criteria',
 
-
+  // ********************************************************
+  // My Profile
+  // ********************************************************
+  '_myAccount.Title': 'My Account',
+  '_myAccount.changeProfile': 'Change Profile',
+  '_myAccount.username': 'Username',
+  '_myAccount.emailAddress': 'Email Address',
+  '_myAccount.emailAddress.invalid': 'Email Address is invalid',
+  '_myAccount.emailAddress.required': 'Email Address is required',
+  '_myAccount.displayName': 'Display Name',
+  '_myAccount.changePassword': 'Change My Password',
+  '_myAccount.oldPassword': 'Old Password',
+  '_myAccount.oldPassword.Required': 'Old Password is required.',
+  '_myAccount.newPassword': 'New Password',
+  '_myAccount.newPassword.invalid': 'You password must be at least 8 characters long and contains mixed case letters, numbers and a punctuation character like "!" or "#".',
+  '_myAccount.newPassword.required': 'New Password is required.',
+  '_myAccount.confirmPassword': 'Confirm Password',
+  '_myAccount.confirmPassword.help': 'Re-enter you new password to confirm that you have typed it correctly',
+  '_myAccount.confirmPassword.invalid': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
+  '_myAccount.confirmPassword.required': 'Confirm New Password is required.',
+  '_myAccount.changePassword.Success': 'Password changed',
+  
   // ********************************************************
   // OLD STUFF to be converted
   // ********************************************************
@@ -147,30 +169,6 @@ SC.STRINGS = {
   '_mainPane.MyProfile': 'Profile',
   '_mainPane.MyProfile.ToolTip': 'Change your account information',
   '_mainPane.Logout': 'Logout',
-
-
-  '_myAccountView.Title': 'My Account',
-  '_myAccountView.MyProfile': 'My Profile',
-  '_myAccountView.ChangePassword': 'Change Password',
-  '_myAccountMyProfileView.Username': 'Username',
-  '_myAccountMyProfileView.Username.Invalid': 'Username is invalid',
-  '_myAccountMyProfileView.Username.Required': 'Username is requried',
-  '_myAccountMyProfileView.EmailAddress': 'Email Address',
-  '_myAccountMyProfileView.EmailAddress.Invalid': 'Email Address is invalid',
-  '_myAccountMyProfileView.EmailAddress.Required': 'Email Address is required',
-  '_myAccountMyProfileView.DisplayName': 'Display Name',
-  '_myAccountMyProfileView.DisplayName.Help': '(Optional name or nickname to display instead of the username)',
-  '_myAccountMyPasswordView.ChangePassword': 'Change My Password',
-  '_myAccountMyPasswordView.OldPassword': 'Old Password',
-  '_myAccountMyPasswordView.OldPassword.Required': 'Old Password is required.',
-  '_myAccountMyPasswordView.NewPassword': 'New Password',
-  '_myAccountMyPasswordView.NewPassword.Help': 'Must be at least 8 characters long and contains mixed case letters, numbers and a punctuation character like "!" or "#".',
-  '_myAccountMyPasswordView.NewPassword.Invalid': 'You password must be at least 8 characters long and contains mixed case letters, numbers and a punctuation character like "!" or "#".',
-  '_myAccountMyPasswordView.NewPassword.Required': 'New Password is required.',
-  '_myAccountMyPasswordView.ConfirmNewPassword': 'Confirm New Password',
-  '_myAccountMyPasswordView.ConfirmNewPassword.Invalid': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
-  '_myAccountMyPasswordView.ConfirmNewPassword.Required': 'Confirm New Password is required.',
-  '_myAccountMyPasswordView.ChangePassword.Success': 'Password changed',
 
   '_configureView.Title': 'Configure',
   '_configureView.Repositories': 'Repositories',

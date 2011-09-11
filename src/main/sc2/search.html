@@ -43,7 +43,7 @@
           <a id="navUsername" href="#" class="menu">&nbsp;</a>
           <ul class="menu-dropdown">
             <li class="menu">
-              <a href="my_profile.html">My Profile</a>
+              <a href="my_account.html">My Account</a>
               <a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a>
             </li>
           </ul>
@@ -114,12 +114,8 @@
         {{view App.WorkingImage id="workingImage"}}
       </div>
     </div>
-    {{#view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
-      {{message}}
-    {{/view}}
-    {{#view App.NoRowsView id="noRowsMessage" class="alert-message block-message warning" }}
-      No rows found
-    {{/view}}
+    {{view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
+    {{view App.NoRowsView id="noRowsMessage" class="alert-message block-message warning" }}
     <div id="results" class="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
     </div>

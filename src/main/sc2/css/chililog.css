@@ -43,6 +43,39 @@ footer {
     padding-top: 8px;
 }
 
+.help-inline, .help-block {
+    color: gray;
+}
+
+form.section {
+}
+form.section h2 {
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: solid 1px #404040;
+}
+form.section .alert-message {
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
+form.section .actions {
+    background-color: #fff;
+    border:  none;
+    padding-top:  0px;
+}
+
+form.section .alert-message.block-message.success.inline {
+    padding: 7px 14px;
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+form.section .alert-message.block-message.error.inline {
+    padding: 7px 14px;
+    display: inline-block;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
 
 /* =============================================================================
    Login Page
@@ -195,7 +228,6 @@ body.login {
 /* =============================================================================
    Search Page
    ========================================================================= */
-
 #searchContent #repositoryData {
     width: 230px;
 }
@@ -310,3 +342,10 @@ body.login {
 }
 #searchDialog #dialogDoneButton{
 }
+
+/* =============================================================================
+   My Account
+   ========================================================================= */
+
+
+

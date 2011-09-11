@@ -43,7 +43,7 @@
           <a id="navUsername" href="#" class="menu">&nbsp;</a>
           <ul class="menu-dropdown">
             <li class="menu">
-              <a href="my_account.html">My Account</a>
+              <a href="my_account.html">My Profile</a>
               <a href="javascript:App.sessionEngine.logout();window.location='login.html';">Logout</a>
             </li>
           </ul>
@@ -54,10 +54,56 @@
 </div>
 <!-- END COMMON HEADER BLOCK -->
 
+<script type="text/x-handlebars">
 <div class="container">
-  <div id="usersContent" class="content">
-    <h1>Administration</h1>
-    <p>This page is still a work in progress.</p>
+  <div id="myAccountContent" class="content">
+    <h1>My Account</h1>
+
+    <form class="section">
+      <h2>Change Profile</h2>
+      <fieldset>
+        {{#view App.UsernameField id="usernameField" class="clearfix" }}
+          <label for="usernameData">{{label}}</label>
+          <div class="input">{{view Data id="usernameData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        {{#view App.EmailAddressField id="emailAddressField" class="clearfix" }}
+          <label for="emailAddressData">{{label}}</label>
+          <div class="input">{{view Data id="emailAddressData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        {{#view App.DisplayNameField id="displayNameField" class="clearfix" }}
+          <label for="displayNameData">{{label}}</label>
+          <div class="input">{{view Data id="displayNameData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        <div class="actions">
+          {{view App.ProfileSaveButton id="profileSaveButton" class="btn primary"}}
+          {{view App.ProfileWorkingImage id="profileWorkingImage" class="large"}}
+          {{view App.ProfileSuccessMessage id="successMessage" }}
+          {{view App.ProfileErrorMessage id="errorMessage" }}
+        </div>
+      </fieldset>
+    </form>
+
+    <form class="section">
+      <h2>Change Password</h2>
+      <fieldset>
+        {{#view App.OldPasswordField id="oldPasswordField" class="clearfix" }}
+          <label for="oldPasswordData">{{label}}</label>
+          <div class="input">{{view Data id="oldPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        {{#view App.NewPasswordField id="newPasswordField" class="clearfix" }}
+          <label for="newPasswordData">{{label}}</label>
+          <div class="input">{{view Data id="newPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        {{#view App.ConfirmPasswordField id="confirmPasswordField" class="clearfix" }}
+          <label for="confirmPasswordData">{{label}}</label>
+          <div class="input">{{view Data id="confirmPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
+        {{/view}}
+        <div class="actions">
+          {{view App.PasswordSaveButton id="passwordSaveButton" class="btn primary"}}
+          {{view App.PasswordWorkingImage id="workingImage"}}
+        </div>
+      </fieldset>
+    </form>
   </div>
 
   <!-- START COMMON FOOTER BLOCK -->
@@ -68,6 +114,7 @@
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
+</script>
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>
@@ -84,7 +131,7 @@
 <script type="text/javascript" src="js/app_engine.js"></script>
 <!-- END COMMON SCRIPT BLOCK -->
 
-<script type="text/javascript" src="js/admin_users_page.js"></script>
+<script type="text/javascript" src="js/my_account_page.js"></script>
 
 </body>
 </html>

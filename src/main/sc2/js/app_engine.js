@@ -1721,14 +1721,14 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
    * @param authenticatedUserRecord record to save
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(callbackParams, error) {}.
+   * Signature is: function(documentID, callbackParams, error) {}.
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   saveProfile: function(authenticatedUserRecord, callbackTarget, callbackFunction, callbackParams) {
     var data = authenticatedUserRecord.toApiObject();
     var context = {
-      callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
+      record: authenticatedUserRecord, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
     };
 
     // Call server
@@ -1759,9 +1759,15 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
   _endSaveProfile: function(data, textStatus, jqXHR) {
     var error = null;
     try {
+      // Discard changes
+      App.sessionEngine.discardProfileChanges(this.record);
+
       // Put authenticated user details into the store
       App.sessionEngine._convertApiObjectsToRecords([data], App.AuthenticatedUserRecord);
-      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATED_USER_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
+
+      // Update logged in user by simulating an authentication token change
+      App.sessionEngine.notifyPropertyChange('authenticationToken');
     }
     catch (err) {
       error = err;
