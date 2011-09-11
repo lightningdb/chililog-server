@@ -75,22 +75,20 @@ App.UsernameField = SC.View.extend({
  * @class
  * Email address
  */
-App.UsernameField = SC.View.extend({
-  classNames: 'field'.w(),
-  label: '_myAccount.username'.loc(),
-  Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
-    valueBinding: 'App.pageController.authenticatedUserRecord.username',
-    disabled: YES
-  })
-});
-
-/**
- * @class
- * Email address
- */
 App.EmailAddressField = SC.View.extend({
   classNames: 'field'.w(),
   label: '_myAccount.emailAddress'.loc(),
+
+  help: '',
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('profileEmailAddressErrorMessage');
+    this.set('help', msg);
+    this.$().removeClass('error');
+    if (!SC.empty(msg)) {
+      this.$().addClass('error');
+    }
+  }.observes('App.pageController.profileEmailAddressErrorMessage'),
+  
   Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
     valueBinding: 'App.pageController.authenticatedUserRecord.emailAddress',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool(),
@@ -107,6 +105,7 @@ App.EmailAddressField = SC.View.extend({
 App.DisplayNameField = SC.View.extend({
   classNames: 'field'.w(),
   label: '_myAccount.displayName'.loc(),
+
   Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
     valueBinding: 'App.pageController.authenticatedUserRecord.displayName',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool()
@@ -137,6 +136,9 @@ App.ProfileWorkingImage = App.ImgView.extend({
 });
 
 
+
+
+
 /**
  * @class
  * Common functions for password field data
@@ -151,11 +153,48 @@ App.PasswordFieldDataMixin = {
 
 /**
  * @class
+ * Success message
+ */
+App.PasswordSuccessMessage = SC.View.extend({
+  classNames: 'alert-message block-message success inline'.w(),
+  messageBinding: 'App.pageController.passwordSuccessMessage',
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
+  isVisibleBinding: SC.Binding.from('App.pageController.passwordSuccessMessage').oneWay().bool()
+});
+
+/**
+ * @class
+ * Error message
+ */
+App.PasswordErrorMessage = SC.View.extend({
+  classNames: 'alert-message block-message error inline'.w(),
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
+  isVisible: NO,
+  errorMessageDidChange: function() {
+    var msg = App.pageController.get('passwordErrorMessage');
+    this.set('isVisible', !SC.empty(msg));
+    this.set('message', msg);
+  }.observes('App.pageController.passwordErrorMessage')
+});
+
+/**
+ * @class
  * Old Password
  */
 App.OldPasswordField = SC.View.extend({
   classNames: 'field'.w(),
   label: '_myAccount.oldPassword'.loc(),
+
+  help: '',
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('oldPasswordErrorMessage');
+    this.set('help', msg);
+    this.$().removeClass('error');
+    if (!SC.empty(msg)) {
+      this.$().addClass('error');
+    }
+  }.observes('App.pageController.oldPasswordErrorMessage'),
+
   Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
     type: 'password',
     valueBinding: 'App.pageController.oldPassword',
@@ -170,6 +209,17 @@ App.OldPasswordField = SC.View.extend({
 App.NewPasswordField = SC.View.extend({
   classNames: 'field'.w(),
   label: '_myAccount.newPassword'.loc(),
+
+  help: '',
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('newPasswordErrorMessage');
+    this.set('help', msg);
+    this.$().removeClass('error');
+    if (!SC.empty(msg)) {
+      this.$().addClass('error');
+    }
+  }.observes('App.pageController.newPasswordErrorMessage'),
+
   Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
     type: 'password',
     valueBinding: 'App.pageController.newPassword',
@@ -184,7 +234,17 @@ App.NewPasswordField = SC.View.extend({
 App.ConfirmPasswordField = SC.View.extend({
   classNames: 'field'.w(),
   label: '_myAccount.confirmPassword'.loc(),
+
   help: '_myAccount.confirmPassword.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('confirmPasswordErrorMessage');
+    this.set('help', SC.empty(msg) ? '_myAccount.confirmPassword.help'.loc() : msg);
+    this.$().removeClass('error');
+    if (!SC.empty(msg)) {
+      this.$().addClass('error');
+    }
+  }.observes('App.pageController.confirmPasswordErrorMessage'),
+
   Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
     type: 'password',
     valueBinding: 'App.pageController.confirmPassword',
@@ -200,7 +260,7 @@ App.PasswordSaveButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.canSavePassword').oneWay().bool().not(),
   label: '_myAccount.changePassword'.loc(),
   click: function() {
-    App.statechart.sendAction('startPasswordSave');
+    App.statechart.sendAction('startSavingPassword');
     return;
   }
 });
@@ -230,6 +290,21 @@ App.pageController = SC.Object.create({
   authenticatedUserRecord: null,
 
   /**
+   * Error message specific to email
+   */
+  profileEmailAddressErrorMessage: null,
+
+  /**
+   * Message to display when save successful
+   */
+  profileSuccessMessage: null,
+
+  /**
+   * Message to display save has an error
+   */
+  profileErrorMessage: null,
+
+  /**
    * Flag to indicate if we are saving password
    * @type Boolean
    */
@@ -247,20 +322,15 @@ App.pageController = SC.Object.create({
   }.property('authenticatedUserRecord.status', 'isSaving').cacheable(),
 
   /**
-   * Message to display when save successful
-   */
-  profileSuccessMessage: null,
-
-  /**
-   * Message to display save has an error
-   */
-  profileErrorMessage: null,
-
-  /**
    * User's current password
    * @type String
    */
   oldPassword: '',
+
+  /**
+   * Error message specific to oldPassword
+   */
+  oldPasswordErrorMessage: null,
 
   /**
    * New password
@@ -269,10 +339,30 @@ App.pageController = SC.Object.create({
   newPassword: '',
 
   /**
+   * Error message specific to newPassword
+   */
+  newPasswordErrorMessage: null,
+
+  /**
    * Confirm password
    * @type String
    */
   confirmPassword: '',
+
+  /**
+   * Error message specific to confirmPassword
+   */
+  confirmPasswordErrorMessage: null,
+
+  /**
+   * Message to display when save successful
+   */
+  passwordSuccessMessage: null,
+
+  /**
+   * Message to display save has an error
+   */
+  passwordErrorMessage: null,
 
   /**
    * Flag to indicate if we are saving profile
@@ -343,7 +433,12 @@ App.statechart = SC.Statechart.create({
 
       startSavingProfile: function() {
         this.gotoState('savingProfile');
+      },
+
+      startSavingPassword: function() {
+        this.gotoState('savingPassword');
       }
+
     }),
 
     /**
@@ -351,8 +446,6 @@ App.statechart = SC.Statechart.create({
      */
     savingProfile: SC.State.extend({
       enterState: function() {
-        App.pageController.set('profileSuccessMessage', null);
-        App.pageController.set('profileErrorMessage', null);
         App.pageController.set('isSavingProfile', YES);
         this.save();
       },
@@ -363,17 +456,39 @@ App.statechart = SC.Statechart.create({
 
       save: function() {
         var user = App.pageController.get('authenticatedUserRecord');
-        App.sessionEngine.saveProfile(user, this, this.endSave);
+
+        // Reset messages and errors
+        App.pageController.set('profileSuccessMessage', null);
+        App.pageController.set('profileErrorMessage', null);
+        App.pageController.set('profileEmailAddressErrorMessage', null);
+
+        // Check fields
+        var isError = NO;
+        var emailAddress = App.pageController.getPath('authenticatedUserRecord.emailAddress');
+        if (SC.empty(emailAddress)) {
+          App.pageController.set('profileEmailAddressErrorMessage', '_myAccount.emailAddress.required'.loc());
+          isError = YES;
+        } else if (!App.validators.checkEmailAddress(emailAddress)) {
+          App.pageController.set('profileEmailAddressErrorMessage', '_myAccount.emailAddress.invalid'.loc());
+          isError = YES;
+        }
+
+        if (isError) {
+          this.gotoState('editing');
+        } else {
+          // Do save
+          App.sessionEngine.saveProfile(user, this, this.endSave);
+        }
       },
 
       endSave: function(documentID, callbackParams, error) {
         if (SC.none(error)) {
           // Show success message
           App.pageController.set('profileSuccessMessage', '_saveSuccess'.loc());
-          var element = $('#successMessage');
+          var element = $('#profileSuccessMessage');
           element.stop().show();
           for (var i=0; i < 5; i++) {
-            element.effect('highlight', { color : '#FDF5D9'}, 100);
+            element.effect('highlight', { color : 'gold'}, 100);
           }
           element.delay(3000).fadeOut(3000);
 
@@ -385,22 +500,11 @@ App.statechart = SC.Statechart.create({
           this.gotoState('loading');
         } else {
           // Show error message
-          App.pageController.set('profileErrorMessage', error);
-
-          // Set focus on field if specified
-          if (!SC.empty(error.errorFieldId)) {
-            var dataElementId = error.errorFieldId.replace('Field', 'Data');
-            setTimeout(function() {
-              $('#' + dataElementId)[0].focus();
-            }, 100);
-          } else {
-            
-          }
+          App.pageController.set('profileErrorMessage', error.message);
 
           // Re-edit
           this.gotoState('editing');
         }
-
       }
     }),
 
@@ -409,10 +513,84 @@ App.statechart = SC.Statechart.create({
      */
     savingPassword: SC.State.extend({
       enterState: function() {
+        App.pageController.set('isSavingPassword', YES);
+        this.save();
       },
 
       exitState: function() {
+        App.pageController.set('isSavingPassword', NO);
+      },
+
+      save: function() {
+        // Reset messages and errors
+        App.pageController.set('passwordSuccessMessage', null);
+        App.pageController.set('passwordErrorMessage', null);
+        App.pageController.set('newPasswordErrorMessage', null);
+        App.pageController.set('confirmPasswordErrorMessage', null);
+
+        // Check fields
+        var isError = NO;
+        var oldPassword = App.pageController.get('oldPassword');
+        var newPassword = App.pageController.get('newPassword');
+        var confirmPassword = App.pageController.get('confirmPassword');
+
+        if (SC.empty(oldPassword)) {
+          App.pageController.set('oldPasswordErrorMessage', '_myAccount.oldPassword.required'.loc());
+          isError = YES;
+        }
+
+        if (SC.empty(newPassword)) {
+          App.pageController.set('newPasswordErrorMessage', '_myAccount.newPassword.required'.loc());
+          isError = YES;
+        } else if (newPassword.length < 8) {
+          App.pageController.set('newPasswordErrorMessage', '_myAccount.newPassword.invalid'.loc());
+          isError = YES;
+        }
+
+        if (SC.empty(confirmPassword)) {
+          App.pageController.set('confirmPasswordErrorMessage', '_myAccount.confirmPassword.required'.loc());
+          isError = YES;
+        } else if (newPassword !== confirmPassword) {
+          App.pageController.set('confirmPasswordErrorMessage', '_myAccount.confirmPassword.invalid'.loc());
+          isError = YES;
+        }
+
+        if (isError) {
+          this.gotoState('editing');
+        } else {
+          // Do save
+          App.sessionEngine.changePassword(oldPassword, newPassword, confirmPassword, this, this.endSave);
+        }
+      },
+
+      endSave: function(callbackParams, error) {
+        if (SC.none(error)) {
+          // Show success message
+          App.pageController.set('passwordSuccessMessage', '_myAccount.changePassword.success'.loc());
+          var element = $('#passwordSuccessMessage');
+          element.stop().show();
+          for (var i=0; i < 5; i++) {
+            element.effect('highlight', { color : 'gold'}, 100);
+          }
+          element.delay(3000).fadeOut(3000);
+
+          // Clear passwords
+          App.pageController.set('oldPassword', '');
+          App.pageController.set('newPassword', '');
+          App.pageController.set('confirmPassword', '');
+
+          // Reload
+          this.gotoState('loading');
+        } else {
+          // Show error message
+          App.pageController.set('passwordErrorMessage', error.message);
+
+          // Re-edit
+          this.gotoState('editing');
+        }
+
       }
+
     })
 
   })

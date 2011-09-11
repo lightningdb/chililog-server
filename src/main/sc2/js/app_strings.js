@@ -142,15 +142,15 @@ SC.STRINGS = {
   '_myAccount.displayName': 'Display Name',
   '_myAccount.changePassword': 'Change My Password',
   '_myAccount.oldPassword': 'Old Password',
-  '_myAccount.oldPassword.Required': 'Old Password is required.',
+  '_myAccount.oldPassword.required': 'Old Password is required.',
   '_myAccount.newPassword': 'New Password',
-  '_myAccount.newPassword.invalid': 'You password must be at least 8 characters long and contains mixed case letters, numbers and a punctuation character like "!" or "#".',
+  '_myAccount.newPassword.invalid': 'You password must be at least 8 characters long.',
   '_myAccount.newPassword.required': 'New Password is required.',
   '_myAccount.confirmPassword': 'Confirm Password',
   '_myAccount.confirmPassword.help': 'Re-enter you new password to confirm that you have typed it correctly',
   '_myAccount.confirmPassword.invalid': 'New Password and Confirm New Passwords are not the same. Please re-enter you new password again.',
   '_myAccount.confirmPassword.required': 'Confirm New Password is required.',
-  '_myAccount.changePassword.Success': 'Password changed',
+  '_myAccount.changePassword.success': 'Password successfully changed',
   
   // ********************************************************
   // OLD STUFF to be converted

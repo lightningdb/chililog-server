@@ -299,8 +299,37 @@ App.SelectView = SC.CollectionView.extend({
 });
 
 // --------------------------------------------------------------------------------------------------------------------
+// Validators
+// --------------------------------------------------------------------------------------------------------------------
+App.validators = {
+
+  /**
+   * Email address regular expression check
+   * Good enough algorithm from. Perfect match is too slow.
+   * http://fightingforalostcause.net/misc/2006/compare-email-regex.php
+   * @type RegExp
+   */
+  emailAddressRegExp: /^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$/i,
+
+  /**
+   * Checks if an email address is valid
+   * @param emailAddressToCheck
+   * @returns YES if valid, NO if not valid
+   */
+  checkEmailAddress: function (emailAddressToCheck) {
+    var result = App.validators.emailAddressRegExp.test(emailAddressToCheck);
+    return result;
+  }
+
+};
+
+
+// --------------------------------------------------------------------------------------------------------------------
 // Utility methods
 // --------------------------------------------------------------------------------------------------------------------
+
+
+
 /**
  * Setup the fields on an authenticated page
  */
@@ -328,5 +357,4 @@ App.setupStandardPage = function(pageFileName) {
   $("body").bind("click", function (e) {
     $('a.menu').parent("li").removeClass("open");
   });
-
 }

@@ -112,7 +112,13 @@ App.EngineMixin = {
 
     // Callback (this should be the context data)
     if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+      if (!SC.none(this.documentID) && !SC.none(this.records)) {
+        this.callbackFunction.call(this.callbackTarget, this.documentID, this.records, this.callbackParams, error);
+      } else if (!SC.none(this.documentID)) {
+        this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
+      } else {
+        this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+      }
     }
 
     return YES;
