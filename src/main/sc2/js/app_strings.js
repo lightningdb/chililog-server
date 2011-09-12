@@ -128,7 +128,7 @@ SC.STRINGS = {
   '_search.timeSpecifiedError': 'You have specified "In The Past" and a specific date and time. Please specify one or the other but not both.',
   '_search.dateTimeRangeError': 'From date and time is greater than To date and time.',
   '_search.logEntries': 'Log Entries',
-  '_search.noRowsFound': 'No log entries found matching your specified criteria',
+  '_search.noRowsFound': 'No log entries found matching your selection criteria',
 
   // ********************************************************
   // My Profile

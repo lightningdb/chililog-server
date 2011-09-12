@@ -10,7 +10,10 @@
 .form-stacked {
     padding-left: 0px;
 }
-
+.form-stacked fieldset {
+    padding: 0px;
+    margin: 0px;
+}
 .form-stacked .floating {
     float: left;
     margin-right: 8px;
@@ -195,10 +198,10 @@ body.login {
 /* =============================================================================
    Stream Page
    ============================================================================= */
-#streamContent #repositoryData {
+#streamContent #repositoryField select {
     width: 200px;
 }
-#streamContent #severityData {
+#streamContent #severityField select {
     width: 110px;
 }
 #streamContent #actionButton, #streamContent #clearButton {
@@ -228,40 +231,38 @@ body.login {
 /* =============================================================================
    Search Page
    ========================================================================= */
-#searchContent #repositoryData {
+#searchContent #repositoryField input {
     width: 230px;
 }
-#searchContent #timespanData {
+#searchContent #timespanField select {
     width: 110px;
 }
-#searchContent #severityData {
+#searchContent #severityField select {
     width: 110px;
 }
-#searchContent #keywordsData {
+#searchContent #keywordsField input {
     width: 380px;
 }
-#searchContent #fromDateData {
+#searchContent #fromDateField input {
     width: 101px;
 }
-#searchContent #fromTimeData {
+#searchContent #fromTimeField input {
     width: 100px;
 }
-#searchContent #toDateData {
+#searchContent #toDateField input {
     width: 101px;
 }
-#searchContent #toTimeData {
+#searchContent #toTimeField input {
     width: 100px;
 }
-#searchContent #sourceData {
+#searchContent #sourceField input {
     width: 180px;
 }
-#searchContent #hostData {
+#searchContent #hostField input {
     width: 180px;
 }
-#searchContent #conditionField {
+#searchContent #conditionField textarea {
     padding-top: 8px;
-}
-#searchContent #conditionData {
     width: 855px;
     height: 5em;
 }
@@ -305,30 +306,30 @@ body.login {
 #searchDialog #dialogContainer {
     padding: 0px 5px;
 }
-#searchDialog #dialogTimestampData {
+#searchDialog #dialogTimestampField input {
     width: 200px;
 }
-#searchDialog #dialogSeverityData {
+#searchDialog #dialogSeverityField input {
     width: 85px;
 }
-#searchDialog #dialogSeverityData.error {
+#searchDialog #dialogSeverityData input.error {
     background-color: #fddfde;
 }
-#searchDialog #dialogSeverityData.warning {
+#searchDialog #dialogSeverityData input.warning {
     background-color: #fdf5d9;
 }
-#searchDialog #dialogSourceData, #searchDialog #dialogHostData, #searchDialog #dialogDocumentIDData, #searchDialog #dialogSavedTimestampData {
+#searchDialog #dialogSourceData input, #searchDialog #dialogHostData input, #searchDialog #dialogDocumentIDData input, #searchDialog #dialogSavedTimestampField input {
     width: 308px;
 }
-#searchDialog #dialogMessageData {
+#searchDialog #dialogMessageField textarea {
     width: 635px;
     height: 8em;
 }
-#searchDialog #dialogKeywordsData {
+#searchDialog #dialogKeywordsField textarea {
     width: 635px;
     height: 5em;
 }
-#searchDialog #dialogFieldsData {
+#searchDialog #dialogFieldsField textarea {
     width: 635px;
     height: 5em;
 }

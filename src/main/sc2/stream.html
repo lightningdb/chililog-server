@@ -59,22 +59,16 @@
   <div id="streamContent" class="content clearfix">
     <h1>Stream</h1>
     <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
-    <div class="alert-message block-message info form-stacked">
-      {{#view App.RepositoryField id="repositoryField" class="floating" }}
-        <label for="repositoryData">{{label}}</label>
-        <div class="input">{{view Data id="repositoryData"}}</div>
-      {{/view}}
-      {{#view App.SeverityField id="severityField" class="floating" }}
-        <label for="severityData">{{label}}</label>
-        <div class="input">{{view Data id="severityData"}}</div>
-      {{/view}}
-      {{view App.ActionButton id="actionButton" class="btn primary"}}&nbsp;&nbsp;&nbsp;
-      {{view App.ClearButton id="clearButton" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
-      <div class="clearfix"></div>
-    </div>
-    {{#view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
-      {{message}}
-    {{/view}}
+    <form class="alert-message block-message info form-stacked">
+      <fieldset>
+        {{view App.RepositoryField id="repositoryField" }}
+        {{view App.SeverityField id="severityField" }}
+        {{view App.ActionButton id="actionButton" class="btn primary"}}&nbsp;&nbsp;&nbsp;
+        {{view App.ClearButton id="clearButton" class="btn" isVisibleBinding="App.pageController.showActionButton2" }}
+        <div class="clearfix"></div>
+      </fieldset>
+    </form>
+    {{view App.ErrorMessage id="errorMessage"}}
     <div id="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
     </div>

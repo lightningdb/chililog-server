@@ -59,63 +59,32 @@
   <div id="searchContent" class="content">
     <h1>Search</h1>
     <p>Search for historical log entries.</p>
-    <div class="alert-message block-message info form-stacked">
-      <div class="clearfix">
-        {{#view App.RepositoryField id="repositoryField" class="floating" }}
-          <label for="repositoryData">{{label}}</label>
-          <div class="input">{{view Data id="repositoryData"}}</div>
+    <form class="alert-message block-message info form-stacked">
+      <fieldset>
+        <div class="clearfix">
+          {{view App.RepositoryField id="repositoryField" }}
+          {{view App.TimespanField id="timespanField" }}
+          {{view App.SeverityField id="severityField" }}
+          {{view App.KeywordsField id="keywordsField" }}
+        </div>
+        {{#view App.AdvancedCriteria class="clearfix" }}
+          {{view App.FromDateField id="fromDateField" }}
+          {{view App.FromTimeField id="fromTimeField" }}
+          {{view App.ToDateField id="toDateField" }}
+          {{view App.ToTimeField id="toTimeField" }}
+          {{view App.SourceField id="sourceField" }}
+          {{view App.HostField id="hostField" }}
+          {{view App.ConditionField id="conditionField" }}
         {{/view}}
-        {{#view App.TimespanField id="timespanField" class="floating" }}
-          <label for="timespanData">{{label}}</label>
-          <div class="input">{{view Data id="timespanData"}}</div>
-        {{/view}}
-        {{#view App.SeverityField id="severityField" class="floating" }}
-          <label for="severityData">{{label}}</label>
-          <div class="input">{{view Data id="severityData"}}</div>
-        {{/view}}
-        {{#view App.KeywordsField id="keywordsField" class="floating" }}
-          <label for="keywordsData">{{label}}</label>
-          <div class="input">{{view Data id="keywordsData"}}</div>
-        {{/view}}
-      </div>
-      {{#view App.AdvancedCriteria class="clearfix" }}
-        {{#view App.FromDateField id="fromDateField" class="floating" }}
-          <label for="fromDateData">{{label}}</label>
-          <div class="input">{{view Data id="fromDateData"}}</div>
-        {{/view}}
-        {{#view App.FromTimeField id="fromTimeField" class="floating" }}
-          <label for="fromTimeData">{{label}}</label>
-          <div class="input">{{view Data id="fromTimeData"}}</div>
-        {{/view}}
-        {{#view App.ToDateField id="toDateField" class="floating" }}
-          <label for="toDateData">{{label}}</label>
-          <div class="input">{{view Data id="toDateData"}}</div>
-        {{/view}}
-        {{#view App.ToTimeField id="toTimeField" class="floating" }}
-          <label for="toTimeData">{{label}}</label>
-          <div class="input">{{view Data id="toTimeData"}}</div>
-        {{/view}}
-        {{#view App.SourceField id="sourceField" class="floating" }}
-          <label for="sourceData">{{label}}</label>
-          <div class="input">{{view Data id="sourceData"}}</div>
-        {{/view}}
-        {{#view App.HostField id="hostField" class="floating" }}
-          <label for="hostData">{{label}}</label>
-          <div class="input">{{view Data id="hostData"}}</div>
-        {{/view}}
-        {{#view App.ConditionField id="conditionField" class="floating" }}
-          <label for="conditionData">{{label}}</label>
-          <div class="input">{{view Data id="conditionData"}}</div>
-        {{/view}}
-      {{/view}}
-      <div class="clearfix">
-        {{view App.SearchButton id="searchButton" class="btn primary"}}
-        {{view App.AdvancedButton id="advancedButton" class="btn"}} 
-        {{view App.WorkingImage id="workingImage"}}
-      </div>
-    </div>
-    {{view App.ErrorMessage id="errorMessage" class="alert-message block-message error" }}
-    {{view App.NoRowsView id="noRowsMessage" class="alert-message block-message warning" }}
+        <div class="clearfix">
+          {{view App.SearchButton id="searchButton" class="btn primary"}}
+          {{view App.AdvancedButton id="advancedButton" class="btn"}}
+          {{view App.WorkingImage id="workingImage"}}
+        </div>
+      </fieldset>
+    </form>
+    {{view App.ErrorMessage id="errorMessage" }}
+    {{view App.NoRowsView id="noRowsMessage" }}
     <div id="results" class="results" style="display: none;">
       <div class="heading ui-corner-all">Log Entries</div>
     </div>
@@ -135,65 +104,40 @@
 </div>
 
 {{#view App.Dialog id="searchDialog" title="Log Entry" style="display:none" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
-  <div id="dialogContainer" class="form-stacked">
-    <div class="clearfix">
-      {{#view App.DialogTimestampField id="dialogTimestampField" class="floating" }}
-        <label for="dialogTimestampData">{{label}}</label>
-        <div class="input">{{view Data id="dialogTimestampData"}}</div>
-      {{/view}}
-      {{#view App.DialogSeverityField id="dialogSeverityField" class="floating" }}
-        <label for="dialogSeverityData">{{label}}</label>
-        <div class="input">{{view Data id="dialogSeverityData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix">
-      {{#view App.DialogMessageField id="dialogMessageField" class="floating" }}
-        <label for="dialogMessageData">{{label}}</label>
-        <div class="input">{{view Data id="dialogMessageData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix">
-      {{#view App.DialogSourceField id="dialogSourceField" class="floating" }}
-        <label for="dialogSourceData">{{label}}</label>
-        <div class="input">{{view Data id="dialogSourceData"}}</div>
-      {{/view}}
-      {{#view App.DialogHostField id="dialogHostField" class="floating" }}
-        <label for="dialogHostData">{{label}}</label>
-        <div class="input">{{view Data id="dialogHostData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix">
-      {{#view App.DialogKeywordsField id="dialogKeywordsField" class="floating" }}
-        <label for="dialogKeywordsData">{{label}}</label>
-        <div class="input">{{view Data id="dialogKeywordsData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix">
-      {{#view App.DialogFieldsField id="dialogFieldsField" class="floating" }}
-        <label for="dialogFieldsData">{{label}}</label>
-        <div class="input">{{view Data id="dialogFieldsData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix">
-      {{#view App.DialogDocumentIDField id="dialogDocumentIDField" class="floating" }}
-        <label for="dialogDocumentIDData">{{label}}</label>
-        <div class="input">{{view Data id="dialogDocumentIDData"}}</div>
-      {{/view}}
-      {{#view App.DialogSavedTimestampField id="dialogSavedTimestampField" class="floating" }}
-        <label for="dialogSavedTimestampData">{{label}}</label>
-        <div class="input">{{view Data id="dialogSavedTimestampData"}}</div>
-      {{/view}}
-    </div>
-    <div class="clearfix" id="dialogBottomBar">
-      <div style="float: left;">
-        {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
-        {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
+  <form id="dialogContainer" class="form-stacked">
+    <fieldset>
+      <div class="clearfix">
+        {{view App.DialogTimestampField id="dialogTimestampField" }}
+        {{view App.DialogSeverityField id="dialogSeverityField" }}
       </div>
-      <div style="float: right;">
-        {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+      <div class="clearfix">
+        {{view App.DialogMessageField id="dialogMessageField" }}
       </div>
-    </div>
-  </div>
+      <div class="clearfix">
+        {{view App.DialogSourceField id="dialogSourceField" }}
+        {{view App.DialogHostField id="dialogHostField" }}
+      </div>
+      <div class="clearfix">
+        {{view App.DialogKeywordsField id="dialogKeywordsField" }}
+      </div>
+      <div class="clearfix">
+        {{view App.DialogFieldsField id="dialogFieldsField" }}
+      </div>
+      <div class="clearfix">
+        {{view App.DialogDocumentIDField id="dialogDocumentIDField" }}
+        {{view App.DialogSavedTimestampField id="dialogSavedTimestampField" }}
+      </div>
+      <div class="clearfix" id="dialogBottomBar">
+        <div style="float: left;">
+          {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
+          {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
+        </div>
+        <div style="float: right;">
+          {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+        </div>
+      </div>
+    </fieldset>
+  </form>
 {{/view}}
 </script>
 

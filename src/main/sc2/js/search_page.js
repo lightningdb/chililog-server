@@ -27,9 +27,9 @@
  * @class
  * Error message view
  */
-App.ErrorMessage = SC.View.extend({
+App.ErrorMessage = App.BlockMessageView.extend({
+  messageType: 'error',
   messageBinding: 'App.pageController.errorMessage',
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
 
@@ -59,12 +59,10 @@ App.RepositorySelectOption = App.SelectOption.extend({
  * @class
  * Repository selection field
  */
-App.RepositoryField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.RepositoryField = App.StackedFieldView.extend({
   label: '_search.repository'.loc(),
 
-  Data : App.SelectView.extend({
+  DataView : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
@@ -77,12 +75,10 @@ App.RepositoryField = SC.View.extend({
  * @class
  * From date field.
  */
-App.FromDateField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.FromDateField = App.StackedFieldView.extend({
   label: '_search.fromDate'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.fromDate',
     name: 'fromDate',
     placeholder: 'yyyy-mm-dd',
@@ -102,12 +98,10 @@ App.FromDateField = SC.View.extend({
  * @class
  * From time field
  */
-App.FromTimeField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.FromTimeField = App.StackedFieldView.extend({
   label: '_search.fromTime'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.fromTime',
     name: 'fromTime',
     placeholder: 'hh:mm:ss',
@@ -119,12 +113,10 @@ App.FromTimeField = SC.View.extend({
  * @class
  * To date field
  */
-App.ToDateField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.ToDateField = App.StackedFieldView.extend({
   label: '_search.toDate'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.toDate',
     name: 'toDate',
     placeholder: 'yyyy-mm-dd',
@@ -144,12 +136,10 @@ App.ToDateField = SC.View.extend({
  * @class
  * To time field.
  */
-App.ToTimeField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.ToTimeField = App.StackedFieldView.extend({
   label: '_search.toTime'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.toTime',
     name: 'toTime',
     placeholder: 'hh:mm:ss',
@@ -161,12 +151,10 @@ App.ToTimeField = SC.View.extend({
  * @class
  * Source field
  */
-App.SourceField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.SourceField = App.StackedFieldView.extend({
   label: '_search.source'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.source',
     name: 'source',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -177,12 +165,10 @@ App.SourceField = SC.View.extend({
  * @class
  * Host field
  */
-App.HostField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.HostField = App.StackedFieldView.extend({
   label: '_search.host'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.host',
     name: 'host',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -193,12 +179,10 @@ App.HostField = SC.View.extend({
  * @class
  * Severity field
  */
-App.SeverityField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.SeverityField = App.StackedFieldView.extend({
   label: '_search.severity'.loc(),
 
-  Data : App.SelectView.extend({
+  DataView : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
     valueBinding: 'App.pageController.severity',
@@ -210,12 +194,10 @@ App.SeverityField = SC.View.extend({
  * @class
  * Timespan field
  */
-App.TimespanField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.TimespanField = App.StackedFieldView.extend({
   label: '_search.timespan'.loc(),
 
-  Data : App.SelectView.extend({
+  DataView : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.timespanOptions',
     valueBinding: 'App.pageController.timespan',
@@ -227,12 +209,10 @@ App.TimespanField = SC.View.extend({
  * @class
  * Keywords field
  */
-App.KeywordsField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.KeywordsField = App.StackedFieldView.extend({
   label: '_search.keywords'.loc(),
 
-  Data : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     valueBinding: 'App.pageController.keywords',
     name: 'keywords',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
@@ -243,12 +223,10 @@ App.KeywordsField = SC.View.extend({
  * @class
  * Condition
  */
-App.ConditionField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.ConditionField = App.StackedFieldView.extend({
   label: '_search.condition'.loc(),
 
-  Data : App.TextAreaView.extend({
+  DataView : App.TextAreaView.extend({
     valueBinding: 'App.pageController.condition',
     disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
   })
@@ -348,9 +326,9 @@ App.BottomBar = SC.View.extend({
  * @class
  * View displayed when when on rows found
  */
-App.NoRowsView = SC.View.extend({
+App.NoRowsView = App.BlockMessageView.extend({
+  messageType: 'warning',
   message: '_search.noRowsFound'.loc(),
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
   isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
 });
 
@@ -401,12 +379,12 @@ App.DialogFieldDataMixin = {
  * @class
  * Dialog timestamp
  */
-App.DialogTimestampField = SC.View.extend({
+App.DialogTimestampField = App.StackedFieldView.extend({
   classNames: 'field'.w(),
 
   label: '_search.timestamp'.loc(),
 
-  Data : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     valueBinding: 'App.dialogController.timestamp'
   })
 });
@@ -415,12 +393,12 @@ App.DialogTimestampField = SC.View.extend({
  * @class
  * Dialog severity
  */
-App.DialogSeverityField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogSeverityField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.severity'.loc(),
 
-  Data : App.TextBoxView.extend({
+  DataView : App.TextBoxView.extend({
     valueBinding: 'App.dialogController.severityText',
 
     updateClassNames: function() {
@@ -441,12 +419,12 @@ App.DialogSeverityField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Dialog source
  */
-App.DialogSourceField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogSourceField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.source'.loc(),
 
-  Data : App.TextBoxView.extend({
+  DataView : App.TextBoxView.extend({
     valueBinding: 'App.dialogController.source'
   })
 });
@@ -455,12 +433,12 @@ App.DialogSourceField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Dialog host
  */
-App.DialogHostField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogHostField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.host'.loc(),
 
-  Data : App.TextBoxView.extend({
+  DataView : App.TextBoxView.extend({
     valueBinding: 'App.dialogController.host'
   })
 });
@@ -469,12 +447,12 @@ App.DialogHostField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Dialog Message
  */
-App.DialogMessageField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogMessageField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.message'.loc(),
 
-  Data : App.TextAreaView.extend({
+  DataView : App.TextAreaView.extend({
     valueBinding: 'App.dialogController.message'
   })
 });
@@ -483,12 +461,12 @@ App.DialogMessageField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Keywords view in the details dialog
  */
-App.DialogKeywordsField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogKeywordsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.keywords'.loc(),
 
-  Data : App.TextAreaView.extend({
+  DataView : App.TextAreaView.extend({
     valueBinding: 'App.dialogController.keywordsString'
   })
 });
@@ -497,12 +475,12 @@ App.DialogKeywordsField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Fields view in the details dialog
  */
-App.DialogFieldsField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogFieldsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.fields'.loc(),
 
-  Data : App.TextAreaView.extend({
+  DataView : App.TextAreaView.extend({
     valueBinding: 'App.dialogController.fieldsString'
   })
 });
@@ -511,12 +489,12 @@ App.DialogFieldsField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Dialog document id
  */
-App.DialogDocumentIDField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogDocumentIDField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.documentID'.loc(),
 
-  Data : App.TextBoxView.extend({
+  DataView : App.TextBoxView.extend({
     valueBinding: 'App.dialogController.documentID'
   })
 });
@@ -525,12 +503,12 @@ App.DialogDocumentIDField = SC.View.extend(App.DialogFieldDataMixin, {
  * @class
  * Dialog saved timestamp
  */
-App.DialogSavedTimestampField = SC.View.extend(App.DialogFieldDataMixin, {
+App.DialogSavedTimestampField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
   classNames: 'field'.w(),
 
   label: '_search.savedTimestamp'.loc(),
 
-  Data : App.TextBoxView.extend({
+  DataView : App.TextBoxView.extend({
     valueBinding: 'App.dialogController.savedTimestamp'
   })
 });
@@ -542,7 +520,7 @@ App.DialogSavedTimestampField = SC.View.extend(App.DialogFieldDataMixin, {
 App.DialogPreviousButton = App.ButtonView.extend({
   label: '_previous'.loc(),
   title: '_previousTooltip'.loc(),
-  isVisibleBinding: SC.Binding.from('App.dialogController.hasPreviousEntries').oneWay().bool(),
+  disabledBinding: SC.Binding.from('App.dialogController.hasPreviousEntries').oneWay().bool().not(),
 
   click: function() {
     App.statechart.sendAction('showPreviousLogEntry');
@@ -557,7 +535,7 @@ App.DialogPreviousButton = App.ButtonView.extend({
 App.DialogNextButton = App.ButtonView.extend({
   label: '_next'.loc(),
   title: '_nextTooltip'.loc(),
-  isVisibleBinding: SC.Binding.from('App.dialogController.hasLaterEntries').oneWay().bool(),
+  disabledBinding: SC.Binding.from('App.dialogController.hasLaterEntries').oneWay().bool().not(),
 
   click: function() {
     App.statechart.sendAction('showNextLogEntry');

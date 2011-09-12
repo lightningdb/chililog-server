@@ -302,6 +302,62 @@ App.SelectView = SC.CollectionView.extend({
  * @class
  * Common functions for profile field data
  */
+App.BlockMessageView = SC.View.extend({
+  classNames: 'alert-message block-message'.w(),
+
+  /**
+   * Template is just the message
+   * @Type SC.Handlebars
+   */
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
+
+  /**
+   * Message text to display
+   * @Type String
+   */
+  message: '',
+
+  /**
+   * Type of message - 'success' or 'error'
+   * @Type String
+   */
+  messageType: 'success',
+
+  /**
+   * Flag to indicate if this view is visible or not
+   * @Type Boolean
+   */
+  isVisible: NO,
+
+  /**
+   * Set the class when adding the DOM element
+   */
+  willInsertElement: function() {
+    this.$().addClass(this.get('messageType'));
+  },
+
+  /**
+   * Updates the message when changed. Call this when the message property you are observing changes
+   *
+   *     messageDidChange: function() {
+   *       var msg = App.pageController.get(messagePropertyName);
+   *       this._updateMessage(msg);
+   *     }.observes('App.pageController.profileSuccessMessage')
+   *
+   * @param {String} messagePropertyName name of property in the App.pageController where the message to display is stored
+   */
+  _updateMessage: function(msg) {
+    var isEmpty = SC.empty(msg);
+    this.set('isVisible', !isEmpty);
+    this.set('message', msg);
+  }
+});
+
+
+/**
+ * @class
+ * Common functions for profile field data
+ */
 App.InlineMessageView = SC.View.extend({
   classNames: 'alert-message block-message inline'.w(),
 
@@ -371,12 +427,12 @@ App.InlineMessageView = SC.View.extend({
       domElement.effect('highlight', { color : 'gold'}, 100);
     }
     domElement.delay(3000).fadeOut(3000);
-    }
+  }
 });
 
 /**
  * @class
- * Common functions for profile field data
+ * Defines a fields where label and data are on the same line
  */
 App.FieldView = SC.View.extend({
   classNames: 'field clearfix'.w(),
@@ -446,12 +502,96 @@ App.FieldView = SC.View.extend({
       return (this.getPath('parentView.isRequired')) ? '*' : '';
     }.property('parentView.isRequired').cacheable(),
 
+    /**
+     * Handlebar template for this label
+     * @type SC.Handlebars
+     */
     defaultTemplate: SC.Handlebars.compile('{{text}}{{required}}')
-
   }),
 
   /**
-   * Class representing the data capture control
+   * Class representing the data capture control. Must be defined by the child class.
+   * @type SC.View
+   */
+  DataView: null,
+
+  /**
+   * Set the 'for' attribute for the label to that of the data view
+   */
+  willInsertElement: function() {
+    this._super();
+
+    var childViews = this.get('childViews');
+    var labelView = childViews[0];
+    var dataView = childViews[1];
+    labelView.set('for', dataView.$().attr('id'));
+  }
+
+});
+
+
+/**
+ * @class
+ * Defines a fields where label is on top of the data
+ */
+App.StackedFieldView = SC.View.extend({
+  classNames: 'field floating'.w(),
+
+  /**
+   * Template is just the message
+   * @Type SC.Handlebars
+   */
+  defaultTemplate: SC.Handlebars.compile('{{view LabelView}}{{view DataView}}'),
+
+  /**
+   * Label to display to let the user know what this field is about
+   * @type String
+   */
+  label: '',
+
+  /**
+   * Flag indicating if the field is a required field. If so, an '*' is placed in the label text
+   * @type Boolean
+   */
+  isRequired: NO,
+
+  /**
+   *
+   */
+  LabelView: SC.View.extend({
+    tagName: 'label',
+
+    attributeBindings: ['for'],
+
+    /**
+     * ID of data element
+     * @type String
+     */
+    'for': '',
+
+    /**
+     * Text to display the user
+     * @type String
+     */
+    textBinding: 'parentView.label',
+
+    /**
+     * The required symbol
+     * @type String
+     */
+    required: function() {
+      return (this.getPath('parentView.isRequired')) ? '*' : '';
+    }.property('parentView.isRequired').cacheable(),
+
+    /**
+     * Handlebar template for this label
+     * @type SC.Handlebars
+     */
+    defaultTemplate: SC.Handlebars.compile('{{text}}{{required}}')
+  }),
+
+  /**
+   * Class representing the data capture control. To be defined by the child class
    * @type SC.View
    */
   DataView: null,

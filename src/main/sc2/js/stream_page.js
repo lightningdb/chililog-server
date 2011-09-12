@@ -27,7 +27,8 @@
  * @class
  * Error message view
  */
-App.ErrorMessage = SC.View.extend({
+App.ErrorMessage = App.BlockMessageView.extend({
+  messageType: 'error',
   messageBinding: 'App.pageController.errorMessage',
   isVisibleBinding: SC.Binding.from('App.pageController.errorMessage').oneWay().bool()
 });
@@ -45,12 +46,10 @@ App.RepositorySelectOption = App.SelectOption.extend({
  * @class
  * Repository field
  */
-App.RepositoryField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.RepositoryField = App.StackedFieldView.extend({
   label: '_stream.repository'.loc(),
 
-  Data : App.SelectView.extend({
+  DataView : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.repositoryOptions',
     itemViewClass: App.RepositorySelectOption,
@@ -63,12 +62,10 @@ App.RepositoryField = SC.View.extend({
  * @class
  * Severity field
  */
-App.SeverityField = SC.View.extend({
-  classNames: 'field'.w(),
-
+App.SeverityField =App.StackedFieldView.extend({
   label: '_stream.severity'.loc(),
 
-  Data : App.SelectView.extend({
+  DataView : App.SelectView.extend({
     content: [],
     contentBinding: 'App.pageController.severityOptions',
     valueBinding: 'App.pageController.severity',
