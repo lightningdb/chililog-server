@@ -62,18 +62,9 @@
     <form class="section">
       <h2>Change Profile</h2>
       <fieldset>
-        {{#view App.UsernameField id="usernameField" class="clearfix" }}
-          <label for="usernameData">{{label}}</label>
-          <div class="input">{{view Data id="usernameData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
-        {{#view App.EmailAddressField id="emailAddressField" class="clearfix" }}
-          <label for="emailAddressData">{{label}}*</label>
-          <div class="input">{{view Data id="emailAddressData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
-        {{#view App.DisplayNameField id="displayNameField" class="clearfix" }}
-          <label for="displayNameData">{{label}}</label>
-          <div class="input">{{view Data id="displayNameData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
+        {{view App.UsernameField id="usernameField" }}
+        {{view App.EmailAddressField id="emailAddressField" }}
+        {{view App.DisplayNameField id="displayNameField" }}
         <div class="actions">
           {{view App.ProfileSaveButton id="profileSaveButton" class="btn primary"}}
           {{view App.ProfileWorkingImage id="profileWorkingImage" class="large"}}
@@ -86,18 +77,9 @@
     <form class="section">
       <h2>Change Password</h2>
       <fieldset>
-        {{#view App.OldPasswordField id="oldPasswordField" class="clearfix" }}
-          <label for="oldPasswordData">{{label}}*</label>
-          <div class="input">{{view Data id="oldPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
-        {{#view App.NewPasswordField id="newPasswordField" class="clearfix" }}
-          <label for="newPasswordData">{{label}}*</label>
-          <div class="input">{{view Data id="newPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
-        {{#view App.ConfirmPasswordField id="confirmPasswordField" class="clearfix" }}
-          <label for="confirmPasswordData">{{label}}*</label>
-          <div class="input">{{view Data id="confirmPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
-        {{/view}}
+        {{view App.OldPasswordField id="oldPasswordField"}}
+        {{view App.NewPasswordField id="newPasswordField" }}
+        {{view App.ConfirmPasswordField id="confirmPasswordField" }}
         <div class="actions">
           {{view App.PasswordSaveButton id="passwordSaveButton" class="btn primary"}}
           {{view App.PasswordWorkingImage id="workingImage"}}

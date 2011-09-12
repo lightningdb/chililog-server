@@ -62,10 +62,10 @@ App.ProfileErrorMessage = App.InlineMessageView.extend({
  * @class
  * Email address
  */
-App.UsernameField = SC.View.extend({
-  classNames: 'field'.w(),
+App.UsernameField = App.FieldView.extend({
   label: '_myAccount.username'.loc(),
-  Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+    classNames: 'xlarge'.w(),
     valueBinding: 'App.pageController.authenticatedUserRecord.username',
     disabled: YES
   })
@@ -75,21 +75,17 @@ App.UsernameField = SC.View.extend({
  * @class
  * Email address
  */
-App.EmailAddressField = SC.View.extend({
-  classNames: 'field'.w(),
+App.EmailAddressField = App.FieldView.extend({
   label: '_myAccount.emailAddress'.loc(),
-
-  help: '',
+  isRequired: YES,
+  
   helpMessageDidChange: function() {
     var msg = App.pageController.get('profileEmailAddressErrorMessage');
-    this.set('help', msg);
-    this.$().removeClass('error');
-    if (!SC.empty(msg)) {
-      this.$().addClass('error');
-    }
+    this._updateHelp(msg, YES);
   }.observes('App.pageController.profileEmailAddressErrorMessage'),
   
-  Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+    classNames: 'xlarge'.w(),
     valueBinding: 'App.pageController.authenticatedUserRecord.emailAddress',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool(),
     didInsertElement: function() {
@@ -102,11 +98,11 @@ App.EmailAddressField = SC.View.extend({
  * @class
  * Display Name
  */
-App.DisplayNameField = SC.View.extend({
-  classNames: 'field'.w(),
+App.DisplayNameField = App.FieldView.extend({
   label: '_myAccount.displayName'.loc(),
 
-  Data : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.ProfileFieldDataMixin, {
+    classNames: 'xlarge'.w(),
     valueBinding: 'App.pageController.authenticatedUserRecord.displayName',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool()
   })
@@ -177,21 +173,17 @@ App.PasswordErrorMessage = App.InlineMessageView.extend({
  * @class
  * Old Password
  */
-App.OldPasswordField = SC.View.extend({
-  classNames: 'field'.w(),
+App.OldPasswordField = App.FieldView.extend({
   label: '_myAccount.oldPassword'.loc(),
+  isRequired: YES,
 
-  help: '',
   helpMessageDidChange: function() {
     var msg = App.pageController.get('oldPasswordErrorMessage');
-    this.set('help', msg);
-    this.$().removeClass('error');
-    if (!SC.empty(msg)) {
-      this.$().addClass('error');
-    }
+    this._updateHelp(msg, YES);
   }.observes('App.pageController.oldPasswordErrorMessage'),
 
-  Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+    classNames: 'large'.w(),
     type: 'password',
     valueBinding: 'App.pageController.oldPassword',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool()
@@ -202,21 +194,17 @@ App.OldPasswordField = SC.View.extend({
  * @class
  * New  Password
  */
-App.NewPasswordField = SC.View.extend({
-  classNames: 'field'.w(),
+App.NewPasswordField = App.FieldView.extend({
   label: '_myAccount.newPassword'.loc(),
+  isRequired: YES,
 
-  help: '',
   helpMessageDidChange: function() {
     var msg = App.pageController.get('newPasswordErrorMessage');
-    this.set('help', msg);
-    this.$().removeClass('error');
-    if (!SC.empty(msg)) {
-      this.$().addClass('error');
-    }
+    this._updateHelp(msg, YES);
   }.observes('App.pageController.newPasswordErrorMessage'),
 
-  Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+    classNames: 'large'.w(),
     type: 'password',
     valueBinding: 'App.pageController.newPassword',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool()
@@ -227,21 +215,22 @@ App.NewPasswordField = SC.View.extend({
  * @class
  * Confirm Password
  */
-App.ConfirmPasswordField = SC.View.extend({
-  classNames: 'field'.w(),
+App.ConfirmPasswordField = App.FieldView.extend({
   label: '_myAccount.confirmPassword'.loc(),
+  isRequired: YES,
 
   help: '_myAccount.confirmPassword.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('confirmPasswordErrorMessage');
-    this.set('help', SC.empty(msg) ? '_myAccount.confirmPassword.help'.loc() : msg);
-    this.$().removeClass('error');
-    if (!SC.empty(msg)) {
-      this.$().addClass('error');
+    if (SC.empty(msg)) {
+      this._updateHelp('_myAccount.confirmPassword.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
     }
   }.observes('App.pageController.confirmPasswordErrorMessage'),
 
-  Data : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+  DataView : App.TextBoxView.extend(App.PasswordFieldDataMixin, {
+    classNames: 'large'.w(),
     type: 'password',
     valueBinding: 'App.pageController.confirmPassword',
     disabledBinding: SC.Binding.from('App.pageController.isSaving').oneWay().bool()

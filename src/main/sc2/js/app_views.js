@@ -374,6 +374,102 @@ App.InlineMessageView = SC.View.extend({
     }
 });
 
+/**
+ * @class
+ * Common functions for profile field data
+ */
+App.FieldView = SC.View.extend({
+  classNames: 'field clearfix'.w(),
+
+  /**
+   * Template is just the message
+   * @Type SC.Handlebars
+   */
+  defaultTemplate: SC.Handlebars.compile('{{view LabelView}}<div class="input">{{view DataView}}<span class="help-inline">{{help}}</span></div>'),
+
+  /**
+   * Label to display to let the user know what this field is about
+   * @type String
+   */
+  label: '',
+
+  /**
+   * Flag indicating if the field is a required field. If so, an '*' is placed in the label text
+   * @type Boolean
+   */
+  isRequired: NO,
+
+  /**
+   * Help text
+   * @type String
+   */
+  help: '',
+
+  /**
+   * Show the specified message to the user
+   * @param msg Message to display to the user
+   * @param {Boolean} isError YES if this is an error message, NO if not.
+   */
+  _updateHelp: function(msg, isError) {
+    this.set('help', msg);
+    this.$().removeClass('error');
+    if (isError && !SC.empty(msg)) {
+      this.$().addClass('error');
+    }
+  },
+
+  /**
+   * 
+   */
+  LabelView: SC.View.extend({
+    tagName: 'label',
+
+    attributeBindings: ['for'],
+
+    /**
+     * ID of data element
+     * @type String
+     */
+    'for': '',
+
+    /**
+     * Text to display the user
+     * @type String
+     */
+    textBinding: 'parentView.label',
+
+    /**
+     * The required symbol
+     * @type String
+     */
+    required: function() {
+      return (this.getPath('parentView.isRequired')) ? '*' : '';
+    }.property('parentView.isRequired').cacheable(),
+
+    defaultTemplate: SC.Handlebars.compile('{{text}}{{required}}')
+
+  }),
+
+  /**
+   * Class representing the data capture control
+   * @type SC.View
+   */
+  DataView: null,
+
+  /**
+   * Set the 'for' attribute for the label to that of the data view
+   */
+  willInsertElement: function() {
+    this._super();
+
+    var childViews = this.get('childViews');
+    var labelView = childViews[0];
+    var dataView = childViews[1];
+    labelView.set('for', dataView.$().attr('id'));
+  }
+
+});
+
 // --------------------------------------------------------------------------------------------------------------------
 // Validators
 // --------------------------------------------------------------------------------------------------------------------
