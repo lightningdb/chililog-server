@@ -28,6 +28,40 @@
  * @class
  * Common functions for profile field data
  */
+App.MessageBoxMixin = {
+  /**
+   * Template is just the message
+   * @Type SC.Handlebars
+   */
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
+
+  /**
+   * Message text to display
+   * @Type String
+   */
+  message: '',
+
+  /**
+   * Flag to indicate if this view is visible or not
+   * @Type Boolean
+   */
+  isVisible: NO,
+
+  /**
+   * Updates the message when changed
+   * @param {String} messagePropertyName name of property in the App.pageController where the message to display is stored
+   */
+  _updateMessage: function(messagePropertyName) {
+    var msg = App.pageController.get(messagePropertyName);
+    this.set('isVisible', !SC.empty(msg));
+    this.set('message', msg);
+  }
+};
+
+/**
+ * @class
+ * Common functions for profile field data
+ */
 App.ProfileFieldDataMixin = {
   // Save when ENTER clicked
   insertNewline: function() {
@@ -40,22 +74,22 @@ App.ProfileFieldDataMixin = {
  * @class
  * Success message
  */
-App.ProfileSuccessMessage = SC.View.extend({
+App.ProfileSuccessMessage = SC.View.extend(App.MessageBoxMixin, {
   classNames: 'alert-message block-message success inline'.w(),
-  messageBinding: 'App.pageController.profileSuccessMessage',
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
-  isVisibleBinding: SC.Binding.from('App.pageController.profileSuccessMessage').oneWay().bool()
+  messageDidChange: function() {
+    this._updateMessage('profileSuccessMessage');
+  }.observes('App.pageController.profileSuccessMessage')
 });
 
 /**
  * @class
  * Success message
  */
-App.ProfileErrorMessage = SC.View.extend({
+App.ProfileErrorMessage = SC.View.extend(App.MessageBoxMixin, {
   classNames: 'alert-message block-message error inline'.w(),
-  messageBinding: 'App.pageController.profileErrorMessage ',
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
-  isVisibleBinding: SC.Binding.from('App.pageController.profileErrorMessage').oneWay().bool()
+  messageDidChange: function() {
+    this._updateMessage('profileErrorMessage');
+  }.observes('App.pageController.profileErrorMessage')
 });
 
 /**
@@ -155,25 +189,21 @@ App.PasswordFieldDataMixin = {
  * @class
  * Success message
  */
-App.PasswordSuccessMessage = SC.View.extend({
+App.PasswordSuccessMessage = SC.View.extend(App.MessageBoxMixin, {
   classNames: 'alert-message block-message success inline'.w(),
-  messageBinding: 'App.pageController.passwordSuccessMessage',
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
-  isVisibleBinding: SC.Binding.from('App.pageController.passwordSuccessMessage').oneWay().bool()
+  messageDidChange: function() {
+    this._updateMessage('passwordSuccessMessage');
+  }.observes('App.pageController.passwordSuccessMessage')
 });
 
 /**
  * @class
  * Error message
  */
-App.PasswordErrorMessage = SC.View.extend({
+App.PasswordErrorMessage = SC.View.extend(App.MessageBoxMixin, {
   classNames: 'alert-message block-message error inline'.w(),
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
-  isVisible: NO,
-  errorMessageDidChange: function() {
-    var msg = App.pageController.get('passwordErrorMessage');
-    this.set('isVisible', !SC.empty(msg));
-    this.set('message', msg);
+  messageDidChange: function() {
+    this._updateMessage('passwordErrorMessage');
   }.observes('App.pageController.passwordErrorMessage')
 });
 
@@ -468,7 +498,7 @@ App.statechart = SC.Statechart.create({
         if (SC.empty(emailAddress)) {
           App.pageController.set('profileEmailAddressErrorMessage', '_myAccount.emailAddress.required'.loc());
           isError = YES;
-        } else if (!App.validators.checkEmailAddress(emailAddress)) {
+        } else if (!App.viewValidators.checkEmailAddress(emailAddress)) {
           App.pageController.set('profileEmailAddressErrorMessage', '_myAccount.emailAddress.invalid'.loc());
           isError = YES;
         }
@@ -603,7 +633,7 @@ App.statechart = SC.Statechart.create({
 App.pageFileName = Auth.getPageName();
 
 if (App.sessionEngine.load()) {
-  App.setupStandardPage(App.pageFileName);
+  App.viewUtils.setupStandardPage(App.pageFileName);
   App.statechart.initStatechart();
 } else {
   // Not logged in so go to login page

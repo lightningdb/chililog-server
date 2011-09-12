@@ -34,7 +34,7 @@
 App.pageFileName = Auth.getPageName();
 
 if (App.sessionEngine.load()) {
-  App.setupStandardPage(App.pageFileName);
+  App.viewUtils.setupStandardPage(App.pageFileName);
 } else {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);

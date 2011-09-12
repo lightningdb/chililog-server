@@ -507,7 +507,7 @@ if (!window.WebSocket) {
 }
 
 if (App.sessionEngine.load()) {
-  App.setupStandardPage(App.pageFileName);
+  App.viewUtils.setupStandardPage(App.pageFileName);
 
   App.statechart.initStatechart();
 

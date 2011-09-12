@@ -301,7 +301,7 @@ App.SelectView = SC.CollectionView.extend({
 // --------------------------------------------------------------------------------------------------------------------
 // Validators
 // --------------------------------------------------------------------------------------------------------------------
-App.validators = {
+App.viewValidators = {
 
   /**
    * Email address regular expression check
@@ -327,13 +327,9 @@ App.validators = {
 // --------------------------------------------------------------------------------------------------------------------
 // Utility methods
 // --------------------------------------------------------------------------------------------------------------------
+App.viewUtils = {
 
-
-
-/**
- * Setup the fields on an authenticated page
- */
-App.setupStandardPage = function(pageFileName) {
+  setupStandardPage: function(pageFileName) {
   // Selected nav
   if (pageFileName === 'stream.html') {
     $('#navStream').addClass('selected');
@@ -357,4 +353,7 @@ App.setupStandardPage = function(pageFileName) {
   $("body").bind("click", function (e) {
     $('a.menu').parent("li").removeClass("open");
   });
+  
 }
+};
+
