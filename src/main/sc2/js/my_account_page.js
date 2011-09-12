@@ -28,40 +28,6 @@
  * @class
  * Common functions for profile field data
  */
-App.MessageBoxMixin = {
-  /**
-   * Template is just the message
-   * @Type SC.Handlebars
-   */
-  defaultTemplate: SC.Handlebars.compile('{{message}}'),
-
-  /**
-   * Message text to display
-   * @Type String
-   */
-  message: '',
-
-  /**
-   * Flag to indicate if this view is visible or not
-   * @Type Boolean
-   */
-  isVisible: NO,
-
-  /**
-   * Updates the message when changed
-   * @param {String} messagePropertyName name of property in the App.pageController where the message to display is stored
-   */
-  _updateMessage: function(messagePropertyName) {
-    var msg = App.pageController.get(messagePropertyName);
-    this.set('isVisible', !SC.empty(msg));
-    this.set('message', msg);
-  }
-};
-
-/**
- * @class
- * Common functions for profile field data
- */
 App.ProfileFieldDataMixin = {
   // Save when ENTER clicked
   insertNewline: function() {
@@ -74,21 +40,21 @@ App.ProfileFieldDataMixin = {
  * @class
  * Success message
  */
-App.ProfileSuccessMessage = SC.View.extend(App.MessageBoxMixin, {
-  classNames: 'alert-message block-message success inline'.w(),
+App.ProfileSuccessMessage = App.InlineMessageView.extend({
+  highlightAndFade: YES,
   messageDidChange: function() {
-    this._updateMessage('profileSuccessMessage');
+    this._updateMessage(App.pageController.get('profileSuccessMessage'));
   }.observes('App.pageController.profileSuccessMessage')
 });
 
 /**
  * @class
- * Success message
+ * Error message
  */
-App.ProfileErrorMessage = SC.View.extend(App.MessageBoxMixin, {
-  classNames: 'alert-message block-message error inline'.w(),
+App.ProfileErrorMessage = App.InlineMessageView.extend({
+  messageType: 'error',
   messageDidChange: function() {
-    this._updateMessage('profileErrorMessage');
+    this._updateMessage(App.pageController.get('profileErrorMessage'));
   }.observes('App.pageController.profileErrorMessage')
 });
 
@@ -180,7 +146,7 @@ App.ProfileWorkingImage = App.ImgView.extend({
 App.PasswordFieldDataMixin = {
   // Save when ENTER clicked
   insertNewline: function() {
-    App.statechart.sendAction('startSavingassword');
+    App.statechart.sendAction('startSavingPassword');
     return;
   }
 };
@@ -189,10 +155,10 @@ App.PasswordFieldDataMixin = {
  * @class
  * Success message
  */
-App.PasswordSuccessMessage = SC.View.extend(App.MessageBoxMixin, {
-  classNames: 'alert-message block-message success inline'.w(),
+App.PasswordSuccessMessage = App.InlineMessageView.extend({
+  highlightAndFade: YES,
   messageDidChange: function() {
-    this._updateMessage('passwordSuccessMessage');
+    this._updateMessage(App.pageController.get('passwordSuccessMessage'));
   }.observes('App.pageController.passwordSuccessMessage')
 });
 
@@ -200,10 +166,10 @@ App.PasswordSuccessMessage = SC.View.extend(App.MessageBoxMixin, {
  * @class
  * Error message
  */
-App.PasswordErrorMessage = SC.View.extend(App.MessageBoxMixin, {
-  classNames: 'alert-message block-message error inline'.w(),
+App.PasswordErrorMessage = App.InlineMessageView.extend({
+  messageType: 'error',
   messageDidChange: function() {
-    this._updateMessage('passwordErrorMessage');
+    this._updateMessage(App.pageController.get('passwordErrorMessage'));
   }.observes('App.pageController.passwordErrorMessage')
 });
 
@@ -515,12 +481,6 @@ App.statechart = SC.Statechart.create({
         if (SC.none(error)) {
           // Show success message
           App.pageController.set('profileSuccessMessage', '_saveSuccess'.loc());
-          var element = $('#profileSuccessMessage');
-          element.stop().show();
-          for (var i=0; i < 5; i++) {
-            element.effect('highlight', { color : 'gold'}, 100);
-          }
-          element.delay(3000).fadeOut(3000);
 
           // Update the display name in to drop down menu
           var loggedInUser = App.sessionEngine.get('loggedInUser');
@@ -555,6 +515,7 @@ App.statechart = SC.Statechart.create({
         // Reset messages and errors
         App.pageController.set('passwordSuccessMessage', null);
         App.pageController.set('passwordErrorMessage', null);
+        App.pageController.set('oldPasswordErrorMessage', null);
         App.pageController.set('newPasswordErrorMessage', null);
         App.pageController.set('confirmPasswordErrorMessage', null);
 
@@ -597,12 +558,6 @@ App.statechart = SC.Statechart.create({
         if (SC.none(error)) {
           // Show success message
           App.pageController.set('passwordSuccessMessage', '_myAccount.changePassword.success'.loc());
-          var element = $('#passwordSuccessMessage');
-          element.stop().show();
-          for (var i=0; i < 5; i++) {
-            element.effect('highlight', { color : 'gold'}, 100);
-          }
-          element.delay(3000).fadeOut(3000);
 
           // Clear passwords
           App.pageController.set('oldPassword', '');
@@ -613,7 +568,11 @@ App.statechart = SC.Statechart.create({
           this.gotoState('loading');
         } else {
           // Show error message
-          App.pageController.set('passwordErrorMessage', error.message);
+          if (error.httpStatus == 401) {
+            App.pageController.set('oldPasswordErrorMessage', '_myAccount.oldPassword.invalid'.loc());
+          } else {
+            App.pageController.set('passwordErrorMessage', error.message);
+          }
 
           // Re-edit
           this.gotoState('editing');

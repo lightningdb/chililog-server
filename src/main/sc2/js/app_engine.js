@@ -110,6 +110,9 @@ App.EngineMixin = {
       error = App.$error('Unexpected HTTP error: ' + jqXHR.status + ' ' + jqXHR.statusText);
     }
 
+    // Put HTTP status in the error
+    error.httpStatus = jqXHR.status;
+
     // Callback (this should be the context data)
     if (!SC.none(this.callbackFunction)) {
       if (!SC.none(this.documentID) && !SC.none(this.records)) {

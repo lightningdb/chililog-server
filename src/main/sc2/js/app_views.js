@@ -298,6 +298,82 @@ App.SelectView = SC.CollectionView.extend({
   }
 });
 
+/**
+ * @class
+ * Common functions for profile field data
+ */
+App.InlineMessageView = SC.View.extend({
+  classNames: 'alert-message block-message inline'.w(),
+
+  /**
+   * Template is just the message
+   * @Type SC.Handlebars
+   */
+  defaultTemplate: SC.Handlebars.compile('{{message}}'),
+
+  /**
+   * Message text to display
+   * @Type String
+   */
+  message: '',
+
+  /**
+   * Type of message - 'success' or 'error'
+   * @Type String
+   */
+  messageType: 'success',
+
+  /**
+   * Flash the message and fade when message is displayed
+   */
+  highlightAndFade: NO,
+
+  /**
+   * Flag to indicate if this view is visible or not
+   * @Type Boolean
+   */
+  isVisible: NO,
+
+  /**
+   * Set the class when adding the DOM element
+   */
+  willInsertElement: function() {
+    this.$().addClass(this.get('messageType'));
+  },
+
+  /**
+   * Updates the message when changed. Call this when the message property you are observing changes
+   *
+   *     messageDidChange: function() {
+   *       var msg = App.pageController.get(messagePropertyName);
+   *       this._updateMessage(msg);
+   *     }.observes('App.pageController.profileSuccessMessage')
+   *
+   * @param {String} messagePropertyName name of property in the App.pageController where the message to display is stored
+   */
+  _updateMessage: function(msg) {
+    var isEmpty = SC.empty(msg);
+    this.set('isVisible', !isEmpty);
+    this.set('message', msg);
+
+    if (!isEmpty && this.get('highlightAndFade')) {
+      this.doHighlightAndFade();
+    }
+  },
+
+  /**
+   * Use JQuery UI to flash message to user and then fade out from display
+   */
+  doHighlightAndFade: function() {
+    var domElement = this.$();
+    domElement.stop().show();
+    for (var i=0; i < 3; i++) {
+      domElement.effect('highlight', { color : 'gold'}, 100);
+    }
+    domElement.delay(3000).fadeOut(3000);
+    }
+});
+
 // --------------------------------------------------------------------------------------------------------------------
 // Validators
 // --------------------------------------------------------------------------------------------------------------------
@@ -317,7 +393,7 @@ App.viewValidators = {
    * @returns YES if valid, NO if not valid
    */
   checkEmailAddress: function (emailAddressToCheck) {
-    var result = App.validators.emailAddressRegExp.test(emailAddressToCheck);
+    var result = App.viewValidators.emailAddressRegExp.test(emailAddressToCheck);
     return result;
   }
 

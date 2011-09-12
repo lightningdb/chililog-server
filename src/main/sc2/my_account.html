@@ -67,7 +67,7 @@
           <div class="input">{{view Data id="usernameData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
         {{/view}}
         {{#view App.EmailAddressField id="emailAddressField" class="clearfix" }}
-          <label for="emailAddressData">{{label}}</label>
+          <label for="emailAddressData">{{label}}*</label>
           <div class="input">{{view Data id="emailAddressData" class="xlarge"}} <span class="help-inline">{{help}}</span></div>
         {{/view}}
         {{#view App.DisplayNameField id="displayNameField" class="clearfix" }}
@@ -87,15 +87,15 @@
       <h2>Change Password</h2>
       <fieldset>
         {{#view App.OldPasswordField id="oldPasswordField" class="clearfix" }}
-          <label for="oldPasswordData">{{label}}</label>
+          <label for="oldPasswordData">{{label}}*</label>
           <div class="input">{{view Data id="oldPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
         {{/view}}
         {{#view App.NewPasswordField id="newPasswordField" class="clearfix" }}
-          <label for="newPasswordData">{{label}}</label>
+          <label for="newPasswordData">{{label}}*</label>
           <div class="input">{{view Data id="newPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
         {{/view}}
         {{#view App.ConfirmPasswordField id="confirmPasswordField" class="clearfix" }}
-          <label for="confirmPasswordData">{{label}}</label>
+          <label for="confirmPasswordData">{{label}}*</label>
           <div class="input">{{view Data id="confirmPasswordData" class="large"}} <span class="help-inline">{{help}}</span></div>
         {{/view}}
         <div class="actions">
