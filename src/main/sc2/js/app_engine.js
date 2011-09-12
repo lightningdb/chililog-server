@@ -1858,7 +1858,7 @@ App.sessionEngine = SC.Object.create(App.EngineMixin, {
     try {
       // Put authenticated user details into the store
       App.sessionEngine._convertApiObjectsToRecords([data], App.AuthenticatedUserRecord);
-      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATION_TOKEN_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
+      App.sessionEngine._putApiObjectsIntoLocalStorage(App.AUTHENTICATED_USER_LOCAL_STORE_KEY, null, App.AuthenticatedUserRecord);
     }
     catch (err) {
       error = err;
