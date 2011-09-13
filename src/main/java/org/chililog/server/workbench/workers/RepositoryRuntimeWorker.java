@@ -25,13 +25,14 @@ import java.util.List;
 import javax.naming.OperationNotSupportedException;
 
 import org.apache.commons.lang.StringUtils;
+import org.bson.types.ObjectId;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.MongoJsonSerializer;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryListCriteria;
+import org.chililog.server.data.RepositoryEntryListCriteria;
 import org.chililog.server.data.UserBO;
-import org.chililog.server.data.RepositoryListCriteria.QueryType;
+import org.chililog.server.data.RepositoryEntryListCriteria.QueryType;
 import org.chililog.server.engine.Repository;
 import org.chililog.server.engine.RepositoryService;
 import org.chililog.server.workbench.Strings;
@@ -57,7 +58,7 @@ import com.mongodb.DBObject;
  * <li>read entry - HTTP GET /api/repositories/{id}/entries?query_type=find</li>
  * </p>
  * <p>
- * Runtime information refers to the current status of an instance of a repository. 
+ * Runtime information refers to the current status of an instance of a repository.
  * </p>
  */
 public class RepositoryRuntimeWorker extends Worker
@@ -65,7 +66,6 @@ public class RepositoryRuntimeWorker extends Worker
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
     public static final String START_OPERATION = "start";
     public static final String STOP_OPERATION = "stop";
-    public static final String RELOAD_OPERATION = "reload";
 
     public static final String ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME = "query_type";
     public static final String ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME = "fields";
@@ -143,15 +143,11 @@ public class RepositoryRuntimeWorker extends Worker
 
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
-                    RepositoryService.getInstance().start(false);
+                    RepositoryService.getInstance().startAllRepositories();
                 }
                 else if (action.equalsIgnoreCase(STOP_OPERATION))
                 {
                     RepositoryService.getInstance().stop();
-                }
-                else if (action.equalsIgnoreCase(RELOAD_OPERATION))
-                {
-                    RepositoryService.getInstance().loadRepositories();
                 }
                 else
                 {
@@ -175,12 +171,13 @@ public class RepositoryRuntimeWorker extends Worker
             }
             else
             {
-                // Start/Stop/Reload specific one
+                // Start/Stop specific one
                 // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryService.getInstance().getRepository(id);
+                ObjectId objectId = parseDocumentObjectID(id);
+                Repository repo = RepositoryService.getInstance().getRepository(objectId);
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoInfo().getAdministratorRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoConfig().getAdministratorRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
@@ -188,19 +185,19 @@ public class RepositoryRuntimeWorker extends Worker
 
                 if (action.equalsIgnoreCase(START_OPERATION))
                 {
-                    repo.start();
+                    repo = RepositoryService.getInstance().startRepository(repo.getRepoConfig().getDocumentID());
+                    responseContent = new RepositoryStatusAO(repo);
                 }
                 else if (action.equalsIgnoreCase(STOP_OPERATION))
                 {
-                    repo.stop();
+                    RepositoryService.getInstance().stopRepository(repo.getRepoConfig().getDocumentID());
+                    repo = RepositoryService.getInstance().getRepository(objectId);
+                    responseContent = new RepositoryStatusAO(repo);
                 }
                 else
                 {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
-
-                // Return the status of the repository on which the action was performed
-                responseContent = new RepositoryStatusAO(repo);
             }
 
             // Return response
@@ -233,16 +230,14 @@ public class RepositoryRuntimeWorker extends Worker
             // HTTP GET /api/repositories
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
-                // Read repositories  
-                
-                // Merge with run time info
                 Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {
                     ArrayList<RepositoryStatusAO> aoList = new ArrayList<RepositoryStatusAO>();
                     for (Repository repo : list)
                     {
-                        if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName()))
+                        if (user.isSystemAdministrator()
+                                || allowedRepositories.contains(repo.getRepoConfig().getName()))
                         {
                             aoList.add(new RepositoryStatusAO(repo));
                         }
@@ -259,9 +254,9 @@ public class RepositoryRuntimeWorker extends Worker
                 // Get info on specified repository
                 // HTTP GET /api/repositories/{id}
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryService.getInstance().getRepository(id);
-                if (repo != null
-                        && (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoInfo().getName())))
+                ObjectId objectId = parseDocumentObjectID(id);
+                Repository repo = RepositoryService.getInstance().getRepository(objectId);
+                if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoConfig().getName()))
                 {
                     responseContent = new RepositoryStatusAO(repo);
                 }
@@ -276,12 +271,9 @@ public class RepositoryRuntimeWorker extends Worker
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                Repository repo = RepositoryService.getInstance().getRepository(id);
-                if (repo == null)
-                {
-                    throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
-                }
-                if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoInfo().getName()))
+                ObjectId objectId = parseDocumentObjectID(id);
+                Repository repo = RepositoryService.getInstance().getRepository(objectId);
+                if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoConfig().getName()))
                 {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
@@ -292,14 +284,14 @@ public class RepositoryRuntimeWorker extends Worker
                         QueryType.class,
                         this.getQueryStringOrHeaderValue(ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME,
                                 ENTRY_QUERY_TYPE_HEADER_NAME, false).toUpperCase());
-                RepositoryListCriteria criteria = loadCriteria();
+                RepositoryEntryListCriteria criteria = loadCriteria();
 
                 // Convert to JSON ourselves because this is not a simple AO object.
                 // mongoDB object JSON serialization required
                 StringBuilder json = new StringBuilder();
 
                 // Get controller and execute query
-                RepositoryEntryController controller = RepositoryEntryController.getInstance(repo.getRepoInfo());
+                RepositoryEntryController controller = RepositoryEntryController.getInstance(repo.getRepoConfig());
                 if (queryType == QueryType.FIND)
                 {
                     ArrayList<DBObject> list = controller.executeFindQuery(db, criteria);
@@ -353,16 +345,36 @@ public class RepositoryRuntimeWorker extends Worker
     }
 
     /**
+     * Parse a string repository document id
+     * 
+     * @param id
+     *            id string
+     * @return ObjectID
+     * @throws ChiliLogException
+     */
+    private ObjectId parseDocumentObjectID(String id) throws ChiliLogException
+    {
+        try
+        {
+            return new ObjectId(id);
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
+        }
+    }
+
+    /**
      * Load our criteria from query string and headers (in case it is too big for query string)
      * 
      * @returns query criteria
      * @throws ChiliLogException
      */
-    private RepositoryListCriteria loadCriteria() throws ChiliLogException
+    private RepositoryEntryListCriteria loadCriteria() throws ChiliLogException
     {
         String s;
 
-        RepositoryListCriteria criteria = new RepositoryListCriteria();
+        RepositoryEntryListCriteria criteria = new RepositoryEntryListCriteria();
         this.loadBaseListCriteriaParameters(criteria);
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME,
@@ -383,7 +395,7 @@ public class RepositoryRuntimeWorker extends Worker
                 ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME, true);
         if (!StringUtils.isBlank(s))
         {
-            criteria.setKeywordUsage(Enum.valueOf(RepositoryListCriteria.KeywordUsage.class, s));
+            criteria.setKeywordUsage(Enum.valueOf(RepositoryEntryListCriteria.KeywordUsage.class, s));
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME,

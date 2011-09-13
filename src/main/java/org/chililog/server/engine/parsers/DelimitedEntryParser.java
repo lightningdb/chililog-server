@@ -28,9 +28,9 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.common.StringsProperties;
 import org.chililog.server.data.RepositoryEntryBO;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.engine.Strings;
 
@@ -77,7 +77,7 @@ public class DelimitedEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public DelimitedEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo)
+    public DelimitedEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
             throws ChiliLogException
     {
         super(repoInfo, repoParserInfo);
@@ -93,7 +93,7 @@ public class DelimitedEntryParser extends EntryParser
             }
 
             // Parse our field value so that we don't have to keep on doing it
-            for (RepositoryFieldInfoBO f : repoParserInfo.getFields())
+            for (RepositoryFieldConfigBO f : repoParserInfo.getFields())
             {
                 String s = f.getProperties().get(POSITION_FIELD_PROPERTY_NAME);
                 Integer i = Integer.parseInt(s) - 1;
@@ -197,10 +197,10 @@ public class DelimitedEntryParser extends EntryParser
     private static class DelimitedFieldInfo
     {
         private int _arrayIndex;
-        private RepositoryFieldInfoBO _repoFieldInfo;
+        private RepositoryFieldConfigBO _repoFieldInfo;
         private FieldParser _parser;
 
-        public DelimitedFieldInfo(int arrayIndex, RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+        public DelimitedFieldInfo(int arrayIndex, RepositoryFieldConfigBO repoFieldInfo) throws ParseException
         {
             _arrayIndex = arrayIndex;
             _repoFieldInfo = repoFieldInfo;
@@ -218,7 +218,7 @@ public class DelimitedEntryParser extends EntryParser
         /**
          * Returns the field meta data
          */
-        public RepositoryFieldInfoBO getRepoFieldInfo()
+        public RepositoryFieldConfigBO getRepoFieldInfo()
         {
             return _repoFieldInfo;
         }

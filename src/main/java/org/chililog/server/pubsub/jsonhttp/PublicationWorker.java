@@ -29,8 +29,8 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.RepositoryStorageWorker;
@@ -98,7 +98,7 @@ public class PublicationWorker
             authenticate(requestAO);
 
             // Publish
-            SimpleString repoAddress = SimpleString.toSimpleString(RepositoryInfoBO.buildPubSubAddress(requestAO
+            SimpleString repoAddress = SimpleString.toSimpleString(RepositoryConfigBO.buildPubSubAddress(requestAO
                     .getRepositoryName()));
             p = _sessionPool.getPooled();
             for (LogEntryAO logEntry : requestAO.getLogEntries())
@@ -165,7 +165,7 @@ public class PublicationWorker
         DB db = MongoConnection.getInstance().getConnection();
 
         // Make user repository exists
-        RepositoryInfoController.getInstance().getByName(db, repoName);
+        RepositoryConfigController.getInstance().getByName(db, repoName);
 
         // Make sure user exists and password is valid
         UserBO user = UserController.getInstance().getByUsername(db, publicationAO.getUsername());

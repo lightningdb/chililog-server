@@ -30,7 +30,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 import org.chililog.server.engine.parsers.BooleanFieldParser;
 import org.chililog.server.engine.parsers.DateFieldParser;
 import org.chililog.server.engine.parsers.DoubleFieldParser;
@@ -46,11 +46,11 @@ public class FieldParserTest
     @Test
     public void testParseString() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.String);
 
         StringFieldParser p = new StringFieldParser(repoFieldInfo);
 
@@ -62,11 +62,11 @@ public class FieldParserTest
     @Test
     public void testParseInteger() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Integer);
 
         IntegerFieldParser p = new IntegerFieldParser(repoFieldInfo);
 
@@ -114,7 +114,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new IntegerFieldParser(repoFieldInfo);
 
         assertEquals(123, p.parse("123"));
@@ -128,12 +128,12 @@ public class FieldParserTest
     @Test
     public void testParseIntegerNumberFormat() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Integer);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
 
         IntegerFieldParser p = new IntegerFieldParser(repoFieldInfo);
 
@@ -166,7 +166,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new IntegerFieldParser(repoFieldInfo);
 
         assertEquals(222222222, p.parse("222222222"));
@@ -184,11 +184,11 @@ public class FieldParserTest
     @Test
     public void testParseLong() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Long);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Long);
 
         LongIntegerFieldParser p = new LongIntegerFieldParser(repoFieldInfo);
 
@@ -236,7 +236,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new LongIntegerFieldParser(repoFieldInfo);
 
         assertEquals(123L, p.parse("123"));
@@ -250,12 +250,12 @@ public class FieldParserTest
     @Test
     public void testParseLongNumberFormat() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Long);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Long);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
 
         LongIntegerFieldParser p = new LongIntegerFieldParser(repoFieldInfo);
 
@@ -288,7 +288,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new LongIntegerFieldParser(repoFieldInfo);
 
         assertEquals(222222222L, p.parse("222222222"));
@@ -306,11 +306,11 @@ public class FieldParserTest
     @Test
     public void testParseDouble() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Double);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Double);
 
         DoubleFieldParser p = new DoubleFieldParser(repoFieldInfo);
 
@@ -350,7 +350,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new DoubleFieldParser(repoFieldInfo);
 
         assertEquals(123d, p.parse("123"));
@@ -364,12 +364,12 @@ public class FieldParserTest
     @Test
     public void testParseDoubleNumberFormat() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Double);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Double);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME, "#,##0");
 
         DoubleFieldParser p = new DoubleFieldParser(repoFieldInfo);
 
@@ -402,7 +402,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "1");
         p = new DoubleFieldParser(repoFieldInfo);
 
         assertEquals(222222222d, p.parse("222222222"));
@@ -420,11 +420,11 @@ public class FieldParserTest
     @Test
     public void testParseBoolean() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Boolean);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Boolean);
 
         BooleanFieldParser p = new BooleanFieldParser(repoFieldInfo);
 
@@ -439,12 +439,12 @@ public class FieldParserTest
     @Test
     public void testParseBooleanFormat() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Boolean);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.TRUE_PATTERN_PROPERTY_NAME, "[\\s]*[A-Z]+[\\s]*");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Boolean);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.TRUE_PATTERN_PROPERTY_NAME, "[\\s]*[A-Z]+[\\s]*");
 
         BooleanFieldParser p = new BooleanFieldParser(repoFieldInfo);
 
@@ -460,12 +460,12 @@ public class FieldParserTest
     @Test
     public void testParseDate() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Date);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
 
         DateFieldParser p = new DateFieldParser(repoFieldInfo);
 
@@ -515,7 +515,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "2011-01-02 03:04:05");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "2011-01-02 03:04:05");
         p = new DateFieldParser(repoFieldInfo);
 
         assertEquals(new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime(), p.parse("123"));
@@ -524,12 +524,12 @@ public class FieldParserTest
     @Test
     public void testParseDateFormat() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSS");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Date);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSS");
         
         DateFieldParser p = new DateFieldParser(repoFieldInfo);
 
@@ -568,7 +568,7 @@ public class FieldParserTest
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME, "2011-01-02 03:04:05,123");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "2011-01-02 03:04:05,123");
         p = new DateFieldParser(repoFieldInfo);
 
         d = new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime();
@@ -581,12 +581,12 @@ public class FieldParserTest
     @Test
     public void testParseDateFormatTimezone() throws Exception
     {
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSSZ");
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Date);
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSSZ");
 
         DateFieldParser p = new DateFieldParser(repoFieldInfo);
 
@@ -595,8 +595,8 @@ public class FieldParserTest
         assertEquals(d, p.parse("2011-01-02 03:04:05,123+1100"));
 
         // Set default timezone as UTC - i.e. all time is assumed to be UTC
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSS");
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_TIMEZONE_PROPERTY_NAME, "UTC");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSS");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_TIMEZONE_PROPERTY_NAME, "UTC");
 
         p = new DateFieldParser(repoFieldInfo);
 

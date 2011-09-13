@@ -22,7 +22,7 @@ import java.text.ParseException;
 import java.util.Hashtable;
 
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -35,12 +35,12 @@ public class StringFieldParser extends FieldParser
 {
     private String _defaultValue = null;
 
-    public StringFieldParser(RepositoryFieldInfoBO repoFieldInfo)
+    public StringFieldParser(RepositoryFieldConfigBO repoFieldInfo)
     {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
-        _defaultValue = properties.get(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME);
+        _defaultValue = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
     }
 
     /**

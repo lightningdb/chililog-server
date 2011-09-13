@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import org.chililog.server.common.ChiliLogException;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
-import org.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 
 
 /**
@@ -59,42 +59,42 @@ public class RepositoryParserConfigAO extends AO
     /**
      * Constructor that copies properties form the business object
      * 
-     * @param repoParserInfo
-     *            Repository info business object
+     * @param repoParserConfig
+     *            Repository parser configuration business object
      */
-    public RepositoryParserConfigAO(RepositoryParserInfoBO repoParserInfo)
+    public RepositoryParserConfigAO(RepositoryParserConfigBO repoParserConfig)
     {
-        _name = repoParserInfo.getName();
-        _appliesTo = repoParserInfo.getAppliesTo();
-        _appliesToSourceFilter = repoParserInfo.getAppliesToSourceFilter();
-        _appliesToHostFilter = repoParserInfo.getAppliesToHostFilter();
-        _className = repoParserInfo.getClassName();
-        _maxKeywords = repoParserInfo.getMaxKeywords();
+        _name = repoParserConfig.getName();
+        _appliesTo = repoParserConfig.getAppliesTo();
+        _appliesToSourceFilter = repoParserConfig.getAppliesToSourceFilter();
+        _appliesToHostFilter = repoParserConfig.getAppliesToHostFilter();
+        _className = repoParserConfig.getClassName();
+        _maxKeywords = repoParserConfig.getMaxKeywords();
 
-        _parseFieldErrorHandling = repoParserInfo.getParseFieldErrorHandling();
+        _parseFieldErrorHandling = repoParserConfig.getParseFieldErrorHandling();
 
-        if (repoParserInfo.getFields() == null || repoParserInfo.getFields().isEmpty())
+        if (repoParserConfig.getFields() == null || repoParserConfig.getFields().isEmpty())
         {
             _fields = null;
         }
         else
         {
             ArrayList<RepositoryFieldConfigAO> fieldList = new ArrayList<RepositoryFieldConfigAO>();
-            for (RepositoryFieldInfoBO fieldInfo : repoParserInfo.getFields())
+            for (RepositoryFieldConfigBO fieldInfo : repoParserConfig.getFields())
             {
                 fieldList.add(new RepositoryFieldConfigAO(fieldInfo));
             }
             _fields = fieldList.toArray(new RepositoryFieldConfigAO[] {});
         }
 
-        if (repoParserInfo.getProperties() == null || repoParserInfo.getProperties().isEmpty())
+        if (repoParserConfig.getProperties() == null || repoParserConfig.getProperties().isEmpty())
         {
             _properties = null;
         }
         else
         {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
-            for (Entry<String, String> e : repoParserInfo.getProperties().entrySet())
+            for (Entry<String, String> e : repoParserConfig.getProperties().entrySet())
             {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
@@ -107,38 +107,38 @@ public class RepositoryParserConfigAO extends AO
     /**
      * Updates the supplied business object with info from this api object
      * 
-     * @param repoParserInfo
+     * @param repoParserConfig
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public void toBO(RepositoryParserConfigBO repoParserConfig) throws ChiliLogException
     {
-        repoParserInfo.setName(_name);
-        repoParserInfo.setAppliesTo(_appliesTo);
-        repoParserInfo.setAppliesToSourceFilter(_appliesToSourceFilter);
-        repoParserInfo.setAppliesToHostFilter(_appliesToHostFilter);
-        repoParserInfo.setClassName(_className);
-        repoParserInfo.setMaxKeywords(_maxKeywords);
+        repoParserConfig.setName(_name);
+        repoParserConfig.setAppliesTo(_appliesTo);
+        repoParserConfig.setAppliesToSourceFilter(_appliesToSourceFilter);
+        repoParserConfig.setAppliesToHostFilter(_appliesToHostFilter);
+        repoParserConfig.setClassName(_className);
+        repoParserConfig.setMaxKeywords(_maxKeywords);
 
-        repoParserInfo.setParseFieldErrorHandling(_parseFieldErrorHandling);
+        repoParserConfig.setParseFieldErrorHandling(_parseFieldErrorHandling);
 
-        repoParserInfo.getFields().clear();
+        repoParserConfig.getFields().clear();
         if (_fields != null && _fields.length > 0)
         {
             for (RepositoryFieldConfigAO fieldInfo : _fields)
             {
-                RepositoryFieldInfoBO bo = new RepositoryFieldInfoBO();
+                RepositoryFieldConfigBO bo = new RepositoryFieldConfigBO();
                 fieldInfo.toBO(bo);
-                repoParserInfo.getFields().add(bo);
+                repoParserConfig.getFields().add(bo);
             }
         }
 
-        repoParserInfo.getProperties().clear();
+        repoParserConfig.getProperties().clear();
         if (_properties != null && _properties.length > 0)
         {
             for (RepositoryPropertyConfigAO property : _properties)
             {
-                repoParserInfo.getProperties().put(property.getKey(), property.getValue());
+                repoParserConfig.getProperties().put(property.getKey(), property.getValue());
             }
         }
 

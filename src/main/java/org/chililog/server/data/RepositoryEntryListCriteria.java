@@ -29,12 +29,12 @@ import org.chililog.server.common.TextTokenizer;
 import com.mongodb.BasicDBObject;
 
 /**
- * Criteria for selecting user records
+ * Criteria for selecting repository log entries
  * 
  * @author vibul
  * 
  */
-public class RepositoryListCriteria extends ListCriteria
+public class RepositoryEntryListCriteria extends ListCriteria
 {
     private Date _from = null;
     private Date _to = null;
@@ -55,7 +55,7 @@ public class RepositoryListCriteria extends ListCriteria
     /**
      * Basic constructor
      */
-    public RepositoryListCriteria()
+    public RepositoryEntryListCriteria()
     {
         return;
     }

@@ -18,7 +18,7 @@
 
 package org.chililog.server.workbench.workers;
 
-import org.chililog.server.data.RepositoryInfoBO.Status;
+import org.chililog.server.data.RepositoryConfigBO.Status;
 import org.chililog.server.engine.Repository;
 
 
@@ -58,10 +58,10 @@ public class RepositoryStatusAO extends AO
      */
     public RepositoryStatusAO(Repository repo)
     {
-        _documentID = repo.getRepoInfo().getDocumentID().toString();
-        _documentVersion = repo.getRepoInfo().getDocumentVersion();
-        _name = repo.getRepoInfo().getName();
-        _displayName = repo.getRepoInfo().getDisplayName();
+        _documentID = repo.getRepoConfig().getDocumentID().toString();
+        _documentVersion = repo.getRepoConfig().getDocumentVersion();
+        _name = repo.getRepoConfig().getName();
+        _displayName = repo.getRepoConfig().getDisplayName();
         _status = repo.getStatus();
     }
 

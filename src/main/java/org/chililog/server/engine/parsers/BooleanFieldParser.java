@@ -23,7 +23,7 @@ import java.util.Hashtable;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -44,20 +44,20 @@ public class BooleanFieldParser extends FieldParser
      *            Field meta data
      * @throws ParseException
      */
-    public BooleanFieldParser(RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+    public BooleanFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
     {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
 
-        String s = properties.get(RepositoryFieldInfoBO.TRUE_PATTERN_PROPERTY_NAME);
+        String s = properties.get(RepositoryFieldConfigBO.TRUE_PATTERN_PROPERTY_NAME);
         if (StringUtils.isBlank(s))
         {
             s = "[Tt][Rr][Uu][Ee]";
         }
         _truePattern = Pattern.compile(s);
         
-        String defaultValue = properties.get(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME);
+        String defaultValue = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
         if (!StringUtils.isBlank(defaultValue))
         {
             _defaultValue = parseBoolean(defaultValue);

@@ -22,8 +22,8 @@ import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.reflect.ConstructorUtils;
 import org.chililog.server.common.ChiliLogException;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.engine.Strings;
 
 
@@ -49,7 +49,7 @@ public class EntryParserFactory
      * @return Entry parser
      * @throws ChiliLogException
      */
-    public static EntryParser getParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo)
+    public static EntryParser getParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
             throws ChiliLogException
     {
         if (repoParserInfo == null)
@@ -91,9 +91,9 @@ public class EntryParserFactory
      * @return Entry parser
      * @throws ChiliLogException
      */
-    public static EntryParser getDefaultParser(RepositoryInfoBO repoInfo) throws ChiliLogException
+    public static EntryParser getDefaultParser(RepositoryConfigBO repoInfo) throws ChiliLogException
     {
-        RepositoryParserInfoBO parserInfo = new RepositoryParserInfoBO();
+        RepositoryParserConfigBO parserInfo = new RepositoryParserConfigBO();
         parserInfo.setName("Default");
         return new DefaultEntryParser(repoInfo, parserInfo);
     }

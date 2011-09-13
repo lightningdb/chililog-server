@@ -27,9 +27,9 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 import org.chililog.server.engine.parsers.EntryParser;
 import org.chililog.server.engine.parsers.EntryParserFactory;
 import org.hornetq.api.core.Message;
@@ -115,22 +115,22 @@ public class RepositoryStorageWorker extends Thread
         _deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
 
         // Load parsers
-        for (RepositoryParserInfoBO repoParserInfo : repo.getRepoInfo().getParsers())
+        for (RepositoryParserConfigBO repoParserInfo : repo.getRepoConfig().getParsers())
         {
             if (repoParserInfo.getAppliesTo() == AppliesTo.All)
             {
-                _catchAllParser = EntryParserFactory.getParser(repo.getRepoInfo(), repoParserInfo);
+                _catchAllParser = EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo);
             }
             else if (repoParserInfo.getAppliesTo() != AppliesTo.None)
             {
-                _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoInfo(), repoParserInfo));
+                _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo));
             }
         }
 
         // If there is no catch all, then set it to the default one (that does no parsing)
         if (_catchAllParser == null)
         {
-            _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoInfo());
+            _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoConfig());
         }
 
         return;
@@ -152,14 +152,14 @@ public class RepositoryStorageWorker extends Thread
         _isRunning = true;
         DB db = null;
         ClientSession session = null;
-        RepositoryEntryController controller = RepositoryEntryController.getInstance(_repo.getRepoInfo());
+        RepositoryEntryController controller = RepositoryEntryController.getInstance(_repo.getRepoConfig());
 
         try
         {
             db = MongoConnection.getInstance().getConnection();
 
             session = MqService.getInstance().getTransactionalSystemClientSession();
-            ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoInfo().getStorageQueueName());
+            ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoConfig().getStorageQueueName());
             session.start();
 
             ClientProducer dlqProducer = (_deadLetterAddress == null ? null : session.createProducer(_deadLetterAddress));
@@ -299,7 +299,7 @@ public class RepositoryStorageWorker extends Thread
             
             // Special property to identify original address
             // See http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#d0e4430
-            message.putStringProperty("_HQ_ORIG_ADDRESS", _repo.getRepoInfo().getPubSubAddress());
+            message.putStringProperty("_HQ_ORIG_ADDRESS", _repo.getRepoConfig().getPubSubAddress());
             
             message.putStringProperty("RepositoryStorageWorker", this.getName());
             message.putStringProperty("ParseException", ex.toString());

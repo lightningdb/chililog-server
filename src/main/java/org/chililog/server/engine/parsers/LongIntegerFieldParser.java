@@ -24,7 +24,7 @@ import java.text.ParseException;
 import java.util.Hashtable;
 
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -45,14 +45,14 @@ public class LongIntegerFieldParser extends FieldParser
      *            Field meta data
      * @throws ParseException
      */
-    public LongIntegerFieldParser(RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+    public LongIntegerFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
     {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
 
-        String d = properties.get(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME);
-        String s = properties.get(RepositoryFieldInfoBO.NUMBER_FORMAT_PROPERTY_NAME);
+        String d = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
+        String s = properties.get(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME);
         if (!StringUtils.isBlank(s))
         {
             _numberFormatter = new DecimalFormat(s);

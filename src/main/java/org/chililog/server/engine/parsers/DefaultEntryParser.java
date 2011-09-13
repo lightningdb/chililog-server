@@ -24,8 +24,8 @@ import java.util.Date;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.RepositoryEntryBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 
 
@@ -52,7 +52,7 @@ public class DefaultEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public DefaultEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public DefaultEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
     {
         super(repoInfo, repoParserInfo);
         return;

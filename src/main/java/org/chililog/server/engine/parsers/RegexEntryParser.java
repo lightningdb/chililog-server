@@ -30,9 +30,9 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.common.StringsProperties;
 import org.chililog.server.data.RepositoryEntryBO;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.engine.Strings;
 
@@ -80,7 +80,7 @@ public class RegexEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public RegexEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public RegexEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
     {
         super(repoInfo, repoParserInfo);
 
@@ -94,7 +94,7 @@ public class RegexEntryParser extends EntryParser
             }
 
             // Parse our field value so that we don't have to keep on doing it
-            for (RepositoryFieldInfoBO f : repoParserInfo.getFields())
+            for (RepositoryFieldConfigBO f : repoParserInfo.getFields())
             {
                 String fieldPatternString = f.getProperties().get(PATTERN_FIELD_PROPERTY_NAME);
                 String groupString = f.getProperties().get(GROUP_FIELD_PROPERTY_NAME);
@@ -219,7 +219,7 @@ public class RegexEntryParser extends EntryParser
     {
         public Pattern _pattern;
         public int _group;
-        private RepositoryFieldInfoBO _repoFieldInfo;
+        private RepositoryFieldConfigBO _repoFieldInfo;
         private FieldParser _parser;
 
         /**
@@ -233,7 +233,7 @@ public class RegexEntryParser extends EntryParser
          *            meta data
          * @throws ParseException
          */
-        public RegexFieldInfo(String pattern, int group, RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+        public RegexFieldInfo(String pattern, int group, RepositoryFieldConfigBO repoFieldInfo) throws ParseException
         {
             if (!StringUtils.isBlank(pattern))
             {
@@ -263,7 +263,7 @@ public class RegexEntryParser extends EntryParser
         /**
          * Returns the field meta data
          */
-        public RepositoryFieldInfoBO getRepoFieldInfo()
+        public RepositoryFieldConfigBO getRepoFieldInfo()
         {
             return _repoFieldInfo;
         }

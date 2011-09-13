@@ -34,19 +34,19 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
 /**
- * Singleton to manage our access to the repository information collection in our mongoDB
+ * Singleton to manage our access to repository configuration documents in our mongoDB
  * 
  * @author vibul
  * 
  */
-public class RepositoryInfoController extends Controller
+public class RepositoryConfigController extends Controller
 {
-    public static final String MONGODB_COLLECTION_NAME = "repoinfo";
+    public static final String MONGODB_COLLECTION_NAME = "repo";
 
     /**
      * Returns the singleton instance for this class
      */
-    public static RepositoryInfoController getInstance()
+    public static RepositoryConfigController getInstance()
     {
         return SingletonHolder.INSTANCE;
     }
@@ -59,7 +59,7 @@ public class RepositoryInfoController extends Controller
      */
     private static class SingletonHolder
     {
-        public static final RepositoryInfoController INSTANCE = new RepositoryInfoController();
+        public static final RepositoryConfigController INSTANCE = new RepositoryConfigController();
     }
 
     /**
@@ -67,7 +67,7 @@ public class RepositoryInfoController extends Controller
      * Singleton constructor
      * </p>
      */
-    private RepositoryInfoController()
+    private RepositoryConfigController()
     {
         return;
     }
@@ -92,9 +92,9 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryInfoBO get(DB db, ObjectId id) throws ChiliLogException
+    public RepositoryConfigBO get(DB db, ObjectId id) throws ChiliLogException
     {
-        RepositoryInfoBO o = tryGet(db, id);
+        RepositoryConfigBO o = tryGet(db, id);
         if (o == null)
         {
             throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, id.toString());
@@ -113,7 +113,7 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryInfoBO tryGet(DB db, ObjectId id) throws ChiliLogException
+    public RepositoryConfigBO tryGet(DB db, ObjectId id) throws ChiliLogException
     {
         try
         {
@@ -134,7 +134,7 @@ public class RepositoryInfoController extends Controller
             {
                 return null;
             }
-            return new RepositoryInfoBO(dbo);
+            return new RepositoryConfigBO(dbo);
         }
         catch (MongoException ex)
         {
@@ -153,9 +153,9 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryInfoBO getByName(DB db, String name) throws ChiliLogException
+    public RepositoryConfigBO getByName(DB db, String name) throws ChiliLogException
     {
-        RepositoryInfoBO o = tryGetByName(db, name);
+        RepositoryConfigBO o = tryGetByName(db, name);
         if (o == null)
         {
             throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, name);
@@ -174,7 +174,7 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryInfoBO tryGetByName(DB db, String name) throws ChiliLogException
+    public RepositoryConfigBO tryGetByName(DB db, String name) throws ChiliLogException
     {
         try
         {
@@ -189,13 +189,13 @@ public class RepositoryInfoController extends Controller
 
             DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
             BasicDBObject condition = new BasicDBObject();
-            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, name);
+            condition.put(RepositoryConfigBO.NAME_FIELD_NAME, name);
             DBObject dbo = coll.findOne(condition);
             if (dbo == null)
             {
                 return null;
             }
-            return new RepositoryInfoBO(dbo);
+            return new RepositoryConfigBO(dbo);
         }
         catch (MongoException ex)
         {
@@ -214,7 +214,7 @@ public class RepositoryInfoController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public ArrayList<RepositoryInfoBO> getList(DB db, RepositoryInfoListCriteria criteria) throws ChiliLogException
+    public ArrayList<RepositoryConfigBO> getList(DB db, RepositoryConfigListCriteria criteria) throws ChiliLogException
     {
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
 
@@ -223,26 +223,26 @@ public class RepositoryInfoController extends Controller
         if (!StringUtils.isBlank(criteria.getNamePattern()))
         {
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
-            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, pattern);
+            condition.put(RepositoryConfigBO.NAME_FIELD_NAME, pattern);
         }
         if (criteria.getNameRestrictions() != null && criteria.getNameRestrictions().length > 0)
         {
-            condition.put(RepositoryInfoBO.NAME_FIELD_NAME, new BasicDBObject("$in", criteria.getNameRestrictions()));
+            condition.put(RepositoryConfigBO.NAME_FIELD_NAME, new BasicDBObject("$in", criteria.getNameRestrictions()));
         }
 
         // Order
         DBObject orderBy = new BasicDBObject();
-        orderBy.put(RepositoryInfoBO.NAME_FIELD_NAME, 1);
+        orderBy.put(RepositoryConfigBO.NAME_FIELD_NAME, 1);
 
         // Get matching records
         int recordsPerPage = criteria.getRecordsPerPage();
         int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
         DBCursor cur = coll.find(condition).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
-        ArrayList<RepositoryInfoBO> list = new ArrayList<RepositoryInfoBO>();
+        ArrayList<RepositoryConfigBO> list = new ArrayList<RepositoryConfigBO>();
         while (cur.hasNext())
         {
             DBObject dbo = cur.next();
-            list.add(new RepositoryInfoBO(dbo));
+            list.add(new RepositoryConfigBO(dbo));
         }
 
         // Do page count by executing query again
@@ -260,33 +260,33 @@ public class RepositoryInfoController extends Controller
      * 
      * @param db
      *            MongoDb connection
-     * @param repository
-     *            User to save
+     * @param repoConfig
+     *            Repository configuration to save
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void save(DB db, RepositoryInfoBO repository) throws ChiliLogException
+    public void save(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException
     {
         // Validate unique name
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
         BasicDBObject condition = new BasicDBObject();
-        condition.put(RepositoryInfoBO.NAME_FIELD_NAME, repository.getName());
-        if (repository.isExistingRecord())
+        condition.put(RepositoryConfigBO.NAME_FIELD_NAME, repoConfig.getName());
+        if (repoConfig.isExistingRecord())
         {
-            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repository.getDocumentID()));
+            condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repoConfig.getDocumentID()));
         }
         long i = coll.getCount(condition);
         if (i > 0)
         {
-            throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repository.getName());
+            throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repoConfig.getName());
         }
 
         // Validate unique parser names
-        for (RepositoryParserInfoBO p : repository.getParsers())
+        for (RepositoryParserConfigBO p : repoConfig.getParsers())
         {
             String parserName = p.getName();
             int pCount = 0;
-            for (RepositoryParserInfoBO p2 : repository.getParsers())
+            for (RepositoryParserConfigBO p2 : repoConfig.getParsers())
             {
                 if (p2.getName().equals(parserName))
                 {
@@ -296,15 +296,15 @@ public class RepositoryInfoController extends Controller
             if (pCount != 1)
             {
                 throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, parserName,
-                        repository.getName());
+                        repoConfig.getName());
             }
 
             // Validate unique field names per parser
-            for (RepositoryFieldInfoBO f : p.getFields())
+            for (RepositoryFieldConfigBO f : p.getFields())
             {
                 String fieldName = f.getName();
                 int count = 0;
-                for (RepositoryFieldInfoBO f2 : p.getFields())
+                for (RepositoryFieldConfigBO f2 : p.getFields())
                 {
                     if (f2.getName().equals(fieldName))
                     {
@@ -314,13 +314,13 @@ public class RepositoryInfoController extends Controller
                 if (count != 1)
                 {
                     throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, fieldName, parserName,
-                            repository.getName());
+                            repoConfig.getName());
                 }
             }
         }
 
         // Save it
-        super.save(db, repository);
+        super.save(db, repoConfig);
 
         // Add repository and index
         createIndexes(db);
@@ -360,13 +360,13 @@ public class RepositoryInfoController extends Controller
      * 
      * @param db
      *            MongoDb connection
-     * @param repository
+     * @param repoConfig
      *            User to remove
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void remove(DB db, RepositoryInfoBO repository) throws ChiliLogException
+    public void remove(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException
     {
-        super.remove(db, repository);
+        super.remove(db, repoConfig);
     }
 }

@@ -31,10 +31,10 @@ import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.TextTokenizer;
 import org.chililog.server.data.RepositoryEntryBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 
 
 /**
@@ -52,7 +52,7 @@ public abstract class EntryParser
 
     private String _repoName;
     private long _maxKeywords = 0;
-    private RepositoryParserInfoBO _repoParserInfo;
+    private RepositoryParserConfigBO _repoParserInfo;
     private Exception _lastParseError = null;
 
     private Pattern _sourcePattern = null;
@@ -74,7 +74,7 @@ public abstract class EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public EntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo)
+    public EntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
     {
         if (repoInfo == null)
         {
@@ -88,7 +88,7 @@ public abstract class EntryParser
         _repoName = repoInfo.getName();
         _repoParserInfo = repoParserInfo;
         _maxKeywords = repoInfo.getStorageMaxKeywords();
-        if (repoParserInfo.getMaxKeywords() != RepositoryParserInfoBO.MAX_KEYWORDS_INHERITED)
+        if (repoParserInfo.getMaxKeywords() != RepositoryParserConfigBO.MAX_KEYWORDS_INHERITED)
         {
             _maxKeywords = repoParserInfo.getMaxKeywords();
         }
@@ -146,7 +146,7 @@ public abstract class EntryParser
     /**
      * Returns the parser meta data
      */
-    public RepositoryParserInfoBO getRepoParserInfo()
+    public RepositoryParserConfigBO getRepoParserInfo()
     {
         return _repoParserInfo;
     }

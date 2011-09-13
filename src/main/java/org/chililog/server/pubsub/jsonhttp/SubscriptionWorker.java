@@ -27,8 +27,8 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
@@ -97,7 +97,7 @@ public class SubscriptionWorker
             authenticate(requestAO);
 
             // Subscribe using system user because sometimes a token is supplied from the workbench
-            String queueAddress = RepositoryInfoBO.buildPubSubAddress(requestAO.getRepositoryName());
+            String queueAddress = RepositoryConfigBO.buildPubSubAddress(requestAO.getRepositoryName());
             String queueName = queueAddress + ".json-http-" + _channel.getId() + "." + UUID.randomUUID().toString();
             _session = MqService.getInstance().getNonTransactionalSystemClientSession();
 
@@ -163,7 +163,7 @@ public class SubscriptionWorker
         DB db = MongoConnection.getInstance().getConnection();
 
         // Make user repository exists
-        RepositoryInfoController.getInstance().getByName(db, repoName);
+        RepositoryConfigController.getInstance().getByName(db, repoName);
 
         // Check user
         UserBO user = UserController.getInstance().getByUsername(db, subscriptionAO.getUsername());

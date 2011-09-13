@@ -31,13 +31,13 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * Details how to parse incoming text entries
+ * This class contains meta-data that specifies how to parse log entry text to extract fields for a repository
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryParserInfoBO extends BO implements Serializable
+public class RepositoryParserConfigBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -48,7 +48,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     private String _className;
     private long _maxKeywords = -2;
     private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
-    private ArrayList<RepositoryFieldInfoBO> _fields = new ArrayList<RepositoryFieldInfoBO>();
+    private ArrayList<RepositoryFieldConfigBO> _fields = new ArrayList<RepositoryFieldConfigBO>();
     private Hashtable<String, String> _properties = new Hashtable<String, String>();
 
     static final String NAME_FIELD_NAME = "name";
@@ -68,7 +68,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryParserInfoBO()
+    public RepositoryParserConfigBO()
     {
         return;
     }
@@ -80,7 +80,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public RepositoryParserInfoBO(DBObject dbObject) throws ChiliLogException
+    public RepositoryParserConfigBO(DBObject dbObject) throws ChiliLogException
     {
         super(dbObject);
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
@@ -97,12 +97,12 @@ public class RepositoryParserInfoBO extends BO implements Serializable
                 PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, true));
 
         BasicDBList list = (BasicDBList) dbObject.get(FIELDS_FIELD_NAME);
-        ArrayList<RepositoryFieldInfoBO> fieldList = new ArrayList<RepositoryFieldInfoBO>();
+        ArrayList<RepositoryFieldConfigBO> fieldList = new ArrayList<RepositoryFieldConfigBO>();
         if (list != null && list.size() > 0)
         {
             for (Object item : list)
             {
-                RepositoryFieldInfoBO field = new RepositoryFieldInfoBO((DBObject) item);
+                RepositoryFieldConfigBO field = new RepositoryFieldConfigBO((DBObject) item);
                 fieldList.add(field);
             }
         }
@@ -136,7 +136,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
         MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString(), true);
 
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
-        for (RepositoryFieldInfoBO field : _fields)
+        for (RepositoryFieldConfigBO field : _fields)
         {
             BasicDBObject obj = new BasicDBObject();
             field.savePropertiesToDBObject(obj);
@@ -230,7 +230,7 @@ public class RepositoryParserInfoBO extends BO implements Serializable
     /**
      * Returns a list fields that is to be parsed and stored in this repository
      */
-    public ArrayList<RepositoryFieldInfoBO> getFields()
+    public ArrayList<RepositoryFieldConfigBO> getFields()
     {
         return _fields;
     }

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Map.Entry;
 
 import org.chililog.server.common.ChiliLogException;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryFieldInfoBO.DataType;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryFieldConfigBO.DataType;
 
 
 /**
@@ -53,24 +53,24 @@ public class RepositoryFieldConfigAO extends AO
     /**
      * Constructor that copies properties form the business object
      * 
-     * @param repoFieldInfo
+     * @param repoFieldConfig
      *            Repository info business object
      */
-    public RepositoryFieldConfigAO(RepositoryFieldInfoBO repoFieldInfo)
+    public RepositoryFieldConfigAO(RepositoryFieldConfigBO repoFieldConfig)
     {
-        _name = repoFieldInfo.getName();
-        _displayName = repoFieldInfo.getDisplayName();
-        _description = repoFieldInfo.getDescription();
-        _dataType = repoFieldInfo.getDataType();
+        _name = repoFieldConfig.getName();
+        _displayName = repoFieldConfig.getDisplayName();
+        _description = repoFieldConfig.getDescription();
+        _dataType = repoFieldConfig.getDataType();
 
-        if (repoFieldInfo.getProperties() == null || repoFieldInfo.getProperties().isEmpty())
+        if (repoFieldConfig.getProperties() == null || repoFieldConfig.getProperties().isEmpty())
         {
             _properties = null;
         }
         else
         {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
-            for (Entry<String, String> e : repoFieldInfo.getProperties().entrySet())
+            for (Entry<String, String> e : repoFieldConfig.getProperties().entrySet())
             {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
@@ -83,23 +83,23 @@ public class RepositoryFieldConfigAO extends AO
     /**
      * Updates the supplied business object with info from this api object
      * 
-     * @param repoFieldInfo
+     * @param repoFieldConfig
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryFieldInfoBO repoFieldInfo) throws ChiliLogException
+    public void toBO(RepositoryFieldConfigBO repoFieldConfig) throws ChiliLogException
     {
-        repoFieldInfo.setName(checkRequiredField("Field Name", _name));
-        repoFieldInfo.setDisplayName(_displayName);
-        repoFieldInfo.setDescription(_description);
-        repoFieldInfo.setDataType(_dataType);
+        repoFieldConfig.setName(checkRequiredField("Field Name", _name));
+        repoFieldConfig.setDisplayName(_displayName);
+        repoFieldConfig.setDescription(_description);
+        repoFieldConfig.setDataType(_dataType);
 
-        repoFieldInfo.getProperties().clear();
+        repoFieldConfig.getProperties().clear();
         if (_properties != null && _properties.length > 0)
         {
             for (RepositoryPropertyConfigAO property : _properties)
             {
-                repoFieldInfo.getProperties().put(property.getKey(), property.getValue());
+                repoFieldConfig.getProperties().put(property.getKey(), property.getValue());
             }
         }
 

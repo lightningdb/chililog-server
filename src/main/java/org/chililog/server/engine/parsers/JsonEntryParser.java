@@ -29,8 +29,8 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoJsonParser;
 import org.chililog.server.data.RepositoryEntryBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.engine.Strings;
 
@@ -105,7 +105,7 @@ public class JsonEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public JsonEntryParser(RepositoryInfoBO repoInfo, RepositoryParserInfoBO repoParserInfo) throws ChiliLogException
+    public JsonEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
     {
         super(repoInfo, repoParserInfo);
 

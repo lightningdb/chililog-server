@@ -21,10 +21,10 @@ package org.chililog.server.workbench.workers;
 import java.util.ArrayList;
 
 import org.chililog.server.common.ChiliLogException;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
-import org.chililog.server.data.RepositoryInfoBO.MaxMemoryPolicy;
-import org.chililog.server.data.RepositoryInfoBO.Status;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
+import org.chililog.server.data.RepositoryConfigBO.MaxMemoryPolicy;
+import org.chililog.server.data.RepositoryConfigBO.Status;
 
 
 /**
@@ -67,37 +67,37 @@ public class RepositoryConfigAO extends AO
     /**
      * Constructor that copies properties form the business object
      * 
-     * @param repoInfo
+     * @param repoConfig
      *            Repository info business object
      */
-    public RepositoryConfigAO(RepositoryInfoBO repoInfo)
+    public RepositoryConfigAO(RepositoryConfigBO repoConfig)
     {
-        _documentID = repoInfo.getDocumentID().toString();
-        _documentVersion = repoInfo.getDocumentVersion();
-        _name = repoInfo.getName();
-        _displayName = repoInfo.getDisplayName();
-        _description = repoInfo.getDescription();
+        _documentID = repoConfig.getDocumentID().toString();
+        _documentVersion = repoConfig.getDocumentVersion();
+        _name = repoConfig.getName();
+        _displayName = repoConfig.getDisplayName();
+        _description = repoConfig.getDescription();
 
-        _startupStatus = repoInfo.getStartupStatus();
+        _startupStatus = repoConfig.getStartupStatus();
 
-        _storeEntriesIndicator = repoInfo.getStoreEntriesIndicator();
-        _storageQueueDurableIndicator = repoInfo.getStorageQueueDurableIndicator();
-        _storageQueueWorkerCount = repoInfo.getStorageQueueWorkerCount();
-        _storageMaxKeywords = repoInfo.getStorageMaxKeywords();
+        _storeEntriesIndicator = repoConfig.getStoreEntriesIndicator();
+        _storageQueueDurableIndicator = repoConfig.getStorageQueueDurableIndicator();
+        _storageQueueWorkerCount = repoConfig.getStorageQueueWorkerCount();
+        _storageMaxKeywords = repoConfig.getStorageMaxKeywords();
 
-        _maxMemory = repoInfo.getMaxMemory();
-        _maxMemoryPolicy = repoInfo.getMaxMemoryPolicy();
-        _pageSize = repoInfo.getPageSize();
-        _pageCountCache = repoInfo.getPageCountCache();
+        _maxMemory = repoConfig.getMaxMemory();
+        _maxMemoryPolicy = repoConfig.getMaxMemoryPolicy();
+        _pageSize = repoConfig.getPageSize();
+        _pageCountCache = repoConfig.getPageCountCache();
 
-        if (repoInfo.getParsers() == null || repoInfo.getParsers().isEmpty())
+        if (repoConfig.getParsers() == null || repoConfig.getParsers().isEmpty())
         {
             _parsers = null;
         }
         else
         {
             ArrayList<RepositoryParserConfigAO> parserList = new ArrayList<RepositoryParserConfigAO>();
-            for (RepositoryParserInfoBO parserInfo : repoInfo.getParsers())
+            for (RepositoryParserConfigBO parserInfo : repoConfig.getParsers())
             {
                 parserList.add(new RepositoryParserConfigAO(parserInfo));
             }
@@ -114,7 +114,7 @@ public class RepositoryConfigAO extends AO
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryInfoBO repoInfo) throws ChiliLogException
+    public void toBO(RepositoryConfigBO repoInfo) throws ChiliLogException
     {
         checkOptimisticLocking(_documentVersion, repoInfo);
 
@@ -138,7 +138,7 @@ public class RepositoryConfigAO extends AO
         {
             for (RepositoryParserConfigAO parserInfo : _parsers)
             {
-                RepositoryParserInfoBO bo = new RepositoryParserInfoBO();
+                RepositoryParserConfigBO bo = new RepositoryParserConfigBO();
                 parserInfo.toBO(bo);
                 repoInfo.getParsers().add(bo);
             }

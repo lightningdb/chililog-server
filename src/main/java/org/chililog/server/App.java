@@ -107,7 +107,7 @@ public class App
         StringsProperties.getInstance();
 
         MqService.getInstance().start();
-        RepositoryService.getInstance().start(true);
+        RepositoryService.getInstance().start();
         PubSubService.getInstance().start();
         WorkbenchService.getInstance().start();
 

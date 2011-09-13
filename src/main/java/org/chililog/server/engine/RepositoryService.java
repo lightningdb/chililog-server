@@ -20,28 +20,25 @@ package org.chililog.server.engine;
 
 import java.util.ArrayList;
 
+import org.bson.types.ObjectId;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
-import org.chililog.server.data.RepositoryInfoListCriteria;
-import org.chililog.server.data.RepositoryInfoBO.Status;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
+import org.chililog.server.data.RepositoryConfigListCriteria;
+import org.chililog.server.data.RepositoryConfigBO.Status;
 
 import com.mongodb.DB;
 
 /**
  * <p>
- * The RepositoryService is responsible managing for start/stop/reload all our repositories (as represented by the
- * {@link Repository} class).
+ * The RepositoryService is responsible managing for start/stop/reload all repositories.
  * </p>
  * 
  * <pre>
  * // Start all repositories
  * RepositoryManager.getInstance().start();
- * 
- * // Reload individual repositories if repository configuration has been updated
- * RepositoryManager.getInstance().loadRepositories();
  * 
  * // Stop all repositories
  * RepositoryManager.getInstance().stop();
@@ -58,7 +55,7 @@ public class RepositoryService
 {
     static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryService.class);
 
-    private ArrayList<Repository> _repositories = new ArrayList<Repository>();
+    private ArrayList<Repository> _onlineRepositories = new ArrayList<Repository>();
 
     /**
      * Returns the singleton instance for this class
@@ -91,32 +88,20 @@ public class RepositoryService
 
     /**
      * <p>
-     * Loads repositories and starts the ones flagged for starting at startup
+     * Starts this service by starting all repositories where the startup status is ONLINE
      * </p>
      * <p>
      * Should be called once at the start of the application
      * </p>
      */
-    public synchronized void start(boolean isStartUp) throws ChiliLogException
+    public synchronized void start() throws ChiliLogException
     {
-        loadRepositories();
-        for (Repository repo : _repositories)
+        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
+        for (RepositoryConfigBO repoInfo : repoList)
         {
-            if (isStartUp)
+            if (repoInfo.getStartupStatus() == Status.ONLINE)
             {
-                // If startup, be ruled by the startup status
-                if (repo.getRepoInfo().getStartupStatus() == Status.ONLINE && repo.getStatus() != Status.ONLINE)
-                {
-                    repo.start();
-                }
-            }
-            else
-            {
-                // If not startup, then start up everything that is not started
-                if (repo.getStatus() != Status.ONLINE)
-                {
-                    repo.start();
-                }
+                startRepository(repoInfo);
             }
         }
         return;
@@ -124,161 +109,206 @@ public class RepositoryService
 
     /**
      * <p>
-     * Loads/Reloads repositories based on the repository information stored in the database.
+     * Starts all repositories
      * </p>
-     * <p>
-     * This code assumes that a repository must be off-line before its information can be changed
-     * </p>
-     * 
-     * @throws Exception
      */
-    public synchronized void loadRepositories() throws ChiliLogException
+    public synchronized void startAllRepositories() throws ChiliLogException
     {
-        try
+        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
+        for (RepositoryConfigBO repoInfo : repoList)
         {
-            ArrayList<RepositoryInfoBO> repoInfoToAdd = new ArrayList<RepositoryInfoBO>();
-            ArrayList<Repository> repoToDelete = new ArrayList<Repository>();
-
-            // Get count connections
-            DB db = MongoConnection.getInstance().getConnection();
-
-            // Get list of repositories
-            RepositoryInfoListCriteria criteria = new RepositoryInfoListCriteria();
-            ArrayList<RepositoryInfoBO> newRepoInfoList = RepositoryInfoController.getInstance().getList(db, criteria);
-
-            // Figure our which repositories have been removed/changed
-            for (Repository repo : _repositories)
+            // If not started, then start it
+            Repository repo = getOnlineRepository(repoInfo.getDocumentID());
+            if (repo == null)
             {
-                RepositoryInfoBO currentRepoInfo = repo.getRepoInfo();
-                RepositoryInfoBO newRepoInfo = findMatchingRepositoryInfo(newRepoInfoList, currentRepoInfo);
-                if (newRepoInfo == null)
-                {
-                    repoToDelete.add(repo);
-                }
-                else if (newRepoInfo.getDocumentVersion() != currentRepoInfo.getDocumentVersion())
-                {
-                    repoToDelete.add(repo);
-                    repoInfoToAdd.add(newRepoInfo);
-                }
+                startRepository(repoInfo);
             }
-
-            // Figure out which repository have been added
-            for (RepositoryInfoBO newRepoInfo : newRepoInfoList)
-            {
-                RepositoryInfoBO currentRepoInfo = findMatchingRepositoryInfo2(_repositories, newRepoInfo);
-                if (currentRepoInfo == null)
-                {
-                    repoInfoToAdd.add(newRepoInfo);
-                }
-            }
-
-            // Stop removed/changed repositories
-            for (Repository repo : repoToDelete)
-            {
-                repo.stop();
-                _repositories.remove(repo);
-            }
-
-            // Start new/changed repositories
-            for (RepositoryInfoBO repoInfo : repoInfoToAdd)
-            {
-                Repository repo = new Repository(repoInfo);
-                _repositories.add(repo);
-            }
-
-            return;
         }
-        catch (Exception ex)
-        {
-            _logger.error(ex, Strings.LOAD_REPOSITORIES_ERROR, ex.getMessage());
-            throw new ChiliLogException(ex, Strings.LOAD_REPOSITORIES_ERROR, ex.getMessage());
-        }
+        return;
     }
 
     /**
-     * Finds a matching repository information based on the unique id
+     * Starts the specified repository. Once started, a repository becomes "online". Log entries will be streamed and
+     * saved (if configured to do so).
      * 
-     * @param list
-     *            list of repository information to search on
-     * @param repoInfoToMatch
-     *            repository information to match
-     * @return Matching repository information record. <code>null</code> if not found
+     * @param repositoryInfoDocumentID
+     *            Document ID of the repository info to start
+     * @return Repository runtime information
+     * @throws ChiliLogException
      */
-    private RepositoryInfoBO findMatchingRepositoryInfo(ArrayList<RepositoryInfoBO> list,
-                                                        RepositoryInfoBO repoInfoToMatch)
+    public synchronized Repository startRepository(ObjectId repositoryInfoDocumentID) throws ChiliLogException
     {
-        for (RepositoryInfoBO repoInfo : list)
+        Repository repo = this.getOnlineRepository(repositoryInfoDocumentID);
+        if (repo != null)
         {
-            if (repoInfo.getDocumentID().equals(repoInfoToMatch.getDocumentID()))
-            {
-                return repoInfo;
-            }
+            // Repository already started
+            return repo;
         }
 
-        return null;
+        DB db = MongoConnection.getInstance().getConnection();
+        RepositoryConfigBO repoInfo = RepositoryConfigController.getInstance().get(db, repositoryInfoDocumentID);
+        return startRepository(repoInfo);
     }
 
     /**
-     * Finds a matching repository information based on the unique id
+     * Starts the specified repository
      * 
-     * @param list
-     *            list of repository information to search on
-     * @param repoInfoToMatch
-     *            repository information to match
-     * @return Matching repository information record. <code>null</code> if not found
+     * @param repoInfo
+     *            Meta data of repository to start
+     * @return Repository runtime information
+     * @throws ChiliLogException
      */
-    private RepositoryInfoBO findMatchingRepositoryInfo2(ArrayList<Repository> list, RepositoryInfoBO repoInfoToMatch)
+    private Repository startRepository(RepositoryConfigBO repoInfo) throws ChiliLogException
     {
-        for (Repository repo : list)
-        {
-            RepositoryInfoBO repoInfo = repo.getRepoInfo();
-            if (repoInfo.getDocumentID().equals(repoInfoToMatch.getDocumentID()))
-            {
-                return repoInfo;
-            }
-        }
-
-        return null;
+        Repository repo = new Repository(repoInfo);
+        repo.start();
+        _onlineRepositories.add(repo);
+        return repo;
     }
 
     /**
-     * Stops our repositories.
+     * Stops this service
      * 
      * @throws Exception
      */
     public synchronized void stop() throws Exception
     {
-        for (Repository repo : _repositories)
+        stopAllRepositories();
+        return;
+    }
+
+    /**
+     * <p>
+     * Starts all repositories but not this service
+     * </p>
+     */
+    public synchronized void stopAllRepositories() throws ChiliLogException
+    {
+        for (Repository repo : _onlineRepositories)
         {
             repo.stop();
         }
+        _onlineRepositories.clear();
         return;
+    }
+
+    /**
+     * Stops the specified repository. Streaming of log entries will be disabled and new log entries will not be stored.
+     * 
+     * @param repositoryInfoDocumentID
+     *            Document ID of the repository to stop
+     * @throws ChiliLogException
+     */
+    public synchronized void stopRepository(ObjectId repositoryInfoDocumentID) throws ChiliLogException
+    {
+        Repository repo = getOnlineRepository(repositoryInfoDocumentID);
+        if (repo != null)
+        {
+            stopRepository(repo);
+        }
+    }
+
+    /**
+     * Stops the specified repository.
+     * 
+     * @param repo
+     *            Runtime information of repository to stop
+     * @throws ChiliLogException
+     */
+    private synchronized void stopRepository(Repository repo) throws ChiliLogException
+    {
+        repo.stop();
+        _onlineRepositories.remove(repo);
+        return;
+    }
+
+    /**
+     * Finds an online repository with a matching repository configuration document id
+     * 
+     * @param repositoryConfigDocumentID
+     *            ID of repository configuration document of repository to find 
+     * @return Matching repository. <code>null</code> if not found
+     */
+    private Repository getOnlineRepository(ObjectId repositoryConfigDocumentID)
+    {
+        for (Repository repo : _onlineRepositories)
+        {
+            if (repo.getRepoConfig().getDocumentID().equals(repositoryConfigDocumentID))
+            {
+                return repo;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * <p>
+     * Returns a list of repository configuration
+     * </p>
+     * 
+     * @throws ChiliLogException
+     */
+    private ArrayList<RepositoryConfigBO> getRepositoryInfoList() throws ChiliLogException
+    {
+        // Get count connections
+        DB db = MongoConnection.getInstance().getConnection();
+
+        // Get list of repositories
+        RepositoryConfigListCriteria criteria = new RepositoryConfigListCriteria();
+        ArrayList<RepositoryConfigBO> list = RepositoryConfigController.getInstance().getList(db, criteria);
+        return list;
     }
 
     /**
      * Returns the latest runtime information for the specified repository info id.
      * 
      * @param id
-     *            Repository information id
-     * @return Matching repository. Null if not found.
+     *            Repository config document id of the repository to retrieve
+     * @return Matching repository.
+     * @throws ChiliLogException
+     *             - if error or not found
      */
-    public synchronized Repository getRepository(String id)
+    public synchronized Repository getRepository(ObjectId id) throws ChiliLogException
     {
-        for (Repository repo : _repositories)
+        // Check it see if repository is online
+        for (Repository repo : _onlineRepositories)
         {
-            if (repo.getRepoInfo().getDocumentID().toString().equals(id))
+            if (repo.getRepoConfig().getDocumentID().toString().equals(id))
             {
                 return repo;
             }
         }
-        return null;
+       
+        // Get count connections
+        DB db = MongoConnection.getInstance().getConnection();
+        RepositoryConfigBO repoInfo = RepositoryConfigController.getInstance().get(db, id);
+        return repoInfo == null ? null : new Repository(repoInfo);
     }
 
     /**
-     * Returns a list of repositories currently being managed
+     * Returns the latest runtime information for all repositories
+     * 
+     * @throws ChiliLogException
      */
-    public synchronized Repository[] getRepositories()
+    public synchronized Repository[] getRepositories() throws ChiliLogException
     {
-        return _repositories.toArray(new Repository[] {});
+        ArrayList<Repository> list = new ArrayList<Repository>();
+        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
+        for (RepositoryConfigBO repoInfo : repoList)
+        {
+            Repository repo = getOnlineRepository(repoInfo.getDocumentID());
+            if (repo == null)
+            {
+                list.add(new Repository(repoInfo));
+            }
+            else
+            {
+                // Online so send that one
+                list.add(repo);
+            }
+        }
+
+        return list.toArray(new Repository[] {});
     }
 }

@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -35,7 +35,7 @@ import org.chililog.server.data.RepositoryFieldInfoBO;
  */
 public abstract class FieldParser
 {
-    private RepositoryFieldInfoBO _repoFieldInfo;
+    private RepositoryFieldConfigBO _repoFieldInfo;
     private Pattern _preparsePattern = null;
     private int _preparsePatternGroup = 1;
 
@@ -45,18 +45,18 @@ public abstract class FieldParser
      * @param repoFieldInfo
      *            Field meta data
      */
-    public FieldParser(RepositoryFieldInfoBO repoFieldInfo)
+    public FieldParser(RepositoryFieldConfigBO repoFieldInfo)
     {
         _repoFieldInfo = repoFieldInfo;
 
         Hashtable<String, String> properties = _repoFieldInfo.getProperties();
-        String s = properties.get(RepositoryFieldInfoBO.PREPARSE_PATTERN_PROPERTY_NAME);
+        String s = properties.get(RepositoryFieldConfigBO.PREPARSE_PATTERN_PROPERTY_NAME);
         if (!StringUtils.isBlank(s))
         {
             _preparsePattern = Pattern.compile(s);
         }
 
-        String g = properties.get(RepositoryFieldInfoBO.PREPARSE_PATTERN_GROUP_PROPERTY_NAME);
+        String g = properties.get(RepositoryFieldConfigBO.PREPARSE_PATTERN_GROUP_PROPERTY_NAME);
         if (!StringUtils.isBlank(g))
         {
             _preparsePatternGroup = Integer.parseInt(g);
@@ -66,7 +66,7 @@ public abstract class FieldParser
     /**
      * Returns the field meta data for this field parser
      */
-    public RepositoryFieldInfoBO getRepoFieldInfo()
+    public RepositoryFieldConfigBO getRepoFieldInfo()
     {
         return _repoFieldInfo;
     }

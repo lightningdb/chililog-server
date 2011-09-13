@@ -29,11 +29,11 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
-import org.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 import org.chililog.server.engine.parsers.DefaultEntryParser;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -79,11 +79,11 @@ public class DefaultEntryParserTest
     @Test
     public void testOK() throws ChiliLogException, ParseException
     {
-        RepositoryInfoBO repoInfo = new RepositoryInfoBO();
+        RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("default_test");
         repoInfo.setDisplayName("Default Test 1");
 
-        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        RepositoryParserConfigBO repoParserInfo = new RepositoryParserConfigBO();
         repoParserInfo.setName("parser1");
         repoParserInfo.setAppliesTo(AppliesTo.All);
         repoParserInfo.setClassName(DefaultEntryParser.class.getName());

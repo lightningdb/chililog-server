@@ -32,16 +32,16 @@ import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
-import org.chililog.server.data.RepositoryInfoBO.Status;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
-import org.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
+import org.chililog.server.data.RepositoryConfigBO.Status;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 import org.chililog.server.engine.parsers.DelimitedEntryParser;
 import org.chililog.server.engine.parsers.EntryParser;
 import org.chililog.server.engine.parsers.EntryParserFactory;
@@ -86,7 +86,7 @@ public class RepositoryRuntimeTest
         coll.remove(query);
 
         // Clean up old repository test data if any exists
-        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^test_repo[\\w]*$");
         query = new BasicDBObject();
         query.put("name", pattern);
@@ -129,11 +129,11 @@ public class RepositoryRuntimeTest
         UserController.getInstance().save(_db, user);
 
         // Create test repo
-        RepositoryInfoBO repoInfo = new RepositoryInfoBO();
+        RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("test_repo");
         repoInfo.setDisplayName("RepositoriesTest 1");
         
-        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
+        RepositoryParserConfigBO repoParserInfo = new RepositoryParserConfigBO();
         repoParserInfo.setName("parser1");
         repoParserInfo.setAppliesTo(AppliesTo.All);
         repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
@@ -141,19 +141,19 @@ public class RepositoryRuntimeTest
         repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
         repoInfo.getParsers().add(repoParserInfo);
 
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
+        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.String);
         repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
         repoParserInfo.getFields().add(repoFieldInfo);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
+        repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field2");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
+        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Integer);
         repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
         repoParserInfo.getFields().add(repoFieldInfo);
 
-        RepositoryInfoController.getInstance().save(_db, repoInfo);
+        RepositoryConfigController.getInstance().save(_db, repoInfo);
         _repoInfoId = repoInfo.getDocumentID().toString();
 
         coll = _db.getCollection(repoInfo.getMongoDBCollectionName());
@@ -195,7 +195,7 @@ public class RepositoryRuntimeTest
         coll.remove(query);
 
         // Clean up old repository test data if any exists
-        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^test_repo[\\w]*$");
         query = new BasicDBObject();
         query.put("name", pattern);

@@ -26,11 +26,14 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoBO.Status;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigBO.Status;
 
 
 /**
+ * <p>
+ * Runtime information and controller for a repository.
+ * </p>
  * <p>
  * From a logical view point, a repository is a "bucket" within ChiliLog where entries from one or more logs are be
  * stored.
@@ -39,14 +42,14 @@ import org.chililog.server.data.RepositoryInfoBO.Status;
  * From a software view point:
  * </p>
  * <ul>
- * <li>a repository's specification or meta-data is represented by {@link RepositoryInfoBO}.</li>
+ * <li>a repository's specification or meta-data is represented by {@link RepositoryConfigBO}.</li>
  * <li>an individual repository entry (a line in a log file) is represented by {@link RepositoryEntryBO} and is stored
  * in mongoDB as a record in a collection.</li>
  * <li>applications communicate with repositories via message queues. Log entries can be deposited in a queue for
  * processing.</li>
  * <li>The worker threads, {@link RepositoryStorageWorker}, reads the queued log entries and writes them to mongoDB
  * using {@link RepositoryEntryController} classes. The exact type of controller is specified as part of the repository
- * definition in {@link RepositoryInfoBO}.</li>
+ * definition in {@link RepositoryConfigBO}.</li>
  * </ul>
  * 
  * @author vibul
@@ -55,9 +58,10 @@ import org.chililog.server.data.RepositoryInfoBO.Status;
 public class Repository
 {
     static Log4JLogger _logger = Log4JLogger.getLogger(Repository.class);
-    private RepositoryInfoBO _repoInfo;
+    private RepositoryConfigBO _repoConfig;
     private ArrayList<RepositoryStorageWorker> _storageWorkers = new ArrayList<RepositoryStorageWorker>();
     private Status _status;
+    private boolean _hasStarted = false; 
 
     /**
      * Constructor specifying the information needed to create a repository
@@ -65,14 +69,14 @@ public class Repository
      * @param repoInfo
      *            Repository meta data
      */
-    public Repository(RepositoryInfoBO repoInfo)
+    public Repository(RepositoryConfigBO repoInfo)
     {
         if (repoInfo == null)
         {
             throw new NullArgumentException("repoInfo cannot be null");
         }
 
-        _repoInfo = repoInfo;
+        _repoConfig = repoInfo;
         _status = Status.OFFLINE;
         return;
     }
@@ -80,30 +84,30 @@ public class Repository
     /**
      * Returns the meta data about this repository
      */
-    public RepositoryInfoBO getRepoInfo()
+    public RepositoryConfigBO getRepoConfig()
     {
-        return _repoInfo;
+        return _repoConfig;
     }
 
     /**
      * Updates the repository information
      * 
-     * @param repoInfo
-     *            new repository information
+     * @param repoConfig
+     *            new repository configuration
      * @throws ChiliLogException
      */
-    public void setRepoInfo(RepositoryInfoBO repoInfo) throws ChiliLogException
+    public void setRepoConfig(RepositoryConfigBO repoConfig) throws ChiliLogException
     {
-        if (repoInfo == null)
+        if (repoConfig == null)
         {
-            throw new NullArgumentException("repoInfo cannot be null");
+            throw new NullArgumentException("repoConfig cannot be null");
         }
         if (_status != Status.OFFLINE)
         {
-            throw new ChiliLogException(Strings.REPOSITORY_INFO_UPDATE_ERROR, _repoInfo.getName());
+            throw new ChiliLogException(Strings.REPOSITORY_INFO_UPDATE_ERROR, _repoConfig.getName());
         }
 
-        _repoInfo = repoInfo;
+        _repoConfig = repoConfig;
     }
 
     /**
@@ -111,46 +115,51 @@ public class Repository
      * Starts this repository. Log entries can be produced and consumed.
      * </p>
      */
-    public synchronized void start() throws ChiliLogException
+    synchronized void start() throws ChiliLogException
     {
         if (_status == Status.ONLINE)
         {
-            throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoInfo.getName());
+            throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoConfig.getName());
         }
-
+        if (_hasStarted)
+        {
+            // This should not happen when used via the RepositoryService as intended.
+            throw new UnsupportedOperationException("Restarting a repository is not supported. Instance a new Repository and start it instead.");
+        }
+        
         try
         {
-            _logger.info("Starting Repository '%s'", _repoInfo.getName());
+            _logger.info("Starting Repository '%s'", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
 
             // Setup permissions
             StringBuilder publisherRoles = new StringBuilder();
-            publisherRoles.append(_repoInfo.getAdministratorRoleName()).append(",");
-            publisherRoles.append(_repoInfo.getPublisherRoleName());
+            publisherRoles.append(_repoConfig.getAdministratorRoleName()).append(",");
+            publisherRoles.append(_repoConfig.getPublisherRoleName());
 
             StringBuilder subscriberRoles = new StringBuilder();
-            subscriberRoles.append(_repoInfo.getAdministratorRoleName()).append(",");
-            subscriberRoles.append(_repoInfo.getWorkbenchRoleName()).append(",");
-            subscriberRoles.append(_repoInfo.getSubscriberRoleName());
+            subscriberRoles.append(_repoConfig.getAdministratorRoleName()).append(",");
+            subscriberRoles.append(_repoConfig.getWorkbenchRoleName()).append(",");
+            subscriberRoles.append(_repoConfig.getSubscriberRoleName());
 
-            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), publisherRoles.toString(),
+            mqManager.addSecuritySettings(_repoConfig.getPubSubAddress(), publisherRoles.toString(),
                     subscriberRoles.toString());
 
             // Update address properties. See
             // http://hornetq.sourceforge.net/docs/hornetq-2.1.2.Final/user-manual/en/html_single/index.html#queue-attributes.address-settings
-            mqManager.addAddressSettings(_repoInfo.getPubSubAddress(), appProperties.getMqDeadLetterAddress(), null,
-                    false, appProperties.getMqRedeliveryMaxAttempts(), _repoInfo.getMaxMemory(), (int) _repoInfo
-                            .getPageSize(), (int) _repoInfo.getPageCountCache(), appProperties
-                            .getMqRedeliveryDelayMilliseconds(), -1, true, _repoInfo.getMaxMemoryPolicy().toString());
+            mqManager.addAddressSettings(_repoConfig.getPubSubAddress(), appProperties.getMqDeadLetterAddress(), null,
+                    false, appProperties.getMqRedeliveryMaxAttempts(), _repoConfig.getMaxMemory(), (int) _repoConfig
+                            .getPageSize(), (int) _repoConfig.getPageCountCache(), appProperties
+                            .getMqRedeliveryDelayMilliseconds(), -1, true, _repoConfig.getMaxMemoryPolicy().toString());
 
             // If we want to store entries, then start queue on the address and workers to consume and write entries
-            if (_repoInfo.getStoreEntriesIndicator())
+            if (_repoConfig.getStoreEntriesIndicator())
             {
                 // Create queue
-                mqManager.deployQueue(_repoInfo.getPubSubAddress(), _repoInfo.getStorageQueueName(),
-                        _repoInfo.getStorageQueueDurableIndicator());
+                mqManager.deployQueue(_repoConfig.getPubSubAddress(), _repoConfig.getStorageQueueName(),
+                        _repoConfig.getStorageQueueDurableIndicator());
 
                 // Start our storage workers
                 startStorageWorkers();
@@ -158,13 +167,14 @@ public class Repository
 
             // Finish
             _status = Status.ONLINE;
-            _logger.info("Repository '%s' started.", _repoInfo.getName());
+            _logger.info("Repository '%s' started.", _repoConfig.getName());
+            _hasStarted = true;
             return;
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_ERROR, _repoInfo.getPubSubAddress(),
-                    _repoInfo.getName(), ex.getMessage());
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
+                    _repoConfig.getName(), ex.getMessage());
         }
     }
 
@@ -173,7 +183,7 @@ public class Repository
      * 
      * @throws ChiliLogException
      */
-    public void startStorageWorkers() throws ChiliLogException
+    void startStorageWorkers() throws ChiliLogException
     {
         // Make sure existing worker threads are stopped
         stopStorageWorkers();
@@ -181,9 +191,9 @@ public class Repository
         // Add workers to list
         try
         {
-            for (int i = 1; i <= _repoInfo.getStorageQueueWorkerCount(); i++)
+            for (int i = 1; i <= _repoConfig.getStorageQueueWorkerCount(); i++)
             {
-                String name = String.format("%s StorageWorker #%s", _repoInfo.getName(), i);
+                String name = String.format("%s StorageWorker #%s", _repoConfig.getName(), i);
                 RepositoryStorageWorker worker = new RepositoryStorageWorker(name, this);
                 worker.start();
                 _storageWorkers.add(worker);
@@ -191,7 +201,7 @@ public class Repository
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_WORKER_ERROR, _repoInfo.getName(),
+            throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
     }
@@ -201,16 +211,16 @@ public class Repository
      * Stops this repository. Log entries cannot be produced or consumed.
      * </p>
      */
-    public synchronized void stop() throws ChiliLogException
+    synchronized void stop() throws ChiliLogException
     {
         try
         {
-            _logger.info("Stopping Repository '%s'", _repoInfo.getName());
+            _logger.info("Stopping Repository '%s'", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
 
             // Remove permissions so that nobody
-            mqManager.addSecuritySettings(_repoInfo.getPubSubAddress(), null, null);
+            mqManager.addSecuritySettings(_repoConfig.getPubSubAddress(), null, null);
 
             // Stop workers
             stopStorageWorkers();
@@ -219,20 +229,20 @@ public class Repository
 
             // Finish
             _status = Status.OFFLINE;
-            _logger.info("Repository '%s' stopped.", _repoInfo.getName());
+            _logger.info("Repository '%s' stopped.", _repoConfig.getName());
             return;
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_ERROR, _repoInfo.getPubSubAddress(),
-                    _repoInfo.getName(), ex.getMessage());
+            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
+                    _repoConfig.getName(), ex.getMessage());
         }
     }
 
     /**
      * Start writer threads
      */
-    public void stopStorageWorkers() throws ChiliLogException
+    void stopStorageWorkers() throws ChiliLogException
     {
         try
         {
@@ -245,7 +255,7 @@ public class Repository
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_STORAGE_WORKER_ERROR, _repoInfo.getName(),
+            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
     }

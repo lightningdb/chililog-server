@@ -48,7 +48,7 @@ db.system.users.find().forEach(printjson);
 //*************************************************************
 db.config.drop();
 db.users.drop();
-db.repoinfo.drop();
+db.repo.drop();
 db.repo_chililog.drop();
 db.repo_sandpit.drop();
 
@@ -128,7 +128,7 @@ db.users.insert(sandpitRepositorySubscriberUser);
 // See http://www.mongodb.org/display/DOCS/Indexing+Advice+and+FAQ
 //*************************************************************
 print("\nAdding ChiliLog Repository");
-var chililogRepoInfo = {
+var chililogRepoConfig = {
 	name: "chililog",
 	display_name: "Chililog Server",
 	description: "Log repository for Chililog Server events",
@@ -143,11 +143,11 @@ var chililogRepoInfo = {
 	page_count_cache: new NumberLong(1),
 	doc_version: new NumberLong(1)
 };
-db.repoinfo.insert(chililogRepoInfo);
+db.repo.insert(chililogRepoConfig);
 db.repo_chililog.ensureIndex({ keywords : 1, ts : 1 }, {name: "keyword_ts_index"});
 
 print("\nAdding Sandpit Repository");
-var sandpitRepoInfo = {
+var sandpitRepoConfig = {
 	name: "sandpit",
 	display_name: "Sandpit",
 	description: "For testing and playing around",
@@ -162,7 +162,7 @@ var sandpitRepoInfo = {
 	page_count_cache: new NumberLong(3),
 	doc_version: new NumberLong(1)
 };
-db.repoinfo.insert(sandpitRepoInfo);
+db.repo.insert(sandpitRepoConfig);
 db.repo_sandpit.ensureIndex({ keywords : 1, ts : 1 }, {name: "keyword_ts_index"});
 
 // *************************************************************

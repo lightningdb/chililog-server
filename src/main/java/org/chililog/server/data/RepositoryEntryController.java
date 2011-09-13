@@ -42,17 +42,17 @@ import com.mongodb.MongoException;
  */
 public class RepositoryEntryController extends Controller
 {
-    private RepositoryInfoBO _repoInfo = null;
+    private RepositoryConfigBO _repoInfo = null;
     private String _mongoDBCollectionName = null;
 
     /**
      * Returns an instance of the repository entry controller to use.
      * 
      * @param repoInfo
-     *            Meta data for the respository to which we will be reading and writing
+     *            Meta data for the repository to which we will be reading and writing
      * @return RepositoryEntryController
      */
-    public static RepositoryEntryController getInstance(RepositoryInfoBO repoInfo)
+    public static RepositoryEntryController getInstance(RepositoryConfigBO repoInfo)
     {
         // TODO cache entry controllers
         return new RepositoryEntryController(repoInfo);
@@ -64,7 +64,7 @@ public class RepositoryEntryController extends Controller
      * @param repoInfo
      *            Repository info
      */
-    RepositoryEntryController(RepositoryInfoBO repoInfo)
+    RepositoryEntryController(RepositoryConfigBO repoInfo)
     {
         _repoInfo = repoInfo;
         _mongoDBCollectionName = repoInfo.getMongoDBCollectionName();
@@ -82,7 +82,7 @@ public class RepositoryEntryController extends Controller
     /**
      * Returns the meta data of the repository to which we will be reading and writing
      */
-    public RepositoryInfoBO getRepoInfo()
+    public RepositoryConfigBO getRepoInfo()
     {
         return _repoInfo;
     }
@@ -158,7 +158,7 @@ public class RepositoryEntryController extends Controller
      * @return List of matching entries
      * @throws ChiliLogException
      */
-    public ArrayList<RepositoryEntryBO> getList(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public ArrayList<RepositoryEntryBO> getList(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
     {
         ArrayList<DBObject> list = executeFindQuery(db, criteria);
         ArrayList<RepositoryEntryBO> boList = new ArrayList<RepositoryEntryBO>();
@@ -181,7 +181,7 @@ public class RepositoryEntryController extends Controller
      *            Criteria to filter resultset. Fields, conditions and orderby are used.
      * @return List of matching entries
      */
-    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
     {
         try
         {
@@ -234,7 +234,7 @@ public class RepositoryEntryController extends Controller
      *            Criteria to filter resultset. Condition is used.
      * @return Number of matching entries
      */
-    public int executeCountQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public int executeCountQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
     {
         try
         {
@@ -269,7 +269,7 @@ public class RepositoryEntryController extends Controller
      * @return List of distinct values for the nominated field.
      */
     @SuppressWarnings("rawtypes")
-    public List executeDistinctQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public List executeDistinctQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
     {
         try
         {
@@ -317,7 +317,7 @@ public class RepositoryEntryController extends Controller
      *            used.
      * @return Specified fields and aggregation counter.
      */
-    public DBObject executeGroupQuery(DB db, RepositoryListCriteria criteria) throws ChiliLogException
+    public DBObject executeGroupQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
     {
         try
         {

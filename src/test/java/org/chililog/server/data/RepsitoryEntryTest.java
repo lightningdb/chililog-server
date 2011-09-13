@@ -26,7 +26,7 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
-import org.chililog.server.data.RepositoryInfoBO;
+import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -44,7 +44,7 @@ import com.mongodb.DBCollection;
 public class RepsitoryEntryTest
 {
     private static DB _db;
-    private static RepositoryInfoBO _repoInfo;
+    private static RepositoryConfigBO _repoInfo;
 
     @BeforeClass
     public static void classSetup() throws Exception
@@ -53,7 +53,7 @@ public class RepsitoryEntryTest
         assertNotNull(_db);
 
         // Prepare common repo
-        _repoInfo = new RepositoryInfoBO();
+        _repoInfo = new RepositoryConfigBO();
         _repoInfo.setName("entry_test");
         _repoInfo.setDisplayName("Repo Entry Test");
 

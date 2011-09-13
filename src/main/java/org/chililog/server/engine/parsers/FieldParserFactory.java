@@ -21,7 +21,7 @@ package org.chililog.server.engine.parsers;
 import java.text.ParseException;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -41,7 +41,7 @@ public class FieldParserFactory
      * @return Field parser
      * @throws ParseException
      */
-    public static FieldParser getParser(RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+    public static FieldParser getParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
     {
         switch (repoFieldInfo.getDataType())
         {

@@ -25,7 +25,7 @@ import java.util.Hashtable;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
-import org.chililog.server.data.RepositoryFieldInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
 
 
 /**
@@ -47,21 +47,21 @@ public class DateFieldParser extends FieldParser
      *            Field meta data
      * @throws ParseException
      */
-    public DateFieldParser(RepositoryFieldInfoBO repoFieldInfo) throws ParseException
+    public DateFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
     {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
 
-        String defaultValue = properties.get(RepositoryFieldInfoBO.DEFAULT_VALUE_PROPERTY_NAME);
-        _dateFormat = properties.get(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME);
+        String defaultValue = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
+        _dateFormat = properties.get(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME);
         if (StringUtils.isBlank(_dateFormat))
         {
             _dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ";
         }
 
         SimpleDateFormat dateFormatter = new SimpleDateFormat(_dateFormat);
-        String t = properties.get(RepositoryFieldInfoBO.DATE_TIMEZONE_PROPERTY_NAME);
+        String t = properties.get(RepositoryFieldConfigBO.DATE_TIMEZONE_PROPERTY_NAME);
         if (!StringUtils.isBlank(t))
         {
             _dateTimezone = TimeZone.getTimeZone(t);

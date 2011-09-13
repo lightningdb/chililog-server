@@ -14,8 +14,8 @@ import org.chililog.client.websocket.WebSocketClientFactory;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
@@ -47,7 +47,7 @@ import com.mongodb.DBObject;
 public class JsonWebSocketTest
 {
     private static DB _db;
-    private static RepositoryInfoBO _repoInfo;
+    private static RepositoryConfigBO _repoInfo;
 
     private static final String REPOSITORY_NAME = "json_ws_test";
     private static final String MONGODB_COLLECTION_NAME = "repo_json_ws_test";
@@ -56,7 +56,7 @@ public class JsonWebSocketTest
     public static void classSetup() throws Exception
     {
         // Create repo
-        _repoInfo = new RepositoryInfoBO();
+        _repoInfo = new RepositoryConfigBO();
         _repoInfo.setName(REPOSITORY_NAME);
         _repoInfo.setDisplayName("Json Web Socket Test");
         _repoInfo.setStoreEntriesIndicator(true);
@@ -75,7 +75,7 @@ public class JsonWebSocketTest
         coll.remove(query);
 
         // Clean old repository info
-        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
         query = new BasicDBObject();
         query.put("name", pattern);
@@ -89,7 +89,7 @@ public class JsonWebSocketTest
         }
 
         // Create repository record
-        RepositoryInfoController.getInstance().save(_db, _repoInfo);
+        RepositoryConfigController.getInstance().save(_db, _repoInfo);
 
         // Create user that cannot access this repository
         UserBO user = new UserBO();
@@ -113,7 +113,7 @@ public class JsonWebSocketTest
 
         // Start it up
         MqService.getInstance().start();
-        RepositoryService.getInstance().start(true);
+        RepositoryService.getInstance().start();
         JsonHttpService.getInstance().start();
     }
 
@@ -151,7 +151,7 @@ public class JsonWebSocketTest
         coll.remove(query);
         
         // Clean old repository info
-        coll = _db.getCollection(RepositoryInfoController.MONGODB_COLLECTION_NAME);
+        coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
         query = new BasicDBObject();
         query.put("name", pattern);

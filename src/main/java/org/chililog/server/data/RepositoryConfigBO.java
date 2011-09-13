@@ -30,7 +30,7 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * This class contains information that describes a repository:
+ * This class contains meta-data that describes a repository:
  * <ul>
  * <li>General Details - Name and status</li>
  * <li>Security - authentication information for publisher and subscribers of the repository</li>
@@ -64,7 +64,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryInfoBO extends BO implements Serializable
+public class RepositoryConfigBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -85,7 +85,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     private long _pageSize = 1024 * 1024 * 10; // 10 MB
     private long _pageCountCache = 3; // max 3 pages in memory when paging
 
-    private ArrayList<RepositoryParserInfoBO> _parsers = new ArrayList<RepositoryParserInfoBO>();
+    private ArrayList<RepositoryParserConfigBO> _parsers = new ArrayList<RepositoryParserConfigBO>();
 
     static final String NAME_FIELD_NAME = "name";
     static final String DISPLAY_NAME_FIELD_NAME = "display_name";
@@ -108,7 +108,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryInfoBO()
+    public RepositoryConfigBO()
     {
         return;
     }
@@ -120,7 +120,7 @@ public class RepositoryInfoBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public RepositoryInfoBO(DBObject dbObject) throws ChiliLogException
+    public RepositoryConfigBO(DBObject dbObject) throws ChiliLogException
     {
         super(dbObject);
 
@@ -145,12 +145,12 @@ public class RepositoryInfoBO extends BO implements Serializable
 
         // Parser
         BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
-        ArrayList<RepositoryParserInfoBO> parserList = new ArrayList<RepositoryParserInfoBO>();
+        ArrayList<RepositoryParserConfigBO> parserList = new ArrayList<RepositoryParserConfigBO>();
         if (list != null && list.size() > 0)
         {
             for (Object item : list)
             {
-                RepositoryParserInfoBO field = new RepositoryParserInfoBO((DBObject) item);
+                RepositoryParserConfigBO field = new RepositoryParserConfigBO((DBObject) item);
                 parserList.add(field);
             }
         }
@@ -203,7 +203,7 @@ public class RepositoryInfoBO extends BO implements Serializable
 
         // Parsers
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
-        for (RepositoryParserInfoBO parser : _parsers)
+        for (RepositoryParserConfigBO parser : _parsers)
         {
             BasicDBObject obj = new BasicDBObject();
             parser.savePropertiesToDBObject(obj);
@@ -281,7 +281,7 @@ public class RepositoryInfoBO extends BO implements Serializable
     /**
      * Returns a list fields that is to be parsed and stored in this repository
      */
-    public ArrayList<RepositoryParserInfoBO> getParsers()
+    public ArrayList<RepositoryParserConfigBO> getParsers()
     {
         return _parsers;
     }

@@ -26,14 +26,14 @@ import java.util.regex.Pattern;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryFieldInfoBO;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryParserInfoBO;
+import org.chililog.server.data.RepositoryFieldConfigBO;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
-import org.chililog.server.data.RepositoryInfoBO.Status;
-import org.chililog.server.data.RepositoryParserInfoBO.AppliesTo;
-import org.chililog.server.data.RepositoryParserInfoBO.ParseFieldErrorHandling;
+import org.chililog.server.data.RepositoryConfigBO.Status;
+import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
+import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.Repository;
 import org.chililog.server.engine.RepositoryService;
@@ -66,7 +66,7 @@ import com.mongodb.DBObject;
 public class RepositoryTest
 {
     private static DB _db;
-    private static RepositoryInfoBO _repoInfo;
+    private static RepositoryConfigBO _repoConfig;
 
     private static final String REPOSITORY_NAME = "junit_test";
     
@@ -103,57 +103,57 @@ public class RepositoryTest
         UserController.getInstance().save(_db, user);
         
         // Create repo
-        _repoInfo = new RepositoryInfoBO();
-        _repoInfo.setName(REPOSITORY_NAME);
-        _repoInfo.setDisplayName("Repository Test 1");
-        _repoInfo.setStoreEntriesIndicator(true);
-        _repoInfo.setStorageQueueDurableIndicator(false);
-        _repoInfo.setStorageQueueWorkerCount(2);
+        _repoConfig = new RepositoryConfigBO();
+        _repoConfig.setName(REPOSITORY_NAME);
+        _repoConfig.setDisplayName("Repository Test 1");
+        _repoConfig.setStoreEntriesIndicator(true);
+        _repoConfig.setStorageQueueDurableIndicator(false);
+        _repoConfig.setStorageQueueWorkerCount(2);
 
-        RepositoryParserInfoBO repoParserInfo = new RepositoryParserInfoBO();
-        repoParserInfo.setName("parser1");
-        repoParserInfo.setAppliesTo(AppliesTo.All);
-        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
-        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
-        _repoInfo.getParsers().add(repoParserInfo);
+        RepositoryParserConfigBO repoParserConfig = new RepositoryParserConfigBO();
+        repoParserConfig.setName("parser1");
+        repoParserConfig.setAppliesTo(AppliesTo.All);
+        repoParserConfig.setClassName(DelimitedEntryParser.class.getName());
+        repoParserConfig.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserConfig.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        _repoConfig.getParsers().add(repoParserConfig);
 
-        RepositoryFieldInfoBO repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field1");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.String);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        RepositoryFieldConfigBO repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field1");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.String);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field2");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field2");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Integer);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field3");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Long);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "3");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field3");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Long);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "3");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field4");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Double);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "4");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field4");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Double);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "4");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field5");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Date);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "5");
-        repoFieldInfo.getProperties().put(RepositoryFieldInfoBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field5");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Date);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "5");
+        repoFieldConfig.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldInfoBO();
-        repoFieldInfo.setName("field6");
-        repoFieldInfo.setDataType(RepositoryFieldInfoBO.DataType.Boolean);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "6");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field6");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Boolean);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "6");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
         // Database
         _db = MongoConnection.getInstance().getConnection();
@@ -189,7 +189,7 @@ public class RepositoryTest
 
         // Start
         MqService.getInstance().start();
-        Repository repo = new Repository(_repoInfo);
+        Repository repo = new Repository(_repoConfig);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
@@ -197,7 +197,7 @@ public class RepositoryTest
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getPubSubAddress();
+        String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
@@ -243,22 +243,22 @@ public class RepositoryTest
     }
 
     @Test
-    public void testUpdateRepositoryInfo() throws Exception
+    public void testUpdateRepositoryConfig() throws Exception
     {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
         MqService.getInstance().start();
-        Repository repo = new Repository(_repoInfo);
+        Repository repo = new Repository(_repoConfig);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Try to update repo - should error because it is not off line
-        // Simulate we getting new repoInfo from the DB
+        // Simulate we getting new repoConfig from the DB
         try
         {
-            repo.setRepoInfo(_repoInfo);
+            repo.setRepoConfig(_repoConfig);
             fail();
         }
         catch (Exception ex)
@@ -275,17 +275,17 @@ public class RepositoryTest
         assertEquals(Status.OFFLINE, repo.getStatus());
 
         // Update worker count from 2 to 10
-        _repoInfo.setStorageQueueWorkerCount(10);
-        repo.setRepoInfo(_repoInfo);
+        _repoConfig.setStorageQueueWorkerCount(10);
 
         // Restart
+        repo = new Repository(_repoConfig);
         repo.start();
 
         // Write 10,000 repository entries
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getPubSubAddress();
+        String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         for (int i = 1; i <= 10000; i++)
@@ -312,8 +312,8 @@ public class RepositoryTest
         assertEquals(10, repo.getStorageWorkers().size());
 
         // Make sure that we've processed all the messages
-        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
-                repo.getRepoInfo().getStorageQueueName());
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoConfig().getPubSubAddress(),
+                repo.getRepoConfig().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure they are in the database
@@ -326,18 +326,18 @@ public class RepositoryTest
         MqService.getInstance().stop();
 
         // Reset count
-        _repoInfo.setStorageQueueWorkerCount(2);
+        _repoConfig.setStorageQueueWorkerCount(2);
     }
 
     @Test
-    public void testStartStopRepositoryInfo() throws Exception
+    public void testStartStopRepository() throws Exception
     {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
         // Start
         MqService.getInstance().start();
-        Repository repo = new Repository(_repoInfo);
+        Repository repo = new Repository(_repoConfig);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
@@ -356,7 +356,7 @@ public class RepositoryTest
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getPubSubAddress();
+        String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         for (int i = 1; i <= 10; i++)
@@ -374,8 +374,8 @@ public class RepositoryTest
 
         // Make sure that we've processed all the messages
         Thread.sleep(3000);
-        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
-                repo.getRepoInfo().getStorageQueueName());
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoConfig().getPubSubAddress(),
+                repo.getRepoConfig().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure they are in the database
@@ -426,7 +426,7 @@ public class RepositoryTest
         MqService.getInstance().stop();
 
         // Reset count
-        _repoInfo.setStorageQueueWorkerCount(2);
+        _repoConfig.setStorageQueueWorkerCount(2);
     }
 
     @Test
@@ -438,7 +438,7 @@ public class RepositoryTest
 
         // Start
         MqService.getInstance().start();
-        Repository repo = new Repository(_repoInfo);
+        Repository repo = new Repository(_repoConfig);
         repo.start();
         assertEquals(Status.ONLINE, repo.getStatus());
 
@@ -449,7 +449,7 @@ public class RepositoryTest
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
                 PUBLISHER_PASSWORD);
 
-        String queueAddress = _repoInfo.getPubSubAddress();
+        String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         // Write some good entries
@@ -481,8 +481,8 @@ public class RepositoryTest
         assertEquals(2, repo.getStorageWorkers().size());
 
         // Make sure that bad entries have been removed from the write queue
-        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoInfo().getPubSubAddress(),
-                repo.getRepoInfo().getStorageQueueName());
+        QueueControl qc = MqService.getInstance().getQueueControl(repo.getRepoConfig().getPubSubAddress(),
+                repo.getRepoConfig().getStorageQueueName());
         assertEquals(0, qc.getMessageCount());
 
         // Make sure that the bad entry ends up in the dead letter queue
@@ -507,11 +507,11 @@ public class RepositoryTest
         MqService.getInstance().start();
 
         // Start
-        RepositoryService.getInstance().start(true);
+        RepositoryService.getInstance().start();
         Repository[] repos = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos)
         {
-            if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
+            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE)
             {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
@@ -522,11 +522,11 @@ public class RepositoryTest
         }
 
         // Start again - should not error
-        RepositoryService.getInstance().start(true);
+        RepositoryService.getInstance().start();
         Repository[] repos2 = RepositoryService.getInstance().getRepositories();
         for (Repository r : repos2)
         {
-            if (r.getRepoInfo().getStartupStatus() == Status.ONLINE)
+            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE)
             {
                 assertEquals(Status.ONLINE, r.getStatus());
             }

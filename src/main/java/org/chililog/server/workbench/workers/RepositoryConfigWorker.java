@@ -24,9 +24,9 @@ import org.bson.types.ObjectId;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.data.MongoConnection;
-import org.chililog.server.data.RepositoryInfoBO;
-import org.chililog.server.data.RepositoryInfoController;
-import org.chililog.server.data.RepositoryInfoListCriteria;
+import org.chililog.server.data.RepositoryConfigBO;
+import org.chililog.server.data.RepositoryConfigController;
+import org.chililog.server.data.RepositoryConfigListCriteria;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.workbench.Strings;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -119,17 +119,17 @@ public class RepositoryConfigWorker extends Worker
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
-            RepositoryConfigAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
                     RepositoryConfigAO.class);
 
-            RepositoryInfoBO repoInfoBO = new RepositoryInfoBO();
-            repoInfoAO.toBO(repoInfoBO);
+            RepositoryConfigBO repoConfigBO = new RepositoryConfigBO();
+            repoConfigAO.toBO(repoConfigBO);
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoController.getInstance().save(db, repoInfoBO);
+            RepositoryConfigController.getInstance().save(db, repoConfigBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoInfoBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO));
         }
         catch (Exception ex)
         {
@@ -150,10 +150,10 @@ public class RepositoryConfigWorker extends Worker
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().tryGet(db, new ObjectId(id));
-            if (repoInfoBO != null)
+            RepositoryConfigBO repoConfigBO = RepositoryConfigController.getInstance().tryGet(db, new ObjectId(id));
+            if (repoConfigBO != null)
             {
-                RepositoryInfoController.getInstance().remove(db, repoInfoBO);
+                RepositoryConfigController.getInstance().remove(db, repoConfigBO);
             }
 
             // Return response
@@ -183,24 +183,24 @@ public class RepositoryConfigWorker extends Worker
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
-            RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
+            RepositoryConfigBO repoConfigBO = RepositoryConfigController.getInstance().get(db, new ObjectId(id));
 
             // Only system admin and repo admin for this repo can update details
             UserBO user = this.getAuthenticatedUser();
-            if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getAdministratorRoleName()))
+            if (!user.isSystemAdministrator() && !user.hasRole(repoConfigBO.getAdministratorRoleName()))
             {
                 return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                         Strings.NOT_AUTHORIZED_ERROR));
             }
 
-            RepositoryConfigAO repoInfoAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
+            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
                     RepositoryConfigAO.class);
-            repoInfoAO.toBO(repoInfoBO);
+            repoConfigAO.toBO(repoConfigBO);
 
-            RepositoryInfoController.getInstance().save(db, repoInfoBO);
+            RepositoryConfigController.getInstance().save(db, repoConfigBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoInfoBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO));
         }
         catch (Exception ex)
         {
@@ -225,7 +225,7 @@ public class RepositoryConfigWorker extends Worker
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
                 // Get list
-                RepositoryInfoListCriteria criteria = new RepositoryInfoListCriteria();
+                RepositoryConfigListCriteria criteria = new RepositoryConfigListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
 
                 criteria.setNamePattern(this.getUriQueryStringParameter(NAME_URI_QUERYSTRING_PARAMETER_NAME, true));
@@ -236,13 +236,13 @@ public class RepositoryConfigWorker extends Worker
                     criteria.setNameRestrictions(this.getAuthenticatedUserAllowedRepository());
                 }
 
-                ArrayList<RepositoryInfoBO> boList = RepositoryInfoController.getInstance().getList(db, criteria);
+                ArrayList<RepositoryConfigBO> boList = RepositoryConfigController.getInstance().getList(db, criteria);
                 if (!boList.isEmpty())
                 {
                     ArrayList<RepositoryConfigAO> aoList = new ArrayList<RepositoryConfigAO>();
-                    for (RepositoryInfoBO repoInfoBO : boList)
+                    for (RepositoryConfigBO repoConfigBO : boList)
                     {
-                        aoList.add(new RepositoryConfigAO(repoInfoBO));
+                        aoList.add(new RepositoryConfigAO(repoConfigBO));
                     }
                     responseContent = aoList.toArray(new RepositoryConfigAO[] {});
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
@@ -257,16 +257,16 @@ public class RepositoryConfigWorker extends Worker
             {
                 // Get specific repository - only allowed for system admin and those who have permission
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
-                RepositoryInfoBO repoInfoBO = RepositoryInfoController.getInstance().get(db, new ObjectId(id));
+                RepositoryConfigBO repoConfigBO = RepositoryConfigController.getInstance().get(db, new ObjectId(id));
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repoInfoBO.getAdministratorRoleName())
-                        && !user.hasRole(repoInfoBO.getWorkbenchRoleName()))
+                if (!user.isSystemAdministrator() && !user.hasRole(repoConfigBO.getAdministratorRoleName())
+                        && !user.hasRole(repoConfigBO.getWorkbenchRoleName()))
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                responseContent = new RepositoryConfigAO(repoInfoBO);
+                responseContent = new RepositoryConfigAO(repoConfigBO);
             }
 
             // Return response

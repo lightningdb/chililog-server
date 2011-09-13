@@ -19,12 +19,12 @@
 package org.chililog.server.data;
 
 /**
- * Criteria for selecting repository information records
+ * Criteria for selecting repository configuration documents
  * 
  * @author vibul
  * 
  */
-public class RepositoryInfoListCriteria extends ListCriteria
+public class RepositoryConfigListCriteria extends ListCriteria
 {
     private String _namePattern = null;
     private String[] _nameRestrictions = null;
@@ -32,7 +32,7 @@ public class RepositoryInfoListCriteria extends ListCriteria
     /**
      * Basic constructor
      */
-    public RepositoryInfoListCriteria()
+    public RepositoryConfigListCriteria()
     {
         return;
     }

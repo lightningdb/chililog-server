@@ -29,13 +29,13 @@ import com.mongodb.DBObject;
 
 /**
  * <p>
- * This class contains information that describes a field in a repository.
+ * This class contains meta-data that specifies a field in a repository.
  * </p>
  * 
  * @author vibul
  * 
  */
-public class RepositoryFieldInfoBO extends BO implements Serializable
+public class RepositoryFieldConfigBO extends BO implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -97,7 +97,7 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryFieldInfoBO()
+    public RepositoryFieldConfigBO()
     {
         return;
     }
@@ -111,7 +111,7 @@ public class RepositoryFieldInfoBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    RepositoryFieldInfoBO(DBObject dbObject) throws ChiliLogException
+    RepositoryFieldConfigBO(DBObject dbObject) throws ChiliLogException
     {
         super(dbObject);
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
