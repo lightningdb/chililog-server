@@ -54,10 +54,36 @@
 </div>
 <!-- END COMMON HEADER BLOCK -->
 
+<script type="text/x-handlebars">
 <div class="container">
-  <div id="usersContent" class="content">
+  <div class="title">
     <h1>Administration</h1>
-    <p>This page is still a work in progress.</p>
+  </div>
+  <div id="repoContent" class="admin clearfix">
+    <div class="submenu">
+      <ul class="tabs">
+        <li><a href="admin_repos.html">Repositories</a></li>
+        <li class="active"><a href="admin_users.html">Users</a></li>
+      </ul>
+    </div>
+
+    <form class="alert-message block-message info form-stacked">
+      <fieldset>
+        {{view App.UsernameField id="usernameField" }}
+        {{view App.EmailAddressField id="emailAddressField" }}
+        {{view App.SearchButton id="searchButton" class="btn primary"}}
+        {{view App.WorkingImage id="workingImage"}}
+        <div class="clearfix"></div>
+      </fieldset>
+    </form>
+    {{view App.ErrorMessage id="errorMessage"}}
+    <div id="results" style="display: none;">
+      <div class="heading ui-corner-all">Users</div>
+    </div>
+    {{#view App.BottomBar id="bottombar" }}
+      {{view App.WorkingImage id="workingImage2"}}
+      {{view App.ShowMoreButton id="showMoreButton" class="btn primary"}}
+    {{/view}}
   </div>
 
   <!-- START COMMON FOOTER BLOCK -->
@@ -68,6 +94,8 @@
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
+</script>
+
 
 <!-- START COMMON SCRIPT BLOCK -->
 <script type="text/javascript" src="js/libs/jquery-1.6.2.min.js"></script>

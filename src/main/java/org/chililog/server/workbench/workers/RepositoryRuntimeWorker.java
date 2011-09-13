@@ -233,6 +233,9 @@ public class RepositoryRuntimeWorker extends Worker
             // HTTP GET /api/repositories
             if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
             {
+                // Read repositories  
+                
+                // Merge with run time info
                 Repository[] list = RepositoryService.getInstance().getRepositories();
                 if (list != null && list.length > 0)
                 {

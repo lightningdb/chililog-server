@@ -154,6 +154,14 @@ SC.STRINGS = {
   '_myAccount.changePassword.success': 'Password successfully changed',
   
   // ********************************************************
+  // Admin
+  // ********************************************************
+  '_admin.repo.name': 'Repository Name',
+
+  '_admin.user.username': 'Username',
+  '_admin.user.emailAddress': 'Email Address',
+
+  // ********************************************************
   // OLD STUFF to be converted
   // ********************************************************
   '_mainPane.Title': 'Chililog',

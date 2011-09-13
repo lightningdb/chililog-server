@@ -56,9 +56,11 @@
 
 <script type="text/x-handlebars">
 <div class="container">
-  <div id="streamContent" class="content clearfix">
+  <div class="title">
     <h1>Stream</h1>
     <p>Watch real time log entries as they come in. Select your repository and click Start.</p>
+  </div>
+  <div id="streamContent" class="clearfix">
     <form class="alert-message block-message info form-stacked">
       <fieldset>
         {{view App.RepositoryField id="repositoryField" }}
