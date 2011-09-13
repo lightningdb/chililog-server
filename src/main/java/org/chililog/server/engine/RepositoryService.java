@@ -96,12 +96,12 @@ public class RepositoryService
      */
     public synchronized void start() throws ChiliLogException
     {
-        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
-        for (RepositoryConfigBO repoInfo : repoList)
+        ArrayList<RepositoryConfigBO> repoConfigList = this.getRepositoryConfigList();
+        for (RepositoryConfigBO repoConfig : repoConfigList)
         {
-            if (repoInfo.getStartupStatus() == Status.ONLINE)
+            if (repoConfig.getStartupStatus() == Status.ONLINE)
             {
-                startRepository(repoInfo);
+                startRepository(repoConfig);
             }
         }
         return;
@@ -114,14 +114,14 @@ public class RepositoryService
      */
     public synchronized void startAllRepositories() throws ChiliLogException
     {
-        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
-        for (RepositoryConfigBO repoInfo : repoList)
+        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryConfigList();
+        for (RepositoryConfigBO repoConfig : repoList)
         {
             // If not started, then start it
-            Repository repo = getOnlineRepository(repoInfo.getDocumentID());
+            Repository repo = getOnlineRepository(repoConfig.getDocumentID());
             if (repo == null)
             {
-                startRepository(repoInfo);
+                startRepository(repoConfig);
             }
         }
         return;
@@ -249,7 +249,7 @@ public class RepositoryService
      * 
      * @throws ChiliLogException
      */
-    private ArrayList<RepositoryConfigBO> getRepositoryInfoList() throws ChiliLogException
+    private ArrayList<RepositoryConfigBO> getRepositoryConfigList() throws ChiliLogException
     {
         // Get count connections
         DB db = MongoConnection.getInstance().getConnection();
@@ -274,7 +274,7 @@ public class RepositoryService
         // Check it see if repository is online
         for (Repository repo : _onlineRepositories)
         {
-            if (repo.getRepoConfig().getDocumentID().toString().equals(id))
+            if (repo.getRepoConfig().getDocumentID().equals(id))
             {
                 return repo;
             }
@@ -282,8 +282,8 @@ public class RepositoryService
        
         // Get count connections
         DB db = MongoConnection.getInstance().getConnection();
-        RepositoryConfigBO repoInfo = RepositoryConfigController.getInstance().get(db, id);
-        return repoInfo == null ? null : new Repository(repoInfo);
+        RepositoryConfigBO repoConfig = RepositoryConfigController.getInstance().get(db, id);
+        return repoConfig == null ? null : new Repository(repoConfig);
     }
 
     /**
@@ -294,13 +294,13 @@ public class RepositoryService
     public synchronized Repository[] getRepositories() throws ChiliLogException
     {
         ArrayList<Repository> list = new ArrayList<Repository>();
-        ArrayList<RepositoryConfigBO> repoList = this.getRepositoryInfoList();
-        for (RepositoryConfigBO repoInfo : repoList)
+        ArrayList<RepositoryConfigBO> repoConfigList = this.getRepositoryConfigList();
+        for (RepositoryConfigBO repoConfig : repoConfigList)
         {
-            Repository repo = getOnlineRepository(repoInfo.getDocumentID());
+            Repository repo = getOnlineRepository(repoConfig.getDocumentID());
             if (repo == null)
             {
-                list.add(new Repository(repoInfo));
+                list.add(new Repository(repoConfig));
             }
             else
             {

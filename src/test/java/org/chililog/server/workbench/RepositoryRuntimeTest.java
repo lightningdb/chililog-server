@@ -129,42 +129,42 @@ public class RepositoryRuntimeTest
         UserController.getInstance().save(_db, user);
 
         // Create test repo
-        RepositoryConfigBO repoInfo = new RepositoryConfigBO();
-        repoInfo.setName("test_repo");
-        repoInfo.setDisplayName("RepositoriesTest 1");
+        RepositoryConfigBO repoConfig = new RepositoryConfigBO();
+        repoConfig.setName("test_repo");
+        repoConfig.setDisplayName("RepositoriesTest 1");
         
-        RepositoryParserConfigBO repoParserInfo = new RepositoryParserConfigBO();
-        repoParserInfo.setName("parser1");
-        repoParserInfo.setAppliesTo(AppliesTo.All);
-        repoParserInfo.setClassName(DelimitedEntryParser.class.getName());
-        repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
-        repoInfo.getParsers().add(repoParserInfo);
+        RepositoryParserConfigBO repoParserConfig = new RepositoryParserConfigBO();
+        repoParserConfig.setName("parser1");
+        repoParserConfig.setAppliesTo(AppliesTo.All);
+        repoParserConfig.setClassName(DelimitedEntryParser.class.getName());
+        repoParserConfig.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
+        repoParserConfig.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
+        repoConfig.getParsers().add(repoParserConfig);
 
-        RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
-        repoFieldInfo.setName("field1");
-        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.String);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        RepositoryFieldConfigBO repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field1");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.String);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "1");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        repoFieldInfo = new RepositoryFieldConfigBO();
-        repoFieldInfo.setName("field2");
-        repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Integer);
-        repoFieldInfo.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
-        repoParserInfo.getFields().add(repoFieldInfo);
+        repoFieldConfig = new RepositoryFieldConfigBO();
+        repoFieldConfig.setName("field2");
+        repoFieldConfig.setDataType(RepositoryFieldConfigBO.DataType.Integer);
+        repoFieldConfig.getProperties().put(DelimitedEntryParser.POSITION_FIELD_PROPERTY_NAME, "2");
+        repoParserConfig.getFields().add(repoFieldConfig);
 
-        RepositoryConfigController.getInstance().save(_db, repoInfo);
-        _repoInfoId = repoInfo.getDocumentID().toString();
+        RepositoryConfigController.getInstance().save(_db, repoConfig);
+        _repoInfoId = repoConfig.getDocumentID().toString();
 
-        coll = _db.getCollection(repoInfo.getMongoDBCollectionName());
+        coll = _db.getCollection(repoConfig.getMongoDBCollectionName());
         if (coll != null)
         {
             coll.drop();
         }
 
         // Add 3 lines
-        RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
-        EntryParser p = EntryParserFactory.getParser(repoInfo, repoInfo.getParsers().get(0));
+        RepositoryEntryController c = RepositoryEntryController.getInstance(repoConfig);
+        EntryParser p = EntryParserFactory.getParser(repoConfig, repoConfig.getParsers().get(0));
         RepositoryEntryBO entry = p.parse("2011-01-01T05:05:05.100Z", "log1", "127.0.0.1", Severity.Information.toString(), "line1|1");
         c.save(_db, entry);
 
@@ -558,13 +558,6 @@ public class RepositoryRuntimeTest
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
-
-        // Reload
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=reload",
-                HttpMethod.POST, _systemAdminAuthToken);
-
-        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
-        ApiUtils.check200OKResponse(responseCode.toString(), headers);
     }
 
     /**
