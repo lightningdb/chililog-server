@@ -82,7 +82,7 @@ App.SearchButton = App.ButtonView.extend({
 App.ShowMoreButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
 
-  label: '_search.showMore'.loc(),
+  label: '_showMore'.loc(),
 
   click: function() {
     App.statechart.sendAction('showMore');
@@ -94,19 +94,37 @@ App.ShowMoreButton = App.ButtonView.extend({
  * @class
  * Container view for the ShowMore button
  */
-App.BottomBar = SC.View.extend({
-  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool()
+App.Results = SC.View.extend({
+  isVisibleBinding: SC.Binding.from('App.pageController.showResults').oneWay().bool(),
+
+  nameLabel: '_admin.repo.name'.loc(),
+  displayNameLabel: '_admin.repo.displayName'.loc(),
+  descriptionLabel: '_admin.repo.description'.loc(),
+  currentStatusLabel: '_admin.repo.currentStatus'.loc(),
+
+  CollectionView : SC.CollectionView.extend({
+    contentBinding: 'App.resultsController'
+  })
 });
 
  /**
   * @class
   * View displayed when when on rows found
   */
-App.NoRowsView = App.BlockMessageView.extend({
+App.NoRowsMessage = App.BlockMessageView.extend({
   messageType: 'warning',
-  message: '_search.noRowsFound'.loc(),
-  isVisibleBinding: SC.Binding.from('App.pageController.rowsFound').oneWay().bool().not()
+  message: '_admin.repo.noRowsFound'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.showNoRowsFound').oneWay().bool()
 });
+
+/**
+ * @class
+ * Container view for the ShowMore button
+ */
+App.BottomBar = SC.View.extend({
+  isVisibleBinding: SC.Binding.from('App.pageController.canShowMore').oneWay().bool()
+});
+
 
 /**
  * @class
@@ -117,6 +135,7 @@ App.WorkingImage = App.ImgView.extend({
   visible: NO,
   isVisibleBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
 });
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -150,11 +169,18 @@ App.pageController = SC.Object.create({
   isSearching: NO,
 
   /**
-   * Flag to indicate if row found or not
+   * Flag to indicate if wish to show the results view
    *
    * @type Boolean
    */
-  rowsFound: YES,
+  showResults: NO,
+
+  /**
+   * Flag to indicate if we wish to show the no rows found message
+   *
+   * @type Boolean
+   */
+  showNoRowsFound: NO,
 
   /**
    * Flag to indicate if there are more rows to show
@@ -171,16 +197,153 @@ App.pageController = SC.Object.create({
   rowsPerSearch: 10,
 
   /**
-   * Maximum number of log entries to display
+   * Previous search criteria
    *
-   * @type int
+   * @type Object
    */
-  maxRowsToDisplay: 1000
+  previousSearchCriteria: null
+});
+
+/**
+ * @class
+ * Proxy user results in the store
+ */
+App.resultsController = SC.ArrayProxy.create({
+  content: []
 });
 
 // --------------------------------------------------------------------------------------------------------------------
 // States
 // --------------------------------------------------------------------------------------------------------------------
+App.statechart = SC.Statechart.create({
+
+  rootState: SC.State.extend({
+
+    initialSubstate: 'notSearching',
+
+    /**
+     * Prompt the user to enter criteria
+     */
+    notSearching: SC.State.extend({
+      enterState: function() {
+      },
+
+      exitState: function() {
+      },
+
+      startSearch: function() {
+        App.pageController.set('errorMessage', '');
+        this.gotoState('searching');
+      },
+
+      showMore: function() {
+        App.pageController.set('errorMessage', '');
+        this.gotoState('showingMore');
+      }
+    }),
+
+    /**
+     * Block the user from entering data while executing a search
+     */
+    searching: SC.State.extend({
+      enterState: function() {
+        App.pageController.set('isSearching', YES);
+
+        // Run later to give time for working icon animation to run
+        SC.run.later(this, this.startSearch, 100);
+      },
+
+      exitState: function() {
+        App.pageController.set('isSearching', NO);
+      },
+
+      startSearch: function() {
+        try {
+          // Clear previous log entries
+          App.repositoryConfigEngine.clearData();
+
+          // Final criteria
+          var criteria = {
+            name: App.pageController.getPath('repositoryNamet'),
+            startPage: 1,
+            recordsPerPage: App.pageController.get('rowsPerSearch'),
+            doPageCount: 'false'
+          };
+          App.repositoryConfigEngine.search(criteria, this, this.endSearch);
+
+          // Save criteria for show more
+          App.pageController.set('previousSearchCriteria', criteria);
+        }
+        catch (err) {
+          // End search with error
+          this.endSearch(null, err);
+        }
+      },
+
+      /**
+       * Called back when search returns
+       * @param documentID
+       * @param records
+       * @param params
+       * @param error
+       */
+      endSearch: function(params, error) {
+        if (SC.none(error)) {
+          //Cannot use App.resultsController.get('length'); to get length because binding has not happened in the runloop
+          var recordCount = App.store.find(App.RepositoryConfigRecord).get('length');
+          App.pageController.set('showResults', recordCount > 0);
+          App.pageController.set('showNoRowsFound', recordCount === 0);
+          App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
+        } else {
+          App.pageController.set('errorMessage', error);
+        }
+
+        this.gotoState('notSearching');
+      }
+    }),
+
+    showingMore: SC.State.extend({
+      enterState: function() {
+        App.pageController.set('isSearching', YES);
+        this.startShowMore();
+      },
+
+      exitState: function() {
+        App.pageController.set('isSearching', NO);
+      },
+
+      /**
+       * Get more records from the server
+       */
+      startShowMore: function() {
+        var criteria = App.pageController.get('previousSearchCriteria');
+        criteria.startPage = criteria.startPage + 1;
+        App.repositoryRuntimeEngine.find(criteria, this, this.endShowMore);
+      },
+
+      /**
+       * Called back when search returns
+       * @param documentID
+       * @param records
+       * @param params
+       * @param error
+       */
+      endShowMore: function(params, error) {
+        if (SC.none(error)) {
+          //Cannot use App.resultsController.get('length'); to get length because binding has not happened in the runloop
+          var recordCount = App.store.find(App.RepositoryConfigRecord).get('length');
+          App.pageController.set('canShowMore', recordCount % App.pageController.get('rowsPerSearch') == 0);
+        } else {
+          App.pageController.set('errorMessage', error);
+        }
+
+        this.gotoState('notSearching');
+      }
+
+    })
+  })
+});
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // Start page processing
@@ -188,8 +351,12 @@ App.pageController = SC.Object.create({
 App.pageFileName = Auth.getPageName();
 
 if (App.sessionEngine.load()) {
+
   App.viewUtils.setupStandardPage(App.pageFileName);
-  //App.statechart.initStatechart();
+  App.repositoryRuntimeEngine.load();
+  App.resultsController.set('content', App.repositoryConfigEngine.getRecords());
+
+  App.statechart.initStatechart();
 } else {
   // Not logged in so go to login page
   window.location = 'login.html?returnTo=' + encodeURIComponent(App.pageFileName);

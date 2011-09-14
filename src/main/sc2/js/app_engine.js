@@ -1065,7 +1065,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Returns
+   * Returns the specified recors from the local store
    * @param [conditions] Optional conditions
    * @param [orderBy] Optional order by property names. Defaults to 'name' if not supplied.
    * @returns {SC.RecordArray} Returns an array of matching records
@@ -1215,7 +1215,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoEngine.endSaveRecord: ' + err);
+      SC.Logger.error('repositoryConfigEngine.endSaveRecord: ' + err);
     }
 
     // Callback
@@ -1287,7 +1287,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoEngine.endErase: ' + err);
+      SC.Logger.error('repositoryConfigEngine.endErase: ' + err);
     }
 
     // Callback
@@ -1363,6 +1363,26 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Returns the specified records from the local store
+   * @param [conditions] Optional conditions
+   * @param [orderBy] Optional order by property names. Defaults to 'name' if not supplied.
+   * @returns {SC.RecordArray} Returns an array of matching records
+   */
+  getRecords: function(conditions, orderBy) {
+    var params = {};
+    if (!SC.empty(conditions)) {
+      params['conditions'] = conditions;
+    }
+    if (SC.empty(orderBy)) {
+      orderBy = 'name';
+    }
+    params['orderBy'] = orderBy;
+
+    var query = SC.Query.local(App.RepositoryConfigRecord, params);
+    return App.store.find(query);
   }
 
 
