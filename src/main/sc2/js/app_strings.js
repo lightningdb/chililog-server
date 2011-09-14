@@ -73,6 +73,9 @@ SC.STRINGS = {
   '_repositoryEntryRecord.Severity.Information': 'Information',
   '_repositoryEntryRecord.Severity.Debug': 'Debug',
   
+  '_repositoryStatusRecord.Status.Online': 'Online',
+  '_repositoryStatusRecord.Status.Offline': 'Offline',
+
   // ********************************************************
   // Login Page
   // ********************************************************

@@ -285,41 +285,25 @@ App.RepositoryConfigRecord = SC.Record.extend({
     return displayName;
   }.property('name', 'displayName').cacheable(),
 
-  /**
-   * Flag to indicate if this repository is online or not
-   * This is set during the SYNC and is not sent to the server for saving.
-   * @type boolean
-   */
-  isOnline: SC.Record.attr(Boolean),
+  currentStatus: function() {
+    var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
+    if (SC.none(statusRecord)) {
+      return 'OFFLINE';
+    } else {
+      return statusRecord.get('currentStatus');
+    }
+  }.property(),
 
-  /**
-   * Current status code: ONLINE or OFFLINE
-   * This is set during the SYNC and is not sent to the server for saving.
-   * @type String
-   */
-  currentStatus: SC.Record.attr(String),
-
-  /**
-   * Localized text description of the status
-   * This is set during the SYNC and is not sent to the server for saving.
-   * @type String
-   */
-  currentStatusText: SC.Record.attr(String),
-
-  /**
-   * Function called to update the status using the repository record returned from the server
-   * @param {App.RepositoryRecord} repositoryRecord
-   */
-  updateStatus: function(repositoryRecord) {
-    var s = repositoryRecord.get('currentStatus');
-    var isOnline = (!SC.empty(s) && s === App.REPOSITORY_ONLINE);
-    this.set('isOnline', isOnline);
-    this.set('currentStatus', s);
-
-    var text = isOnline ? '_configureRepositoryInfoDetailView.Status.Online'.loc() :
-      '_configureRepositoryInfoDetailView.Status.Offline'.loc();
-    this.set('currentStatusText', text);
-  },
+  currentStatusText: function() {
+    var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
+    if (SC.none(statusRecord)) {
+      return '_repositoryStatusRecord.Status.Offline'.loc();
+    } else {
+      var currentStatus = statusRecord.get('currentStatus');
+      return currentStatus === 'ONLINE' ? '_repositoryStatusRecord.Status.Online'.loc() :
+        '_repositoryStatusRecord.Status.Offline'.loc();
+    }
+  }.property(),
 
   /**
    * Maps server api data into this record

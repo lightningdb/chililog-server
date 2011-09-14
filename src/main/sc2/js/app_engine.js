@@ -67,14 +67,9 @@ App.AUTHENTICATION_REMEMBER_ME_LOCAL_STORE_KEY = 'AuthenticationRememberMe';
 App.AUTHENTICATED_USER_LOCAL_STORE_KEY = 'AuthenticatedUser';
 
 /**
- * Local store key for repository status
+ * Local store key for repository status expiry
  */
 App.REPOSITORY_STATUS_LOCAL_STORE_KEY = 'RepositoryStatus';
-
-/**
- * Local store key for repository status
- */
-App.REPOSITORY_CONFIG_LOCAL_STORE_KEY = 'RepositoryConfig';
 
 
 /**
@@ -192,8 +187,9 @@ App.EngineMixin = {
    * @param {String} localStorageKey key to use for saving
    * @param {Array} aoArray array to save; null to flush from data store
    * @param {Class} recordType record type
+   * @param {int} [expirySeconds] Optional number of seconds before data expires
    */
-  _putApiObjectsIntoLocalStorage: function(localStorageKey, aoArray, recordType) {
+  _putApiObjectsIntoLocalStorage: function(localStorageKey, aoArray, recordType, expirySeconds) {
     if (SC.none(aoArray) || aoArray.length === 1) {
       aoArray = [];
       var records = App.store.find(recordType);
@@ -202,6 +198,12 @@ App.EngineMixin = {
       });
     }
     localStorage.setItem(localStorageKey, JSON.stringify(aoArray));
+
+    if (!SC.none(expirySeconds)) {
+      var expiry = SC.DateTime.create();
+      expiry = expiry.advance({ second: expirySeconds });
+      localStorage.setItem(localStorageKey + '_Expiry', App.DateTime.toChililogServerDateTime(expiry));
+    }
   },
 
   /**
@@ -212,6 +214,18 @@ App.EngineMixin = {
     var aoArray = [];
     var jsonString = localStorage.getItem(localStorageKey);
     if (!SC.empty(jsonString)) {
+
+      // Check expiry
+      var ts = localStorage.getItem(localStorageKey + '_Expiry');
+      if (!SC.none(ts)) {
+        var expiry = App.DateTime.parseChililogServerDateTime(ts);
+        if (SC.DateTime.compare(SC.DateTime.create(), expiry) > 0) {
+          localStorage.removeItem(localStorageKey);
+          localStorage.removeItem(localStorageKey + '_Expiry');
+          return aoArray;
+        }
+      }
+
       aoArray = JSON.parse(jsonString);
     }
     return aoArray;
@@ -522,7 +536,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// repositoryRuntimeInfoEngine
+// repositoryRuntimeEngine
 // --------------------------------------------------------------------------------------------------------------------
 /** @class
  *
@@ -568,7 +582,6 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     // Can we load from local storage?
     var aoArray = this._getApiObjectsFromLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY);
     if (!SC.none(aoArray) && aoArray.length > 0) {
-      App.repositoryRuntimeEngine.clearData();
       App.repositoryRuntimeEngine._convertApiObjectsToRecords(aoArray, App.RepositoryStatusRecord);
       if (!SC.none(callbackFunction)) {
         callbackFunction.call(callbackTarget, callbackParams, null);
@@ -612,7 +625,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     try {
       App.repositoryRuntimeEngine.clearData();
       App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
@@ -694,7 +707,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
 
       // Process response
       App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
@@ -769,7 +782,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
 
       // Merge the data
       App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
@@ -834,7 +847,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     try {
       App.repositoryRuntimeEngine.clearData();
       App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
@@ -898,7 +911,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     try {
       App.repositoryRuntimeEngine.clearData();
       App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord);
+      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
@@ -1087,12 +1100,6 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
 App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
   /**
-   * YES if we are performing a server synchronization
-   * @type Boolean
-   */
-  isLoading: NO,
-
-  /**
    * Removes all repository meta info records in the data store
    */
   clearData: function() {
@@ -1101,88 +1108,6 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
       record.destroy()
     });
     App.store.commitRecords();
-
-    localStorage.removeItem(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY);
-  },
-
-  /**
-   * Synchronize data in the store with the data on the server
-   * We sync repository status after we get all the repository info
-   *
-   * @param {Boolean} clearData YES will delete data from local store before loading.
-   * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(callbackParams, error) {}.
-   * If there is no error, error will be set to null.
-   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
-   */
-  load: function(callbackTarget, callbackFunction, callbackParams) {
-    // If operation already under way, just exit
-    var isLoading = this.get('isLoading');
-    if (isLoading) {
-      return;
-    }
-
-    // Can we load from local storage?
-    var aoArray = this._getApiObjectsFromLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY);
-    if (!SC.none(aoArray) && aoArray.length > 0) {
-      App.repositoryConfigEngine.clearData();
-      App.repositoryConfigEngine._convertApiObjectsToRecords(aoArray, App.RepositoryConfigRecord);
-      if (!SC.none(callbackFunction)) {
-        callbackFunction.call(callbackTarget, callbackParams, null);
-      }
-      return;
-    }
-    
-    // We are working
-    this.set('isLoading', YES);
-
-    // Get data
-    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    $.ajax({
-      type: 'GET',
-      url: '/api/repository_config',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      context: context,
-      headers: this._createAjaxRequestHeaders(),
-      error: this._ajaxError,
-      success: this._endLoad
-    });
-  },
-
-  /**
-   * Process data that the server returns
-   *
-   * The 'this' object is the context data object.
-   *
-   * @param {Object} data Deserialized JSON returned form the server
-   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
-   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
-   * @returns {Boolean} YES if successful and NO if not.
-   */
-  _endLoad: function(data, textStatus, jqXHR) {
-    var error = null;
-    try {
-      App.repositoryConfigEngine.clearData();
-      App.repositoryConfigEngine._convertApiObjectsToRecords(data, App.RepositoryConfigRecord);
-      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, data, App.RepositoryConfigRecord);
-    }
-    catch (err) {
-      error = err;
-      SC.Logger.error('repositoryConfigEngine.endLoad: ' + err.message);
-    }
-
-    // Finish sync'ing
-    App.repositoryConfigEngine.set('isLoading', NO);
-
-    // Callback
-    if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
   },
 
   /**
@@ -1287,7 +1212,6 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
       // Save
       App.repositoryConfigEngine._convertApiObjectsToRecords([data], App.RepositoryConfigRecord);
-      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, null, App.RepositoryConfigRecord);
     }
     catch (err) {
       error = err;
@@ -1360,8 +1284,6 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
       var record = App.store.find(App.RepositoryConfigRecord, this.documentID);
       record.destroy();
       App.store.commitRecords();
-
-      App.repositoryConfigEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_CONFIG_LOCAL_STORE_KEY, null, App.RepositoryConfigRecord);
     }
     catch (err) {
       error = err;
@@ -1375,7 +1297,75 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Synchronize data in the store with the data on the server
+   * We sync repository status after we get all the repository info
+   *
+   * @param {Hash} criteria Search criteria. Object hash containing: name, records_per_page, start_page, do_page_count.
+   *  These values are converted into querystring parameters.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  search: function(criteria, callbackTarget, callbackFunction, callbackParams) {
+    // Build query string
+    var qs = '?ts=' + new Date().getTime();
+    for (var p in criteria)
+    {
+      if (!SC.empty(criteria[p])){
+        qs = qs + '&' + p + '=' + encodeURIComponent(criteria[p]);
+      }
+    }
+
+    // Get data
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    $.ajax({
+      type: 'GET',
+      url: '/api/repository_config',
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endSearch
+    });
+  },
+
+  /**
+   * Process data that the server returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  _endSearch: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      App.repositoryConfigEngine.clearData();
+      App.repositoryConfigEngine._convertApiObjectsToRecords(data, App.RepositoryConfigRecord);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('repositoryConfigEngine.endLoad: ' + err.message);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
   }
+
+
 });
 
 // --------------------------------------------------------------------------------------------------------------------
