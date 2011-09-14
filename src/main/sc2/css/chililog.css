@@ -2,14 +2,12 @@
 /* =========================================================================
    Common to all pages
    ========================================================================= */
+/* Page title */
 .container .title {
     margin-top: 60px;
 }
 
-.container-fluid  {
-    padding: 0px;
-}
-
+/* Forms where label is on top of data control */
 .form-stacked {
     padding-left: 0px;
 }
@@ -27,6 +25,7 @@
     margin-left: 0;
 }
 
+/* Data controls */
 select {
     background-color: #fff;
 }
@@ -38,6 +37,7 @@ input[type="text"], input[type="password"], textarea, select, .uneditable-input 
     color: #404040;
 }
 
+/* Top menu bar */
 .topbar ul li a.selected {
     color: gold;
 }
@@ -45,15 +45,13 @@ input[type="text"], input[type="password"], textarea, select, .uneditable-input 
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Footer */
 footer {
     margin-top: 5em;
     padding-top: 8px;
 }
 
-.help-inline, .help-block {
-    color: gray;
-}
-
+/* 2 column form where label is next to data control. e.g. my profile page */
 form.section {
 }
 form.section h2 {
@@ -70,7 +68,6 @@ form.section .actions {
     border:  none;
     padding-top:  0px;
 }
-
 form.section .alert-message.block-message.success.inline {
     padding: 7px 14px;
     display: inline-block;
@@ -82,6 +79,17 @@ form.section .alert-message.block-message.error.inline {
     display: inline-block;
     margin-top: 0px;
     margin-bottom: 0px;
+}
+.help-inline, .help-block {
+    color: gray;
+}
+
+/* Tables */
+table thead {
+    color: #404040;
+}
+.zebra-striped tbody tr:hover td {
+  background-color: gold;
 }
 
 /* ==========================================================================

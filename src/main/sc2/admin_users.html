@@ -77,9 +77,25 @@
       </fieldset>
     </form>
     {{view App.ErrorMessage id="errorMessage"}}
-    <div id="results" style="display: none;">
-      <div class="heading ui-corner-all">Users</div>
-    </div>
+    {{view App.NoRowsMessage id="noRowsMessage"}}
+    {{#view App.Results id="results"}}
+      <table class="zebra-striped">
+        <thead>
+          <tr>
+            <th>{{usernameLabel}}</th>
+            <th>{{displayNameLabel}}</th>
+            <th>{{emailAddressLabel}}</th>
+            <th>{{currentStatusLabel}}</th>
+          </tr>
+        </thead>
+        {{#collection CollectionView tagName="tbody"}}
+          <td>{{content.username}}</td>
+          <td>{{content.displayName}}</td>
+          <td>{{content.emailAddress}}</td>
+          <td>{{content.currentStatus}}</td>
+        {{/collection}}
+      </table>
+    {{/view}}
     {{#view App.BottomBar id="bottombar" }}
       {{view App.WorkingImage id="workingImage2"}}
       {{view App.ShowMoreButton id="showMoreButton" class="btn primary"}}

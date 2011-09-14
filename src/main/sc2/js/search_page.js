@@ -1333,7 +1333,6 @@ App.statechart = SC.Statechart.create({
       endShowMore: function(documentID, records, params, error) {
         if (SC.none(error)) {
           var recordCount = SC.none(records) ? 0 : records.length;
-          App.pageController.set('rowsFound', recordCount > 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
           App.pageController.set('errorMessage', error);

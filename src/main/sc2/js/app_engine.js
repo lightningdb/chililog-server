@@ -74,11 +74,6 @@ App.REPOSITORY_STATUS_LOCAL_STORE_KEY = 'RepositoryStatus';
 /**
  * Local store key for repository status
  */
-App.USERS_LOCAL_STORE_KEY = 'Users';
-
-/**
- * Local store key for repository status
- */
 App.REPOSITORY_CONFIG_LOCAL_STORE_KEY = 'RepositoryConfig';
 
 
@@ -236,12 +231,6 @@ App.EngineMixin = {
 App.userEngine = SC.Object.create(App.EngineMixin, {
 
   /**
-   * YEs if we are performing a server synchronization
-   * @type Boolean
-   */
-  isLoading: NO,
-
-  /**
    * Removes all repository meta info records in the data store
    */
   clearData: function() {
@@ -250,88 +239,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       record.destroy()
     });
     App.store.commitRecords();
-
-    localStorage.removeItem(App.USERS_LOCAL_STORE_KEY);
   },
 
-  /**
-   * Synchronize data in the store with the data on the server
-   *
-   * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(callbackParams, error) {}.
-   * If there is no error, error will be set to null.
-   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
-   */
-  load: function(callbackTarget, callbackFunction, callbackParams) {
-    // If operation already under way, just exit
-    var isLoading = this.get('isLoading');
-    if (isLoading) {
-      return;
-    }
-
-    // Can we load from local storage?
-    var aoArray = this._getApiObjectsFromLocalStorage(App.USERS_LOCAL_STORE_KEY);
-    if (!SC.none(aoArray) && aoArray.length > 0) {
-      App.userEngine.clearData();
-      App.userEngine._convertApiObjectsToRecords(aoArray, App.UserRecord);
-      if (!SC.none(callbackFunction)) {
-        callbackFunction.call(callbackTarget, callbackParams, null);
-      }
-      return;
-    }
-
-    // We are working
-    this.set('isLoading', YES);
-
-    // Get data
-    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-    $.ajax({
-      type: 'GET',
-      url: '/api/users',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      context: context,
-      headers: this._createAjaxRequestHeaders(),
-      error: this._ajaxError,
-      success: this._endLoad
-    });
-  },
-
-  /**
-   * Process data that the server returns
-   *
-   * The 'this' object is the context data object.
-   *
-   * @param {Object} data Deserialized JSON returned form the server
-   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
-   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
-   * @returns {Boolean} YES if successful and NO if not.
-   */
-  _endLoad: function(data, textStatus, jqXHR) {
-    var error = null;
-    try {
-      App.userEngine.clearData();
-      App.userEngine._convertApiObjectsToRecords(data, App.UserRecord);
-      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, data, App.UserRecord);
-    }
-    catch (err) {
-      error = err;
-      SC.Logger.error('userEngine.endLoad: ' + err.message);
-    }
-
-    // Finish loading
-    App.userEngine.set('isLoading', NO);
-
-    // Callback
-    if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
-  },
-  
   /**
    * Returns a new user record for editing
    *
@@ -427,9 +336,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       // Remove temp record while creating/editing
       App.userEngine.discardChanges(this.record);
 
-      // Save user details returned from server
+      // Save user details returned from server into the store
       App.userEngine._convertApiObjectsToRecords([data], App.UserRecord);
-      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, null, App.UserRecord);
 
       // If we are editing the logged in user, then we better update the session data
       if (this.record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) ===
@@ -439,7 +347,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('userDataController.endSaveRecord: ' + err);
+      SC.Logger.error('userEngine.endSaveRecord: ' + err);
     }
 
     // Callback
@@ -510,8 +418,6 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       var record = App.store.find(App.UserRecord, this.documentID);
       record.destroy();
       App.store.commitRecords();
-
-      App.userEngine._putApiObjectsIntoLocalStorage(App.USERS_LOCAL_STORE_KEY, null, App.UserRecord);
     }
     catch (err) {
       error = err;
@@ -525,6 +431,91 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
 
     // Return YES to signal handling of callback
     return YES;
+  },
+
+  /**
+   * Retrieves user information from the server and loads it into the local store
+   *
+   * @param {Hash} criteria Search criteria. Object hash containing: username, email, role, status,
+   *  records_per_page, start_page, do_page_count. These values are converted into querystring parameters.
+   * @param {Object} [callbackTarget] Optional callback object
+   * @param {Function} [callbackFunction] Optional callback function in the callback object.
+   * Signature is: function(callbackParams, error) {}.
+   * If there is no error, error will be set to null.
+   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
+   */
+  search: function(criteria, callbackTarget, callbackFunction, callbackParams) {
+
+    // Build query string
+    var qs = '?ts=' + new Date().getTime();
+    for (var p in criteria)
+    {
+      if (!SC.empty(criteria[p])){
+        qs = qs + '&' + p + '=' + encodeURIComponent(criteria[p]);
+      }
+    }
+
+    // Get data
+    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
+    $.ajax({
+      type: 'GET',
+      url: '/api/users' + qs,
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      context: context,
+      headers: this._createAjaxRequestHeaders(),
+      error: this._ajaxError,
+      success: this._endSearch
+    });
+  },
+
+  /**
+   * Process data that the server returns
+   *
+   * The 'this' object is the context data object.
+   *
+   * @param {Object} data Deserialized JSON returned form the server
+   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
+   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
+   * @returns {Boolean} YES if successful and NO if not.
+   */
+  _endSearch: function(data, textStatus, jqXHR) {
+    var error = null;
+    try {
+      App.userEngine._convertApiObjectsToRecords(data, App.UserRecord);
+    }
+    catch (err) {
+      error = err;
+      SC.Logger.error('userEngine.endLoad: ' + err.message);
+    }
+
+    // Callback
+    if (!SC.none(this.callbackFunction)) {
+      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
+    }
+
+    // Return YES to signal handling of callback
+    return YES;
+  },
+
+  /**
+   * Returns
+   * @param [conditions] Optional conditions
+   * @param [orderBy] Optional order by property names. Defaults to 'username' if not supplied.
+   * @returns {SC.RecordArray} Returns an array of matching records
+   */
+  getRecords: function(conditions, orderBy) {
+    var params = {};
+    if (!SC.empty(conditions)) {
+      params['conditions'] = conditions;
+    }
+    if (SC.empty(orderBy)) {
+      orderBy = 'username';
+    }
+    params['orderBy'] = orderBy;
+
+    var query = SC.Query.local(App.UserRecord, params);
+    return App.store.find(query);
   }
 
 });
@@ -1300,7 +1291,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryInfoDataController.endSaveRecord: ' + err);
+      SC.Logger.error('repositoryInfoEngine.endSaveRecord: ' + err);
     }
 
     // Callback
