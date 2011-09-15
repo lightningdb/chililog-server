@@ -110,6 +110,37 @@
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
+
+{{#view App.Dialog id="userDialog" style="display:none" class="admin ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
+  <div class="dialogContainer">
+    <ul id="dialogTabs" class="tabs">
+     <li class="active"><a href="#dialogGeneralTabContent">General</a></li>
+     <li><a href="#dialogRolesTabContent">Roles</a></li>
+    </ul>
+    <form id="dialogTabContent" class="tabContent" style="height:240px;">
+      <fieldset id="dialogGeneralTabContent" class="active">
+        {{view App.DialogUserNameField id="dialogUserNameField" }}
+        {{view App.DialogDisplayNameField id="dialogDisplayNameField" }}
+        {{view App.DialogEmailAddressField id="dialogEmailAddressField" }}
+        {{view App.DialogStatusField id="dialogStatusField" }}
+        {{view App.DialogPasswordField id="dialogPasswordField" }}
+        {{view App.DialogConfirmPasswordField id="dialogConfirmPasswordField" }}
+      </fieldset>
+      <fieldset id="dialogRolesTabContent">
+        {{view App.DialogIsSystemAdministratorField id="dialogIsSystemAdministratorField" }}
+      </fieldset>
+    </form>
+    <div class="clearfix dialogBottomBar">
+      <div style="float: left;">
+        {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
+        {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
+      </div>
+      <div style="float: right;">
+        {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+      </div>
+    </div>
+  </div>
+{{/view}}
 </script>
 
 
