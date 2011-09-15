@@ -105,8 +105,8 @@
   <!-- END COMMON FOOTER BLOCK -->
 </div>
 
-{{#view App.Dialog id="searchDialog" title="Log Entry" style="display:none" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
-  <form id="dialogContainer" class="form-stacked">
+{{#view App.Dialog id="searchDialog" style="display:none" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
+  <form class="form-stacked dialogContainer">
     <fieldset>
       <div class="clearfix">
         {{view App.DialogTimestampField id="dialogTimestampField" }}
@@ -129,7 +129,7 @@
         {{view App.DialogDocumentIDField id="dialogDocumentIDField" }}
         {{view App.DialogSavedTimestampField id="dialogSavedTimestampField" }}
       </div>
-      <div class="clearfix" id="dialogBottomBar">
+      <div class="clearfix dialogBottomBar">
         <div style="float: left;">
           {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
           {{view App.DialogNextButton id="dialogNextButton" class="btn"}}

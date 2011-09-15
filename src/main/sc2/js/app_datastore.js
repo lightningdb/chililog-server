@@ -277,6 +277,10 @@ App.RepositoryConfigRecord = SC.Record.extend({
   pageSize: SC.Record.attr(Number),
   pageCountCache: SC.Record.attr(Number),
 
+  /**
+   * Returns the display name if not blank, else returns the name
+   * @type String
+   */
   displayNameOrName: function() {
     var displayName = this.get('displayName');
     if (SC.none(displayName)) {
@@ -285,6 +289,10 @@ App.RepositoryConfigRecord = SC.Record.extend({
     return displayName;
   }.property('name', 'displayName').cacheable(),
 
+  /**
+   * The current status code of this repository: ONLINE or OFFLINE
+   * @type String
+   */
   currentStatus: function() {
     var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
     if (SC.none(statusRecord)) {
@@ -294,6 +302,10 @@ App.RepositoryConfigRecord = SC.Record.extend({
     }
   }.property(),
 
+  /**
+   * The current status description of this repository: ONLINE or OFFLINE
+   * @type String
+   */
   currentStatusText: function() {
     var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
     if (SC.none(statusRecord)) {
@@ -304,7 +316,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
         '_repositoryStatusRecord.Status.Offline'.loc();
     }
   }.property(),
-
+  
   /**
    * Maps server api data into this record
    *

@@ -103,14 +103,33 @@ App.Results = SC.View.extend({
   currentStatusLabel: '_admin.repo.currentStatus'.loc(),
 
   CollectionView : SC.CollectionView.extend({
-    contentBinding: 'App.resultsController'
+    contentBinding: 'App.resultsController',
+
+    itemViewClass: SC.View.extend({
+      tagName: 'tr',
+
+      // Spit out the content's index in the array proxy as an attribute of the tr element
+      attributeBindings: ['contentIndex'],
+
+      willInsertElement: function() {
+        this._super();
+
+        // Add handler for double clicking
+        var id = this.$().attr('id');
+        this.$().dblclick(function() {
+          App.statechart.sendAction('showDialog', $('#' + this.id).attr('contentIndex'));
+        });
+      }
+    })
+
   })
+
 });
 
- /**
-  * @class
-  * View displayed when when on rows found
-  */
+/**
+ * @class
+ * View displayed when when on rows found
+ */
 App.NoRowsMessage = App.BlockMessageView.extend({
   messageType: 'warning',
   message: '_admin.repo.noRowsFound'.loc(),
@@ -137,6 +156,308 @@ App.WorkingImage = App.ImgView.extend({
 });
 
 
+/**
+ * @class
+ * Dialog div
+ */
+App.Dialog = SC.View.extend({
+  attributeBindings: ['title'],
+
+  title: '_admin.repo.editTitle'.loc(),
+
+  didInsertElement: function() {
+    this._super();
+
+    // JQuery UI dialog setup
+    this.$().dialog({
+      autoOpen: false,
+      height: 360,
+      width: 850,
+      modal: true,
+      close: function(event, ui) {
+        // For when the X is clicked
+        App.statechart.sendAction('hideDialog');
+      }
+    });
+
+    // Add event handler to tab <a>. Delegate does  it for current and future tabs
+    this.$().delegate('ul.tabs li > a', 'click', function(e) {
+      var $this = $(this),
+        href = $this.attr('href'),
+        li = $this.parent('li'),
+        ul = li.parent();
+
+      if (/^#\w+/.test(href)) {
+        e.preventDefault();
+      }
+
+      if ($this.hasClass('active')) {
+        return
+      }
+
+      var $href = $(href)
+
+      // Make this li active
+      ul.find('.active').removeClass('active')
+      li.addClass('active')
+
+      // Make linked fieldset active
+      $href.parent().find('.active').removeClass('active')
+      $href.addClass('active')
+    });
+  }
+
+});
+
+/**
+ * @class
+ * Common functions for field data
+ */
+App.DialogFieldDataMixin = {
+
+  // Hide dialog on ENTER key pressed
+  insertNewline: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  },
+
+  // Hide dialog on ESC key pressed
+  cancel: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  }
+};
+
+/**
+ * @class
+ * Name Field
+ */
+App.DialogNameField = App.FieldView.extend({
+  label: '_admin.repo.name'.loc(),
+  help: '_admin.repo.name.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'medium'.w(),
+    valueBinding: 'App.pageController.selectedRecord.name'
+  })
+});
+
+/**
+ * @class
+ * Display Name Field
+ */
+App.DialogDisplayNameField = App.FieldView.extend({
+  label: '_admin.repo.displayName'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'medium'.w(),
+    valueBinding: 'App.pageController.selectedRecord.displayName'
+  })
+});
+
+/**
+ * @class
+ * Description Field
+ */
+App.DialogDescriptionField = App.FieldView.extend({
+  label: '_admin.repo.description'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    valueBinding: 'App.pageController.selectedRecord.description'
+  })
+});
+
+/**
+ * @class
+ * Startup status Field
+ */
+App.DialogStartupStatusField = App.FieldView.extend({
+  label: '_admin.repo.startupStatus'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    contentBinding: 'App.pageController.startupStatusOptions',
+    valueBinding: SC.Binding.from('App.pageController.selectedRecord.startupStatus').transform(function(value, isForward) {
+      if (isForward) {
+        var options = App.pageController.get('startupStatusOptions');
+        return value === 'ONLINE' ? options[0] : options[1];
+      } else {
+        return value.get('value');
+      }
+    })
+  })
+});
+
+/**
+ * @class
+ * Store Entries Field
+ */
+App.DialogStoreEntriesIndicatorField = App.FieldView.extend({
+  label: '_admin.repo.storeEntries'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    contentBinding: 'App.pageController.storeEntriesOptions',
+    valueBinding: SC.Binding.from('App.pageController.selectedRecord.storeEntriesIndicator').transform(function(value, isForward) {
+      if (isForward) {
+        var options = App.pageController.get('storeEntriesOptions');
+        return value ? options[0] : options[1];
+      } else {
+        return value.get('value');
+      }
+    })
+  })
+});
+
+/**
+ * @class
+ * Storage Queue Durable Field
+ */
+App.DialogStorageQueueDurableIndicatorField = App.FieldView.extend({
+  label: '_admin.repo.storageQueueDurable'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    contentBinding: 'App.pageController.storageQueueDurableOptions',
+    valueBinding: SC.Binding.from('App.pageController.selectedRecord.storageQueueDurableIndicator').transform(function(value, isForward) {
+      if (isForward) {
+        var options = App.pageController.get('storageQueueDurableOptions');
+        return value ? options[0] : options[1];
+      } else {
+        return value.get('value');
+      }
+    })
+  })
+});
+
+/**
+ * @class
+ * Storage Queue Worker Count Field
+ */
+App.DialogStorageQueueWorkerCountField = App.FieldView.extend({
+  label: '_admin.repo.storageQueueWorkerCount'.loc(),
+  help: '_admin.repo.storageQueueWorkerCount.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'small'.w(),
+    valueBinding: 'App.pageController.selectedRecord.storageQueueWorkerCount'
+  })
+});
+
+/**
+ * @class
+ * Storage Max Keywords Field
+ */
+App.DialogStorageMaxKeywordsField = App.FieldView.extend({
+  label: '_admin.repo.storageMaxKeywords'.loc(),
+  help: '_admin.repo.storageMaxKeywords.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'small'.w(),
+    valueBinding: 'App.pageController.selectedRecord.storageMaxKeywords'
+  })
+});
+
+/**
+ * @class
+ * Max Memory Field
+ */
+App.DialogMaxMemoryField = App.FieldView.extend({
+  label: '_admin.repo.maxMemory'.loc(),
+  help: '_admin.repo.maxMemory.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'small'.w(),
+    valueBinding: 'App.pageController.selectedRecord.maxMemory'
+  })
+});
+
+/**
+ * @class
+ * Max Memory Policy Field
+ */
+App.DialogMaxMemoryPolicyField = App.FieldView.extend({
+  label: '_admin.repo.maxMemoryPolicy'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    contentBinding: 'App.pageController.maxMemoryPolicyOptions',
+    valueBinding: SC.Binding.from('App.pageController.selectedRecord.maxMemoryPolicy').transform(function(value, isForward) {
+      if (isForward) {
+        var options = App.pageController.get('maxMemoryPolicyOptions');
+        for (var i=0; i< options.length; i++) {
+          if (options[i].get('value') === value) {
+            return options[i];
+          }
+        }
+        return options[0];
+      } else {
+        return value.get('value');
+      }
+    })
+  })
+});
+
+/**
+ * @class
+ * Page Size Field
+ */
+App.DialogPageSizeField = App.FieldView.extend({
+  label: '_admin.repo.pageSize'.loc(),
+  help: '_admin.repo.pageSize.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'small'.w(),
+    valueBinding: 'App.pageController.selectedRecord.pageSize'
+  })
+});
+
+/**
+ * @class
+ * Page Count Cache Field
+ */
+App.DialogPageCountCacheField = App.FieldView.extend({
+  label: '_admin.repo.pageCountCache'.loc(),
+  help: '_admin.repo.pageCountCache.help'.loc(),
+  DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
+    classNames: 'small'.w(),
+    valueBinding: 'App.pageController.selectedRecord.pageCountCache'
+  })
+});
+
+
+/**
+ * @class
+ * Button to show previous log entry
+ */
+App.DialogPreviousButton = App.ButtonView.extend({
+  label: '_previous'.loc(),
+  title: '_previousTooltip'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canShowPreviousRecord').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('showPreviousRecord');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to show next log entry
+ */
+App.DialogNextButton = App.ButtonView.extend({
+  label: '_next'.loc(),
+  title: '_nextTooltip'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canShowNextRecord').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('showNextRecord');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to close dialog window
+ */
+App.DialogDoneButton = App.ButtonView.extend({
+  label: '_done'.loc(),
+
+  click: function() {
+    App.statechart.sendAction('hideDialog');
+    return;
+  }
+});
 
 // --------------------------------------------------------------------------------------------------------------------
 // Controllers
@@ -160,6 +481,44 @@ App.pageController = SC.Object.create({
    * @type String
    */
   repositoryName: null,
+
+
+  /**
+   * Options for Startup Status question in dialog
+   * @type Array of SC.Object
+   */
+  startupStatusOptions: [
+    SC.Object.create({label: '_admin.repo.startupStatus.online'.loc(), value: 'ONLINE'}),
+    SC.Object.create({label: '_admin.repo.startupStatus.offline'.loc(), value: 'OFFLINE'})
+  ],
+
+  /**
+   * Options for Store Entry question in dialog
+   * @type Array of SC.Object
+   */
+  storeEntriesOptions: [
+    SC.Object.create({label: '_admin.repo.storeEntries.yes'.loc(), value: YES}),
+    SC.Object.create({label: '_admin.repo.storeEntries.no'.loc(), value: NO})
+  ],
+
+  /**
+   * Options for Storage Queue Durable question in dialog
+   * @type Array of SC.Object
+   */
+  storageQueueDurableOptions: [
+    SC.Object.create({label: '_admin.repo.storageQueueDurable.yes'.loc(), value: YES}),
+    SC.Object.create({label: '_admin.repo.storageQueueDurable.no'.loc(), value: NO})
+  ],
+
+  /**
+   * Options for Max Memory Policy question in dialog
+   * @type Array of SC.Object
+   */
+  maxMemoryPolicyOptions: [
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.page'.loc(), value: 'PAGE'}),
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.drop'.loc(), value: 'DROP'}),
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.block'.loc(), value: 'BLOCK'})
+  ],
 
   /**
    * Indicates if we are currently streaming or not
@@ -201,7 +560,83 @@ App.pageController = SC.Object.create({
    *
    * @type Object
    */
-  previousSearchCriteria: null
+  previousSearchCriteria: null,
+
+  /**
+   * Index of selected record in App.resultsController
+   *
+   * @type int
+   */
+  selectedRecordIndex: -1,
+
+  /**
+   * Selected record to display in the dialog
+   *
+   * @type App.RepositoryConfigRecord
+   */
+  selectedRecord: null,
+
+
+  /**
+   * Select the record specified by the index
+   * @param {int} recordIndex index of the selected record in App.resultsController
+   */
+  selectRecord: function(recordIndex) {
+    var record = App.resultsController.objectAtContent(recordIndex);
+    var nestedRecord = App.repositoryConfigEngine.edit(record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME));
+    App.pageController.set('selectedRecordIndex', recordIndex);
+    App.pageController.set('selectedRecord', nestedRecord);
+  },
+
+  /**
+   * Deselect the record specified by the index
+   */
+  deselectRecord: function() {
+    var nestedRecord = App.pageController.get('selectedRecord');
+    App.repositoryConfigEngine.discardChanges(nestedRecord);
+
+    App.pageController.set('selectedRecordIndex', -1);
+    App.pageController.set('selectedRecord', null);
+  },
+
+  /**
+   * Flag to indicate if we can show the previous button
+   *
+   * @type Boolean
+   */
+  canShowPreviousRecord: function() {
+    var selectedRecordIndex = App.pageController.get('selectedRecordIndex');
+    if (selectedRecordIndex <= 0) {
+      return NO;
+    }
+
+    var recordStatus = this.getPath('authenticatedUserRecord.status');
+     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+      return NO;
+    }
+
+    return YES;
+  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable(),
+
+  /**
+   * Flag to indicate if we can show the next button
+   *
+   * @type Boolean
+   */
+  canShowNextRecord: function() {
+    var selectedRecordIndex = App.pageController.get('selectedRecordIndex');
+    if (selectedRecordIndex === App.resultsController.get('length') - 1) {
+      return NO;
+    }
+
+    var recordStatus = this.getPath('authenticatedUserRecord.status');
+     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+      return NO;
+    }
+
+    return YES;
+  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable()
+
 });
 
 /**
@@ -239,6 +674,55 @@ App.statechart = SC.Statechart.create({
       showMore: function() {
         App.pageController.set('errorMessage', '');
         this.gotoState('showingMore');
+      },
+
+      showDialog: function(recordIndex) {
+        recordIndex = parseInt(recordIndex);
+        App.pageController.selectRecord(recordIndex);
+        this.gotoState('showingDialog');
+      }
+    }),
+
+    showingDialog: SC.State.extend({
+      enterState: function() {
+        $('#repoDialog').dialog('open')
+      },
+
+      exitState: function() {
+        App.pageController.deselectRecord();
+        $('#repoDialog').dialog('close')
+      },
+
+      hideDialog: function() {
+        this.gotoState('notSearching');
+      },
+
+      showPreviousRecord: function() {
+        var recordIndex = App.pageController.get('selectedRecordIndex');
+        if (recordIndex === 0 ) {
+          return;
+        }
+
+        // Discard selected record
+        App.pageController.deselectRecord();
+
+        // Show previous
+        recordIndex = recordIndex - 1;
+        App.pageController.selectRecord(recordIndex);
+      },
+
+      showNextRecord: function() {
+        var recordIndex = App.pageController.get('selectedRecordIndex');
+        if (recordIndex === App.resultsController.get('length') - 1) {
+          return;
+        }
+
+        // Discard selected record
+        App.pageController.deselectRecord();
+
+        // Show next
+        recordIndex = recordIndex + 1;
+        App.pageController.selectRecord(recordIndex);
       }
     }),
 

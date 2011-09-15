@@ -92,6 +92,27 @@ table thead {
   background-color: gold;
 }
 
+/* Tabs */
+form.tabContent {
+    margin-bottom: 0px;
+}
+.tabContent fieldset {
+    display: none;
+    padding-top: 0px;
+}
+.tabContent fieldset.active {
+    display: block;
+}
+
+/* Dialog */
+.dialogContainer {
+    padding: 0px 5px;
+}
+.dialogBottomBar {
+    border-top: solid 1px #ddd;
+    padding-top: 8px;
+}
+
 /* ==========================================================================
    Login Page
    ========================================================================== */
@@ -315,9 +336,6 @@ body.login {
 }
 
 
-#searchDialog #dialogContainer {
-    padding: 0px 5px;
-}
 #searchDialog #dialogTimestampField input {
     width: 200px;
 }
@@ -345,10 +363,6 @@ body.login {
     width: 635px;
     height: 5em;
 }
-#searchDialog #dialogBottomBar{
-    border-top: solid 1px #ddd;
-    padding-top: 8px;
-}
 #searchDialog #dialogPreviousButton{
 }
 #searchDialog #dialogNextsButton{
@@ -357,7 +371,7 @@ body.login {
 }
 
 /* =========================================================================
-   Admin accounts
+   Admin
    ========================================================================= */
 .admin #searchButton {
     float: left;
@@ -365,5 +379,13 @@ body.login {
     margin-right: 10px;
     margin-top: 24px;
     width: 75px;
+}
+
+
+.admin .dialogContainer label {
+    width: 160px;
+}
+.admin .dialogContainer div.input {
+    margin-left: 180px;
 }
 

@@ -351,7 +351,10 @@ App.Dialog = SC.View.extend({
         height: 630,
         width: 690,
         modal: true,
-        closeOnEscape: false
+        close: function(event, ui) {
+          // For when the X is clicked
+          App.statechart.sendAction('hideDialog');
+        }
     });
   }
 });
@@ -380,8 +383,6 @@ App.DialogFieldDataMixin = {
  * Dialog timestamp
  */
 App.DialogTimestampField = App.StackedFieldView.extend({
-  classNames: 'field'.w(),
-
   label: '_search.timestamp'.loc(),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -394,8 +395,6 @@ App.DialogTimestampField = App.StackedFieldView.extend({
  * Dialog severity
  */
 App.DialogSeverityField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.severity'.loc(),
 
   DataView : App.TextBoxView.extend({
@@ -420,8 +419,6 @@ App.DialogSeverityField = App.StackedFieldView.extend(App.DialogFieldDataMixin, 
  * Dialog source
  */
 App.DialogSourceField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.source'.loc(),
 
   DataView : App.TextBoxView.extend({
@@ -434,8 +431,6 @@ App.DialogSourceField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
  * Dialog host
  */
 App.DialogHostField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.host'.loc(),
 
   DataView : App.TextBoxView.extend({
@@ -448,8 +443,6 @@ App.DialogHostField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
  * Dialog Message
  */
 App.DialogMessageField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.message'.loc(),
 
   DataView : App.TextAreaView.extend({
@@ -462,8 +455,6 @@ App.DialogMessageField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
  * Keywords view in the details dialog
  */
 App.DialogKeywordsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.keywords'.loc(),
 
   DataView : App.TextAreaView.extend({
@@ -476,8 +467,6 @@ App.DialogKeywordsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, 
  * Fields view in the details dialog
  */
 App.DialogFieldsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.fields'.loc(),
 
   DataView : App.TextAreaView.extend({
@@ -490,8 +479,6 @@ App.DialogFieldsField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
  * Dialog document id
  */
 App.DialogDocumentIDField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.documentID'.loc(),
 
   DataView : App.TextBoxView.extend({
@@ -504,8 +491,6 @@ App.DialogDocumentIDField = App.StackedFieldView.extend(App.DialogFieldDataMixin
  * Dialog saved timestamp
  */
 App.DialogSavedTimestampField = App.StackedFieldView.extend(App.DialogFieldDataMixin, {
-  classNames: 'field'.w(),
-
   label: '_search.savedTimestamp'.loc(),
 
   DataView : App.TextBoxView.extend({

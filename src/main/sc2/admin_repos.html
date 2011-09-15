@@ -87,11 +87,11 @@
             <th>{{currentStatusLabel}}</th>
           </tr>
         </thead>
-        {{#collection CollectionView tagName="tbody"}}
-          <td>{{content.name}}</td>
-          <td>{{content.displayName}}</td>
-          <td>{{content.description}}</td>
-          <td>{{content.currentStatusText}}</td>
+        {{#collection CollectionView tagName="tbody" }}
+            <td>{{content.name}}</td>
+            <td>{{content.displayName}}</td>
+            <td>{{content.description}}</td>
+            <td>{{content.currentStatusText}}</td>
         {{/collection}}
       </table>
     {{/view}}
@@ -109,6 +109,45 @@
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>
+
+{{#view App.Dialog id="repoDialog" style="display:none" class="admin ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
+  <div class="dialogContainer">
+    <ul id="dialogTabs" class="tabs">
+     <li class="active"><a href="#dialogGeneralTabContent">General</a></li>
+     <li><a href="#dialogStorageTabContent">Storage</a></li>
+     <li><a href="#dialogMemoryTabContent">Memory</a></li>
+    </ul>
+    <form id="dialogTabContent" class="tabContent" style="height:200px;">
+      <fieldset id="dialogGeneralTabContent" class="active">
+        {{view App.DialogNameField id="dialogNameField" }}
+        {{view App.DialogDisplayNameField id="dialogDisplayNameField" }}
+        {{view App.DialogDescriptionField id="dialogDescriptionField" }}
+        {{view App.DialogStartupStatusField id="dialogStartupStatusField" }}
+      </fieldset>
+      <fieldset id="dialogStorageTabContent">
+        {{view App.DialogStoreEntriesIndicatorField id="dialogStoreEntriesIndicatorField" }}
+        {{view App.DialogStorageQueueDurableIndicatorField id="dialogStorageQueueDurableIndicatorField" }}
+        {{view App.DialogStorageQueueWorkerCountField id="dialogStorageQueueWorkerCountField" }}
+        {{view App.DialogStorageMaxKeywordsField id="dialogStorageMaxKeywordsField" }}
+      </fieldset>
+      <fieldset id="dialogMemoryTabContent">
+        {{view App.DialogMaxMemoryField id="dialogMaxMemoryField" }}
+        {{view App.DialogMaxMemoryPolicyField id="dialogMaxMemoryPolicyField" }}
+        {{view App.DialogPageSizeField id="dialogPageSizeField" }}
+        {{view App.DialogPageCountCacheField id="dialogPageCountCacheField" }}
+      </fieldset>
+    </form>
+    <div class="clearfix dialogBottomBar">
+      <div style="float: left;">
+        {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
+        {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
+      </div>
+      <div style="float: right;">
+        {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+      </div>
+    </div>
+  </div>
+{{/view}}
 </script>
 
 <!-- START COMMON SCRIPT BLOCK -->
