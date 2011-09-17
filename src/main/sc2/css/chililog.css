@@ -373,14 +373,17 @@ body.login {
 /* =========================================================================
    Admin
    ========================================================================= */
-.admin #searchButton {
+.admin .form-stacked button, .admin .form-stacked img {
     float: left;
     display: inline;
     margin-right: 10px;
     margin-top: 24px;
-    width: 75px;
 }
-
+.admin .form-stacked #addButton {
+    float: right;
+    display: inline;
+    margin-top: 24px;
+}
 
 .admin .dialogContainer label {
     width: 160px;

@@ -341,7 +341,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
     try {
       // Check
       var apiObject = data;
-      if (!this.isAdding) {
+      if (this.isAdding) {
         this.documentID = apiObject[App.DOCUMENT_ID_AO_FIELD_NAME];
       } else if (this.documentID !== apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]) {
         throw App.$error('_documentIDError', [ this.documentID, apiObject[App.DOCUMENT_ID_AO_FIELD_NAME]]);

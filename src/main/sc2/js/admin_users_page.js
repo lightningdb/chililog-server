@@ -84,7 +84,21 @@ App.SearchButton = App.ButtonView.extend({
   label: '_search'.loc(),
 
   click: function() {
-    App.statechart.sendAction('startSearch');
+    App.statechart.sendAction('search');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to add a new user
+ */
+App.AddButton = App.ButtonView.extend({
+  label: '_admin.user.create'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('createUser');
     return;
   }
 });
@@ -131,7 +145,7 @@ App.Results = SC.View.extend({
         // Add handler for double clicking
         var id = this.$().attr('id');
         this.$().dblclick(function() {
-          App.statechart.sendAction('showDialog', $('#' + this.id).attr('contentIndex'));
+          App.statechart.sendAction('showUser', $('#' + this.id).attr('contentIndex'));
         });
       }
     })
@@ -177,7 +191,12 @@ App.WorkingImage = App.ImgView.extend({
 App.Dialog = SC.View.extend({
   attributeBindings: ['title'],
 
-  title: '_admin.user.editTitle'.loc(),
+  title: '',
+
+  didTitleChange: function() {
+    var title = App.pageController.get('dialogTitle');
+    this.$().dialog('option', 'title', title);
+  }.observes('App.pageController.dialogTitle'),
 
   didInsertElement: function() {
     this._super();
@@ -428,6 +447,17 @@ App.DialogApplyButton = App.ButtonView.extend({
   }
 });
 
+/**
+ * @class
+ * Spinner displayed while saving or deleting
+ */
+App.DialogWorkingImage = App.ImgView.extend({
+  src: 'images/working.gif',
+  visible: NO,
+  isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrDeleting').oneWay().bool()
+});
+
+
 // --------------------------------------------------------------------------------------------------------------------
 // Controllers
 // --------------------------------------------------------------------------------------------------------------------
@@ -544,9 +574,9 @@ App.pageController = SC.Object.create({
    * Flag to indicate if the selected record is a new record
    */
   isNewSelectedRecord: function() {
-    var docID = this.getPath('selectedRecord.documentID');
-    return SC.empty(docID);
-  }.property('selectedRecord.documentID').cacheable(),
+    var documentVersion = this.getPath('selectedRecord.documentVersion');
+    return SC.none(documentVersion) || documentVersion === 0;
+  }.property('selectedRecord.documentVersion').cacheable(),
 
   /**
    * Select the record specified by the index
@@ -625,10 +655,29 @@ App.pageController = SC.Object.create({
   }.property('selectedRecordIndex', 'selectedRecord.status').cacheable(),
 
   /**
+   * Title for the dialog window
+   * @type String
+   */
+  dialogTitle: function() {
+    var selectedRecordIndex = App.pageController.get('selectedRecordIndex');
+    if (selectedRecordIndex == -1) {
+      return '_admin.user.createTitle'.loc();
+    } else {
+      return '_admin.user.editTitle'.loc(this.getPath('selectedRecord.username'));
+    }
+  }.property('selectedRecordIndex', 'selectedRecord.username').cacheable(),
+
+  /**
    * Open the dialog
+   * @param {int} recordIndex index of record in results array to display. If -1, then assume we want to create a new user
    */
   showDialog: function(recordIndex) {
-    App.pageController.selectRecord(recordIndex);
+    if (recordIndex == -1) {
+      App.pageController.set('selectedRecordIndex', recordIndex);
+      App.pageController.set('selectedRecord', App.userEngine.create());
+    } else {
+      App.pageController.selectRecord(recordIndex);
+    }
     $('#userDialog').dialog('open');
   },
 
@@ -669,7 +718,7 @@ App.statechart = SC.Statechart.create({
       exitState: function() {
       },
 
-      startSearch: function() {
+      search: function() {
         App.pageController.set('errorMessage', '');
         this.gotoState('searching');
       },
@@ -679,9 +728,14 @@ App.statechart = SC.Statechart.create({
         this.gotoState('showingMore');
       },
       
-      showDialog: function(recordIndex) {
+      showUser: function(recordIndex) {
         recordIndex = parseInt(recordIndex);
         App.pageController.showDialog(recordIndex);
+        this.gotoState('showingDialog');
+      },
+
+      createUser: function() {
+        App.pageController.showDialog(-1);
         this.gotoState('showingDialog');
       }
     }),

@@ -467,22 +467,23 @@ App.UserRecord = SC.Record.extend({
   primaryKey: App.DOCUMENT_ID_RECORD_FIELD_NAME,
 
   documentID: SC.Record.attr(String),
-  documentVersion: SC.Record.attr(Number),
-  username: SC.Record.attr(String),
-  emailAddress: SC.Record.attr(String),
-  password: SC.Record.attr(String),
-  roles: SC.Record.attr(Array),
-  currentStatus: SC.Record.attr(String),
-  displayName: SC.Record.attr(String),
+  documentVersion: SC.Record.attr(Number, { defaultValue: 0 }),
+  username: SC.Record.attr(String, { defaultValue: '' }),
+  emailAddress: SC.Record.attr(String, { defaultValue: '' }),
+  password: SC.Record.attr(String, { defaultValue: '' }),
+  roles: SC.Record.attr(Array, { defaultValue: [] }),
+  currentStatus: SC.Record.attr(String, { defaultValue: 'ENABLED' }),
+  displayName: SC.Record.attr(String, { defaultValue: '' }),
   gravatarMD5Hash: SC.Record.attr(String),
 
   /**
    * Cached system.administrator role
    */
-  isSystemAdministrator: SC.Record.attr(Boolean),
+  isSystemAdministrator: SC.Record.attr(Boolean, { defaultValue: NO }),
 
   /**
-   * Cached repository access roles
+   * Cached array of data hash {repository: repoName, role: roleName} representing the repositories that can be
+   * accessed by this user and the role
    */
   repositoryAccesses: SC.Record.attr(Array),
 

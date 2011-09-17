@@ -195,6 +195,7 @@ SC.STRINGS = {
   '_admin.user.repositoryAccesses.subscriberRole': 'Subscriber',
   '_admin.user.repositoryAccesses.alreadyExists': 'Access to "%@" repository as "%@" has already been granted.',
   '_admin.user.noRowsFound': 'No users found matching your search criteria.',
+  '_admin.user.create': 'New User ...',
   '_admin.user.createTitle': 'New User',
   '_admin.user.editTitle': 'User: %@',
   '_admin.user.generalAttributes': 'General',
