@@ -90,7 +90,7 @@ public class MongoUtils
         {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && fieldValue == null)
+        if (isRequired && StringUtils.isBlank(fieldValue))
         {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }

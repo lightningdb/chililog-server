@@ -217,6 +217,26 @@ public class UserTest
         }
     }
     
+    
+    @Test
+    public void testEmptyUsername() throws ChiliLogException
+    {
+        try
+        {
+            // Insert
+            UserBO user = new UserBO();
+            user.setUsername("");
+            user.setPassword("abc123!", true);
+            UserController.getInstance().save(_db, user);
+            
+            fail("Exception expected");
+        }
+        catch (ChiliLogException ex)
+        {
+            assertEquals(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, ex.getErrorCode());
+        }
+    }
+    
     @Test
     public void testDuplicateEmailAddress() throws ChiliLogException
     {
