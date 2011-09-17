@@ -27,6 +27,8 @@ SC.STRINGS = {
   // ********************************************************
   '_add': 'Add',
   '_save': 'Save',
+  '_ok': 'OK',
+  '_apply': 'Apply',
   '_cancel': 'Cancel',
   '_refresh': 'Refresh',
   '_refreshing': 'Refreshing ...',

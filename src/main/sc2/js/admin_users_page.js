@@ -231,13 +231,13 @@ App.DialogFieldDataMixin = {
 
   // Hide dialog on ENTER key pressed
   insertNewline: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('ok');
     return;
   },
 
   // Hide dialog on ESC key pressed
   cancel: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('cancel');
     return;
   }
 };
@@ -388,13 +388,42 @@ App.DialogNextButton = App.ButtonView.extend({
 
 /**
  * @class
- * Button to close dialog window
+ * Button to save and close dialog window
  */
-App.DialogDoneButton = App.ButtonView.extend({
-  label: '_done'.loc(),
+App.DialogOkButton = App.ButtonView.extend({
+  label: '_ok'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.isSavingOrDeleting').oneWay().bool(),
 
   click: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('ok');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to discard changes and close window
+ */
+App.DialogCancelButton = App.ButtonView.extend({
+  label: '_cancel'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canSave').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('cancel');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to save but not close dialog window
+ */
+App.DialogApplyButton = App.ButtonView.extend({
+  label: '_apply'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canSave').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('apply');
     return;
   }
 });
@@ -430,7 +459,7 @@ App.pageController = SC.Object.create({
   emailAddress: null,
 
   /**
-   * Indicates if we are currently streaming or not
+   * Indicates if we are currently searching or not
    *
    * @type Boolean
    */
@@ -491,6 +520,13 @@ App.pageController = SC.Object.create({
   ],
 
   /**
+   * Indicates if we are currently saving
+   *
+   * @type Boolean
+   */
+  isSavingOrDeleting: NO,
+
+  /**
    * Index of selected record in App.resultsController
    *
    * @type int
@@ -528,11 +564,27 @@ App.pageController = SC.Object.create({
    */
   deselectRecord: function() {
     var nestedRecord = App.pageController.get('selectedRecord');
-    App.userEngine.discardChanges(nestedRecord);
+    if (!SC.none(nestedRecord)) {
+      App.userEngine.discardChanges(nestedRecord);
+    }
 
     App.pageController.set('selectedRecordIndex', -1);
     App.pageController.set('selectedRecord', null);
   },
+
+  /**
+   * Flag to indicate if we can show the cancel or apply buttons
+   *
+   * @type Boolean
+   */
+  canSave: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status').cacheable(),
 
   /**
    * Flag to indicate if we can show the previous button
@@ -545,13 +597,13 @@ App.pageController = SC.Object.create({
       return NO;
     }
 
-    var recordStatus = this.getPath('authenticatedUserRecord.status');
-     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
       return NO;
     }
 
     return YES;
-  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable(),
+  }.property('selectedRecordIndex', 'selectedRecord.status').cacheable(),
 
   /**
    * Flag to indicate if we can show the next button
@@ -564,13 +616,29 @@ App.pageController = SC.Object.create({
       return NO;
     }
 
-    var recordStatus = this.getPath('authenticatedUserRecord.status');
-     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
       return NO;
     }
 
     return YES;
-  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable()
+  }.property('selectedRecordIndex', 'selectedRecord.status').cacheable(),
+
+  /**
+   * Open the dialog
+   */
+  showDialog: function(recordIndex) {
+    App.pageController.selectRecord(recordIndex);
+    $('#userDialog').dialog('open');
+  },
+
+  /**
+   * Close the dialog
+   */
+  hideDialog: function() {
+    App.pageController.deselectRecord();
+    $('#userDialog').dialog('close');
+  }
 
 });
 
@@ -613,25 +681,55 @@ App.statechart = SC.Statechart.create({
       
       showDialog: function(recordIndex) {
         recordIndex = parseInt(recordIndex);
-        App.pageController.selectRecord(recordIndex);
+        App.pageController.showDialog(recordIndex);
         this.gotoState('showingDialog');
       }
     }),
 
+    /**
+     * Currently showing modal dialog containing selected record
+     */
     showingDialog: SC.State.extend({
       enterState: function() {
-        $('#userDialog').dialog('open')
       },
 
       exitState: function() {
-        App.pageController.deselectRecord();
-        $('#userDialog').dialog('close')
       },
 
-      hideDialog: function() {
+      /**
+       * OK clicked - save and close dialog
+       */
+      ok: function() {
+        // If record has not changed, then don't save
+        var recordStatus = App.pageController.getPath('selectedRecord.status');
+        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN ) {
+          this.cancel();
+          return;
+        }
+
+        var ctx = { action: 'ok' };
+        this.gotoState('saving', ctx);
+      },
+
+      /**
+       * Cancel clicked - discard and close dialog
+       */
+      cancel: function() {
+        App.pageController.hideDialog();
         this.gotoState('notSearching');
       },
 
+      /**
+       * Apply clicked - save and keep dialog open
+       */
+      apply: function() {
+        var ctx = { action: 'apply' };
+        this.gotoState('saving', ctx);
+      },
+
+      /**
+       * Show prior to the selected record
+       */
       showPreviousRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
         if (recordIndex === 0 ) {
@@ -646,6 +744,9 @@ App.statechart = SC.Statechart.create({
         App.pageController.selectRecord(recordIndex);
       },
 
+      /**
+       * Show record after the selected record
+       */
       showNextRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
         if (recordIndex === App.resultsController.get('length') - 1) {
@@ -662,21 +763,87 @@ App.statechart = SC.Statechart.create({
     }),
 
     /**
-     * Block the user from entering data while executing a search
+     * Call server to save our record
+     */
+    saving: SC.State.extend({
+
+      enterState: function(ctx) {
+        App.pageController.set('isSavingOrDeleting', YES);
+        this._startSave(ctx.action === 'ok');
+      },
+
+      exitState: function() {
+        App.pageController.set('isSavingOrDeleting', NO);
+      },
+
+      /**
+       * Save selected record
+       * @param {Boolean} closeWhenFinished If yes, we will exist the dialog of save is successful
+       */
+      _startSave: function(closeWhenFinished) {
+        try {
+          // Do checks
+
+
+          // Call server
+          var params = {closeWhenFinished: closeWhenFinished};
+          App.userEngine.save(App.pageController.get('selectedRecord'), this, this._endSave, params);
+        }
+        catch (err) {
+          // End search with error
+          this._endSave(null, null, err);
+        }
+      },
+
+      /**
+       * Called back when save is finished
+       * @param documentID DocumentID of the user record that was saved
+       * @param params context params passed in startSave
+       * @param error Error object. Null if no error.
+       */
+      _endSave: function(documentID, params, error) {
+        if (SC.none(error)) {
+          // Find the correct index and select record again
+          for (var i=0; i < App.resultsController.get('length'); i++) {
+            var userRecord = App.resultsController.objectAtContent(i);
+            if (userRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
+              App.pageController.selectRecord(i);
+              break;
+            }
+          }
+
+          if (params.closeWhenFinished) {
+            App.pageController.hideDialog();
+            this.gotoState('notSearching');
+          } else {
+            this.gotoState('showingDialog');
+          }
+        } else {
+          alert(error.message);
+          this.gotoState('showingDialog');
+        }
+      }
+    }),
+
+    /**
+     * Executing a search. Block the user from entering data.
      */
     searching: SC.State.extend({
       enterState: function() {
         App.pageController.set('isSearching', YES);
 
         // Run later to give time for working icon animation to run
-        SC.run.later(this, this.startSearch, 100);
+        SC.run.later(this, this._startSearch, 100);
       },
 
       exitState: function() {
         App.pageController.set('isSearching', NO);
       },
 
-      startSearch: function() {
+      /**
+       * Asynchronously call server
+       */
+      _startSearch: function() {
         try {
           // Clear previous log entries
           App.userEngine.clearData();
@@ -689,25 +856,23 @@ App.statechart = SC.Statechart.create({
             recordsPerPage: App.pageController.get('rowsPerSearch'),
             doPageCount: 'false'
           };
-          App.userEngine.search(criteria, this, this.endSearch);
+          App.userEngine.search(criteria, this, this._endSearch);
 
           // Save criteria for show more
           App.pageController.set('previousSearchCriteria', criteria);
         }
         catch (err) {
           // End search with error
-          this.endSearch(null, err);
+          this._endSearch(null, err);
         }
       },
 
       /**
        * Called back when search returns
-       * @param documentID
-       * @param records
        * @param params
        * @param error
        */
-      endSearch: function(params, error) {
+      _endSearch: function(params, error) {
         if (SC.none(error)) {
           //Cannot use App.resultsController.get('length'); to get length because binding has not happened in the runloop
           var recordCount = App.store.find(App.UserRecord).get('length');
@@ -715,17 +880,20 @@ App.statechart = SC.Statechart.create({
           App.pageController.set('showNoRowsFound', recordCount === 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
         }
 
         this.gotoState('notSearching');
       }
     }),
 
+    /**
+     * Fetching more records using the same search criteria
+     */
     showingMore: SC.State.extend({
       enterState: function() {
         App.pageController.set('isSearching', YES);
-        this.startShowMore();
+        this._startShowMore();
       },
 
       exitState: function() {
@@ -735,10 +903,10 @@ App.statechart = SC.Statechart.create({
       /**
        * Get more records from the server
        */
-      startShowMore: function() {
+      _startShowMore: function() {
         var criteria = App.pageController.get('previousSearchCriteria');
         criteria.startPage = criteria.startPage + 1;
-        App.repositoryRuntimeEngine.find(criteria, this, this.endShowMore);
+        App.repositoryRuntimeEngine.find(criteria, this, this._endShowMore);
       },
 
       /**
@@ -748,13 +916,13 @@ App.statechart = SC.Statechart.create({
        * @param params
        * @param error
        */
-      endShowMore: function(params, error) {
+      _endShowMore: function(params, error) {
         if (SC.none(error)) {
           //Cannot use App.resultsController.get('length'); to get length because binding has not happened in the runloop
           var recordCount = App.store.find(App.UserRecord).get('length');
           App.pageController.set('canShowMore', recordCount % App.pageController.get('rowsPerSearch') == 0);
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
         }
 
         this.gotoState('notSearching');

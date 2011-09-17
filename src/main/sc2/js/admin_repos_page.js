@@ -779,7 +779,7 @@ App.statechart = SC.Statechart.create({
           App.pageController.set('showNoRowsFound', recordCount === 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
         }
 
         this.gotoState('notSearching');
@@ -818,7 +818,7 @@ App.statechart = SC.Statechart.create({
           var recordCount = App.store.find(App.RepositoryConfigRecord).get('length');
           App.pageController.set('canShowMore', recordCount % App.pageController.get('rowsPerSearch') == 0);
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
         }
 
         this.gotoState('notSearching');
