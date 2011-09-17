@@ -410,6 +410,21 @@ App.DialogNextButton = App.ButtonView.extend({
 
 /**
  * @class
+ * Button to show next log entry
+ */
+App.DialogDeleteButton = App.ButtonView.extend({
+  label: '_delete'.loc(),
+  title: '_deleteTooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canDelete').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('delete');
+    return;
+  }
+});
+
+/**
+ * @class
  * Button to save and close dialog window
  */
 App.DialogOkButton = App.ButtonView.extend({
@@ -627,6 +642,20 @@ App.pageController = SC.Object.create({
   }.property('selectedRecord.status').cacheable(),
 
   /**
+   * Flag to indicate if we can show the delete button
+   *
+   * @type Boolean
+   */
+  canDelete: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status').cacheable(),
+
+  /**
    * Flag to indicate if we can show the previous button
    *
    * @type Boolean
@@ -794,6 +823,13 @@ App.statechart = SC.Statechart.create({
       },
 
       /**
+       * Delete clicked - delete and close dialog
+       */
+      'delete': function() {
+        this.gotoState('deleting');
+      },
+
+      /**
        * Show prior to the selected record
        */
       showPreviousRecord: function() {
@@ -884,6 +920,56 @@ App.statechart = SC.Statechart.create({
           } else {
             this.gotoState('showingDialog');
           }
+        } else {
+          alert(error.message);
+          this.gotoState('showingDialog');
+        }
+      }
+    }),
+
+    /**
+     * Call server to delete our record
+     */
+    deleting: SC.State.extend({
+
+      enterState: function(ctx) {
+        App.pageController.set('isSavingOrDeleting', YES);
+        this._startDelete();
+      },
+
+      exitState: function() {
+        App.pageController.set('isSavingOrDeleting', NO);
+      },
+
+      /**
+       * Save selected record
+       * @param {Boolean} closeWhenFinished If yes, we will exist the dialog of save is successful
+       */
+      _startDelete: function(closeWhenFinished) {
+        try {
+          // Do checks
+
+
+          // Call server
+          var documentID = App.pageController.get('selectedRecord').get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+          App.userEngine.delete(documentID, this, this._endDelete);
+        }
+        catch (err) {
+          // End search with error
+          this._endDelete(null, null, err);
+        }
+      },
+
+      /**
+       * Called back when delete is finished
+       * @param documentID DocumentID of the user record that was saved
+       * @param params context params passed in startSave
+       * @param error Error object. Null if no error.
+       */
+      _endDelete: function(documentID, params, error) {
+        if (SC.none(error)) {
+          App.pageController.hideDialog();
+          this.gotoState('notSearching');
         } else {
           alert(error.message);
           this.gotoState('showingDialog');
