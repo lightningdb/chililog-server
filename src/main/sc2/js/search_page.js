@@ -348,8 +348,9 @@ App.Dialog = SC.View.extend({
     // JQuery UI dialog setup
     this.$().dialog({
         autoOpen: false,
-        height: 630,
+        height: 620,
         width: 690,
+        resizable: false,
         modal: true,
         close: function(event, ui) {
           // For when the X is clicked

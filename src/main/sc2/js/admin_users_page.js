@@ -204,8 +204,9 @@ App.Dialog = SC.View.extend({
     // JQuery UI dialog setup
     this.$().dialog({
       autoOpen: false,
-      height: 400,
+      height: 390,
       width: 850,
+      resizable: false,
       modal: true,
       close: function(event, ui) {
         // For when the X is clicked
@@ -689,6 +690,7 @@ App.pageController = SC.Object.create({
       App.pageController.selectRecord(recordIndex);
     }
     $('#userDialog').dialog('open');
+    $('#dialogUserNameField input').focus();
   },
 
   /**

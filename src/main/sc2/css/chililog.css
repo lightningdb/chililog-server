@@ -107,10 +107,11 @@ form.tabContent {
 /* Dialog */
 .dialogContainer {
     padding: 0px 5px;
+    margin: 0px;
 }
 .dialogBottomBar {
     border-top: solid 1px #ddd;
-    padding-top: 8px;
+    padding-top: 16px;
 }
 
 /* ==========================================================================
