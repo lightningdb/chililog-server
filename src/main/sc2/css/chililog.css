@@ -89,7 +89,7 @@ table thead {
     color: #404040;
 }
 .zebra-striped tbody tr:hover td {
-  background-color: gold;
+  background-color: #FDF5D9;
 }
 
 /* Tabs */
@@ -178,7 +178,7 @@ body.login {
     background-color: whitesmoke;   /* zebra stripe the css3 way */
 }
 #results .logEntry:hover {
-    background-color: gold;
+    background-color: #FDF5D9;
 }
 #results .logEntry .row {
     display: table-row;

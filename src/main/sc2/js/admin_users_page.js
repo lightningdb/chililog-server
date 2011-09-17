@@ -210,7 +210,7 @@ App.Dialog = SC.View.extend({
       modal: true,
       close: function(event, ui) {
         // For when the X is clicked
-        App.statechart.sendAction('hideDialog');
+        App.statechart.sendAction('cancel');
       }
     });
 
@@ -269,6 +269,11 @@ App.DialogFieldDataMixin = {
 App.DialogUserNameField = App.FieldView.extend({
   label: '_admin.user.username'.loc(),
   help: '_admin.user.username.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('usernameErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.usernameErrorMessage'),
+  
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'medium'.w(),
     valueBinding: 'App.pageController.selectedRecord.username'
@@ -281,6 +286,7 @@ App.DialogUserNameField = App.FieldView.extend({
  */
 App.DialogDisplayNameField = App.FieldView.extend({
   label: '_admin.user.displayName'.loc(),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'xlarge'.w(),
     valueBinding: 'App.pageController.selectedRecord.displayName'
@@ -293,6 +299,11 @@ App.DialogDisplayNameField = App.FieldView.extend({
  */
 App.DialogEmailAddressField = App.FieldView.extend({
   label: '_admin.user.emailAddress'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('emailAddressErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.emailAddressErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'xlarge'.w(),
     valueBinding: 'App.pageController.selectedRecord.emailAddress'
@@ -331,6 +342,11 @@ App.DialogStatusField = App.FieldView.extend({
  */
 App.DialogPasswordField = App.FieldView.extend({
   label: '_admin.user.password'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('passwordErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.passwordErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'large'.w(),
     type: 'password',
@@ -345,6 +361,11 @@ App.DialogPasswordField = App.FieldView.extend({
  */
 App.DialogConfirmPasswordField = App.FieldView.extend({
   label: '_admin.user.confirmPassword'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('confirmPasswordErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.confirmPasswordErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'large'.w(),
     type: 'password',
@@ -549,6 +570,34 @@ App.pageController = SC.Object.create({
   previousSearchCriteria: null,
 
   /**
+   * Error message to display for username
+   *
+   * @type String
+   */
+  usernameErrorMessage: '',
+
+  /**
+   * Error message to display for email address
+   *
+   * @type String
+   */
+  emailAddressErrorMessage: '',
+
+  /**
+   * Error message to display for password
+   *
+   * @type String
+   */
+  passwordErrorMessage: '',
+
+  /**
+   * Error message to display for confirm password
+   *
+   * @type String
+   */
+  confirmPasswordErrorMessage: '',
+
+  /**
    * Data entered into the confirm password textbox
    *
    * @type String
@@ -618,6 +667,8 @@ App.pageController = SC.Object.create({
    * Deselect the record specified by the index
    */
   deselectRecord: function() {
+    App.pageController.clearDialogErrors();
+
     var nestedRecord = App.pageController.get('selectedRecord');
     if (!SC.none(nestedRecord)) {
       App.userEngine.discardChanges(nestedRecord);
@@ -711,6 +762,7 @@ App.pageController = SC.Object.create({
    * @param {int} recordIndex index of record in results array to display. If -1, then assume we want to create a new user
    */
   showDialog: function(recordIndex) {
+    App.pageController.clearDialogErrors();
     if (recordIndex == -1) {
       App.pageController.set('confirmPassword', '');
       App.pageController.set('selectedRecordIndex', recordIndex);
@@ -728,6 +780,16 @@ App.pageController = SC.Object.create({
   hideDialog: function() {
     App.pageController.deselectRecord();
     $('#userDialog').dialog('close');
+  },
+
+  /**
+   * Clear the dialog error messages
+   */
+  clearDialogErrors: function() {
+    App.pageController.set('usernameErrorMessage', '');
+    App.pageController.set('emailAddressErrorMessage', '');
+    App.pageController.set('passwordErrorMessage', '');
+    App.pageController.set('confirmPasswordErrorMessage', '');
   }
 
 });
@@ -826,7 +888,9 @@ App.statechart = SC.Statechart.create({
        * Delete clicked - delete and close dialog
        */
       'delete': function() {
-        this.gotoState('deleting');
+        if (confirm('_admin.user.confirmDelete'.loc())) {
+          this.gotoState('deleting');
+        }
       },
 
       /**
@@ -884,17 +948,69 @@ App.statechart = SC.Statechart.create({
        */
       _startSave: function(closeWhenFinished) {
         try {
-          // Do checks
-
+          var selectedRecord = App.pageController.get('selectedRecord');
+          if (!this._validate()) {
+            this.gotoState('showingDialog');
+            return;
+          }
 
           // Call server
           var params = {closeWhenFinished: closeWhenFinished};
-          App.userEngine.save(App.pageController.get('selectedRecord'), this, this._endSave, params);
+          App.userEngine.save(selectedRecord, this, this._endSave, params);
         }
         catch (err) {
           // End search with error
           this._endSave(null, null, err);
         }
+      },
+
+      /**
+       * Validate the dialog data
+       * @returns Boolean YES if ok, NO if error
+       */
+      _validate: function() {
+        App.pageController.clearDialogErrors();
+
+        var isError = NO;
+
+        var selectedRecord = App.pageController.get('selectedRecord');
+        var username = selectedRecord.get('username');
+        if (SC.empty(username)) {
+          App.pageController.set('usernameErrorMessage', '_admin.user.username.required'.loc());
+          isError = YES;
+        }
+
+        var emailAddress = selectedRecord.get('emailAddress');
+        if (SC.empty(emailAddress)) {
+          App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.required'.loc());
+          isError = YES;
+        } else if (!App.viewValidators.checkEmailAddress(emailAddress)) {
+          App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.invalid'.loc(emailAddress));
+          isError = YES;
+        }
+
+        var documentVersion = selectedRecord.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+        if (documentVersion === 0) {
+          var password = selectedRecord.get('password');
+          var confirmPassword = App.pageController.get('confirmPassword');
+          if (SC.empty(password)) {
+            App.pageController.set('passwordErrorMessage', '_admin.user.password.required'.loc());
+            isError = YES;
+          } else if (password.length < 8) {
+            App.pageController.set('passwordErrorMessage', '_admin.user.password.invalid'.loc());
+            isError = YES;
+          }
+
+          if (SC.empty(confirmPassword)) {
+            App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.required'.loc());
+            isError = YES;
+          } else if (password !== confirmPassword) {
+            App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.invalid'.loc());
+            isError = YES;
+          }
+        }
+
+        return !isError;
       },
 
       /**
@@ -921,7 +1037,7 @@ App.statechart = SC.Statechart.create({
             this.gotoState('showingDialog');
           }
         } else {
-          alert(error.message);
+          alert('Error: ' + error.message);
           this.gotoState('showingDialog');
         }
       }
@@ -947,11 +1063,8 @@ App.statechart = SC.Statechart.create({
        */
       _startDelete: function(closeWhenFinished) {
         try {
-          // Do checks
-
-
-          // Call server
-          var documentID = App.pageController.get('selectedRecord').get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+          var selectedRecord = App.pageController.get('selectedRecord');
+          var documentID = selectedRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
           App.userEngine.delete(documentID, this, this._endDelete);
         }
         catch (err) {
@@ -971,7 +1084,7 @@ App.statechart = SC.Statechart.create({
           App.pageController.hideDialog();
           this.gotoState('notSearching');
         } else {
-          alert(error.message);
+          alert('Error: ' + error.message);
           this.gotoState('showingDialog');
         }
       }

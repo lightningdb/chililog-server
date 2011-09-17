@@ -200,7 +200,7 @@ SC.STRINGS = {
   '_admin.user.editTitle': 'User: %@',
   '_admin.user.generalAttributes': 'General',
   '_admin.user.rolesAttributes': 'Roles',
-  '_admin.user.confirmDelete': 'Delete user "%@"?',
+  '_admin.user.confirmDelete': 'Delete this user?',
 
   '_admin.repo.name': 'Name',
   '_admin.repo.name.help': 'Only lower case letters (a-z), digits (0-9) and underscore (_) characters allowed.',
