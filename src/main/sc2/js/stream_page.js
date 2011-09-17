@@ -292,11 +292,11 @@ App.pageController = SC.Object.create({
       scDate = App.DateTime.parseChililogServerDateTime(logEntry.Timestamp);
     }
 
-    var severityClassName = 'severity';
+    var severityClassName = '';
     if (severity <= 3) {
-      severityClassName = severityClassName + ' alert-message block-message error';
+      severityClassName = 'important';
     } else if (severity == 4 || severity == 5) {
-      severityClassName = severityClassName + ' alert-message block-message warning';
+      severityClassName = 'warning';
     }
 
     var formattedMessage = logEntry.Message;
@@ -316,7 +316,7 @@ App.pageController = SC.Object.create({
         '<div class="right">' +
           formattedMessage +
           '<div class="rightFooter">' +
-            '<span class="' + severityClassName + '"><span class="label">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
+            '<span class="severity"><span class="label ' + severityClassName + '">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
             '<span class="divider">|</span>' +
             '<span class="host"><span class="label">host:</span> ' + logEntry.Host + '</span>' +
             '<span class="divider">|</span>' +

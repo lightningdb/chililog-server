@@ -196,18 +196,11 @@ body.login {
     padding-top: 6px;
 }
 #results .logEntry .row .rightFooter .severity {
-    width: 120px;
+    width: 140px;
     display: inline-block;
     overflow: hidden;
     padding: 2px;
     margin-bottom: 0px;
-}
-#results .logEntry .row .rightFooter .severity.error {
-    text-align: center;
-}
-#results .logEntry .row .rightFooter .severity.warning {
-    text-align: center;
-    border-color: rgba(0, 0, 0, 0.0976562);
 }
 #results .logEntry .row .rightFooter .host {
     min-width: 100px;
@@ -220,7 +213,6 @@ body.login {
     color: #777;
 }
 #results .logEntry .row .rightFooter .label {
-    color: #777;
     display: inline-block;
 }
 #results .logEntry .keyword {

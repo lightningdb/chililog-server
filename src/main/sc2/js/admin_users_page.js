@@ -332,6 +332,7 @@ App.DialogPasswordField = App.FieldView.extend({
   label: '_admin.user.password'.loc(),
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'large'.w(),
+    type: 'password',
     valueBinding: 'App.pageController.selectedRecord.password'
   }),
   isVisibleBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool()
@@ -345,6 +346,7 @@ App.DialogConfirmPasswordField = App.FieldView.extend({
   label: '_admin.user.confirmPassword'.loc(),
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'large'.w(),
+    type: 'password',
     valueBinding: 'App.pageController.confirmPassword'
   }),
   isVisibleBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool()
@@ -531,6 +533,13 @@ App.pageController = SC.Object.create({
   previousSearchCriteria: null,
 
   /**
+   * Data entered into the confirm password textbox
+   *
+   * @type String
+   */
+  confirmPassword: '',
+
+  /**
    * Options for user's status
    * @type Array of SC.Object
    */
@@ -673,6 +682,7 @@ App.pageController = SC.Object.create({
    */
   showDialog: function(recordIndex) {
     if (recordIndex == -1) {
+      App.pageController.set('confirmPassword', '');
       App.pageController.set('selectedRecordIndex', recordIndex);
       App.pageController.set('selectedRecord', App.userEngine.create());
     } else {

@@ -103,6 +103,11 @@ App.EngineMixin = {
     // Put HTTP status in the error
     error.httpStatus = jqXHR.status;
 
+    // If adding, then put in a document id so that we callback with the correct parameters
+    if (this.isAdding && SC.none(this.documentID)) {
+      this.documentID = '';
+    }
+
     // Callback (this should be the context data)
     if (!SC.none(this.callbackFunction)) {
       if (!SC.none(this.documentID) && !SC.none(this.records)) {
