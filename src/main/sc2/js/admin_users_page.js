@@ -317,7 +317,7 @@ App.DialogEmailAddressField = App.FieldView.extend({
 App.DialogStatusField = App.FieldView.extend({
   label: '_admin.user.currentStatus'.loc(),
   DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
-    classNames: 'medium'.w(),
+    classNames: 'xlarge'.w(),
     contentBinding: 'App.pageController.currentStatusOptions',
     valueBinding: SC.Binding.from('App.pageController.selectedRecord.currentStatus').transform(function(value, isForward) {
       if (isForward) {
@@ -619,9 +619,9 @@ App.pageController = SC.Object.create({
    * @type Array of SC.Object
    */
   currentStatusOptions: [
-    SC.Object.create({label: '_admin.user.currentStatus.enabled'.loc(), value: 'ENABLED'}),
-    SC.Object.create({label: '_admin.user.currentStatus.disabled'.loc(), value: 'DISABLED'}),
-    SC.Object.create({label: '_admin.user.currentStatus.locked'.loc(), value: 'LOCKED'})
+    SC.Object.create({label: '_admin.user.currentStatus.enabled'.loc(), value: App.USER_STATUS_ENABLED}),
+    SC.Object.create({label: '_admin.user.currentStatus.disabled'.loc(), value: App.USER_STATUS_DISABLED}),
+    SC.Object.create({label: '_admin.user.currentStatus.locked'.loc(), value: App.USER_STATUS_LOCKED})
   ],
 
   /**

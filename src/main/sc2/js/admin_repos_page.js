@@ -592,8 +592,9 @@ App.pageController = SC.Object.create({
    * @type Array of SC.Object
    */
   startupStatusOptions: [
-    SC.Object.create({label: '_admin.repo.startupStatus.online'.loc(), value: 'ONLINE'}),
-    SC.Object.create({label: '_admin.repo.startupStatus.offline'.loc(), value: 'OFFLINE'})
+    SC.Object.create({label: '_admin.repo.startupStatus.online'.loc(), value: App.REPOSITORY_STATUS_ONLINE }),
+    SC.Object.create({label: '_admin.repo.startupStatus.readonly'.loc(), value: App.REPOSITORY_STATUS_READONLY}),
+    SC.Object.create({label: '_admin.repo.startupStatus.offline'.loc(), value: App.REPOSITORY_STATUS_OFFLINE})
   ],
 
   /**
@@ -619,9 +620,9 @@ App.pageController = SC.Object.create({
    * @type Array of SC.Object
    */
   maxMemoryPolicyOptions: [
-    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.page'.loc(), value: 'PAGE'}),
-    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.drop'.loc(), value: 'DROP'}),
-    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.block'.loc(), value: 'BLOCK'})
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.page'.loc(), value: App.REPOSITORY_MAX_MEMORY_POLICY_PAGE}),
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.drop'.loc(), value: App.REPOSITORY_MAX_MEMORY_POLICY_DROP}),
+    SC.Object.create({label: '_admin.repo.maxMemoryPolicy.block'.loc(), value: App.REPOSITORY_MAX_MEMORY_POLICY_BLOCK})
   ],
 
   /**

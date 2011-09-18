@@ -85,9 +85,9 @@ App.REPOSITORY_MAX_MEMORY_POLICY_BLOCK = 'BLOCK';
  * Maps RepositoryConfigRecord.MaxMemoryPolicy codes to text
  */
 App.REPOSITORY_MAX_MEMORY_POLICY_MAP = {
-  'DROP': '_admin.repo.maxMemoryPolicy.drop'.loc(),
-  'PAGE': '_admin.repo.maxMemoryPolicy.page'.loc(),
-  'BLOCK': '_admin.repo.maxMemoryPolicy.block'.loc()
+  'DROP': '_repositoryEntryRecord.MaxMemoryPolicy.Drop'.loc(),
+  'PAGE': '_repositoryEntryRecord.MaxMemoryPolicy.Page'.loc(),
+  'BLOCK': '_repositoryEntryRecord.MaxMemoryPolicy.Block'.loc()
 };
 
 /**
@@ -148,9 +148,9 @@ App.USER_STATUS_LOCKED = 'LOCKED';
  * Maps RepositoryStatusRecord.Status codes to text
  */
 App.USER_STATUS_MAP = {
-  'ENABLED': '_admin.user.currentStatus.enabled'.loc(),
-  'DISABLED': '_admin.user.currentStatus.disabled'.loc(),
-  'LOCKED': '_admin.user.currentStatus.locked'.loc()
+  'ENABLED': '_userRecord.currentStatus.enabled'.loc(),
+  'DISABLED': '_userRecord.currentStatus.disabled'.loc(),
+  'LOCKED': '_userRecord.currentStatus.locked'.loc()
 };
 
 

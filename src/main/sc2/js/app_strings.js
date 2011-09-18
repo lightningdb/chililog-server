@@ -75,10 +75,18 @@ SC.STRINGS = {
   '_repositoryEntryRecord.Severity.Notice': 'Notice',
   '_repositoryEntryRecord.Severity.Information': 'Information',
   '_repositoryEntryRecord.Severity.Debug': 'Debug',
-  
+
+  '_repositoryEntryRecord.MaxMemoryPolicy.Drop': 'Drop',
+  '_repositoryEntryRecord.MaxMemoryPolicy.Block': 'Block',
+  '_repositoryEntryRecord.MaxMemoryPolicy.Page': 'Page',
+
   '_repositoryStatusRecord.Status.Online': 'Online',
   '_repositoryStatusRecord.Status.ReadOnly': 'Read Only',
   '_repositoryStatusRecord.Status.Offline': 'Offline',
+
+  '_userRecord.currentStatus.enabled': 'Enabled',
+  '_userRecord.currentStatus.disabled': 'Disabled',
+  '_userRecord.currentStatus.locked': 'Locked',
 
   // ********************************************************
   // Login Page
@@ -175,9 +183,9 @@ SC.STRINGS = {
   '_admin.user.displayName': 'Display Name',
   '_admin.user.displayName.help': 'Name or nickname to display instead of the username',
   '_admin.user.currentStatus': 'Status',
-  '_admin.user.currentStatus.enabled': 'Enabled',
-  '_admin.user.currentStatus.disabled': 'Disabled',
-  '_admin.user.currentStatus.locked': 'Locked',
+  '_admin.user.currentStatus.enabled': 'Enabled - User can login',
+  '_admin.user.currentStatus.disabled': 'Disabled - User cannot login',
+  '_admin.user.currentStatus.locked': 'Locked - User cannot login due to too many invalid login attempts',
   '_admin.user.password': 'New Password',
   '_admin.user.password.invalid': 'You password must be at least 8 characters long.',
   '_admin.user.password.required': 'New Password is required.',
@@ -211,8 +219,9 @@ SC.STRINGS = {
   '_admin.repo.displayName': 'Display Name',
   '_admin.repo.description': 'Description',
   '_admin.repo.startupStatus': 'Startup Status',
-  '_admin.repo.startupStatus.online': 'Online - start repository when server starts.',
-  '_admin.repo.startupStatus.offline': 'Offline - you must manually start the repository when the server starts',
+  '_admin.repo.startupStatus.online': 'Online',
+  '_admin.repo.startupStatus.readonly': 'Read Only',
+  '_admin.repo.startupStatus.offline': 'Offline',
   '_admin.repo.currentStatus': 'Current Status',
   '_admin.repo.storeEntries' : 'Store Log Entries?',
   '_admin.repo.storeEntries.yes' : 'Yes - Save log entries to the database so they can be searched at a later time.</span>',
