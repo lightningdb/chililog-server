@@ -140,7 +140,7 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
-        createRequestAO.setStatus(Status.Enabled);
+        createRequestAO.setStatus(Status.ENABLED);
 
         ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -153,7 +153,7 @@ public class UsersTest
         assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, createResponseAO.getRoles()[0]);
         assertNotNull(createResponseAO.getDocumentID());
         assertEquals(new Long(1), createResponseAO.getDocumentVersion());
-        assertEquals(Status.Enabled, createResponseAO.getStatus());
+        assertEquals(Status.ENABLED, createResponseAO.getStatus());
 
         // Try to login
         ApiUtils.login("UsersTest_crud", "test");
@@ -173,7 +173,7 @@ public class UsersTest
         assertEquals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME, readResponseAO.getRoles()[0]);
         assertNotNull(readResponseAO.getDocumentID());
         assertEquals(new Long(1), readResponseAO.getDocumentVersion());
-        assertEquals(Status.Enabled, readResponseAO.getStatus());
+        assertEquals(Status.ENABLED, readResponseAO.getStatus());
 
         // Update
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/users/" + createResponseAO.getDocumentID(),
@@ -197,7 +197,7 @@ public class UsersTest
         assertEquals("repo.sandpit.administrator", updateResponseAO.getRoles()[1]);
         assertNotNull(updateResponseAO.getDocumentID());
         assertEquals(new Long(2), updateResponseAO.getDocumentVersion());
-        assertEquals(Status.Enabled, updateResponseAO.getStatus());
+        assertEquals(Status.ENABLED, updateResponseAO.getStatus());
 
         // Try to login - password not changed
         ApiUtils.login("UsersTest_crud_after_update", "test");
@@ -448,7 +448,7 @@ public class UsersTest
         createRequestAO.setPassword("test");
         createRequestAO.setRoles(new String[]
         { UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME });
-        createRequestAO.setStatus(Status.Enabled);
+        createRequestAO.setStatus(Status.ENABLED);
 
         ApiUtils.sendJSON(httpConn, createRequestAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);

@@ -72,7 +72,7 @@ public class UserBO extends BO implements Serializable
     private String _username;
     private String _password;
     private ArrayList<String> _roles = new ArrayList<String>();
-    private Status _status = Status.Enabled;
+    private Status _status = Status.ENABLED;
     private String _displayName;
     private String _emailAddress;
 
@@ -398,16 +398,16 @@ public class UserBO extends BO implements Serializable
         /**
          * User can login
          */
-        Enabled,
+        ENABLED,
 
         /**
          * User cannot login
          */
-        Disabled,
+        DISABLED,
 
         /**
          * User cannot login due to too many failed login attempts
          */
-        Locked
+        LOCKED
     }
 }

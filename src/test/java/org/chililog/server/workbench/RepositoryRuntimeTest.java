@@ -98,7 +98,7 @@ public class RepositoryRuntimeTest
         user.setEmailAddress("TestRepo_SystemAdmin@chililog.com");
         user.setPassword("hello", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
-        user.setStatus(org.chililog.server.data.UserBO.Status.Enabled);
+        user.setStatus(org.chililog.server.data.UserBO.Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create repository admin user
@@ -107,7 +107,7 @@ public class RepositoryRuntimeTest
         user.setPassword("hello", true);
         user.setEmailAddress("TestRepo_RepoAdmin@chililog.com");
         user.addRole("repo.test_repo.administrator");
-        user.setStatus(org.chililog.server.data.UserBO.Status.Enabled);
+        user.setStatus(org.chililog.server.data.UserBO.Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create repository workbench user
@@ -116,7 +116,7 @@ public class RepositoryRuntimeTest
         user.setPassword("hello", true);
         user.setEmailAddress("TestRepo_RepoWorkbench@chililog.com");
         user.addRole("repo.test_repo.workbench");
-        user.setStatus(org.chililog.server.data.UserBO.Status.Enabled);
+        user.setStatus(org.chililog.server.data.UserBO.Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create repository workbench user with no access to test_repo
@@ -125,7 +125,7 @@ public class RepositoryRuntimeTest
         user.setPassword("hello", true);
         user.setEmailAddress("TestRepo_RepoWorkbench_NoAccess@chililog.com");
         user.addRole("repo.chililog.workbench");
-        user.setStatus(org.chililog.server.data.UserBO.Status.Enabled);
+        user.setStatus(org.chililog.server.data.UserBO.Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create test repo

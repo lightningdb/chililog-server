@@ -180,16 +180,16 @@ public class AuthenticationWorker extends Worker
             }
 
             // Check if the user is enabled
-            if (user.getStatus() != Status.Enabled)
+            if (user.getStatus() != Status.ENABLED)
             {
                 _logger.error("Authentication failed. User '%s' status not enabled: '%s'.",
                         requestApiObject.getUsername(), user.getStatus());
-                if (user.getStatus() == Status.Disabled)
+                if (user.getStatus() == Status.DISABLED)
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_ACCOUNT_DISABLED_ERROR));
                 }
-                else if (user.getStatus() == Status.Locked)
+                else if (user.getStatus() == Status.LOCKED)
                 {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_ACCOUNT_LOCKED_ERROR));

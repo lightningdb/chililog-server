@@ -841,7 +841,7 @@ App.pageController = SC.Object.create({
       App.pageController.selectRecord(recordIndex);
     }
     $('#repoDialog').dialog('open');
-    $('#dialogRepoNameField input').focus();
+    $('#dialogNameField input').focus();
   },
 
   /**

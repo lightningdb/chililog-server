@@ -77,6 +77,7 @@ SC.STRINGS = {
   '_repositoryEntryRecord.Severity.Debug': 'Debug',
   
   '_repositoryStatusRecord.Status.Online': 'Online',
+  '_repositoryStatusRecord.Status.ReadOnly': 'Read Only',
   '_repositoryStatusRecord.Status.Offline': 'Offline',
 
   // ********************************************************
@@ -174,9 +175,9 @@ SC.STRINGS = {
   '_admin.user.displayName': 'Display Name',
   '_admin.user.displayName.help': 'Name or nickname to display instead of the username',
   '_admin.user.currentStatus': 'Status',
-  '_admin.user.currentStatus.enabled': 'Enabled - User can login',
-  '_admin.user.currentStatus.disabled': 'Disabled - User cannot login',
-  '_admin.user.currentStatus.locked': 'Locked - Password must be reset',
+  '_admin.user.currentStatus.enabled': 'Enabled',
+  '_admin.user.currentStatus.disabled': 'Disabled',
+  '_admin.user.currentStatus.locked': 'Locked',
   '_admin.user.password': 'New Password',
   '_admin.user.password.invalid': 'You password must be at least 8 characters long.',
   '_admin.user.password.required': 'New Password is required.',

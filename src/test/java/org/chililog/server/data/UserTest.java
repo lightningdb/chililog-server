@@ -122,7 +122,7 @@ public class UserTest
         assertEquals("UserTestUser1", user2.getUsername());
         assertTrue(user2.hasRole("junittestrole1"));
         assertTrue(user2.hasRole("junittestrole2"));
-        assertEquals(UserBO.Status.Enabled, user2.getStatus());
+        assertEquals(UserBO.Status.ENABLED, user2.getStatus());
         assertEquals("Lloyd Christmas", user2.getDisplayName());
         assertEquals("UserTestUser1@chililog.com", user2.getEmailAddress());
         assertEquals(1, user2.getDocumentVersion());
@@ -134,7 +134,7 @@ public class UserTest
         // Update
         user.setUsername("UserTestUser2");
         user.addRole("junittestrole3");
-        user.setStatus(UserBO.Status.Disabled);
+        user.setStatus(UserBO.Status.DISABLED);
         user.setDisplayName("Harry Dunne");
         user.setEmailAddress("UserTestUser1update@chililog.com");
         UserController.getInstance().save(_db, user);
@@ -145,7 +145,7 @@ public class UserTest
         assertTrue(user2.hasRole("junittestrole1"));
         assertTrue(user2.hasRole("junittestrole2"));
         assertTrue(user2.hasRole("junittestrole3"));
-        assertEquals(UserBO.Status.Disabled, user2.getStatus());
+        assertEquals(UserBO.Status.DISABLED, user2.getStatus());
         assertEquals("Harry Dunne", user2.getDisplayName());
         assertEquals("UserTestUser1update@chililog.com", user2.getEmailAddress());
         assertEquals(2, user2.getDocumentVersion());
@@ -310,7 +310,7 @@ public class UserTest
         user2.addRole("ListRoleA");
         user2.addRole("ListRoleC");
         user2.setEmailAddress("UserTestUserList5@chililog.com");
-        user2.setStatus(UserBO.Status.Disabled);
+        user2.setStatus(UserBO.Status.DISABLED);
         UserController.getInstance().save(_db, user2);
         
         List<UserBO> list = null;
@@ -371,14 +371,14 @@ public class UserTest
         // ***************************        
         criteria= new UserListCriteria();
         criteria.setUsernamePattern("^UserTestUserList[\\w]*$");
-        criteria.setStatus(UserBO.Status.Enabled);
+        criteria.setStatus(UserBO.Status.ENABLED);
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(1, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
 
         criteria= new UserListCriteria();
         criteria.setUsernamePattern("^UserTestUserList[\\w]*$");
-        criteria.setStatus(UserBO.Status.Locked);
+        criteria.setStatus(UserBO.Status.LOCKED);
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
         

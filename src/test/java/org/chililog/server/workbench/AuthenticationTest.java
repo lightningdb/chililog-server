@@ -71,7 +71,7 @@ public class AuthenticationTest
         user.setEmailAddress("AuthenticationTest@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
-        user.setStatus(Status.Enabled);
+        user.setStatus(Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create user to change profile
@@ -80,7 +80,7 @@ public class AuthenticationTest
         user.setEmailAddress("AuthenticationTest_UpdateProfile@chililog.com");
         user.setPassword("hello there", true);
         user.addRole("repo.sandpit.workbench");
-        user.setStatus(Status.Enabled);
+        user.setStatus(Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create user to change profile
@@ -89,7 +89,7 @@ public class AuthenticationTest
         user.setEmailAddress("AuthenticationTest_ChangePassword@chililog.com");
         user.setPassword("hello there", true);
         user.addRole("repo.sandpit.workbench");
-        user.setStatus(Status.Enabled);
+        user.setStatus(Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         // Create disabled user
@@ -98,7 +98,7 @@ public class AuthenticationTest
         user.setEmailAddress("AuthenticationTest_DisabledUser@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
-        user.setStatus(Status.Disabled);
+        user.setStatus(Status.DISABLED);
         UserController.getInstance().save(_db, user);
 
         // Create locked out user
@@ -107,7 +107,7 @@ public class AuthenticationTest
         user.setEmailAddress("AuthenticationTest_LockedUser@chililog.com");
         user.setPassword("hello there", true);
         user.addRole(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME);
-        user.setStatus(Status.Locked);
+        user.setStatus(Status.LOCKED);
         UserController.getInstance().save(_db, user);
 
         // Create no access user
@@ -117,7 +117,7 @@ public class AuthenticationTest
         user.setPassword("hello there", true);
         user.addRole("repo.sandpit.publisher");
         user.addRole("repo.chililog.subscriber");
-        user.setStatus(Status.Enabled);
+        user.setStatus(Status.ENABLED);
         UserController.getInstance().save(_db, user);
 
         WorkbenchService.getInstance().start();

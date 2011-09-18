@@ -317,7 +317,7 @@ App.DialogEmailAddressField = App.FieldView.extend({
 App.DialogStatusField = App.FieldView.extend({
   label: '_admin.user.currentStatus'.loc(),
   DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
-    classNames: 'xlarge'.w(),
+    classNames: 'medium'.w(),
     contentBinding: 'App.pageController.currentStatusOptions',
     valueBinding: SC.Binding.from('App.pageController.selectedRecord.currentStatus').transform(function(value, isForward) {
       if (isForward) {

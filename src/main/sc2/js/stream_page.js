@@ -510,7 +510,7 @@ if (App.sessionEngine.load()) {
 
   // Load repository status so as to setup the dropdown list
   App.repositoryRuntimeEngine.load(this, function() {
-    var recordArray = App.repositoryRuntimeEngine.getRecords('name != "chililog"');
+    var recordArray = App.repositoryRuntimeEngine.getRecords('currentStatus = "' + App.REPOSITORY_STATUS_ONLINE  +'"');
     App.pageController.get('repositoryOptions').set('content', recordArray);
     App.pageController.set('repository', App.pageController.get('repositoryOptions').get('firstObject'));
   }, null);

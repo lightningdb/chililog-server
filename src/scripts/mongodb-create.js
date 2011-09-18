@@ -72,7 +72,7 @@ var adminUser = {
 	username: "admin",
 	password: "dJgFcagjd/IXet8RQ1ae9XkJLZ7bFLRkrsWBv+eGRmHvmqjeiX/U2RSPhyB0zosGH0cSONwQMvkhsxHjqhS2TrUAH1/CwSlp", // admin
 	roles: [ "system.administrator" ],
-	status: "Enabled",
+	status: "ENABLED",
 	display_name: "Adminstrator",
 	email_address: "admin@chililog.com",
 	doc_version: new NumberLong(1) 
@@ -83,7 +83,7 @@ var sandpitRepositoryAdminUser = {
     username: "sandpitadmin",
     password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
     roles: [ "repo.sandpit.administrator" ],
-    status: "Enabled",
+    status: "ENABLED",
     display_name: "Sandpit Repository Administrator",
     email_address: "sandpitadmin@chililog.com",
     doc_version: new NumberLong(1) 
@@ -94,7 +94,7 @@ var sandpitRepositoryWorkbenchUser = {
 	username: "sandpitworkbench",
 	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
 	roles: [ "repo.sandpit.workbench" ],
-	status: "Enabled",
+	status: "ENABLED",
 	display_name: "Sandpit Repository Workbench User",
 	email_address: "sandpitworkbenchuser@chililog.com",
 	doc_version: new NumberLong(1) 
@@ -105,7 +105,7 @@ var sandpitRepositoryPublisherUser = {
 	username: "sandpitpublisher",
 	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
 	roles: [ "repo.sandpit.publisher" ],
-	status: "Enabled",
+	status: "ENABLED",
 	display_name: "Sandpit Repository Publisher User",
 	email_address: "sandpitpublisher@chililog.com",
 	doc_version: new NumberLong(1) 
@@ -116,7 +116,7 @@ var sandpitRepositorySubscriberUser = {
 	username: "sandpitsubscriber",
 	password: "vEoX9L0rx3Ta3NnVQr7n1dpnBzNnyma6xOTkqMb1P6o886xQmMQVzXPypet9mp1lv8ISfeEs8E/10BewZW9msqJHZTXya7f5", // sandpit
 	roles: [ "repo.sandpit.subscriber" ],
-	status: "Enabled",
+	status: "ENABLED",
 	display_name: "Sandpit Repository Subscriber User",
 	email_address: "sandpitsubscriber@chililog.com",
 	doc_version: new NumberLong(1) 
@@ -132,7 +132,7 @@ var chililogRepoConfig = {
 	name: "chililog",
 	display_name: "Chililog Server",
 	description: "Log repository for Chililog Server events",
-	startup_status: "ONLINE",
+	startup_status: "READONLY",
 	store_entries_indicator: true,
 	storage_queue_durable_indicator: false,
 	storage_queue_worker_count: new NumberLong(0),  // No workers because we write direct

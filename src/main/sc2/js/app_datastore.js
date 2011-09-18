@@ -65,15 +65,6 @@ App.REPOSITORY_PUBLISHER_ROLE = 'publisher';
  */
 App.REPOSITORY_SUBSCRIBER_ROLE = 'subscriber';
 
-/**
- * Code for the status of an online repository; i.e. one that is started and can process log entries
- */
-App.REPOSITORY_ONLINE = 'ONLINE';
-
-/**
- * Code for the status of an offline repository; i.e. one that is stopped and cannot process log entries
- */
-App.REPOSITORY_OFFLINE = 'OFFLINE';
 
 /**
  * If a repository reaches max memory, drop new messages
@@ -91,6 +82,15 @@ App.REPOSITORY_MAX_MEMORY_POLICY_PAGE = 'PAGE';
 App.REPOSITORY_MAX_MEMORY_POLICY_BLOCK = 'BLOCK';
 
 /**
+ * Maps RepositoryConfigRecord.MaxMemoryPolicy codes to text
+ */
+App.REPOSITORY_MAX_MEMORY_POLICY_MAP = {
+  'DROP': '_admin.repo.maxMemoryPolicy.drop'.loc(),
+  'PAGE': '_admin.repo.maxMemoryPolicy.page'.loc(),
+  'BLOCK': '_admin.repo.maxMemoryPolicy.block'.loc()
+};
+
+/**
  * Map of severity text for code
  */
 App.REPOSITORY_ENTRY_SEVERITY_MAP = [
@@ -103,6 +103,56 @@ App.REPOSITORY_ENTRY_SEVERITY_MAP = [
   '_repositoryEntryRecord.Severity.Information'.loc(),
   '_repositoryEntryRecord.Severity.Debug'.loc()
 ];
+
+
+/**
+ * Code for the status of an online repository; i.e. repository can process log entries and is searchable
+ */
+App.REPOSITORY_STATUS_ONLINE = 'ONLINE';
+
+/**
+ * Code for the status of a readonly repository; i.e. repository can only be searched via the workbench
+ */
+App.REPOSITORY_STATUS_READONLY = 'READONLY';
+
+/**
+ * Code for the status of an offline repository. Read/write access to this repository is turned off.
+ */
+App.REPOSITORY_STATUS_OFFLINE = 'OFFLINE';
+
+/**
+ * Maps RepositoryStatusRecord.Status codes to text
+ */
+App.REPOSITORY_STATUS_MAP = {
+  'ONLINE': '_repositoryStatusRecord.Status.Online'.loc(),
+  'READONLY': '_repositoryStatusRecord.Status.ReadOnly'.loc(),
+  'OFFLINE': '_repositoryStatusRecord.Status.Offline'.loc()
+};
+
+/**
+ * User status of enabled - can login
+ */
+App.USER_STATUS_ENABLED = 'ENABLED';
+
+/**
+ * User status of disabled - cannot login
+ */
+App.USER_STATUS_DISABLED = 'DISABLED';
+
+/**
+ * User status of locked - too many failed logins
+ */
+App.USER_STATUS_LOCKED = 'LOCKED';
+
+/**
+ * Maps RepositoryStatusRecord.Status codes to text
+ */
+App.USER_STATUS_MAP = {
+  'ENABLED': '_admin.user.currentStatus.enabled'.loc(),
+  'DISABLED': '_admin.user.currentStatus.disabled'.loc(),
+  'LOCKED': '_admin.user.currentStatus.locked'.loc()
+};
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // AuthenticatedUserRecord
@@ -245,6 +295,7 @@ App.AUTHENTICATED_USER_RECORD_MAP = [
   ['gravatarMD5Hash', 'GravatarMD5Hash']
 ];
 
+
 // --------------------------------------------------------------------------------------------------------------------
 // RepositoryConfigRecord
 // --------------------------------------------------------------------------------------------------------------------
@@ -261,21 +312,21 @@ App.RepositoryConfigRecord = SC.Record.extend({
   primaryKey: App.DOCUMENT_ID_RECORD_FIELD_NAME,
 
   documentID: SC.Record.attr(String),
-  documentVersion: SC.Record.attr(Number),
+  documentVersion: SC.Record.attr(Number, { defaultValue: 0 }),
   name: SC.Record.attr(String, { defaultValue: '', isRequired: YES }),
-  displayName: SC.Record.attr(String),
-  description: SC.Record.attr(String),
-  startupStatus: SC.Record.attr(String, { defaultValue: App.REPOSITORY_ONLINE, isRequired: YES }),
+  displayName: SC.Record.attr(String, { defaultValue: '' }),
+  description: SC.Record.attr(String, { defaultValue: '' }),
+  startupStatus: SC.Record.attr(String, { defaultValue: App.REPOSITORY_STATUS_ONLINE, isRequired: YES }),
 
-  storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
-  storageQueueDurableIndicator: SC.Record.attr(Boolean, { defaultValue: NO }),
-  storageQueueWorkerCount: SC.Record.attr(Number),
-  storageMaxKeywords: SC.Record.attr(Number),
+  storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: NO, isRequired: YES }),
+  storageQueueDurableIndicator: SC.Record.attr(Boolean, { defaultValue: NO, isRequired: YES }),
+  storageQueueWorkerCount: SC.Record.attr(Number, { defaultValue: 1, isRequired: YES }),
+  storageMaxKeywords: SC.Record.attr(Number, { defaultValue: 50, isRequired: YES }),
 
-  maxMemory: SC.Record.attr(Number),
-  maxMemoryPolicy: SC.Record.attr(String, { defaultValue: App.REPOSITORY_MAX_MEMORY_POLICY_DROP }),
-  pageSize: SC.Record.attr(Number),
-  pageCountCache: SC.Record.attr(Number),
+  maxMemory: SC.Record.attr(Number, { defaultValue: 10485760, isRequired: YES }),  //10MB
+  maxMemoryPolicy: SC.Record.attr(String, { defaultValue: App.REPOSITORY_MAX_MEMORY_POLICY_PAGE }),
+  pageSize: SC.Record.attr(Number, { defaultValue: 1048576, isRequired: YES }),    //1MB
+  pageCountCache: SC.Record.attr(Number, { defaultValue: 3, isRequired: YES }),    //3
 
   /**
    * Returns the display name if not blank, else returns the name
@@ -296,7 +347,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
   currentStatus: function() {
     var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
     if (SC.none(statusRecord)) {
-      return 'OFFLINE';
+      return App.REPOSITORY_STATUS_OFFLINE;
     } else {
       return statusRecord.get('currentStatus');
     }
@@ -307,14 +358,8 @@ App.RepositoryConfigRecord = SC.Record.extend({
    * @type String
    */
   currentStatusText: function() {
-    var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
-    if (SC.none(statusRecord)) {
-      return '_repositoryStatusRecord.Status.Offline'.loc();
-    } else {
-      var currentStatus = statusRecord.get('currentStatus');
-      return currentStatus === 'ONLINE' ? '_repositoryStatusRecord.Status.Online'.loc() :
-        '_repositoryStatusRecord.Status.Offline'.loc();
-    }
+    var currentStatus = this.get('currentStatus');
+    return App.REPOSITORY_STATUS_MAP[currentStatus];
   }.property(),
   
   /**
@@ -398,6 +443,19 @@ App.RepositoryStatusRecord = SC.Record.extend({
   displayName: SC.Record.attr(String),
   currentStatus: SC.Record.attr(String),
 
+  /**
+   * The current status description of this repository: ONLINE or OFFLINE
+   * @type String
+   */
+  currentStatusText: function() {
+    var currentStatus = this.get('currentStatus');
+    return App.REPOSITORY_STATUS_MAP[currentStatus];
+  }.property('currentStatus').cacheable(),
+
+  /**
+   * Display name or name if display name is blank
+   * @type String
+   */
   displayNameOrName: function() {
     var displayName = this.get('displayName');
     if (SC.none(displayName)) {
@@ -468,13 +526,22 @@ App.UserRecord = SC.Record.extend({
 
   documentID: SC.Record.attr(String),
   documentVersion: SC.Record.attr(Number, { defaultValue: 0 }),
-  username: SC.Record.attr(String, { defaultValue: '' }),
+  username: SC.Record.attr(String, { defaultValue: '', isRequired: YES }),
   emailAddress: SC.Record.attr(String, { defaultValue: '' }),
   password: SC.Record.attr(String, { defaultValue: '' }),
   roles: SC.Record.attr(Array, { defaultValue: [] }),
-  currentStatus: SC.Record.attr(String, { defaultValue: 'ENABLED' }),
+  currentStatus: SC.Record.attr(String, { defaultValue: App.USER_STATUS_ENABLED }),
   displayName: SC.Record.attr(String, { defaultValue: '' }),
   gravatarMD5Hash: SC.Record.attr(String),
+
+  /**
+   * Returns the text description of the current status
+   * @type String
+   */
+  currentStatusText: function() {
+    var currentStatus = this.get('currentStatus');
+    return App.USER_STATUS_MAP[currentStatus];
+  }.property('currentStatus').cacheable(),
 
   /**
    * Cached system.administrator role
