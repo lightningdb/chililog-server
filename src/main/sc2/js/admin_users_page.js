@@ -433,13 +433,13 @@ App.DialogNextButton = App.ButtonView.extend({
  * @class
  * Button to show next log entry
  */
-App.DialogDeleteButton = App.ButtonView.extend({
-  label: '_delete'.loc(),
-  title: '_deleteTooltip'.loc(),
-  isVisibleBinding: SC.Binding.from('App.pageController.canDelete').oneWay().bool(),
+App.DialogRemoveButton = App.ButtonView.extend({
+  label: '_remove'.loc(),
+  title: '_removeTooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canRemove').oneWay().bool(),
 
   click: function() {
-    App.statechart.sendAction('delete');
+    App.statechart.sendAction('remove');
     return;
   }
 });
@@ -450,7 +450,7 @@ App.DialogDeleteButton = App.ButtonView.extend({
  */
 App.DialogOkButton = App.ButtonView.extend({
   label: '_ok'.loc(),
-  disabledBinding: SC.Binding.from('App.pageController.isSavingOrDeleting').oneWay().bool(),
+  disabledBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool(),
 
   click: function() {
     App.statechart.sendAction('ok');
@@ -493,7 +493,7 @@ App.DialogApplyButton = App.ButtonView.extend({
 App.DialogWorkingImage = App.ImgView.extend({
   src: 'images/working.gif',
   visible: NO,
-  isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrDeleting').oneWay().bool()
+  isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool()
 });
 
 
@@ -605,6 +605,16 @@ App.pageController = SC.Object.create({
   confirmPassword: '',
 
   /**
+   * Clear the dialog error messages
+   */
+  clearDialogErrors: function() {
+    App.pageController.set('usernameErrorMessage', '');
+    App.pageController.set('emailAddressErrorMessage', '');
+    App.pageController.set('passwordErrorMessage', '');
+    App.pageController.set('confirmPasswordErrorMessage', '');
+  },
+
+  /**
    * Options for user's status
    * @type Array of SC.Object
    */
@@ -628,7 +638,7 @@ App.pageController = SC.Object.create({
    *
    * @type Boolean
    */
-  isSavingOrDeleting: NO,
+  isSavingOrRemoving: NO,
 
   /**
    * Index of selected record in App.resultsController
@@ -685,7 +695,7 @@ App.pageController = SC.Object.create({
    */
   canSave: function() {
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
       return YES;
     }
 
@@ -697,9 +707,9 @@ App.pageController = SC.Object.create({
    *
    * @type Boolean
    */
-  canDelete: function() {
+  canRemove: function() {
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
       return YES;
     }
 
@@ -718,7 +728,7 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
       return NO;
     }
 
@@ -737,7 +747,7 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrDeleting')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
       return NO;
     }
 
@@ -780,16 +790,6 @@ App.pageController = SC.Object.create({
   hideDialog: function() {
     App.pageController.deselectRecord();
     $('#userDialog').dialog('close');
-  },
-
-  /**
-   * Clear the dialog error messages
-   */
-  clearDialogErrors: function() {
-    App.pageController.set('usernameErrorMessage', '');
-    App.pageController.set('emailAddressErrorMessage', '');
-    App.pageController.set('passwordErrorMessage', '');
-    App.pageController.set('confirmPasswordErrorMessage', '');
   }
 
 });
@@ -887,9 +887,9 @@ App.statechart = SC.Statechart.create({
       /**
        * Delete clicked - delete and close dialog
        */
-      'delete': function() {
+      remove: function() {
         if (confirm('_admin.user.confirmDelete'.loc())) {
-          this.gotoState('deleting');
+          this.gotoState('removing');
         }
       },
 
@@ -934,12 +934,12 @@ App.statechart = SC.Statechart.create({
     saving: SC.State.extend({
 
       enterState: function(ctx) {
-        App.pageController.set('isSavingOrDeleting', YES);
+        App.pageController.set('isSavingOrRemoving', YES);
         this._startSave(ctx.action === 'ok');
       },
 
       exitState: function() {
-        App.pageController.set('isSavingOrDeleting', NO);
+        App.pageController.set('isSavingOrRemoving', NO);
       },
 
       /**
@@ -1046,30 +1046,30 @@ App.statechart = SC.Statechart.create({
     /**
      * Call server to delete our record
      */
-    deleting: SC.State.extend({
+    removing: SC.State.extend({
 
       enterState: function(ctx) {
-        App.pageController.set('isSavingOrDeleting', YES);
-        this._startDelete();
+        App.pageController.set('isSavingOrRemoving', YES);
+        this._startRemove();
       },
 
       exitState: function() {
-        App.pageController.set('isSavingOrDeleting', NO);
+        App.pageController.set('isSavingOrRemoving', NO);
       },
 
       /**
        * Save selected record
        * @param {Boolean} closeWhenFinished If yes, we will exist the dialog of save is successful
        */
-      _startDelete: function(closeWhenFinished) {
+      _startRemove: function(closeWhenFinished) {
         try {
           var selectedRecord = App.pageController.get('selectedRecord');
           var documentID = selectedRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
-          App.userEngine.delete(documentID, this, this._endDelete);
+          App.userEngine.remove(documentID, this, this._endRemove);
         }
         catch (err) {
           // End search with error
-          this._endDelete(null, null, err);
+          this._endRemove(null, null, err);
         }
       },
 
@@ -1079,7 +1079,7 @@ App.statechart = SC.Statechart.create({
        * @param params context params passed in startSave
        * @param error Error object. Null if no error.
        */
-      _endDelete: function(documentID, params, error) {
+      _endRemove: function(documentID, params, error) {
         if (SC.none(error)) {
           App.pageController.hideDialog();
           this.gotoState('notSearching');

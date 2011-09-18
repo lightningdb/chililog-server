@@ -392,7 +392,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Deletes the user record on the server
+   * Removes the user record on the server
    *
    * @param {String} documentID id of record to delete
    * @param {Object} [callbackTarget] Optional callback object
@@ -402,7 +402,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  'delete': function(documentID, callbackTarget, callbackFunction, callbackParams) {
+  remove: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     var url = '/api/users/' + documentID;
     var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams
     };
@@ -415,14 +415,14 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
       context: context,
       headers: this._createAjaxRequestHeaders(),
       error: this._ajaxError,
-      success: this._endDelete
+      success: this._endRemove
     });
 
     return;
   },
 
   /**
-   * Callback from delete()
+   * Callback from remove()
    *
    * The 'this' object is the context data object.
    *
@@ -431,7 +431,7 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  _endDelete: function(data, textStatus, jqXHR) {
+  _endRemove: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       var record = App.store.find(App.UserRecord, this.documentID);
@@ -1245,7 +1245,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * Deletes the repository info record on the server
+   * Removes the repository info record on the server
    *
    * @param {String} documentID id of record to delete
    * @param {Object} [callbackTarget] Optional callback object
@@ -1255,7 +1255,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  'delete': function(documentID, callbackTarget, callbackFunction, callbackParams) {
+  remove: function(documentID, callbackTarget, callbackFunction, callbackParams) {
     var url = '/api/repository_config/' + documentID;
     var context = { documentID: documentID, callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
 
@@ -1267,14 +1267,14 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
       context: context,
       headers: this._createAjaxRequestHeaders(),
       error: this._ajaxError,
-      success: this._endDelete
+      success: this._endRemove
     });
 
     return;
   },
 
   /**
-   * Callback from erase()
+   * Callback from remove()
    *
    * The 'this' object is the context data object.
    *
@@ -1283,7 +1283,7 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  _endDelete: function(data, textStatus, jqXHR) {
+  _endRemove: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       var record = App.store.find(App.RepositoryConfigRecord, this.documentID);

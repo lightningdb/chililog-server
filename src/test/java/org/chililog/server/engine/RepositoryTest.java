@@ -69,20 +69,20 @@ public class RepositoryTest
     private static RepositoryConfigBO _repoConfig;
 
     private static final String REPOSITORY_NAME = "junit_test";
-    
+
     private static final String PUBLISHER_USERNAME = "RepositoryTest.publisher";
     private static final String PUBLISHER_PASSWORD = "pw4publisher!";
 
     private static final String SUBSCRIBER_USERNAME = "RepositoryTest.subscriber";
     private static final String SUBSCRIBER_PASSWORD = "pw4subscriber!";
-    
+
     private static final String MONGODB_COLLECTION_NAME = "repo_junit_test";
 
     @BeforeClass
     public static void classSetup() throws Exception
     {
         _db = MongoConnection.getInstance().getConnection();
-        
+
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^RepositoryTest\\.[\\w]*$");
@@ -95,13 +95,13 @@ public class RepositoryTest
         user.setPassword(PUBLISHER_PASSWORD, true);
         user.addRole(UserBO.createRepositoryPublisherRoleName(REPOSITORY_NAME));
         UserController.getInstance().save(_db, user);
-        
+
         user = new UserBO();
         user.setUsername(SUBSCRIBER_USERNAME);
         user.setPassword(SUBSCRIBER_PASSWORD, true);
         user.addRole(UserBO.createRepositoryPublisherRoleName(REPOSITORY_NAME));
         UserController.getInstance().save(_db, user);
-        
+
         // Create repo
         _repoConfig = new RepositoryConfigBO();
         _repoConfig.setName(REPOSITORY_NAME);
@@ -173,12 +173,12 @@ public class RepositoryTest
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
-        
+
         coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^RepositoryTest\\.[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
-        coll.remove(query);        
+        coll.remove(query);
     }
 
     @Test
@@ -190,7 +190,7 @@ public class RepositoryTest
         // Start
         MqService.getInstance().start();
         Repository repo = new Repository(_repoConfig);
-        repo.start();
+        repo.bringOnline();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Write some repository entries
@@ -237,7 +237,7 @@ public class RepositoryTest
         assertEquals(3, coll.find().count());
 
         // Stop
-        repo.stop();
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
         MqService.getInstance().stop();
     }
@@ -251,7 +251,7 @@ public class RepositoryTest
         // Start
         MqService.getInstance().start();
         Repository repo = new Repository(_repoConfig);
-        repo.start();
+        repo.bringOnline();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Try to update repo - should error because it is not off line
@@ -271,7 +271,7 @@ public class RepositoryTest
         assertEquals(2, repo.getStorageWorkers().size());
 
         // Stop
-        repo.stop();
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
 
         // Update worker count from 2 to 10
@@ -279,7 +279,7 @@ public class RepositoryTest
 
         // Restart
         repo = new Repository(_repoConfig);
-        repo.start();
+        repo.bringOnline();
 
         // Write 10,000 repository entries
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
@@ -296,7 +296,8 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
+            ;
             producer.send(message);
             producerSession.commit();
         }
@@ -321,7 +322,7 @@ public class RepositoryTest
         assertEquals(10000, coll.find().count());
 
         // Stop
-        repo.stop();
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
         MqService.getInstance().stop();
 
@@ -330,21 +331,23 @@ public class RepositoryTest
     }
 
     @Test
-    public void testStartStopRepository() throws Exception
+    public void testRepositoryStatusSwitching() throws Exception
     {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
-        // Start
+        // ************************************************************************************************************
+        // ONLINE
+        // ************************************************************************************************************
         MqService.getInstance().start();
         Repository repo = new Repository(_repoConfig);
-        repo.start();
+        repo.bringOnline();
         assertEquals(Status.ONLINE, repo.getStatus());
 
-        // try to start again - should error
+        // try to bring online again - should error
         try
         {
-            repo.start();
+            repo.bringOnline();
             fail();
         }
         catch (Exception ex)
@@ -367,7 +370,8 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
+            ;
             producer.send(message);
             producerSession.commit();
         }
@@ -382,18 +386,20 @@ public class RepositoryTest
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(10, coll.find().count());
 
-        // Stop repository
-        repo.stop();
+        // ************************************************************************************************************
+        // STOP
+        // ************************************************************************************************************
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
 
-        // Stop again - should be no errors
-        repo.stop();
+        // Offline again - should be no errors
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
 
         // Sending a message after stopping should result in an error
-        // Have to wait for at least 10 seconds for credentials cache to timeout
-        // security-invalidation-interval defaults to 10000 milliseconds
-        Thread.sleep(11000);
+        // Have to wait for at least 1 seconds for credentials cache to timeout
+        // security-invalidation-interval defaults to 0 milliseconds
+        Thread.sleep(1000);
         try
         {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
@@ -402,15 +408,17 @@ public class RepositoryTest
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
             String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
-            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
+            ;
             producer.send(message);
             producerSession.commit();
         }
         catch (Exception ex)
         {
-            // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address repo.junit_test]
+            // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
+            // repo.junit_test]
             assertEquals(HornetQException.class, ex.getClass());
-            assertEquals(HornetQException.SECURITY_EXCEPTION, ((HornetQException)ex).getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, ((HornetQException) ex).getCode());
         }
 
         // Check that there are no threads are still running
@@ -419,8 +427,45 @@ public class RepositoryTest
             assertTrue(!rw.isRunning());
         }
         assertEquals(0, repo.getStorageWorkers().size());
-        
+
+        // ************************************************************************************************************
+        // READONLU
+        // ************************************************************************************************************
+        repo.makeReadonly();
+        assertEquals(Status.READONLY, repo.getStatus());
+
+        // Offline again - should be no errors
+        repo.makeReadonly();
+        assertEquals(Status.READONLY, repo.getStatus());
+
+        // Sending a message after stopping should result in an error
+        // Have to wait for at least 1 seconds for credentials cache to timeout
+        // security-invalidation-interval defaults to 0 milliseconds
+        Thread.sleep(1000);
+        try
+        {
+            ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
+            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
+            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
+            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
+            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
+            ;
+            producer.send(message);
+            producerSession.commit();
+        }
+        catch (Exception ex)
+        {
+            // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
+            // repo.junit_test]
+            assertEquals(HornetQException.class, ex.getClass());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, ((HornetQException) ex).getCode());
+        }
+
+        // ************************************************************************************************************
         // Stop
+        // ************************************************************************************************************
         producer.close();
         producerSession.close();
         MqService.getInstance().stop();
@@ -439,11 +484,15 @@ public class RepositoryTest
         // Start
         MqService.getInstance().start();
         Repository repo = new Repository(_repoConfig);
-        repo.start();
+        repo.bringOnline();
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // Create a dead letter queue
         MqService.getInstance().deployQueue(deadLetterAddress, "dead_letters.junit_test", false);
+
+        // Have to wait for at least 1 seconds for credentials cache to timeout
+        // security-invalidation-interval defaults to 0 milliseconds
+        Thread.sleep(1000);
 
         // Write some repository entries
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME,
@@ -465,7 +514,8 @@ public class RepositoryTest
             {
                 entry1 = i + " - bad entry no delimiter";
             }
-            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));;
+            message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
+            ;
             producer.send(message);
             producerSession.commit();
         }
@@ -494,7 +544,7 @@ public class RepositoryTest
         assertEquals(99, coll.find().count());
 
         // Stop
-        repo.stop();
+        repo.takeOffline();
         assertEquals(Status.OFFLINE, repo.getStatus());
         MqService.getInstance().stop();
 
@@ -515,6 +565,10 @@ public class RepositoryTest
             {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
+            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY)
+            {
+                assertEquals(Status.READONLY, r.getStatus());
+            }
             else
             {
                 assertEquals(Status.OFFLINE, r.getStatus());
@@ -529,6 +583,10 @@ public class RepositoryTest
             if (r.getRepoConfig().getStartupStatus() == Status.ONLINE)
             {
                 assertEquals(Status.ONLINE, r.getStatus());
+            }
+            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY)
+            {
+                assertEquals(Status.READONLY, r.getStatus());
             }
             else
             {

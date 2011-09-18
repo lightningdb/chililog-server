@@ -17,7 +17,7 @@
 //
 
 //
-// Javascript for admin_users.html
+// Javascript for admin_repos.html
 //
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -77,6 +77,20 @@ App.SearchButton = App.ButtonView.extend({
 
 /**
  * @class
+ * Button to add a new user
+ */
+App.AddButton = App.ButtonView.extend({
+  label: '_admin.repo.create'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('createRepo');
+    return;
+  }
+});
+
+/**
+ * @class
  * Button to retrieve more rows from the server
  */
 App.ShowMoreButton = App.ButtonView.extend({
@@ -117,7 +131,7 @@ App.Results = SC.View.extend({
         // Add handler for double clicking
         var id = this.$().attr('id');
         this.$().dblclick(function() {
-          App.statechart.sendAction('showDialog', $('#' + this.id).attr('contentIndex'));
+          App.statechart.sendAction('showRepo', $('#' + this.id).attr('contentIndex'));
         });
       }
     })
@@ -163,7 +177,12 @@ App.WorkingImage = App.ImgView.extend({
 App.Dialog = SC.View.extend({
   attributeBindings: ['title'],
 
-  title: '_admin.repo.editTitle'.loc(),
+  title: '',
+
+  didTitleChange: function() {
+    var title = App.pageController.get('dialogTitle');
+    this.$().dialog('option', 'title', title);
+  }.observes('App.pageController.dialogTitle'),
 
   didInsertElement: function() {
     this._super();
@@ -173,10 +192,11 @@ App.Dialog = SC.View.extend({
       autoOpen: false,
       height: 360,
       width: 850,
+      resizable: false,
       modal: true,
       close: function(event, ui) {
         // For when the X is clicked
-        App.statechart.sendAction('hideDialog');
+        App.statechart.sendAction('cancel');
       }
     });
 
@@ -217,13 +237,13 @@ App.DialogFieldDataMixin = {
 
   // Hide dialog on ENTER key pressed
   insertNewline: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('ok');
     return;
   },
 
   // Hide dialog on ESC key pressed
   cancel: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('cancel');
     return;
   }
 };
@@ -235,6 +255,11 @@ App.DialogFieldDataMixin = {
 App.DialogNameField = App.FieldView.extend({
   label: '_admin.repo.name'.loc(),
   help: '_admin.repo.name.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('nameErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.nameErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'medium'.w(),
     valueBinding: 'App.pageController.selectedRecord.name'
@@ -332,6 +357,11 @@ App.DialogStorageQueueDurableIndicatorField = App.FieldView.extend({
 App.DialogStorageQueueWorkerCountField = App.FieldView.extend({
   label: '_admin.repo.storageQueueWorkerCount'.loc(),
   help: '_admin.repo.storageQueueWorkerCount.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('storageQueueWorkerCountErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.storageQueueWorkerCountErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'small'.w(),
     valueBinding: 'App.pageController.selectedRecord.storageQueueWorkerCount'
@@ -345,6 +375,11 @@ App.DialogStorageQueueWorkerCountField = App.FieldView.extend({
 App.DialogStorageMaxKeywordsField = App.FieldView.extend({
   label: '_admin.repo.storageMaxKeywords'.loc(),
   help: '_admin.repo.storageMaxKeywords.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('storageMaxKeywordsErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.storageMaxKeywordsErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'small'.w(),
     valueBinding: 'App.pageController.selectedRecord.storageMaxKeywords'
@@ -358,6 +393,11 @@ App.DialogStorageMaxKeywordsField = App.FieldView.extend({
 App.DialogMaxMemoryField = App.FieldView.extend({
   label: '_admin.repo.maxMemory'.loc(),
   help: '_admin.repo.maxMemory.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('maxMemoryErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.maxMemoryErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'small'.w(),
     valueBinding: 'App.pageController.selectedRecord.maxMemory'
@@ -396,6 +436,11 @@ App.DialogMaxMemoryPolicyField = App.FieldView.extend({
 App.DialogPageSizeField = App.FieldView.extend({
   label: '_admin.repo.pageSize'.loc(),
   help: '_admin.repo.pageSize.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('pageSizeErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.pageSizeErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'small'.w(),
     valueBinding: 'App.pageController.selectedRecord.pageSize'
@@ -409,6 +454,11 @@ App.DialogPageSizeField = App.FieldView.extend({
 App.DialogPageCountCacheField = App.FieldView.extend({
   label: '_admin.repo.pageCountCache'.loc(),
   help: '_admin.repo.pageCountCache.help'.loc(),
+  helpMessageDidChange: function() {
+    var msg = App.pageController.get('pageCountCacheErrorMessage');
+    this._updateHelp(msg, YES);
+  }.observes('App.pageController.pageCountCacheErrorMessage'),
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'small'.w(),
     valueBinding: 'App.pageController.selectedRecord.pageCountCache'
@@ -448,15 +498,69 @@ App.DialogNextButton = App.ButtonView.extend({
 
 /**
  * @class
- * Button to close dialog window
+ * Button to show next log entry
  */
-App.DialogDoneButton = App.ButtonView.extend({
-  label: '_done'.loc(),
+App.DialogRemoveButton = App.ButtonView.extend({
+  label: '_remove'.loc(),
+  title: '_removeTooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canRemove').oneWay().bool(),
 
   click: function() {
-    App.statechart.sendAction('hideDialog');
+    App.statechart.sendAction('remove');
     return;
   }
+});
+
+/**
+ * @class
+ * Button to save and close dialog window
+ */
+App.DialogOkButton = App.ButtonView.extend({
+  label: '_ok'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('ok');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to discard changes and close window
+ */
+App.DialogCancelButton = App.ButtonView.extend({
+  label: '_cancel'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canSave').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('cancel');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to save but not close dialog window
+ */
+App.DialogApplyButton = App.ButtonView.extend({
+  label: '_apply'.loc(),
+  disabledBinding: SC.Binding.from('App.pageController.canSave').oneWay().bool().not(),
+
+  click: function() {
+    App.statechart.sendAction('apply');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Spinner displayed while saving or deleting
+ */
+App.DialogWorkingImage = App.ImgView.extend({
+  src: 'images/working.gif',
+  visible: NO,
+  isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool()
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -563,6 +667,68 @@ App.pageController = SC.Object.create({
   previousSearchCriteria: null,
 
   /**
+   * Error message to display for name field
+   *
+   * @type String
+   */
+  nameErrorMessage: '',
+
+  /**
+   * Error message to display for storage queue worker count
+   *
+   * @type String
+   */
+  storageQueueWorkerCountErrorMessage: '',
+
+  /**
+   * Error message for max keywords field
+   *
+   * @type String
+   */
+  storageMaxKeywordsErrorMessage: '',
+
+  /**
+   * Error message for max memory field
+   *
+   * @type String
+   */
+  maxMemoryErrorMessage: '',
+
+  /**
+   * Error message for page size field
+   *
+   * @type String
+   */
+  pageSizeErrorMessage: '',
+
+  /**
+   * Error message for page count field
+   *
+   * @type String
+   */
+  pageCountCacheErrorMessage: '',
+  
+  /**
+   * Clear the dialog error messages
+   */
+  clearDialogErrors: function() {
+    App.pageController.set('nameErrorMessage', '');
+    App.pageController.set('storageQueueWorkerCountErrorMessage', '');
+    App.pageController.set('storageMaxKeywordsErrorMessage', '');
+    App.pageController.set('maxMemoryErrorMessage', '');
+    App.pageController.set('maxMemoryErrorMessage', '');
+    App.pageController.set('pageSizeErrorMessage', '');
+    App.pageController.set('pageCountCacheErrorMessage', '');
+  },
+
+  /**
+   * Indicates if we are currently saving
+   *
+   * @type Boolean
+   */
+  isSavingOrRemoving: NO,
+
+  /**
    * Index of selected record in App.resultsController
    *
    * @type int
@@ -576,6 +742,13 @@ App.pageController = SC.Object.create({
    */
   selectedRecord: null,
 
+  /**
+   * Flag to indicate if the selected record is a new record
+   */
+  isNewSelectedRecord: function() {
+    var documentVersion = this.getPath('selectedRecord.documentVersion');
+    return SC.none(documentVersion) || documentVersion === 0;
+  }.property('selectedRecord.documentVersion').cacheable(),
 
   /**
    * Select the record specified by the index
@@ -592,8 +765,12 @@ App.pageController = SC.Object.create({
    * Deselect the record specified by the index
    */
   deselectRecord: function() {
+    App.pageController.clearDialogErrors();
+
     var nestedRecord = App.pageController.get('selectedRecord');
-    App.repositoryConfigEngine.discardChanges(nestedRecord);
+    if (!SC.none(nestedRecord)) {
+      App.userEngine.discardChanges(nestedRecord);
+    }
 
     App.pageController.set('selectedRecordIndex', -1);
     App.pageController.set('selectedRecord', null);
@@ -635,7 +812,45 @@ App.pageController = SC.Object.create({
     }
 
     return YES;
-  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable()
+  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable(),
+
+  /**
+   * Title for the dialog window
+   * @type String
+   */
+  dialogTitle: function() {
+    var selectedRecordIndex = App.pageController.get('selectedRecordIndex');
+    if (selectedRecordIndex == -1) {
+      return '_admin.repo.createTitle'.loc();
+    } else {
+      return '_admin.repo.editTitle'.loc(this.getPath('selectedRecord.username'));
+    }
+  }.property('selectedRecordIndex', 'selectedRecord.username').cacheable(),
+
+  /**
+   * Open the dialog
+   * @param {int} recordIndex index of record in results array to display. If -1, then assume we want to create a new user
+   */
+  showDialog: function(recordIndex) {
+    App.pageController.clearDialogErrors();
+    if (recordIndex == -1) {
+      App.pageController.set('confirmPassword', '');
+      App.pageController.set('selectedRecordIndex', recordIndex);
+      App.pageController.set('selectedRecord', App.repositoryConfigEngine.create());
+    } else {
+      App.pageController.selectRecord(recordIndex);
+    }
+    $('#repoDialog').dialog('open');
+    $('#dialogRepoNameField input').focus();
+  },
+
+  /**
+   * Close the dialog
+   */
+  hideDialog: function() {
+    App.pageController.deselectRecord();
+    $('#repoDialog').dialog('close');
+  }
 
 });
 
@@ -657,7 +872,7 @@ App.statechart = SC.Statechart.create({
     initialSubstate: 'notSearching',
 
     /**
-     * Prompt the user to enter criteria
+     * Prompt the user to enter search criteria
      */
     notSearching: SC.State.extend({
       enterState: function() {
@@ -676,27 +891,75 @@ App.statechart = SC.Statechart.create({
         this.gotoState('showingMore');
       },
 
-      showDialog: function(recordIndex) {
+      showRepo: function(recordIndex) {
         recordIndex = parseInt(recordIndex);
-        App.pageController.selectRecord(recordIndex);
+        App.pageController.showDialog(recordIndex);
+        this.gotoState('showingDialog');
+      },
+
+      createRepo: function() {
+        App.pageController.showDialog(-1);
         this.gotoState('showingDialog');
       }
     }),
 
+    /**
+     * Show repository dialog
+     */
     showingDialog: SC.State.extend({
       enterState: function() {
-        $('#repoDialog').dialog('open')
       },
 
       exitState: function() {
-        App.pageController.deselectRecord();
-        $('#repoDialog').dialog('close')
       },
 
       hideDialog: function() {
         this.gotoState('notSearching');
       },
 
+      /**
+       * OK clicked - save and close dialog
+       */
+      ok: function() {
+        // If record has not changed, then don't save
+        var recordStatus = App.pageController.getPath('selectedRecord.status');
+        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN ) {
+          this.cancel();
+          return;
+        }
+
+        var ctx = { action: 'ok' };
+        this.gotoState('saving', ctx);
+      },
+
+      /**
+       * Cancel clicked - discard and close dialog
+       */
+      cancel: function() {
+        App.pageController.hideDialog();
+        this.gotoState('notSearching');
+      },
+
+      /**
+       * Apply clicked - save and keep dialog open
+       */
+      apply: function() {
+        var ctx = { action: 'apply' };
+        this.gotoState('saving', ctx);
+      },
+
+      /**
+       * Delete clicked - delete and close dialog
+       */
+      remove: function() {
+        if (confirm('_admin.repo.confirmDelete'.loc())) {
+          this.gotoState('removing');
+        }
+      },
+
+      /**
+       * Show prior to the selected record
+       */
       showPreviousRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
         if (recordIndex === 0 ) {
@@ -711,6 +974,9 @@ App.statechart = SC.Statechart.create({
         App.pageController.selectRecord(recordIndex);
       },
 
+      /**
+       * Show record after the selected record
+       */
       showNextRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
         if (recordIndex === App.resultsController.get('length') - 1) {
@@ -723,6 +989,138 @@ App.statechart = SC.Statechart.create({
         // Show next
         recordIndex = recordIndex + 1;
         App.pageController.selectRecord(recordIndex);
+      }
+    }),
+
+    /**
+     * Call server to save our record
+     */
+    saving: SC.State.extend({
+
+      enterState: function(ctx) {
+        App.pageController.set('isSavingOrRemoving', YES);
+        this._startSave(ctx.action === 'ok');
+      },
+
+      exitState: function() {
+        App.pageController.set('isSavingOrRemoving', NO);
+      },
+
+      /**
+       * Save selected record
+       * @param {Boolean} closeWhenFinished If yes, we will exist the dialog of save is successful
+       */
+      _startSave: function(closeWhenFinished) {
+        try {
+          var selectedRecord = App.pageController.get('selectedRecord');
+          if (!this._validate()) {
+            this.gotoState('showingDialog');
+            return;
+          }
+
+          // Call server
+          var params = {closeWhenFinished: closeWhenFinished};
+          App.repositoryConfigEngine.save(selectedRecord, this, this._endSave, params);
+        }
+        catch (err) {
+          // End search with error
+          this._endSave(null, null, err);
+        }
+      },
+
+      /**
+       * Validate the dialog data
+       * @returns Boolean YES if ok, NO if error
+       */
+      _validate: function() {
+        App.pageController.clearDialogErrors();
+
+        var isError = NO;
+
+        var selectedRecord = App.pageController.get('selectedRecord');
+        var name = selectedRecord.get('name');
+        if (SC.empty(name)) {
+          App.pageController.set('nameErrorMessage', '_admin.repo.username.required'.loc());
+          isError = YES;
+        }
+
+        return !isError;
+      },
+
+      /**
+       * Called back when save is finished
+       * @param documentID DocumentID of the user record that was saved
+       * @param params context params passed in startSave
+       * @param error Error object. Null if no error.
+       */
+      _endSave: function(documentID, params, error) {
+        if (SC.none(error)) {
+          // Find the correct index and select record again
+          for (var i=0; i < App.resultsController.get('length'); i++) {
+            var userRecord = App.resultsController.objectAtContent(i);
+            if (userRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
+              App.pageController.selectRecord(i);
+              break;
+            }
+          }
+
+          if (params.closeWhenFinished) {
+            App.pageController.hideDialog();
+            this.gotoState('notSearching');
+          } else {
+            this.gotoState('showingDialog');
+          }
+        } else {
+          alert('Error: ' + error.message);
+          this.gotoState('showingDialog');
+        }
+      }
+    }),
+
+    /**
+     * Call server to delete our record
+     */
+    removing: SC.State.extend({
+
+      enterState: function(ctx) {
+        App.pageController.set('isSavingOrRemoving', YES);
+        this._startRemove();
+      },
+
+      exitState: function() {
+        App.pageController.set('isSavingOrRemoving', NO);
+      },
+
+      /**
+       * Save selected record
+       * @param {Boolean} closeWhenFinished If yes, we will exist the dialog of save is successful
+       */
+      _startRemove: function(closeWhenFinished) {
+        try {
+          var selectedRecord = App.pageController.get('selectedRecord');
+          var documentID = selectedRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+          App.repositoryConfigEngine.remove(documentID, this, this._endRemove);
+        }
+        catch (err) {
+          // End search with error
+          this._endRemove(null, null, err);
+        }
+      },
+
+      /**
+       * Called back when delete is finished
+       * @param documentID DocumentID of the user record that was saved
+       * @param params context params passed in startSave
+       * @param error Error object. Null if no error.
+       */
+      _endRemove: function(documentID, params, error) {
+        if (SC.none(error)) {
+          App.pageController.hideDialog();
+          this.gotoState('notSearching');
+        } else {
+          alert('Error: ' + error.message);
+          this.gotoState('showingDialog');
+        }
       }
     }),
 

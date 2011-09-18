@@ -29,6 +29,7 @@ import org.bson.types.ObjectId;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.MongoJsonSerializer;
+import org.chililog.server.data.RepositoryConfigBO.Status;
 import org.chililog.server.data.RepositoryEntryController;
 import org.chililog.server.data.RepositoryEntryListCriteria;
 import org.chililog.server.data.UserBO;
@@ -64,8 +65,9 @@ import com.mongodb.DBObject;
 public class RepositoryRuntimeWorker extends Worker
 {
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
-    public static final String START_OPERATION = "start";
-    public static final String STOP_OPERATION = "stop";
+    public static final String ONLINE_OPERATION = "online";
+    public static final String READONLY_OPERATION = "readonly";
+    public static final String OFFLINE_OPERATION = "offline";
 
     public static final String ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME = "query_type";
     public static final String ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME = "fields";
@@ -141,13 +143,13 @@ public class RepositoryRuntimeWorker extends Worker
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                if (action.equalsIgnoreCase(START_OPERATION))
+                if (action.equalsIgnoreCase(ONLINE_OPERATION))
                 {
-                    RepositoryService.getInstance().startAllRepositories();
+                    RepositoryService.getInstance().bringAllRepositoriesOnline();
                 }
-                else if (action.equalsIgnoreCase(STOP_OPERATION))
+                else if (action.equalsIgnoreCase(OFFLINE_OPERATION))
                 {
-                    RepositoryService.getInstance().stop();
+                    RepositoryService.getInstance().takeAllRepositoriesOffline();
                 }
                 else
                 {
@@ -171,7 +173,7 @@ public class RepositoryRuntimeWorker extends Worker
             }
             else
             {
-                // Start/Stop specific one
+                // Online/ReadOnly/Offline specific one
                 // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 ObjectId objectId = parseDocumentObjectID(id);
@@ -183,14 +185,19 @@ public class RepositoryRuntimeWorker extends Worker
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                if (action.equalsIgnoreCase(START_OPERATION))
+                if (action.equalsIgnoreCase(ONLINE_OPERATION))
                 {
-                    repo = RepositoryService.getInstance().startRepository(repo.getRepoConfig().getDocumentID());
+                    repo = RepositoryService.getInstance().bringRepositoryOnline(repo.getRepoConfig().getDocumentID());
                     responseContent = new RepositoryStatusAO(repo);
                 }
-                else if (action.equalsIgnoreCase(STOP_OPERATION))
+                else if (action.equalsIgnoreCase(READONLY_OPERATION))
                 {
-                    RepositoryService.getInstance().stopRepository(repo.getRepoConfig().getDocumentID());
+                    repo = RepositoryService.getInstance().makeRepositoryReadOnly(repo.getRepoConfig().getDocumentID());
+                    responseContent = new RepositoryStatusAO(repo);
+                }
+                else if (action.equalsIgnoreCase(OFFLINE_OPERATION))
+                {
+                    RepositoryService.getInstance().takeRepositoryOffline(repo.getRepoConfig().getDocumentID());
                     repo = RepositoryService.getInstance().getRepository(objectId);
                     responseContent = new RepositoryStatusAO(repo);
                 }
@@ -277,6 +284,11 @@ public class RepositoryRuntimeWorker extends Worker
                 {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
+                }
+                else if (repo.getStatus() == Status.OFFLINE)
+                {
+                    // Cannot search if repository is offline
+                    throw new ChiliLogException(Strings.REPOSITORY_OFFLINE_ERROR, id);
                 }
 
                 // Load criteria

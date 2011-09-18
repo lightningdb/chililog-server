@@ -132,7 +132,7 @@ public class RepositoryRuntimeTest
         RepositoryConfigBO repoConfig = new RepositoryConfigBO();
         repoConfig.setName("test_repo");
         repoConfig.setDisplayName("RepositoriesTest 1");
-        
+
         RepositoryParserConfigBO repoParserConfig = new RepositoryParserConfigBO();
         repoParserConfig.setName("parser1");
         repoParserConfig.setAppliesTo(AppliesTo.All);
@@ -165,13 +165,14 @@ public class RepositoryRuntimeTest
         // Add 3 lines
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoConfig);
         EntryParser p = EntryParserFactory.getParser(repoConfig, repoConfig.getParsers().get(0));
-        RepositoryEntryBO entry = p.parse("2011-01-01T05:05:05.100Z", "log1", "127.0.0.1", Severity.Information.toString(), "line1|1");
+        RepositoryEntryBO entry = p.parse("2011-01-01T05:05:05.100Z", "log1", "127.0.0.1",
+                Severity.Information.toString(), "line1|1");
         c.save(_db, entry);
 
-        entry = p.parse("2011-01-01T05:05:05.200Z","log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
+        entry = p.parse("2011-01-01T05:05:05.200Z", "log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
         c.save(_db, entry);
 
-        entry = p.parse("2011-01-01T05:05:05.300Z","log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
+        entry = p.parse("2011-01-01T05:05:05.300Z", "log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
         c.save(_db, entry);
 
         // Start server
@@ -202,7 +203,7 @@ public class RepositoryRuntimeTest
         coll.remove(query);
 
         App.stop(null);
-        
+
         coll = _db.getCollection("repo_test_repo");
         if (coll != null)
         {
@@ -250,7 +251,8 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repo", getListResponseAO[0].getName());
 
@@ -261,7 +263,8 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repo", getListResponseAO[0].getName());
     }
@@ -292,21 +295,21 @@ public class RepositoryRuntimeTest
         assertEquals("test_repo", readResponseAO.getName());
         assertEquals(Status.ONLINE, readResponseAO.getStatus());
 
-        // Get 1 - repo admin        
+        // Get 1 - repo admin
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId,
                 HttpMethod.GET, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get 1 - repo workbench        
+        // Get 1 - repo workbench
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId,
                 HttpMethod.GET, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get 1 - repo workbench with no access. ERROR.       
+        // Get 1 - repo workbench with no access. ERROR.
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId,
                 HttpMethod.GET, _repoWorkbenchUserNoAccessAuthToken);
 
@@ -364,7 +367,7 @@ public class RepositoryRuntimeTest
         assertTrue(json2.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
         assertTrue(json2.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
         assertTrue(json2.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
-        
+
         // Get entries - by workbench power user
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserAuthToken);
@@ -372,7 +375,7 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        // Get entries - repo workbench with no access. ERROR.       
+        // Get entries - repo workbench with no access. ERROR.
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserNoAccessAuthToken);
 
@@ -381,10 +384,10 @@ public class RepositoryRuntimeTest
 
         ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
-        
+
         // Get entries - repository not found
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/123/entries", HttpMethod.GET,
-                _repoAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/123/entries",
+                HttpMethod.GET, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
@@ -393,9 +396,8 @@ public class RepositoryRuntimeTest
         assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
     }
 
-    
     /**
-     * Get entries
+     * Get entries with criteria
      * 
      * @throws Exception
      */
@@ -408,7 +410,8 @@ public class RepositoryRuntimeTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Find
-        String conditions = URLEncoder.encode("{ \"fld_field1\" : \"line1\", \"ts\" : { \"$gte\" : \"2011-01-01T05:05:05.000Z\" } }", "UTF-8");
+        String conditions = URLEncoder.encode(
+                "{ \"fld_field1\" : \"line1\", \"ts\" : { \"$gte\" : \"2011-01-01T05:05:05.000Z\" } }", "UTF-8");
 
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "/entries?query_type=find&conditions=" + conditions, HttpMethod.GET, _systemAdminAuthToken);
@@ -445,6 +448,113 @@ public class RepositoryRuntimeTest
     }
 
     /**
+     * Test queries on read only repositories
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetEntriesReadOnly() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Make repo read only
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=readonly", HttpMethod.POST, _systemAdminAuthToken);
+
+        // Get entries - system admin
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "/entries?query_type=find", HttpMethod.GET, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        String json = responseContent.toString();
+        assertTrue(json.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
+        assertTrue(json.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
+        assertTrue(json.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
+
+        // Get entries - by repo admin user
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "/entries?query_type=find", HttpMethod.GET, _repoAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        String json2 = responseContent.toString();
+        assertEquals(json, json2);
+        assertTrue(json2.contains("\"fld_field1\" : \"line1\" , \"fld_field2\" : 1"));
+        assertTrue(json2.contains("\"fld_field1\" : \"line2\" , \"fld_field2\" : 2"));
+        assertTrue(json2.contains("\"fld_field1\" : \"line3\" , \"fld_field2\" : 3"));
+
+        // Get entries - by workbench power user
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // Get entries - repo workbench with no access. ERROR.
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "/entries?query_type=find", HttpMethod.GET, _repoWorkbenchUserNoAccessAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        ErrorAO errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
+
+        // Get entries - repository not found
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/123/entries",
+                HttpMethod.GET, _repoAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
+        assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
+        
+        // Bring repo online again
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
+    }
+
+    /**
+     * Test queries on offline repositories
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testGetEntriesOffline() throws Exception
+    {
+        HttpURLConnection httpConn;
+        StringBuilder responseContent = new StringBuilder();
+        StringBuilder responseCode = new StringBuilder();
+        HashMap<String, String> headers = new HashMap<String, String>();
+
+        // Make repo offline
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=offline", HttpMethod.POST, _systemAdminAuthToken);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // Get entries - system admin
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "/entries?query_type=find", HttpMethod.GET, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
+
+        // Bring repo online again
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+   }
+    
+    /**
      * Test start and stop repositories
      * 
      * @throws Exception
@@ -458,15 +568,15 @@ public class RepositoryRuntimeTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Start all where repositories have already started - should not error
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=start",
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=online",
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Stop all
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=stop", HttpMethod.POST,
-                _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=offline",
+                HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -486,14 +596,14 @@ public class RepositoryRuntimeTest
         }
 
         // Stop all again - should not get error
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=stop", HttpMethod.POST,
-                _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=offline",
+                HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
         // Start all
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=start",
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=online",
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -506,15 +616,16 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
         // Stop 1
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId + "?action=stop",
-                HttpMethod.POST, _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=offline", HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -526,7 +637,8 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             if (r.getDocumentID().equals(_repoInfoId))
@@ -540,8 +652,8 @@ public class RepositoryRuntimeTest
         }
 
         // Start 1
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId + "?action=start",
-                HttpMethod.POST, _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -553,7 +665,57 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
+        for (RepositoryStatusAO r : getListResponseAO)
+        {
+            assertEquals(Status.ONLINE, r.getStatus());
+        }
+
+        // Make read only
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=readonly", HttpMethod.POST, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // GET all - check that only our repository have stopped
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
+                _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
+        for (RepositoryStatusAO r : getListResponseAO)
+        {
+            if (r.getDocumentID().equals(_repoInfoId))
+            {
+                assertEquals(Status.READONLY, r.getStatus());
+            }
+            else
+            {
+                assertEquals(Status.ONLINE, r.getStatus());
+            }
+        }
+        
+        // Start 1
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // GET all - check that all repositories have started
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
+                _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             assertEquals(Status.ONLINE, r.getStatus());
@@ -574,7 +736,7 @@ public class RepositoryRuntimeTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Start all where repositories have already started - should not error
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=start",
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=online",
                 HttpMethod.POST, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -586,7 +748,7 @@ public class RepositoryRuntimeTest
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
-        
+
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
                 _systemAdminAuthToken);
@@ -594,20 +756,22 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
         // Stop 1
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId + "?action=stop",
-                HttpMethod.POST, _repoAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=offline", HttpMethod.POST, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
-        
-        RepositoryStatusAO repoAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO.class);
+
+        RepositoryStatusAO repoAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO.class);
         assertEquals(_repoInfoId, repoAO.getDocumentID());
         assertEquals(Status.OFFLINE, repoAO.getStatus());
 
@@ -618,7 +782,8 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             if (r.getDocumentID().equals(_repoInfoId))
@@ -632,8 +797,8 @@ public class RepositoryRuntimeTest
         }
 
         // Start 1
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId + "?action=start",
-                HttpMethod.POST, _repoAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -641,7 +806,7 @@ public class RepositoryRuntimeTest
         repoAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO.class);
         assertEquals(_repoInfoId, repoAO.getDocumentID());
         assertEquals(Status.ONLINE, repoAO.getStatus());
-        
+
         // GET all - check that all repositories have started
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
                 _systemAdminAuthToken);
@@ -649,12 +814,61 @@ public class RepositoryRuntimeTest
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryStatusAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
         for (RepositoryStatusAO r : getListResponseAO)
         {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
+        // Make read only
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=readonly", HttpMethod.POST, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // GET all - check that only our repository have stopped
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
+                _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
+        for (RepositoryStatusAO r : getListResponseAO)
+        {
+            if (r.getDocumentID().equals(_repoInfoId))
+            {
+                assertEquals(Status.READONLY, r.getStatus());
+            }
+            else
+            {
+                assertEquals(Status.ONLINE, r.getStatus());
+            }
+        }
+        
+        // Start 1
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
+                + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        // GET all - check that all repositories have started
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime", HttpMethod.GET,
+                _systemAdminAuthToken);
+
+        ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
+        ApiUtils.check200OKResponse(responseCode.toString(), headers);
+
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryStatusAO[].class);
+        for (RepositoryStatusAO r : getListResponseAO)
+        {
+            assertEquals(Status.ONLINE, r.getStatus());
+        }
     }
 
     /**
@@ -683,7 +897,7 @@ public class RepositoryRuntimeTest
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
-        
+
         // Start All - Workbench user with no access
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=start",
                 HttpMethod.POST, _repoWorkbenchUserNoAccessAuthToken);
@@ -699,8 +913,8 @@ public class RepositoryRuntimeTest
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
 
         // Stop All - Workbench user
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=stop", HttpMethod.POST,
-                _repoWorkbenchUserAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime?action=stop",
+                HttpMethod.POST, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);

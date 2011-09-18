@@ -71,6 +71,7 @@
         {{view App.RepositoryField id="repositoryField" }}
         {{view App.SearchButton id="searchButton" class="btn primary"}}
         {{view App.WorkingImage id="workingImage"}}
+        {{view App.AddButton id="addButton" class="btn success"}}
         <div class="clearfix"></div>
       </fieldset>
     </form>
@@ -109,7 +110,7 @@
   <!-- END COMMON FOOTER BLOCK -->
 </div>
 
-{{#view App.Dialog id="repoDialog" style="display:none" class="admin ui-dialog ui-widget ui-widget-content ui-corner-all ui-draggable ui-resizable"}}
+{{#view App.Dialog id="repoDialog" style="display:none" class="admin ui-dialog ui-widget ui-widget-content ui-corner-all"}}
   <div class="dialogContainer">
     <div style="height:50px;">
       <ul id="dialogTabs" class="tabs">
@@ -143,8 +144,14 @@
         {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
         {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
       </div>
+      <div style="float: left; padding-left: 250px;">
+        {{view App.DialogRemoveButton id="dialogRemoveButton" class="btn danger"}}
+      </div>
       <div style="float: right;">
-        {{view App.DialogDoneButton id="dialogDoneButton" class="btn primary"}}
+        {{view App.DialogWorkingImage id="workingImage3"}}
+        {{view App.DialogOkButton id="dialogOkButton" class="btn primary"}}
+        {{view App.DialogCancelButton id="dialogCancelButton" class="btn"}}
+        {{view App.DialogApplyButton id="dialogApplyButton" class="btn"}}
       </div>
     </div>
   </div>

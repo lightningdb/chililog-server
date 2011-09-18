@@ -115,11 +115,11 @@ public class Repository
      * Starts this repository. Log entries can be produced and consumed.
      * </p>
      */
-    synchronized void start() throws ChiliLogException
+    synchronized void bringOnline() throws ChiliLogException
     {
         if (_status == Status.ONLINE)
         {
-            throw new ChiliLogException(Strings.REPOSITORY_ALREADY_STARTED_ERROR, _repoConfig.getName());
+            throw new ChiliLogException(Strings.REPOSITORY_ALREADY_ONLINE_ERROR, _repoConfig.getName());
         }
         if (_hasStarted)
         {
@@ -129,7 +129,7 @@ public class Repository
         
         try
         {
-            _logger.info("Starting Repository '%s'", _repoConfig.getName());
+            _logger.info("Bringing Repository '%s' Online", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
             AppProperties appProperties = AppProperties.getInstance();
@@ -167,13 +167,13 @@ public class Repository
 
             // Finish
             _status = Status.ONLINE;
-            _logger.info("Repository '%s' started.", _repoConfig.getName());
+            _logger.info("Repository '%s' now online.", _repoConfig.getName());
             _hasStarted = true;
             return;
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.START_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
+            throw new ChiliLogException(ex, Strings.ONLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
     }
@@ -208,18 +208,51 @@ public class Repository
 
     /**
      * <p>
-     * Stops this repository. Log entries cannot be produced or consumed.
+     * Makes the repository read only. Log entries can only be searched via the workbench
      * </p>
      */
-    synchronized void stop() throws ChiliLogException
+    synchronized void makeReadonly() throws ChiliLogException
     {
         try
         {
-            _logger.info("Stopping Repository '%s'", _repoConfig.getName());
+            _logger.info("Making Repository '%s' Read Only", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
 
-            // Remove permissions so that nobody
+            // Remove permissions so that nobody and stream
+            mqManager.addSecuritySettings(_repoConfig.getPubSubAddress(), null, null);
+
+            // Stop workers
+            stopStorageWorkers();
+
+            // Disconnect remote clients
+
+            // Finish
+            _status = Status.READONLY;
+            _logger.info("Repository '%s' now Read Only.", _repoConfig.getName());
+            return;
+        }
+        catch (Exception ex)
+        {
+            throw new ChiliLogException(ex, Strings.READONLY_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
+                    _repoConfig.getName(), ex.getMessage());
+        }
+    }
+    
+    /**
+     * <p>
+     * Stops this repository. Log entries cannot be produced or consumed.
+     * </p>
+     */
+    synchronized void takeOffline() throws ChiliLogException
+    {
+        try
+        {
+            _logger.info("Taking Repository '%s' Offline", _repoConfig.getName());
+
+            MqService mqManager = MqService.getInstance();
+
+            // Remove permissions so that nobody and stream
             mqManager.addSecuritySettings(_repoConfig.getPubSubAddress(), null, null);
 
             // Stop workers
@@ -229,12 +262,12 @@ public class Repository
 
             // Finish
             _status = Status.OFFLINE;
-            _logger.info("Repository '%s' stopped.", _repoConfig.getName());
+            _logger.info("Repository '%s' taken Offline.", _repoConfig.getName());
             return;
         }
         catch (Exception ex)
         {
-            throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
+            throw new ChiliLogException(ex, Strings.OFFLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
     }
@@ -283,7 +316,7 @@ public class Repository
     {
         try
         {
-            stop();
+            takeOffline();
         }
         finally
         {

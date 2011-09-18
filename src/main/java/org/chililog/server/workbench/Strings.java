@@ -45,5 +45,6 @@ public class Strings
     public static final String NOT_AUTHORIZED_ERROR = PREFIX + "NotAuthorizedError";
     
     public static final String REPOSITORY_NOT_FOUND_ERROR = PREFIX + "RepositoryNotFoundError";
-
+    public static final String REPOSITORY_OFFLINE_ERROR = PREFIX + "RepositoryOfflineError";
+    
 }

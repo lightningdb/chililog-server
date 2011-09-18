@@ -481,6 +481,11 @@ public class RepositoryConfigBO extends BO implements Serializable
          * Users with permission can read from and write to this repository
          */
         ONLINE,
+        
+        /**
+         * Users with permission can read from this repository. 
+         */
+        READONLY,
 
         /**
          * Nobody can read from or write to this repository

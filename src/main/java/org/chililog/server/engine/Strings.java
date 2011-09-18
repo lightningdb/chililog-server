@@ -27,10 +27,11 @@ package org.chililog.server.engine;
 public class Strings
 {
     public static final String PREFIX = "Engine.";
-    public static final String START_REPOSITORY_ERROR = PREFIX + "StartRepositoryError";
-    public static final String REPOSITORY_ALREADY_STARTED_ERROR = PREFIX + "RepositoryAlreadyStartedError";
+    public static final String ONLINE_REPOSITORY_ERROR = PREFIX + "RepositoryOnlineError";
+    public static final String REPOSITORY_ALREADY_ONLINE_ERROR = PREFIX + "RepositoryAlreadyOnlineError";
     public static final String REPOSITORY_INFO_UPDATE_ERROR = PREFIX + "RepositoryInfoUpdateError";
-    public static final String STOP_REPOSITORY_ERROR = PREFIX + "StopRepositoryError";
+    public static final String READONLY_REPOSITORY_ERROR = PREFIX + "ReadOnlyRepositoryError";
+    public static final String OFFLINE_REPOSITORY_ERROR = PREFIX + "OfflineRepositoryError";
     public static final String START_REPOSITORY_STORAGE_QUEUE_ERROR = PREFIX + "StartRepositoryStorageQueueError";
     public static final String STOP_REPOSITORY_STORAGE_QUEUE_ERROR = PREFIX + "StopRepositoryStorageQueueError";
     public static final String START_REPOSITORY_STORAGE_WORKER_ERROR = PREFIX + "StartRepositoryStorageWorkerError";

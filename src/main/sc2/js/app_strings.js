@@ -33,7 +33,8 @@ SC.STRINGS = {
   '_refresh': 'Refresh',
   '_refreshing': 'Refreshing ...',
   '_delete': 'Delete',
-  '_deleteSelected': 'Delete Selected',
+  '_remove': 'Delete',
+  '_removeTooltip': 'Delete this record',
   '_back': '\< Back',
   '_moreActions': 'More Actions',
   '_saveSuccess': 'Changes successfully saved',
@@ -240,6 +241,7 @@ SC.STRINGS = {
   '_admin.repo.pageCountCache.required' : 'Page File Cache is required.',
   '_admin.repo.confirmDelete': 'Delete repository "%@"?',
   '_admin.user.noRowsFound': 'No repositories found matching your search criteria.',
+  '_admin.repo.create': 'New Repository ...',
   '_admin.repo.createTitle': 'New Repository',
   '_admin.repo.editTitle': 'Repository Configuration',
   '_admin.repo.generalAttributes': 'General',
@@ -250,6 +252,7 @@ SC.STRINGS = {
   '_admin.repo.repositoryAccesses.username': 'Username',
   '_admin.repo.repositoryAccesses.userDisplayName': 'User Display Name',
   '_admin.repo.repositoryAccesses.role': 'Role',
+  '_admin.repo.confirmDelete': 'Delete this repository?',
 
 
   'end': 'end'
