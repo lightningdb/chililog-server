@@ -66,7 +66,7 @@ App.UsernameField = App.StackedFieldView.extend({
  */
 App.EmailAddressField = App.StackedFieldView.extend({
   label: '_admin.user.emailAddress'.loc(),
-
+  
   DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     classNames: 'large'.w(),
     valueBinding: 'App.pageController.emailAddress',
@@ -80,7 +80,6 @@ App.EmailAddressField = App.StackedFieldView.extend({
  */
 App.SearchButton = App.ButtonView.extend({
   disabledBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool(),
-
   label: '_search'.loc(),
 
   click: function() {
@@ -149,14 +148,14 @@ App.Results = SC.View.extend({
         });
       }
     })
-    
+
   })
 });
 
- /**
-  * @class
-  * View displayed when when on rows found
-  */
+/**
+ * @class
+ * View displayed when when on rows found
+ */
 App.NoRowsMessage = App.BlockMessageView.extend({
   messageType: 'warning',
   message: '_admin.user.noRowsFound'.loc(),
@@ -181,7 +180,6 @@ App.WorkingImage = App.ImgView.extend({
   visible: NO,
   isVisibleBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
 });
-
 
 
 /**
@@ -214,30 +212,16 @@ App.Dialog = SC.View.extend({
       }
     });
 
-    // Add event handler to tab <a>. Delegate does  it for current and future tabs
+    // Add event handler to tab <a>. Delegate does it for current and future tabs
     this.$().delegate('ul.tabs li > a', 'click', function(e) {
-      var $this = $(this),
-        href = $this.attr('href'),
-        li = $this.parent('li'),
-        ul = li.parent();
+      var $this = $(this);
+      var href = $this.attr('href');
 
       if (/^#\w+/.test(href)) {
         e.preventDefault();
       }
 
-      if ($this.hasClass('active')) {
-        return
-      }
-
-      var $href = $(href)
-
-      // Make this li active
-      ul.find('.active').removeClass('active')
-      li.addClass('active')
-
-      // Make linked fieldset active
-      $href.parent().find('.active').removeClass('active')
-      $href.addClass('active')
+      App.viewUtils.activateTab($this);
     });
   }
 
@@ -268,12 +252,17 @@ App.DialogFieldDataMixin = {
  */
 App.DialogUserNameField = App.FieldView.extend({
   label: '_admin.user.username'.loc(),
-  help: '_admin.user.username.help'.loc(),
+  isRequired: YES,
+  help: '_admin.repo.username.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('usernameErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.user.username.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.usernameErrorMessage'),
-  
+
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'medium'.w(),
     valueBinding: 'App.pageController.selectedRecord.username'
@@ -299,6 +288,7 @@ App.DialogDisplayNameField = App.FieldView.extend({
  */
 App.DialogEmailAddressField = App.FieldView.extend({
   label: '_admin.user.emailAddress'.loc(),
+  isRequired: YES,
   helpMessageDidChange: function() {
     var msg = App.pageController.get('emailAddressErrorMessage');
     this._updateHelp(msg, YES);
@@ -322,7 +312,7 @@ App.DialogStatusField = App.FieldView.extend({
     valueBinding: SC.Binding.from('App.pageController.selectedRecord.currentStatus').transform(function(value, isForward) {
       if (isForward) {
         var options = App.pageController.get('currentStatusOptions');
-        for (var i=0; i< options.length; i++) {
+        for (var i = 0; i < options.length; i++) {
           if (options[i].get('value') === value) {
             return options[i];
           }
@@ -342,6 +332,7 @@ App.DialogStatusField = App.FieldView.extend({
  */
 App.DialogPasswordField = App.FieldView.extend({
   label: '_admin.user.password'.loc(),
+  isRequired: YES,
   helpMessageDidChange: function() {
     var msg = App.pageController.get('passwordErrorMessage');
     this._updateHelp(msg, YES);
@@ -361,6 +352,7 @@ App.DialogPasswordField = App.FieldView.extend({
  */
 App.DialogConfirmPasswordField = App.FieldView.extend({
   label: '_admin.user.confirmPassword'.loc(),
+  isRequired: YES,
   helpMessageDidChange: function() {
     var msg = App.pageController.get('confirmPasswordErrorMessage');
     this._updateHelp(msg, YES);
@@ -386,7 +378,7 @@ App.DialogIsSystemAdministratorField = App.FieldView.extend({
     valueBinding: SC.Binding.from('App.pageController.selectedRecord.isSystemAdministrator').transform(function(value, isForward) {
       if (isForward) {
         var options = App.pageController.get('isSystemAdministratorOptions');
-        for (var i=0; i< options.length; i++) {
+        for (var i = 0; i < options.length; i++) {
           if (options[i].get('value') === value) {
             return options[i];
           }
@@ -781,6 +773,7 @@ App.pageController = SC.Object.create({
       App.pageController.selectRecord(recordIndex);
     }
     $('#userDialog').dialog('open');
+    App.viewUtils.activateTab($('#dialogGeneralTab'));
     $('#dialogUserNameField input').focus();
   },
 
@@ -790,6 +783,63 @@ App.pageController = SC.Object.create({
   hideDialog: function() {
     App.pageController.deselectRecord();
     $('#userDialog').dialog('close');
+  },
+
+  /**
+   * Validate the dialog data
+   * @returns Boolean YES if ok, NO if error
+   */
+  validateDialog: function() {
+    App.pageController.clearDialogErrors();
+
+    var isError = NO;
+
+    var selectedRecord = App.pageController.get('selectedRecord');
+    var username = selectedRecord.get('username');
+    if (SC.empty(username)) {
+      App.pageController.set('usernameErrorMessage', '_admin.user.username.required'.loc());
+      isError = YES;
+    } else if (!App.viewValidators.checkCode(username)) {
+      App.pageController.set('usernameErrorMessage', '_admin.user.username.invalid'.loc(username));
+      isError = YES;
+    }
+
+    var emailAddress = selectedRecord.get('emailAddress');
+    if (SC.empty(emailAddress)) {
+      App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.required'.loc());
+      isError = YES;
+    } else if (!App.viewValidators.checkEmailAddress(emailAddress)) {
+      App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.invalid'.loc(emailAddress));
+      isError = YES;
+    }
+
+    var documentVersion = selectedRecord.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
+    if (documentVersion === 0) {
+      var password = selectedRecord.get('password');
+      var confirmPassword = App.pageController.get('confirmPassword');
+      if (SC.empty(password)) {
+        App.pageController.set('passwordErrorMessage', '_admin.user.password.required'.loc());
+        isError = YES;
+      } else if (password.length < 8) {
+        App.pageController.set('passwordErrorMessage', '_admin.user.password.invalid'.loc());
+        isError = YES;
+      }
+
+      if (SC.empty(confirmPassword)) {
+        App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.required'.loc());
+        isError = YES;
+      } else if (password !== confirmPassword) {
+        App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.invalid'.loc());
+        isError = YES;
+      }
+    }
+
+    // If error, then return to tab #1
+    if (isError) {
+      App.viewUtils.activateTab($('#dialogGeneralTab'));
+    }
+
+    return !isError;
   }
 
 });
@@ -830,7 +880,7 @@ App.statechart = SC.Statechart.create({
         App.pageController.set('errorMessage', '');
         this.gotoState('showingMore');
       },
-      
+
       showUser: function(recordIndex) {
         recordIndex = parseInt(recordIndex);
         App.pageController.showDialog(recordIndex);
@@ -859,7 +909,7 @@ App.statechart = SC.Statechart.create({
       ok: function() {
         // If record has not changed, then don't save
         var recordStatus = App.pageController.getPath('selectedRecord.status');
-        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN ) {
+        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN) {
           this.cancel();
           return;
         }
@@ -898,7 +948,7 @@ App.statechart = SC.Statechart.create({
        */
       showPreviousRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
-        if (recordIndex === 0 ) {
+        if (recordIndex === 0) {
           return;
         }
 
@@ -949,7 +999,7 @@ App.statechart = SC.Statechart.create({
       _startSave: function(closeWhenFinished) {
         try {
           var selectedRecord = App.pageController.get('selectedRecord');
-          if (!this._validate()) {
+          if (!App.pageController.validateDialog()) {
             this.gotoState('showingDialog');
             return;
           }
@@ -965,55 +1015,6 @@ App.statechart = SC.Statechart.create({
       },
 
       /**
-       * Validate the dialog data
-       * @returns Boolean YES if ok, NO if error
-       */
-      _validate: function() {
-        App.pageController.clearDialogErrors();
-
-        var isError = NO;
-
-        var selectedRecord = App.pageController.get('selectedRecord');
-        var username = selectedRecord.get('username');
-        if (SC.empty(username)) {
-          App.pageController.set('usernameErrorMessage', '_admin.user.username.required'.loc());
-          isError = YES;
-        }
-
-        var emailAddress = selectedRecord.get('emailAddress');
-        if (SC.empty(emailAddress)) {
-          App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.required'.loc());
-          isError = YES;
-        } else if (!App.viewValidators.checkEmailAddress(emailAddress)) {
-          App.pageController.set('emailAddressErrorMessage', '_admin.user.emailAddress.invalid'.loc(emailAddress));
-          isError = YES;
-        }
-
-        var documentVersion = selectedRecord.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
-        if (documentVersion === 0) {
-          var password = selectedRecord.get('password');
-          var confirmPassword = App.pageController.get('confirmPassword');
-          if (SC.empty(password)) {
-            App.pageController.set('passwordErrorMessage', '_admin.user.password.required'.loc());
-            isError = YES;
-          } else if (password.length < 8) {
-            App.pageController.set('passwordErrorMessage', '_admin.user.password.invalid'.loc());
-            isError = YES;
-          }
-
-          if (SC.empty(confirmPassword)) {
-            App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.required'.loc());
-            isError = YES;
-          } else if (password !== confirmPassword) {
-            App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.invalid'.loc());
-            isError = YES;
-          }
-        }
-
-        return !isError;
-      },
-
-      /**
        * Called back when save is finished
        * @param documentID DocumentID of the user record that was saved
        * @param params context params passed in startSave
@@ -1022,7 +1023,7 @@ App.statechart = SC.Statechart.create({
       _endSave: function(documentID, params, error) {
         if (SC.none(error)) {
           // Find the correct index and select record again
-          for (var i=0; i < App.resultsController.get('length'); i++) {
+          for (var i = 0; i < App.resultsController.get('length'); i++) {
             var userRecord = App.resultsController.objectAtContent(i);
             if (userRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
               App.pageController.selectRecord(i);

@@ -178,7 +178,6 @@ App.Dialog = SC.View.extend({
   attributeBindings: ['title'],
 
   title: '',
-
   didTitleChange: function() {
     var title = App.pageController.get('dialogTitle');
     this.$().dialog('option', 'title', title);
@@ -200,30 +199,16 @@ App.Dialog = SC.View.extend({
       }
     });
 
-    // Add event handler to tab <a>. Delegate does  it for current and future tabs
+    // Add event handler to tab <a>. Delegate does it for current and future tabs
     this.$().delegate('ul.tabs li > a', 'click', function(e) {
-      var $this = $(this),
-        href = $this.attr('href'),
-        li = $this.parent('li'),
-        ul = li.parent();
+      var $this = $(this);
+      var href = $this.attr('href');
 
       if (/^#\w+/.test(href)) {
         e.preventDefault();
       }
-
-      if ($this.hasClass('active')) {
-        return
-      }
-
-      var $href = $(href)
-
-      // Make this li active
-      ul.find('.active').removeClass('active')
-      li.addClass('active')
-
-      // Make linked fieldset active
-      $href.parent().find('.active').removeClass('active')
-      $href.addClass('active')
+      
+      App.viewUtils.activateTab($this);
     });
   }
 
@@ -254,10 +239,15 @@ App.DialogFieldDataMixin = {
  */
 App.DialogNameField = App.FieldView.extend({
   label: '_admin.repo.name'.loc(),
+  isRequired: YES,
   help: '_admin.repo.name.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('nameErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.name.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.nameErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -273,7 +263,7 @@ App.DialogNameField = App.FieldView.extend({
 App.DialogDisplayNameField = App.FieldView.extend({
   label: '_admin.repo.displayName'.loc(),
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
-    classNames: 'medium'.w(),
+    classNames: 'large'.w(),
     valueBinding: 'App.pageController.selectedRecord.displayName'
   })
 });
@@ -356,10 +346,15 @@ App.DialogStorageQueueDurableIndicatorField = App.FieldView.extend({
  */
 App.DialogStorageQueueWorkerCountField = App.FieldView.extend({
   label: '_admin.repo.storageQueueWorkerCount'.loc(),
+  isRequired: YES,
   help: '_admin.repo.storageQueueWorkerCount.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('storageQueueWorkerCountErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.storageQueueWorkerCount.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.storageQueueWorkerCountErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -374,10 +369,15 @@ App.DialogStorageQueueWorkerCountField = App.FieldView.extend({
  */
 App.DialogStorageMaxKeywordsField = App.FieldView.extend({
   label: '_admin.repo.storageMaxKeywords'.loc(),
+  isRequired: YES,
   help: '_admin.repo.storageMaxKeywords.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('storageMaxKeywordsErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.storageMaxKeywords.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.storageMaxKeywordsErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -392,10 +392,15 @@ App.DialogStorageMaxKeywordsField = App.FieldView.extend({
  */
 App.DialogMaxMemoryField = App.FieldView.extend({
   label: '_admin.repo.maxMemory'.loc(),
+  isRequired: YES,
   help: '_admin.repo.maxMemory.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('maxMemoryErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.maxMemory.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.maxMemoryErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -416,7 +421,7 @@ App.DialogMaxMemoryPolicyField = App.FieldView.extend({
     valueBinding: SC.Binding.from('App.pageController.selectedRecord.maxMemoryPolicy').transform(function(value, isForward) {
       if (isForward) {
         var options = App.pageController.get('maxMemoryPolicyOptions');
-        for (var i=0; i< options.length; i++) {
+        for (var i = 0; i < options.length; i++) {
           if (options[i].get('value') === value) {
             return options[i];
           }
@@ -435,10 +440,15 @@ App.DialogMaxMemoryPolicyField = App.FieldView.extend({
  */
 App.DialogPageSizeField = App.FieldView.extend({
   label: '_admin.repo.pageSize'.loc(),
+  isRequired: YES,
   help: '_admin.repo.pageSize.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('pageSizeErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.pageSize.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.pageSizeErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -453,10 +463,15 @@ App.DialogPageSizeField = App.FieldView.extend({
  */
 App.DialogPageCountCacheField = App.FieldView.extend({
   label: '_admin.repo.pageCountCache'.loc(),
+  isRequired: YES,
   help: '_admin.repo.pageCountCache.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('pageCountCacheErrorMessage');
-    this._updateHelp(msg, YES);
+    if (SC.empty(msg)) {
+      this._updateHelp('_admin.repo.pageCountCache.help'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
   }.observes('App.pageController.pageCountCacheErrorMessage'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
@@ -708,7 +723,7 @@ App.pageController = SC.Object.create({
    * @type String
    */
   pageCountCacheErrorMessage: '',
-  
+
   /**
    * Clear the dialog error messages
    */
@@ -716,7 +731,6 @@ App.pageController = SC.Object.create({
     App.pageController.set('nameErrorMessage', '');
     App.pageController.set('storageQueueWorkerCountErrorMessage', '');
     App.pageController.set('storageMaxKeywordsErrorMessage', '');
-    App.pageController.set('maxMemoryErrorMessage', '');
     App.pageController.set('maxMemoryErrorMessage', '');
     App.pageController.set('pageSizeErrorMessage', '');
     App.pageController.set('pageCountCacheErrorMessage', '');
@@ -778,6 +792,34 @@ App.pageController = SC.Object.create({
   },
 
   /**
+   * Flag to indicate if we can show the cancel or apply buttons
+   *
+   * @type Boolean
+   */
+  canSave: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status').cacheable(),
+
+  /**
+   * Flag to indicate if we can show the delete button
+   *
+   * @type Boolean
+   */
+  canRemove: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status').cacheable(),
+
+  /**
    * Flag to indicate if we can show the previous button
    *
    * @type Boolean
@@ -789,7 +831,7 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('authenticatedUserRecord.status');
-     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
       return NO;
     }
 
@@ -808,7 +850,7 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('authenticatedUserRecord.status');
-     if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
       return NO;
     }
 
@@ -842,6 +884,7 @@ App.pageController = SC.Object.create({
       App.pageController.selectRecord(recordIndex);
     }
     $('#repoDialog').dialog('open');
+    App.viewUtils.activateTab($('#dialogGeneralTab'));
     $('#dialogNameField input').focus();
   },
 
@@ -851,6 +894,91 @@ App.pageController = SC.Object.create({
   hideDialog: function() {
     App.pageController.deselectRecord();
     $('#repoDialog').dialog('close');
+  },
+
+  /**
+   * Validate the dialog data
+   * @returns Boolean YES if ok, NO if error
+   */
+  validateDialog: function() {
+    App.pageController.clearDialogErrors();
+
+    var errorTab = 0;
+
+    var selectedRecord = App.pageController.get('selectedRecord');
+    var name = selectedRecord.get('name');
+    if (SC.empty(name)) {
+      App.pageController.set('nameErrorMessage', '_admin.repo.name.required'.loc());
+      errorTab = 1;
+    } else if (!App.viewValidators.checkCode(name)) {
+      App.pageController.set('nameErrorMessage', '_admin.repo.name.invalid'.loc(name));
+      errorTab = 1;
+    }
+
+    var storageQueueWorkerCount = selectedRecord.get('storageQueueWorkerCount');
+    if (SC.empty(storageQueueWorkerCount)) {
+      App.pageController.set('storageQueueWorkerCountErrorMessage', '_admin.repo.storageQueueWorkerCount.required'.loc());
+      errorTab = errorTab === 0 ? 2 : errorTab;
+    } else if (!App.viewValidators.checkPositiveInteger(storageQueueWorkerCount, 1, 100)) {
+      App.pageController.set('storageQueueWorkerCountErrorMessage', '_admin.repo.storageQueueWorkerCount.invalid'.loc());
+      errorTab = errorTab === 0 ? 2 : errorTab;
+    }
+
+    var storageMaxKeywords = selectedRecord.get('storageMaxKeywords');
+    if (SC.empty(storageMaxKeywords)) {
+      App.pageController.set('storageMaxKeywordsErrorMessage', '_admin.repo.storageMaxKeywords.required'.loc());
+      errorTab = errorTab === 0 ? 2 : errorTab;
+    } else if (!App.viewValidators.checkPositiveInteger(storageMaxKeywords, 1, 10000)) {
+      App.pageController.set('storageMaxKeywordsErrorMessage', '_admin.repo.storageMaxKeywords.invalid'.loc());
+      errorTab = errorTab === 0 ? 2 : errorTab;
+    }
+
+    var maxMemory = selectedRecord.get('maxMemory');
+    if (SC.empty(maxMemory)) {
+      App.pageController.set('maxMemoryErrorMessage', '_admin.repo.maxMemory.required'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    } else if (!App.viewValidators.checkPositiveInteger(maxMemory, 100000, 100000000)) {
+      App.pageController.set('maxMemoryErrorMessage', '_admin.repo.maxMemory.invalid'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    }
+
+    var pageSize = selectedRecord.get('pageSize');
+    if (SC.empty(pageSize)) {
+      App.pageController.set('pageSizeErrorMessage', '_admin.repo.pageSize.required'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    } else if (!App.viewValidators.checkPositiveInteger(pageSize, 1000, 100000000)) {
+      App.pageController.set('pageSizeErrorMessage', '_admin.repo.pageSize.invalid'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    }
+
+    if (errorTab === 0) {
+      maxMemory = parseInt(maxMemory);
+      pageSize =  parseInt(pageSize);
+      if (pageSize > maxMemory) {
+        App.pageController.set('pageSizeErrorMessage', '_admin.repo.pageSize.invalidSize'.loc(pageSize, maxMemory));
+        errorTab = errorTab === 0 ? 3 : errorTab;
+      }
+    }
+
+    var pageCountCache = selectedRecord.get('pageCountCache');
+    if (SC.empty(pageCountCache)) {
+      App.pageController.set('pageCountCacheErrorMessage', '_admin.repo.pageCountCache.required'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    } else if (!App.viewValidators.checkPositiveInteger(pageCountCache, 1, 100)) {
+      App.pageController.set('pageCountCacheErrorMessage', '_admin.repo.pageCountCache.invalid'.loc());
+      errorTab = errorTab === 0 ? 3 : errorTab;
+    }
+
+    // Set tab
+    if (errorTab === 1) {
+      App.viewUtils.activateTab($('#dialogGeneralTab'));
+    } else if (errorTab === 2) {
+      App.viewUtils.activateTab($('#dialogStorageTab'));
+    } else if (errorTab === 3) {
+      App.viewUtils.activateTab($('#dialogMemoryTab'));
+    }
+
+    return errorTab === 0;
   }
 
 });
@@ -924,7 +1052,7 @@ App.statechart = SC.Statechart.create({
       ok: function() {
         // If record has not changed, then don't save
         var recordStatus = App.pageController.getPath('selectedRecord.status');
-        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN ) {
+        if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN) {
           this.cancel();
           return;
         }
@@ -963,7 +1091,7 @@ App.statechart = SC.Statechart.create({
        */
       showPreviousRecord: function() {
         var recordIndex = App.pageController.get('selectedRecordIndex');
-        if (recordIndex === 0 ) {
+        if (recordIndex === 0) {
           return;
         }
 
@@ -1014,7 +1142,7 @@ App.statechart = SC.Statechart.create({
       _startSave: function(closeWhenFinished) {
         try {
           var selectedRecord = App.pageController.get('selectedRecord');
-          if (!this._validate()) {
+          if (!App.pageController.validateDialog()) {
             this.gotoState('showingDialog');
             return;
           }
@@ -1030,25 +1158,6 @@ App.statechart = SC.Statechart.create({
       },
 
       /**
-       * Validate the dialog data
-       * @returns Boolean YES if ok, NO if error
-       */
-      _validate: function() {
-        App.pageController.clearDialogErrors();
-
-        var isError = NO;
-
-        var selectedRecord = App.pageController.get('selectedRecord');
-        var name = selectedRecord.get('name');
-        if (SC.empty(name)) {
-          App.pageController.set('nameErrorMessage', '_admin.repo.username.required'.loc());
-          isError = YES;
-        }
-
-        return !isError;
-      },
-
-      /**
        * Called back when save is finished
        * @param documentID DocumentID of the user record that was saved
        * @param params context params passed in startSave
@@ -1057,7 +1166,7 @@ App.statechart = SC.Statechart.create({
       _endSave: function(documentID, params, error) {
         if (SC.none(error)) {
           // Find the correct index and select record again
-          for (var i=0; i < App.resultsController.get('length'); i++) {
+          for (var i = 0; i < App.resultsController.get('length'); i++) {
             var userRecord = App.resultsController.objectAtContent(i);
             if (userRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
               App.pageController.selectRecord(i);

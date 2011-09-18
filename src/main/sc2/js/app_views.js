@@ -75,7 +75,7 @@ App.TextAreaView = SC.TextArea.extend({
    * Flag to indicate if this is disabled or not
    */
   disabled: NO,
-  
+
   /**
    * Read only text box
    */
@@ -127,15 +127,15 @@ App.ButtonView = SC.Button.extend({
    * Text for the button
    */
   label: '',
-  
+
   /**
    * Flag to indicate if this is disabled or not
    */
   disabled: NO,
 
   /**
-    @private
-  */
+   @private
+   */
   willInsertElement: function() {
     this._super();
     this._updateElementValue();
@@ -172,14 +172,18 @@ App.CheckboxView = SC.Checkbox.extend({
   },
 
   /**
-    @private
-  */
+   @private
+   */
   interpretKeyEvents: function(event) {
     var map = SC.TextField.KEY_EVENTS;
     var method = map[event.keyCode];
 
-    if (method) { return this[method](event); }
-    else { SC.run.once(this, this._updateElementValue); }
+    if (method) {
+      return this[method](event);
+    }
+    else {
+      SC.run.once(this, this._updateElementValue);
+    }
   }
 
 });
@@ -194,10 +198,10 @@ App.SelectOption = SC.View.extend({
   classNames: ['sc-select-option'],
 
   /*
-    Note: we can't use a template with {{label}} here because it
-    uses a BindableSpan. The browser will eat the span inside of
-    an option tag.
-  */
+   Note: we can't use a template with {{label}} here because it
+   uses a BindableSpan. The browser will eat the span inside of
+   an option tag.
+   */
   template: function(context, options) {
     options.data.buffer.push(context.get('label'));
   },
@@ -228,7 +232,7 @@ App.SelectView = SC.CollectionView.extend({
   tabindex: '1',
 
   disabled: NO,
-  
+
   itemViewClass: App.SelectOption,
 
   _value: null,
@@ -261,11 +265,13 @@ App.SelectView = SC.CollectionView.extend({
 
   _elementValueDidChange: function() {
     var views = SC.View.views,
-        selectedOptions = this.$('option:selected'),
-        value;
+      selectedOptions = this.$('option:selected'),
+      value;
 
     if (get(this, 'multiple') && get(this, 'multiple') !== "false") {
-      value = selectedOptions.toArray().map(function(el) { return get(views[el.id], 'content'); });
+      value = selectedOptions.toArray().map(function(el) {
+        return get(views[el.id], 'content');
+      });
     } else {
       var optionView = views[selectedOptions.prop('id')];
       if (!SC.none(optionView)) {
@@ -281,7 +287,7 @@ App.SelectView = SC.CollectionView.extend({
     var selected, idx, obj;
 
     if (content && removed) {
-      for (idx = start; idx < start+removed; idx++) {
+      for (idx = start; idx < start + removed; idx++) {
         obj = content.objectAt(idx);
 
         if (selected = get(content, 'selection')) {
@@ -423,7 +429,7 @@ App.InlineMessageView = SC.View.extend({
   doHighlightAndFade: function() {
     var domElement = this.$();
     domElement.stop().show();
-    for (var i=0; i < 3; i++) {
+    for (var i = 0; i < 3; i++) {
       domElement.effect('highlight', { color : 'gold'}, 100);
     }
     domElement.delay(3000).fadeOut(3000);
@@ -475,7 +481,7 @@ App.FieldView = SC.View.extend({
   },
 
   /**
-   * 
+   *
    */
   LabelView: SC.View.extend({
     tagName: 'label',
@@ -625,11 +631,54 @@ App.viewValidators = {
 
   /**
    * Checks if an email address is valid
-   * @param emailAddressToCheck
+   * @param {String} emailAddressToCheck
    * @returns YES if valid, NO if not valid
    */
   checkEmailAddress: function (emailAddressToCheck) {
     var result = App.viewValidators.emailAddressRegExp.test(emailAddressToCheck);
+    return result;
+  },
+
+  /**
+   * Code check algorithm
+   * @type RegExp
+   */
+  codeRegExp: /^[a-z0-9_]+$/,
+
+  /**
+   * Checks if a code is valid
+   * @param {String} codeToCheck
+   * @returns YES if valid, NO if not valid
+   */
+  checkCode: function (codeToCheck) {
+    var result = App.viewValidators.codeRegExp.test(codeToCheck);
+    return result;
+  },
+
+  /**
+   * Code check algorithm
+   * @type RegExp
+   */
+  positiveIntegerRegExp: /^[\d]+$/,
+
+  /**
+   * Checks if a positive integer is valid
+   * @param {String} numberToCheck
+   * @param {int} [minValue] maximum value
+   * @param {int} [maxValue] minimum value
+   * @returns YES if valid, NO if not valid
+   */
+  checkPositiveInteger: function (numberToCheck, minValue, maxValue) {
+    var result = App.viewValidators.positiveIntegerRegExp.test(numberToCheck);
+    if (result) {
+      var i = parseInt(numberToCheck);
+      if (!SC.none(minValue) && i < minValue) {
+        return NO;
+      }
+      if (!SC.none(maxValue) && i > maxValue) {
+        return NO;
+      }
+    }
     return result;
   }
 
@@ -641,31 +690,59 @@ App.viewValidators = {
 // --------------------------------------------------------------------------------------------------------------------
 App.viewUtils = {
 
+  /**
+   * Sets up the standard page by selecting active menu items, etc
+   * @param pageFileName
+   */
   setupStandardPage: function(pageFileName) {
-  // Selected nav
-  if (pageFileName === 'stream.html') {
-    $('#navStream').addClass('selected');
-  } else if (pageFileName === 'search.html') {
-    $('#navSearch').addClass('selected');
-  } else if (pageFileName.indexOf('admin') === 0) {
-    $('#navAdmin').addClass('selected');
+    // Selected nav
+    if (pageFileName === 'stream.html') {
+      $('#navStream').addClass('selected');
+    } else if (pageFileName === 'search.html') {
+      $('#navSearch').addClass('selected');
+    } else if (pageFileName.indexOf('admin') === 0) {
+      $('#navAdmin').addClass('selected');
+    }
+
+    // Setup User
+    var loggedInUser = App.sessionEngine.get('loggedInUser');
+    $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
+
+    // Open top bar menu when clicked
+    $("a.menu").click(function (e) {
+      var $li = $(this).parent("li").toggleClass('open');
+      return false;
+    });
+
+    // Close top bar menu when body clicked
+    $("body").bind("click", function (e) {
+      $('a.menu').parent("li").removeClass("open");
+    });
+  },
+
+  /**
+   * Activates the twitter bootstrap tab
+   * @param {DOM element} anchor Anchor that was clicked
+   */
+  activateTab: function(anchor) {
+    var href = anchor.attr('href');
+    var li = anchor.parent('li');
+
+    if (anchor.hasClass('active')) {
+      return;
+    }
+
+    var content = $(href)
+
+    // Make this li active
+    li.parent().find('.active').removeClass('active')
+    li.addClass('active')
+
+    // Make linked fieldset active
+    content.parent().find('.active').removeClass('active')
+    content.addClass('active')
   }
 
-  // Setup User
-  var loggedInUser = App.sessionEngine.get('loggedInUser');
-  $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
 
-  // Open top bar menu when clicked
-  $("a.menu").click(function (e) {
-    var $li = $(this).parent("li").toggleClass('open');
-    return false;
-  });
-
-  // Close top bar menu when body clicked
-  $("body").bind("click", function (e) {
-    $('a.menu').parent("li").removeClass("open");
-  });
-  
-}
 };
 
