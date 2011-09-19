@@ -382,6 +382,26 @@ public class UserTest
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
         
+        // ***************************
+        // role pattern
+        // ***************************        
+        criteria= new UserListCriteria();
+        criteria.setRolePattern("^ListRoleA$");
+        list = UserController.getInstance().getList(_db, criteria);
+        assertEquals(2, list.size());
+        assertEquals("UserTestUserList4", list.get(0).getUsername());
+        assertEquals("UserTestUserList5", list.get(1).getUsername());
+
+        criteria= new UserListCriteria();
+        criteria.setRolePattern("^ListRoleB$");
+        list = UserController.getInstance().getList(_db, criteria);
+        assertEquals(1, list.size());
+        assertEquals("UserTestUserList4", list.get(0).getUsername());
+       
+        criteria= new UserListCriteria();
+        criteria.setRolePattern("^no matches for sure[\\w]*$");
+        list = UserController.getInstance().getList(_db, criteria);
+        assertEquals(0, list.size());
     }
     
     @Test

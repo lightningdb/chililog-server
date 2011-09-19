@@ -269,7 +269,6 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
     var nestedStore = App.store.chain();
     var record = nestedStore.createRecord(App.UserRecord, {});
     record.set(App.DOCUMENT_VERSION_RECORD_FIELD_NAME, 0);
-    record.set('currentStatus', 'Enabled');
     return record;
   },
 
@@ -934,11 +933,6 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
     var nestedStore = App.store.chain();
     var record = nestedStore.createRecord(App.RepositoryConfigRecord, {});
     record.set(App.DOCUMENT_VERSION_RECORD_FIELD_NAME, 0);
-    record.set('maxKeywords', 20);
-    record.set('writeQueueWorkerCount', 1);
-    record.set('writeQueueMaxMemory', 20971520); //20MB
-    record.set('writeQueuePageSize', 4194304);  //4MB
-    record.set('writeQueuePageCountCache', 3);
     return record;
   },
 

@@ -19,6 +19,9 @@
 package org.chililog.server.workbench.workers;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.bson.types.ObjectId;
 import org.chililog.server.common.ChiliLogException;
@@ -28,6 +31,8 @@ import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.RepositoryConfigListCriteria;
 import org.chililog.server.data.UserBO;
+import org.chililog.server.data.UserController;
+import org.chililog.server.data.UserListCriteria;
 import org.chililog.server.workbench.Strings;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
@@ -52,6 +57,10 @@ import com.mongodb.DB;
 public class RepositoryConfigWorker extends Worker
 {
     public static final String NAME_URI_QUERYSTRING_PARAMETER_NAME = "name";
+
+    private static UserBO[] _userListCache = null;
+
+    private static Date _userListCacheExpiry = new Date();
 
     /**
      * Constructor
@@ -119,8 +128,8 @@ public class RepositoryConfigWorker extends Worker
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
-            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
-                    RepositoryConfigAO.class);
+            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(
+                    bytesToString((byte[]) requestContent), RepositoryConfigAO.class);
 
             RepositoryConfigBO repoConfigBO = new RepositoryConfigBO();
             repoConfigAO.toBO(repoConfigBO);
@@ -128,8 +137,9 @@ public class RepositoryConfigWorker extends Worker
             DB db = MongoConnection.getInstance().getConnection();
             RepositoryConfigController.getInstance().save(db, repoConfigBO);
 
-            // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO));
+            // Return response            
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, 
+                    new RepositoryConfigAO(repoConfigBO, getAllUsers(db)));
         }
         catch (Exception ex)
         {
@@ -193,14 +203,15 @@ public class RepositoryConfigWorker extends Worker
                         Strings.NOT_AUTHORIZED_ERROR));
             }
 
-            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(bytesToString((byte[]) requestContent),
-                    RepositoryConfigAO.class);
+            RepositoryConfigAO repoConfigAO = JsonTranslator.getInstance().fromJson(
+                    bytesToString((byte[]) requestContent), RepositoryConfigAO.class);
             repoConfigAO.toBO(repoConfigBO);
 
             RepositoryConfigController.getInstance().save(db, repoConfigBO);
 
             // Return response
-            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO));
+            return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, 
+                    new RepositoryConfigAO(repoConfigBO, getAllUsers(db)));
         }
         catch (Exception ex)
         {
@@ -242,7 +253,7 @@ public class RepositoryConfigWorker extends Worker
                     ArrayList<RepositoryConfigAO> aoList = new ArrayList<RepositoryConfigAO>();
                     for (RepositoryConfigBO repoConfigBO : boList)
                     {
-                        aoList.add(new RepositoryConfigAO(repoConfigBO));
+                        aoList.add(new RepositoryConfigAO(repoConfigBO, getAllUsers(db)));
                     }
                     responseContent = aoList.toArray(new RepositoryConfigAO[] {});
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
@@ -266,7 +277,7 @@ public class RepositoryConfigWorker extends Worker
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                responseContent = new RepositoryConfigAO(repoConfigBO);
+                responseContent = new RepositoryConfigAO(repoConfigBO, getAllUsers(db));
             }
 
             // Return response
@@ -276,5 +287,33 @@ public class RepositoryConfigWorker extends Worker
         {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
+    }
+
+    /**
+     * <p>
+     * Get a list of all users so we can figure out which user can access which repository
+     * </p>
+     * <p>
+     * Note that we cache for 30 seconds.
+     * </p>
+     * @param db
+     *            Database connection
+     * @return List of all users
+     * @throws ChiliLogException
+     */
+    private static synchronized UserBO[] getAllUsers(DB db) throws ChiliLogException
+    {
+        if (_userListCache == null || _userListCacheExpiry.before(new Date()))
+        {
+            UserListCriteria criteria = new UserListCriteria();
+            ArrayList<UserBO> list = UserController.getInstance().getList(db, criteria);
+            _userListCache = list.toArray(new UserBO[] {});
+            
+            GregorianCalendar cal = new GregorianCalendar();
+            cal.add(Calendar.SECOND, 10);
+            _userListCacheExpiry = cal.getTime();
+        }
+
+        return _userListCache;
     }
 }

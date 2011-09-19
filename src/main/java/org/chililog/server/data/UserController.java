@@ -294,6 +294,11 @@ public class UserController extends Controller
         {
             condition.put(UserBO.ROLES_FIELD_NAME, criteria.getRole());
         }
+        if (!StringUtils.isBlank(criteria.getRolePattern()))
+        {
+            Pattern repositoryNameMatch = Pattern.compile(criteria.getRolePattern());
+            condition.put(UserBO.ROLES_FIELD_NAME, repositoryNameMatch);
+        }
         if (criteria.getStatus() != null)
         {
             condition.put(UserBO.STATUS_FIELD_NAME, criteria.getStatus().toString());

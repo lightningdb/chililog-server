@@ -65,7 +65,6 @@ App.REPOSITORY_PUBLISHER_ROLE = 'publisher';
  */
 App.REPOSITORY_SUBSCRIBER_ROLE = 'subscriber';
 
-
 /**
  * If a repository reaches max memory, drop new messages
  */
@@ -153,6 +152,15 @@ App.USER_STATUS_MAP = {
   'LOCKED': '_userRecord.currentStatus.locked'.loc()
 };
 
+/**
+ * Maps User Role codes to text
+ */
+App.USER_ROLE_MAP = {
+  'workbench': '_userRecord.role.workbench'.loc(),
+  'publisher': '_userRecord.role.publisher'.loc(),
+  'subscriber': '_userRecord.role.subscriber'.loc(),
+  'system.administrator': '_userRecord.role.systemAdministrator'.loc()
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // AuthenticatedUserRecord
@@ -329,6 +337,14 @@ App.RepositoryConfigRecord = SC.Record.extend({
   pageCountCache: SC.Record.attr(Number, { defaultValue: 3, isRequired: YES }),    //3
 
   /**
+   * Readonly details of users who can access this repository. Each object in the array contains properties: username,
+   * role.
+   *
+   * @type Array of objects
+   */
+  users: [],
+
+  /**
    * Returns the display name if not blank, else returns the name
    * @type String
    */
@@ -375,6 +391,33 @@ App.RepositoryConfigRecord = SC.Record.extend({
       this.set(recordPropertyName, repoInfoAO[apiObjectPropertyName]);
     }
 
+    // Parse the users with access
+    var users = repoInfoAO['Users'];
+    var parsedUsers = [];
+    if (!SC.none(users)) {
+      users.forEach(function(item) {
+        var idx = item.indexOf('=');
+        var username = item.substring(0, idx);
+        var role = item.substring(idx + 1);
+        var roleCode = role;
+        if (role != App.SYSTEM_ADMINISTRATOR_ROLE) {
+          idx = role.lastIndexOf('.');
+          roleCode = role.substr(idx + 1);
+        }
+        var label = username + ' (' + App.USER_ROLE_MAP[roleCode] + ')';
+
+        var u = {
+          username: username,
+          role: role,
+          label: label,
+          value: item
+        };
+        parsedUsers.push(u);
+      });
+    }
+    this.set('users', parsedUsers)
+
+    // Update the status
     this.syncCurrentStatus();
   },
 
@@ -561,13 +604,13 @@ App.UserRecord = SC.Record.extend({
    * Cached array of data hash {repository: repoName, role: roleName} representing the repositories that can be
    * accessed by this user and the role
    */
-  repositoryAccesses: SC.Record.attr(Array),
+  repositoryAccesses: SC.Record.attr(Array, { defaultValue: [] }),
 
   /**
    * Flag to be set so that we can trigger saving when adding/deleting repository access items to the array
    * This affects our flagging of if a record has changed
    */
-  repositoryAccessesChanged: SC.Record.attr(Boolean),
+  repositoryAccessesChanged: SC.Record.attr(Boolean, { defaultValue: NO }),
 
   /**
    * Maps server api data into this user record
@@ -603,7 +646,8 @@ App.UserRecord = SC.Record.extend({
           var parts = role.split('.');
           var repoName = parts[1];
           var repoRole = parts[2];
-          repositoryAccesses.push({ repository: repoName, role: repoRole, label: repoName + ' (' + repoRole + ')', value: role });
+          var roleLabel = App.USER_ROLE_MAP[repoRole];
+          repositoryAccesses.push({ repository: repoName, role: repoRole, label: repoName + ' (' + roleLabel + ')', value: role });
         }
       }
     }

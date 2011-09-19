@@ -117,6 +117,7 @@
        <li class="active"><a id="dialogGeneralTab" href="#dialogGeneralTabContent">General</a></li>
        <li><a id="dialogStorageTab" href="#dialogStorageTabContent">Storage</a></li>
        <li><a id="dialogMemoryTab" href="#dialogMemoryTabContent">Memory</a></li>
+        <li><a id="dialogUsersTab" href="#dialogUsersTabContent">Users</a></li>
       </ul>
     </div>
     <form id="dialogTabContent" class="tabContent" style="height:200px;">
@@ -137,6 +138,9 @@
         {{view App.DialogMaxMemoryPolicyField id="dialogMaxMemoryPolicyField" }}
         {{view App.DialogPageSizeField id="dialogPageSizeField" }}
         {{view App.DialogPageCountCacheField id="dialogPageCountCacheField" }}
+      </fieldset>
+      <fieldset id="dialogUsersTabContent">
+        {{view App.DialogUsersField id="dialogUsersField" }}
       </fieldset>
     </form>
     <div class="clearfix dialogBottomBar">

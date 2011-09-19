@@ -29,10 +29,12 @@
 select {
     background-color: #fff;
 }
+select.tall {
+    height: 170px;
+}
 input[type="text"]:disabled, textarea:disabled, select:disabled {
   background: #f5f5f5;
 }
-
 input[type="text"], input[type="password"], textarea, select, .uneditable-input {
     color: #404040;
 }

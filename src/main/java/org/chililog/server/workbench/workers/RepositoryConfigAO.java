@@ -25,6 +25,7 @@ import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryConfigBO.MaxMemoryPolicy;
 import org.chililog.server.data.RepositoryConfigBO.Status;
+import org.chililog.server.data.UserBO;
 
 
 /**
@@ -56,6 +57,8 @@ public class RepositoryConfigAO extends AO
 
     private RepositoryParserConfigAO[] _parsers = null;
 
+    private String[] _users = null;
+    
     /**
      * Basic constructor
      */
@@ -69,8 +72,10 @@ public class RepositoryConfigAO extends AO
      * 
      * @param repoConfig
      *            Repository info business object
+     * @param users
+     *            Users list of users to check if they have access to this repository
      */
-    public RepositoryConfigAO(RepositoryConfigBO repoConfig)
+    public RepositoryConfigAO(RepositoryConfigBO repoConfig, UserBO[] users)
     {
         _documentID = repoConfig.getDocumentID().toString();
         _documentVersion = repoConfig.getDocumentVersion();
@@ -104,6 +109,35 @@ public class RepositoryConfigAO extends AO
             _parsers = parserList.toArray(new RepositoryParserConfigAO[] {});
         }
 
+        if (users != null) 
+        {
+            String publisherRole = repoConfig.getPublisherRoleName();
+            String subscriberRole = repoConfig.getSubscriberRoleName();
+            String workbenchRole = repoConfig.getWorkbenchRoleName();
+            ArrayList<String> userList = new ArrayList<String>();
+            for (UserBO user : users )
+            {
+                if (user.isSystemAdministrator())
+                {
+                    userList.add(String.format("%s=%s", user.getUsername(), UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));                       
+                }
+                else 
+                {
+                    String[] roles = user.getRoles();
+                    for (String role : roles)
+                    {
+                       if (publisherRole.equals(role) || 
+                           subscriberRole.equals(role) ||
+                           workbenchRole.equals(role))
+                       {
+                           userList.add(String.format("%s=%s", user.getUsername(), role));
+                       }
+                    }
+                }
+            }
+            _users = userList.toArray(new String[] {});
+        }
+        
         return;
     }
 
@@ -295,6 +329,19 @@ public class RepositoryConfigAO extends AO
     public void setParsers(RepositoryParserConfigAO[] parsers)
     {
         _parsers = parsers;
+    }
+
+    /**
+     * Returns the users who can access this repository in the format username=role
+     */
+    public String[] getUsers()
+    {
+        return _users;
+    }
+
+    public void setUsers(String[] users)
+    {
+        _users = users;
     }
 
 }

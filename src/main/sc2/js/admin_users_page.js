@@ -558,7 +558,7 @@ App.RepositoryAccessDialog = SC.View.extend({
       modal: true,
       close: function(event, ui) {
         // For when the X is clicked
-        App.statechart.sendAction('dontAdd');
+        App.statechart.sendAction('cancelAdd');
       }
     });
   }
@@ -622,7 +622,7 @@ App.DialogRepositoryAccessAddButton = App.ButtonView.extend({
 App.DialogRepositoryAccessCancelButton = App.ButtonView.extend({
   label: '_cancel'.loc(),
   click: function() {
-    App.statechart.sendAction('dontAdd');
+    App.statechart.sendAction('cancelAdd');
     return;
   }
 });
@@ -838,7 +838,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status').cacheable(),
+  }.property('selectedRecord.status', 'isSavingOrRemoving').cacheable(),
 
   /**
    * Flag to indicate if we can show the delete button
@@ -852,7 +852,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status').cacheable(),
+  }.property('selectedRecord.status', 'isSavingOrRemoving').cacheable(),
 
   /**
    * Flag to indicate if we can show the previous button
@@ -871,7 +871,7 @@ App.pageController = SC.Object.create({
     }
 
     return YES;
-  }.property('selectedRecordIndex', 'selectedRecord.status').cacheable(),
+  }.property('selectedRecordIndex', 'selectedRecord.status', 'isSavingOrRemoving').cacheable(),
 
   /**
    * Flag to indicate if we can show the next button
@@ -890,7 +890,7 @@ App.pageController = SC.Object.create({
     }
 
     return YES;
-  }.property('selectedRecordIndex', 'selectedRecord.status').cacheable(),
+  }.property('selectedRecordIndex', 'selectedRecord.status', 'isSavingOrRemoving').cacheable(),
 
   /**
    * Title for the dialog window
@@ -912,9 +912,11 @@ App.pageController = SC.Object.create({
   showDialog: function(recordIndex) {
     App.pageController.clearDialogErrors();
     if (recordIndex == -1) {
+      var nestedRecord = App.userEngine.create();
       App.pageController.set('confirmPassword', '');
       App.pageController.set('selectedRecordIndex', recordIndex);
-      App.pageController.set('selectedRecord', App.userEngine.create());
+      App.pageController.set('selectedRecord', nestedRecord);
+      App.pageController.setPath('selectedRecordRepositoryAccesses.content', nestedRecord.get('repositoryAccesses'));
     } else {
       App.pageController.selectRecord(recordIndex);
     }
@@ -1191,7 +1193,7 @@ App.statechart = SC.Statechart.create({
     }),
 
     showingRepositoryAccessDialog:  SC.State.extend({
-      enterState: function(ctx) {
+      enterState: function() {
       },
 
       exitState: function() {
@@ -1200,26 +1202,38 @@ App.statechart = SC.Statechart.create({
       add: function() {
         var repoName = App.pageController.getPath('addRepositoryName.name');
         var repoRole = App.pageController.getPath('addRepositoryRole.value');
+        var roleLabel = App.USER_ROLE_MAP[repoRole];
         var role = 'repo.' + repoName +'.' + repoRole;
 
         var newAccess = {
           repository: repoName,
           role: repoRole,
-          label: repoName + ' (' + repoRole + ')',
+          label: repoName + ' (' + roleLabel + ')',
           value: role
         };
 
         var arrayProxy = App.pageController.get('selectedRecordRepositoryAccesses');
-        arrayProxy.pushObject(newAccess);
+        var found = NO;
+        for (var i=0; i<arrayProxy.get('length'); i++) {
+          if (arrayProxy.objectAt(i).value == role) {
+            alert('_admin.user.repositoryAccesses.alreadyExists'.loc(repoName, roleLabel));
+            found = YES;
+            break;
+          }
+        }
+        if (!found) {
+          // Add to array
+          arrayProxy.pushObject(newAccess);
 
-        // Set dummy value to trigger record status change
-        App.pageController.setPath('selectedRecord.repositoryAccessesChanged', YES);
+          // Set dummy value to trigger record status change
+          App.pageController.setPath('selectedRecord.repositoryAccessesChanged', YES);
+        }
 
         App.pageController.hideRepositoryAccessDialog();
         this.gotoState('showingDialog');
       },
 
-      dontAdd: function() {
+      cancelAdd: function() {
         App.pageController.hideRepositoryAccessDialog();
         this.gotoState('showingDialog');
         return NO;

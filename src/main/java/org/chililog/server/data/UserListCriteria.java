@@ -29,6 +29,7 @@ public class UserListCriteria extends ListCriteria
     private String _usernamePattern = null;
     private String _emailAddressPattern = null;
     private String _role = null;
+    private String _rolePattern = null;
     private UserBO.Status _status = null;
     
     /**
@@ -92,6 +93,18 @@ public class UserListCriteria extends ListCriteria
         _status = status;
     }
     
-    
+    public String getRolePattern()
+    {
+        return _rolePattern;
+    }
+
+    /**
+     * Search for users with roles matching the specified regular expression pattern
+     */
+    public void setRolePattern(String rolePattern)
+    {
+        _rolePattern = rolePattern;
+    }
+
     
 }

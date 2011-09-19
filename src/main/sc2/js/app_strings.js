@@ -68,6 +68,11 @@ SC.STRINGS = {
   // ********************************************************
   // Records
   // ********************************************************
+  '_userRecord.role.workbench': 'Workbench User',
+  '_userRecord.role.publisher': 'Publisher',
+  '_userRecord.role.subscriber': 'Subscriber',
+  '_userRecord.role.systemAdministrator': 'System Administrator',
+
   '_repositoryEntryRecord.Severity.Emergency': 'Emergency',
   '_repositoryEntryRecord.Severity.Action': 'Action',
   '_repositoryEntryRecord.Severity.Critical': 'Critical',
@@ -204,6 +209,7 @@ SC.STRINGS = {
   '_admin.user.repositoryAccesses.workbenchRole': 'Workbench User',
   '_admin.user.repositoryAccesses.publisherRole': 'Publisher',
   '_admin.user.repositoryAccesses.subscriberRole': 'Subscriber',
+  '_admin.user.repositoryAccesses.systemAdminRole': 'System Administrator',
   '_admin.user.repositoryAccesses.alreadyExists': 'Access to "%@" repository as "%@" has already been granted.',
   '_admin.user.noRowsFound': 'No users found matching your search criteria.',
   '_admin.user.create': 'New User ...',
@@ -264,11 +270,7 @@ SC.STRINGS = {
   '_admin.repo.generalAttributes': 'General',
   '_admin.repo.pubSubAttributes': 'Publication & Subscription',
   '_admin.repo.storageAttributes': 'Storage',
-  '_admin.repo.repositoryAccesses': 'Users',
-  '_admin.repo.repositoryAccesses.label': 'Users who can access this repository',
-  '_admin.repo.repositoryAccesses.username': 'Username',
-  '_admin.repo.repositoryAccesses.userDisplayName': 'User Display Name',
-  '_admin.repo.repositoryAccesses.role': 'Role',
+  '_admin.repo.repositoryAccesses': 'Users who can access this repository',
   '_admin.repo.confirmDelete': 'Delete this repository?',
   '_admin.repo.online': 'Bring Online',
   '_admin.repo.online.tooltip': 'Start this repository and allow the reading and writing of log entries',

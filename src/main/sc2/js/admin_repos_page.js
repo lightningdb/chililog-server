@@ -480,6 +480,14 @@ App.DialogPageCountCacheField = App.FieldView.extend({
   })
 });
 
+App.DialogUsersField = App.FieldView.extend({
+  label: '_admin.repo.repositoryAccesses'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge tall'.w(),
+    multiple: YES,
+    contentBinding: 'App.pageController.selectedRecordRepositoryAccesses'
+  })
+});
 
 /**
  * @class
@@ -803,6 +811,13 @@ App.pageController = SC.Object.create({
   selectedRecord: null,
 
   /**
+   * ArrayProxy wrapper around repository access
+   *
+   * @type SC.ArrayProxy
+   */
+  selectedRecordRepositoryAccesses: SC.ArrayProxy.create({ content: [] }),
+
+  /**
    * Flag to indicate if the selected record is a new record
    */
   isNewSelectedRecord: function() {
@@ -823,6 +838,9 @@ App.pageController = SC.Object.create({
     var nestedRecord = App.repositoryConfigEngine.edit(record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME));
     App.pageController.set('selectedRecordIndex', recordIndex);
     App.pageController.set('selectedRecord', nestedRecord);
+
+    // This is read only so we can get from the record. For some reason, once nested, users property get lost
+    App.pageController.setPath('selectedRecordRepositoryAccesses.content', record.get('users'));
   },
 
   /**
@@ -852,7 +870,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status').cacheable(),
+  }.property('selectedRecord.status', 'isWorking').cacheable(),
 
   /**
    * Flag to indicate if we can show the bring online button
@@ -930,12 +948,12 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('authenticatedUserRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isWorking')) {
       return NO;
     }
 
     return YES;
-  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable(),
+  }.property('selectedRecordIndex', '*selectedRecord.status', 'isWorking').cacheable(),
 
   /**
    * Flag to indicate if we can show the next button
@@ -949,12 +967,12 @@ App.pageController = SC.Object.create({
     }
 
     var recordStatus = this.getPath('authenticatedUserRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSaving')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isWorking')) {
       return NO;
     }
 
     return YES;
-  }.property('selectedRecordIndex', '*selectedRecord.status').cacheable(),
+  }.property('selectedRecordIndex', '*selectedRecord.status', 'isWorking').cacheable(),
 
   /**
    * Title for the dialog window
@@ -979,6 +997,7 @@ App.pageController = SC.Object.create({
       App.pageController.set('confirmPassword', '');
       App.pageController.set('selectedRecordIndex', recordIndex);
       App.pageController.set('selectedRecord', App.repositoryConfigEngine.create());
+      App.pageController.setPath('selectedRecordRepositoryAccesses.content', []);
     } else {
       App.pageController.selectRecord(recordIndex);
     }

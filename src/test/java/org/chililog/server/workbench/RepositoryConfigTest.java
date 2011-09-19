@@ -25,6 +25,8 @@ import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
+import junit.framework.Assert;
+
 import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryFieldConfigBO;
@@ -171,7 +173,7 @@ public class RepositoryConfigTest
         query = new BasicDBObject();
         query.put("name", pattern);
         coll.remove(query);
-        
+
         WorkbenchService.getInstance().stop();
     }
 
@@ -406,7 +408,18 @@ public class RepositoryConfigTest
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryConfigAO[].class);
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
+        assertEquals(3, getListResponseAO[0].getUsers().length);
 
+        for (String user : getListResponseAO[0].getUsers())
+        {
+            if (!user.equals("admin=system.administrator") &&
+                !user.equals("TestRepoInfo_SystemAdmin=system.administrator") &&
+                !user.equals("TestRepoInfo_RepoWorkbench=repo.test_repoinfo_common.workbench"))
+            {
+                Assert.fail("Invalid users have access to this repository");
+            }
+        }
+        
         // Create - not authroized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config", HttpMethod.POST,
                 _repoAdminAuthToken);
@@ -470,8 +483,8 @@ public class RepositoryConfigTest
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Get chililog repository
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config?name=chililog", HttpMethod.GET, _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config?name=chililog",
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -482,13 +495,14 @@ public class RepositoryConfigTest
         RepositoryConfigAO chililogRepoInfoAO = getListResponseAO[0];
 
         // Get list - should only get back repositories we can access
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config?", HttpMethod.GET, _repoWorkbenchUserAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config?", HttpMethod.GET,
+                _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryConfigAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryConfigAO[].class);
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
 
@@ -534,8 +548,8 @@ public class RepositoryConfigTest
 
         // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
-                _repoWorkbenchUserAuthToken);
+                "http://localhost:8989/api/repository_config/" + getListResponseAO[0].getDocumentID(),
+                HttpMethod.DELETE, _repoWorkbenchUserAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -543,7 +557,7 @@ public class RepositoryConfigTest
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Workbench.NotAuthorizedError", errorAO.getErrorCode());
     }
-    
+
     /**
      * Try put and delete without an ID in URI
      * 
@@ -698,8 +712,8 @@ public class RepositoryConfigTest
         assertEquals("ChiliLogException:Data.MongoDB.MissingRequiredFieldError", errorAO.getErrorCode());
 
         // Update no content
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config/12341234", HttpMethod.PUT,
-                _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config/12341234",
+                HttpMethod.PUT, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check400BadRequestResponse(responseCode.toString(), headers);
