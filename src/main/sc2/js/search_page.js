@@ -1194,7 +1194,7 @@ App.statechart = SC.Statechart.create({
           if (SC.none(conditions.severity)) {
             var severity = App.pageController.getPath('severity.value');
             if (!SC.empty(severity)) {
-              conditions.severity = parseInt(severity);
+              conditions.severity = { '$lte' : parseInt(severity) };
             }
           }
 

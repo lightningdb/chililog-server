@@ -868,7 +868,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus', 'isWorking').cacheable(),
 
   /**
    * Flag to indicate if we can show the bring readonly button
@@ -884,7 +884,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus', 'isWorking').cacheable(),
 
   /**
    * Flag to indicate if we can show the take offline button
@@ -900,7 +900,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus', 'isWorking').cacheable(),
   
   /**
    * Flag to indicate if we can show the delete button
@@ -916,7 +916,7 @@ App.pageController = SC.Object.create({
     }
 
     return NO;
-  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus', 'isWorking').cacheable(),
 
   /**
    * Flag to indicate if we can show the previous button
