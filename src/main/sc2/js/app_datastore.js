@@ -334,7 +334,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
    */
   displayNameOrName: function() {
     var displayName = this.get('displayName');
-    if (SC.none(displayName)) {
+    if (SC.empty(displayName)) {
       displayName = this.get('name');
     }
     return displayName;
@@ -344,14 +344,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
    * The current status code of this repository: ONLINE or OFFLINE
    * @type String
    */
-  currentStatus: function() {
-    var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get('documentID'));
-    if (SC.none(statusRecord)) {
-      return App.REPOSITORY_STATUS_OFFLINE;
-    } else {
-      return statusRecord.get('currentStatus');
-    }
-  }.property(),
+  currentStatus: SC.Record.attr(String, { defaultValue: App.REPOSITORY_STATUS_OFFLINE }),
 
   /**
    * The current status description of this repository: ONLINE or OFFLINE
@@ -360,7 +353,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
   currentStatusText: function() {
     var currentStatus = this.get('currentStatus');
     return App.REPOSITORY_STATUS_MAP[currentStatus];
-  }.property(),
+  }.property('currentStatus'),
   
   /**
    * Maps server api data into this record
@@ -381,6 +374,8 @@ App.RepositoryConfigRecord = SC.Record.extend({
       var apiObjectPropertyName = map[1];
       this.set(recordPropertyName, repoInfoAO[apiObjectPropertyName]);
     }
+
+    this.syncCurrentStatus();
   },
 
   /**
@@ -397,7 +392,21 @@ App.RepositoryConfigRecord = SC.Record.extend({
       apiObject[apiObjectPropertyName] = this.get(recordPropertyName);
     }
     return apiObject;
+  },
+
+  /**
+   * Synchronise the current status with what is in the repository
+   */
+  syncCurrentStatus: function() {
+    var statusRecord = App.store.find(App.RepositoryStatusRecord, this.get(App.DOCUMENT_ID_RECORD_FIELD_NAME));
+    if (SC.none(statusRecord)) {
+      this.set('currentStatus', App.REPOSITORY_STATUS_OFFLINE);
+    } else {
+      this.set('currentStatus', statusRecord.get('currentStatus'));
+    }
+    this.commitRecord();
   }
+
 
 });
 
@@ -458,7 +467,7 @@ App.RepositoryStatusRecord = SC.Record.extend({
    */
   displayNameOrName: function() {
     var displayName = this.get('displayName');
-    if (SC.none(displayName)) {
+    if (SC.empty(displayName)) {
       displayName = this.get('name');
     }
     return displayName;

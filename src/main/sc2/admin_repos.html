@@ -144,7 +144,10 @@
         {{view App.DialogPreviousButton id="dialogPreviousButton" class="btn"}}
         {{view App.DialogNextButton id="dialogNextButton" class="btn"}}
       </div>
-      <div style="float: left; padding-left: 250px;">
+      <div style="float: left; padding-left: 170px;">
+        {{view App.DialogOnlineButton id="dialogOnlineButton" class="btn success"}}
+        {{view App.DialogReadOnlyButton id="dialogReadOnlyButton" class="btn info"}}
+        {{view App.DialogOfflineButton id="dialogOfflineButton" class="btn danger"}}
         {{view App.DialogRemoveButton id="dialogRemoveButton" class="btn danger"}}
       </div>
       <div style="float: right;">
@@ -156,6 +159,7 @@
     </div>
   </div>
 {{/view}}
+
 </script>
 
 <!-- START COMMON SCRIPT BLOCK -->

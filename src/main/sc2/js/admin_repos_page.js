@@ -513,6 +513,51 @@ App.DialogNextButton = App.ButtonView.extend({
 
 /**
  * @class
+ * Button to bring repository only
+ */
+App.DialogOnlineButton = App.ButtonView.extend({
+  label: '_admin.repo.online'.loc(),
+  title: '_admin.repo.online.tooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canBringOnline').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('bringOnline');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to make repository readonly
+ */
+App.DialogReadOnlyButton = App.ButtonView.extend({
+  label: '_admin.repo.readonly'.loc(),
+  title: '_admin.repo.readonly.tooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canMakeReadOnly').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('makeReadOnly');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to show next log entry
+ */
+App.DialogOfflineButton = App.ButtonView.extend({
+  label: '_admin.repo.offline'.loc(),
+  title: '_admin.repo.offline.tooltip'.loc(),
+  isVisibleBinding: SC.Binding.from('App.pageController.canTakeOffline').oneWay().bool(),
+
+  click: function() {
+    App.statechart.sendAction('takeOffline');
+    return;
+  }
+});
+
+/**
+ * @class
  * Button to show next log entry
  */
 App.DialogRemoveButton = App.ButtonView.extend({
@@ -532,7 +577,7 @@ App.DialogRemoveButton = App.ButtonView.extend({
  */
 App.DialogOkButton = App.ButtonView.extend({
   label: '_ok'.loc(),
-  disabledBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool(),
+  disabledBinding: SC.Binding.from('App.pageController.isWorking').oneWay().bool(),
 
   click: function() {
     App.statechart.sendAction('ok');
@@ -575,7 +620,7 @@ App.DialogApplyButton = App.ButtonView.extend({
 App.DialogWorkingImage = App.ImgView.extend({
   src: 'images/working.gif',
   visible: NO,
-  isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool()
+  isVisibleBinding: SC.Binding.from('App.pageController.isWorking').oneWay().bool()
 });
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -741,7 +786,7 @@ App.pageController = SC.Object.create({
    *
    * @type Boolean
    */
-  isSavingOrRemoving: NO,
+  isWorking: NO,
 
   /**
    * Index of selected record in App.resultsController
@@ -771,6 +816,10 @@ App.pageController = SC.Object.create({
    */
   selectRecord: function(recordIndex) {
     var record = App.resultsController.objectAtContent(recordIndex);
+
+    // Sync the status to make sure we have the latest
+    record.syncCurrentStatus();
+
     var nestedRecord = App.repositoryConfigEngine.edit(record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME));
     App.pageController.set('selectedRecordIndex', recordIndex);
     App.pageController.set('selectedRecord', nestedRecord);
@@ -798,7 +847,7 @@ App.pageController = SC.Object.create({
    */
   canSave: function() {
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
+    if (!SC.none(recordStatus) && recordStatus !== SC.Record.READY_CLEAN && !this.get('isWorking')) {
       return YES;
     }
 
@@ -806,18 +855,68 @@ App.pageController = SC.Object.create({
   }.property('selectedRecord.status').cacheable(),
 
   /**
+   * Flag to indicate if we can show the bring online button
+   *
+   * @type Boolean
+   */
+  canBringOnline: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    var currentStatus = this.getPath('selectedRecord.currentStatus');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN &&
+      currentStatus != App.REPOSITORY_STATUS_ONLINE && !this.get('isWorking')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+
+  /**
+   * Flag to indicate if we can show the bring readonly button
+   *
+   * @type Boolean
+   */
+  canMakeReadOnly: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    var currentStatus = this.getPath('selectedRecord.currentStatus');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN &&
+      currentStatus != App.REPOSITORY_STATUS_READONLY && !this.get('isWorking')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+
+  /**
+   * Flag to indicate if we can show the take offline button
+   *
+   * @type Boolean
+   */
+  canTakeOffline: function() {
+    var recordStatus = this.getPath('selectedRecord.status');
+    var currentStatus = this.getPath('selectedRecord.currentStatus');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN &&
+      currentStatus != App.REPOSITORY_STATUS_OFFLINE && !this.get('isWorking')) {
+      return YES;
+    }
+
+    return NO;
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
+  
+  /**
    * Flag to indicate if we can show the delete button
    *
    * @type Boolean
    */
   canRemove: function() {
     var recordStatus = this.getPath('selectedRecord.status');
-    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN && !this.get('isSavingOrRemoving')) {
+    var currentStatus = this.getPath('selectedRecord.currentStatus');
+    if (!SC.none(recordStatus) && recordStatus === SC.Record.READY_CLEAN &&
+      currentStatus == App.REPOSITORY_STATUS_OFFLINE && !this.get('isWorking')) {
       return YES;
     }
 
     return NO;
-  }.property('selectedRecord.status').cacheable(),
+  }.property('selectedRecord.status', 'selectedRecord.currentStatus').cacheable(),
 
   /**
    * Flag to indicate if we can show the previous button
@@ -866,9 +965,9 @@ App.pageController = SC.Object.create({
     if (selectedRecordIndex == -1) {
       return '_admin.repo.createTitle'.loc();
     } else {
-      return '_admin.repo.editTitle'.loc(this.getPath('selectedRecord.username'));
+      return '_admin.repo.editTitle'.loc(this.getPath('selectedRecord.name'), this.getPath('selectedRecord.currentStatusText'));
     }
-  }.property('selectedRecordIndex', 'selectedRecord.username').cacheable(),
+  }.property('selectedRecordIndex', 'selectedRecord.name', 'selectedRecord.currentStatusText').cacheable(),
 
   /**
    * Open the dialog
@@ -1087,6 +1186,27 @@ App.statechart = SC.Statechart.create({
       },
 
       /**
+       * Bring the repository online
+       */
+      bringOnline: function() {
+        this.gotoState('changeState', { action: App.REPOSITORY_STATUS_ONLINE });
+      },
+
+      /**
+       * Take the repository offline
+       */
+      takeOffline: function() {
+        this.gotoState('changeState', { action: App.REPOSITORY_STATUS_OFFLINE });
+      },
+
+      /**
+       * Make the repository read only
+       */
+      makeReadOnly: function() {
+        this.gotoState('changeState', { action: App.REPOSITORY_STATUS_READONLY });
+      },
+
+      /**
        * Show prior to the selected record
        */
       showPreviousRecord: function() {
@@ -1127,12 +1247,12 @@ App.statechart = SC.Statechart.create({
     saving: SC.State.extend({
 
       enterState: function(ctx) {
-        App.pageController.set('isSavingOrRemoving', YES);
+        App.pageController.set('isWorking', YES);
         this._startSave(ctx.action === 'ok');
       },
 
       exitState: function() {
-        App.pageController.set('isSavingOrRemoving', NO);
+        App.pageController.set('isWorking', NO);
       },
 
       /**
@@ -1167,8 +1287,8 @@ App.statechart = SC.Statechart.create({
         if (SC.none(error)) {
           // Find the correct index and select record again
           for (var i = 0; i < App.resultsController.get('length'); i++) {
-            var userRecord = App.resultsController.objectAtContent(i);
-            if (userRecord.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
+            var record = App.resultsController.objectAtContent(i);
+            if (record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
               App.pageController.selectRecord(i);
               break;
             }
@@ -1193,12 +1313,12 @@ App.statechart = SC.Statechart.create({
     removing: SC.State.extend({
 
       enterState: function(ctx) {
-        App.pageController.set('isSavingOrRemoving', YES);
+        App.pageController.set('isWorking', YES);
         this._startRemove();
       },
 
       exitState: function() {
-        App.pageController.set('isSavingOrRemoving', NO);
+        App.pageController.set('isWorking', NO);
       },
 
       /**
@@ -1233,6 +1353,61 @@ App.statechart = SC.Statechart.create({
         }
       }
     }),
+
+    /**
+     * Call server to bring our repo online
+     */
+    changeState: SC.State.extend({
+
+      enterState: function(ctx) {
+        App.pageController.set('isWorking', YES);
+        this._startChangingState(ctx.action);
+      },
+
+      exitState: function() {
+        App.pageController.set('isWorking', NO);
+      },
+
+      /**
+       * Save selected record
+       * @param {String} action 'online', 'offline', 'readonly'
+       */
+      _startChangingState: function(action) {
+        try {
+          var documentID = App.pageController.get('selectedRecord').get(App.DOCUMENT_ID_RECORD_FIELD_NAME);
+          App.repositoryRuntimeEngine.changeState(documentID, action, this, this._endChangeState, null);
+        }
+        catch (err) {
+          // End with error
+          this._endChangeState(null, null, err);
+        }
+      },
+
+      /**
+       * Called back when save is finished
+       * @param documentID DocumentID of the user record that was saved
+       * @param params context params passed in startSave
+       * @param error Error object. Null if no error.
+       */
+      _endChangeState: function(documentID, params, error) {
+        if (SC.none(error)) {
+          // Find the correct index and select record again
+          for (var i = 0; i < App.resultsController.get('length'); i++) {
+            var record = App.resultsController.objectAtContent(i);
+            if (record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME) === documentID) {
+              App.pageController.selectRecord(i);
+              break;
+            }
+          }
+
+          this.gotoState('showingDialog');
+        } else {
+          alert('Error: ' + error.message);
+          this.gotoState('showingDialog');
+        }
+      }
+    }),
+
 
     /**
      * Block the user from entering data while executing a search

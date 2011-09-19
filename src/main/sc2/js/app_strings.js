@@ -258,7 +258,7 @@ SC.STRINGS = {
   '_admin.user.noRowsFound': 'No repositories found matching your search criteria.',
   '_admin.repo.create': 'New Repository ...',
   '_admin.repo.createTitle': 'New Repository',
-  '_admin.repo.editTitle': 'Repository Configuration',
+  '_admin.repo.editTitle': 'Repository: %@ (%@)',
   '_admin.repo.generalAttributes': 'General',
   '_admin.repo.pubSubAttributes': 'Publication & Subscription',
   '_admin.repo.storageAttributes': 'Storage',
@@ -268,6 +268,13 @@ SC.STRINGS = {
   '_admin.repo.repositoryAccesses.userDisplayName': 'User Display Name',
   '_admin.repo.repositoryAccesses.role': 'Role',
   '_admin.repo.confirmDelete': 'Delete this repository?',
+  '_admin.repo.online': 'Bring Online',
+  '_admin.repo.online.tooltip': 'Start this repository and allow the reading and writing of log entries',
+  '_admin.repo.readonly': 'Make Read Only',
+  '_admin.repo.readonly.tooltip': 'Only allow searching of historical log entries via the workbench',
+  '_admin.repo.offline': 'Take Offline',
+  '_admin.repo.offline.tooltip': 'Stop the reading and writing of log entries for this repository.',
+
 
 
   'end': 'end'

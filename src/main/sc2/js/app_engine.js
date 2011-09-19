@@ -170,7 +170,7 @@ App.EngineMixin = {
 
   /**
    * Converts records in the data store to an array of API objects
-   * 
+   *
    * @param {Class} recordType type of record in the store to convert
    * @return {Array} Array of API objects
    */
@@ -467,9 +467,8 @@ App.userEngine = SC.Object.create(App.EngineMixin, {
 
     // Build query string
     var qs = '?ts=' + new Date().getTime();
-    for (var p in criteria)
-    {
-      if (!SC.empty(criteria[p])){
+    for (var p in criteria) {
+      if (!SC.empty(criteria[p])) {
         qs = qs + '&' + p + '=' + encodeURIComponent(criteria[p]);
       }
     }
@@ -650,14 +649,15 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
   },
 
   /**
-   * YEs if we are performing a server synchronization
+   * YES if we are making online, offline or read only
    * @type Boolean
    */
-  isStartingOrStopping: NO,
+  isChangingState: NO,
 
   /**
-   * Starts a specific repository
-   * @param {String} documentID of repository record to start
+   * Brings a specific repository onnline
+   * @param {String} documentID of repository record to perform action on. If null, perform operation all all repositories
+   * @param {String} action 'online', 'offline' or 'readonly'
    * @param {Object} [callbackTarget] Optional callback object
    * @param {Function} [callbackFunction] Optional callback function in the callback object.
    * Signature is: function(documentID, callbackParams, error) {}.
@@ -665,26 +665,35 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
    * If there is no error, error will be set to null.
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
-  start: function(documentID, callbackTarget, callbackFunction, callbackParams) {
+  changeState: function(documentID, action, callbackTarget, callbackFunction, callbackParams) {
     // Don't run if we are doing stuff
-    if (this.get('isStartingOrStopping')) {
+    if (this.get('isChangingState')) {
       return;
     }
-    this.set('isStartingOrStopping', YES);
+    this.set('isChangingState', YES);
 
     var context = { documentID: documentID, callbackTarget: callbackTarget,
       callbackFunction: callbackFunction, callbackParams: callbackParams
     };
 
+    action = action.toLowerCase();
+
+    var url = '';
+    if (SC.empty(documentID)) {
+      url = '/api/repository_runtime?action=' + action;
+    } else {
+      url = '/api/repository_runtime/' + documentID + '?action=' + action;
+    }
+
     $.ajax({
       type: 'POST',
-      url: '/api/repository_runtime/' + documentID + '?action=start',
+      url: url,
       dataType: 'json',
       contentType: 'application/json; charset=utf-8',
       context: context,
       headers: this._createAjaxRequestHeaders(),
       error: this._ajaxError,
-      success: this._endStart
+      success: this._endChangeState
     });
 
     return;
@@ -701,233 +710,34 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
    * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
    * @returns {Boolean} YES if successful and NO if not.
    */
-  _endStart: function(data, textStatus, jqXHR) {
+  _endChangeState: function(data, textStatus, jqXHR) {
     var error = null;
     try {
       // Get and check data
       var repoAO = data;
-      if (this.documentID !== repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw App.$error('_documentIDError', [ this.documentID, repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]]);
+      if (SC.empty(this.documentID)) {
+        // Update all records
+        App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
+        App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
+      } else {
+        // Update specific record
+        if (this.documentID !== repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]) {
+          throw App.$error('_documentIDError', [ this.documentID, repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]]);
+        }
+        App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
+        App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord, 60);
       }
-
-      // Process response
-      App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord, 60);
     }
     catch (err) {
       error = err;
-      SC.Logger.error('repositoryRuntimeEngine.endStart: ' + err);
+      SC.Logger.error('repositoryRuntimeEngine.endChangeStatus: ' + err);
     }
 
-    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
+    App.repositoryRuntimeEngine.set('isChangingState', NO);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
       this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
-  },
-
-  /**
-   * Stops a specific repository
-   * @param {String} documentID of repository record to stop
-   * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(documentID, callbackParams, error) {}.
-   * documentID will be set to the id of the repository to be stopped.
-   * If there is no error, error will be set to null.
-   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
-   */
-  stop: function(documentID, callbackTarget, callbackFunction, callbackParams) {
-    // Don't run if we are doing stuff
-    if (this.get('isStartingOrStopping')) {
-      return;
-    }
-    this.set('isStartingOrStopping', YES);
-
-    var context = { documentID: documentID, callbackTarget: callbackTarget,
-      callbackFunction: callbackFunction, callbackParams: callbackParams
-    };
-
-    $.ajax({
-      type: 'POST',
-      url: '/api/repository_runtime/' + documentID + '?action=stop',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      context: context,
-      headers: this._createAjaxRequestHeaders(),
-      error: this._ajaxError,
-      success: this._endStop
-    });
-
-    return;
-  },
-
-  /**
-   * Callback from stop() after we get a response from the server to process
-   * the returned info.
-   *
-   * The 'this' object is the context data object.
-   *
-   * @param {Object} data Deserialized JSON returned form the server
-   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
-   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
-   * @returns {Boolean} YES if successful and NO if not.
-   */
-  _endStop: function(data, textStatus, jqXHR) {
-    var error = null;
-    try {
-      // Get and check data
-      var repoAO = data;
-      if (this.documentID !== repoAO[this.DOCUMENT_ID_AO_FIELD_NAME]) {
-        throw App.$error('_documentIDError', [ this.documentID, repoAO[App.DOCUMENT_ID_AO_FIELD_NAME]]);
-      }
-
-      // Merge the data
-      App.repositoryRuntimeEngine._convertApiObjectsToRecords([repoAO], App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, null, App.RepositoryStatusRecord, 60);
-    }
-    catch (err) {
-      error = err;
-      SC.Logger.error('repositoryRuntimeEngine.endStop: ' + err);
-    }
-
-    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
-
-    // Callback
-    if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.documentID, this.callbackParams, error);
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
-  },
-
-  /**
-   * Starts all repositories
-   *
-   * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(callbackParams, error) {}.
-   * If there is no error, error will be set to null.
-   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
-   */
-  startAll: function(callbackTarget, callbackFunction, callbackParams) {
-    // Don't run if we are doing stuff
-    if (this.get('isStartingOrStopping')) {
-      return;
-    }
-    this.set('isStartingOrStopping', YES);
-
-    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-
-    $.ajax({
-      type: 'POST',
-      url: '/api/repositories?action=start',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      context: context,
-      headers: this._createAjaxRequestHeaders(),
-      error: this._ajaxError,
-      success: this._endStartAll
-    });
-
-    return;
-  },
-
-  /**
-   * Process data when repository meta information returns
-   *
-   * The 'this' object is the context data object.
-   *
-   * @param {Object} data Deserialized JSON returned form the server
-   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
-   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
-   * @returns {Boolean} YES if successful and NO if not.
-   */
-  _endStartAll: function(data, textStatus, jqXHR) {
-    var error = null;
-    try {
-      App.repositoryRuntimeEngine.clearData();
-      App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
-    }
-    catch (err) {
-      error = err;
-      SC.Logger.error('repositoryRuntimeEngine.endStartAll: ' + err);
-    }
-
-    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
-
-    // Callback
-    if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
-    }
-
-    // Return YES to signal handling of callback
-    return YES;
-  },
-
-  /**
-   * Stops all repositories
-   * @param {Object} [callbackTarget] Optional callback object
-   * @param {Function} [callbackFunction] Optional callback function in the callback object.
-   * Signature is: function(callbackParams, error) {}.
-   * If there is no error, error will be set to null.
-   * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
-   */
-  stopAll: function(callbackTarget, callbackFunction, callbackParams) {
-    // Don't run if we are doing stuff
-    if (this.get('isStartingOrStopping')) {
-      return;
-    }
-    this.set('isStartingOrStopping', YES);
-
-    var context = { callbackTarget: callbackTarget, callbackFunction: callbackFunction, callbackParams: callbackParams };
-
-    $.ajax({
-      type: 'POST',
-      url: '/api/repositories?action=stop',
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      context: context,
-      headers: this._createAjaxRequestHeaders(),
-      error: this._ajaxError,
-      success: this._endStopAll
-    });
-
-    return;
-  },
-
-  /**
-   * Process data when return from startStopAll
-   *
-   * The 'this' object is the context data object.
-   *
-   * @param {Object} data Deserialized JSON returned form the server
-   * @param {String} textStatus Hash of parameters passed into SC.Request.notify()
-   * @param {jQueryXMLHttpRequest}  jQuery XMLHttpRequest object
-   * @returns {Boolean} YES if successful and NO if not.
-   */
-  _endStopAll: function(data, textStatus, jqXHR) {
-    var error = null;
-    try {
-      App.repositoryRuntimeEngine.clearData();
-      App.repositoryRuntimeEngine._convertApiObjectsToRecords(data, App.RepositoryStatusRecord);
-      App.repositoryRuntimeEngine._putApiObjectsIntoLocalStorage(App.REPOSITORY_STATUS_LOCAL_STORE_KEY, data, App.RepositoryStatusRecord, 60);
-    }
-    catch (err) {
-      error = err;
-      SC.Logger.error('repositoryRuntimeEngine.endStopAll: ' + err);
-    }
-
-    App.repositoryRuntimeEngine.set('isStartingOrStopping', NO);
-
-    // Callback
-    if (!SC.none(this.callbackFunction)) {
-      this.callbackFunction.call(this.callbackTarget, this.callbackParams, error);
     }
 
     // Return YES to signal handling of callback
@@ -1000,7 +810,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
       if (!SC.none(data)) {
         repoEntryAOArray = data['find'];
         if (!SC.none(repoEntryAOArray) && SC.isArray(repoEntryAOArray)) {
-          
+
           // Make keywords into an array of text to highlight
           var keywordsRegexArray = [];
           if (!SC.empty(this.criteria.keywords)) {
@@ -1319,9 +1129,8 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
   search: function(criteria, callbackTarget, callbackFunction, callbackParams) {
     // Build query string
     var qs = '?ts=' + new Date().getTime();
-    for (var p in criteria)
-    {
-      if (!SC.empty(criteria[p])){
+    for (var p in criteria) {
+      if (!SC.empty(criteria[p])) {
         qs = qs + '&' + p + '=' + encodeURIComponent(criteria[p]);
       }
     }
@@ -1388,8 +1197,27 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
     var query = SC.Query.local(App.RepositoryConfigRecord, params);
     return App.store.find(query);
-  }
+  },
 
+  /**
+   * Synchornise the current status of the specified repository config
+   * @param {String} [documentID] If not sepecified, all repository config will be synchronized
+   */
+  syncCurrentStatus: function(documentID) {
+    if (SC.empty(documentID)) {
+      var records = App.store.find(App.RepositoryConfigRecord);
+      if (!SC.none(records)) {
+        records.forEach(function(item) {
+          item.syncCurrentStatus();
+        });
+      }
+    } else {
+      var record = App.store.find(App.RepositoryConfigRecord, documentID);
+      if (!SC.none(record)) {
+        record.syncCurrentStatus();
+      }
+    }
+  }
 
 });
 
