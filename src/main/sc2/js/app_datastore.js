@@ -318,7 +318,7 @@ App.RepositoryConfigRecord = SC.Record.extend({
   description: SC.Record.attr(String, { defaultValue: '' }),
   startupStatus: SC.Record.attr(String, { defaultValue: App.REPOSITORY_STATUS_ONLINE, isRequired: YES }),
 
-  storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: NO, isRequired: YES }),
+  storeEntriesIndicator: SC.Record.attr(Boolean, { defaultValue: YES, isRequired: YES }),
   storageQueueDurableIndicator: SC.Record.attr(Boolean, { defaultValue: NO, isRequired: YES }),
   storageQueueWorkerCount: SC.Record.attr(Number, { defaultValue: 1, isRequired: YES }),
   storageMaxKeywords: SC.Record.attr(Number, { defaultValue: 50, isRequired: YES }),
@@ -565,6 +565,7 @@ App.UserRecord = SC.Record.extend({
 
   /**
    * Flag to be set so that we can trigger saving when adding/deleting repository access items to the array
+   * This affects our flagging of if a record has changed
    */
   repositoryAccessesChanged: SC.Record.attr(Boolean),
 
@@ -602,7 +603,7 @@ App.UserRecord = SC.Record.extend({
           var parts = role.split('.');
           var repoName = parts[1];
           var repoRole = parts[2];
-          repositoryAccesses.push({ repository: repoName, role: repoRole });
+          repositoryAccesses.push({ repository: repoName, role: repoRole, label: repoName + ' (' + repoRole + ')', value: role });
         }
       }
     }

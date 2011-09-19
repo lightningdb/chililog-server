@@ -66,7 +66,7 @@ App.UsernameField = App.StackedFieldView.extend({
  */
 App.EmailAddressField = App.StackedFieldView.extend({
   label: '_admin.user.emailAddress'.loc(),
-  
+
   DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
     classNames: 'large'.w(),
     valueBinding: 'App.pageController.emailAddress',
@@ -253,7 +253,7 @@ App.DialogFieldDataMixin = {
 App.DialogUserNameField = App.FieldView.extend({
   label: '_admin.user.username'.loc(),
   isRequired: YES,
-  help: '_admin.repo.username.help'.loc(),
+  help: '_admin.user.username.help'.loc(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('usernameErrorMessage');
     if (SC.empty(msg)) {
@@ -368,7 +368,7 @@ App.DialogConfirmPasswordField = App.FieldView.extend({
 
 /**
  * @class
- * Status Field
+ * Is System Administrator Field
  */
 App.DialogIsSystemAdministratorField = App.FieldView.extend({
   label: '_admin.user.isSystemAdministrator'.loc(),
@@ -388,6 +388,47 @@ App.DialogIsSystemAdministratorField = App.FieldView.extend({
         return value.get('value');
       }
     })
+  })
+});
+
+/**
+ * @class
+ * Repository Access Field
+ */
+App.DialogRepoAccessField = App.FieldView.extend({
+  label: '_admin.user.repositoryAccesses'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'xxlarge'.w(),
+    multiple: YES,
+    contentBinding: 'App.pageController.selectedRecordRepositoryAccesses'
+
+  }),
+
+  AddButtonView: App.ButtonView.extend({
+    label: '_add'.loc(),
+    disabled: NO,
+    click: function() {
+      App.statechart.sendAction('addRepositoryAccesses');
+      return;
+    }
+  }),
+
+  RemoveButtonView: App.ButtonView.extend({
+    label: '_removeSelection'.loc(),
+    disabledBinding: SC.Binding.from('App.pageController.selectedRecordRepositoryAccesses.selection').transform(function(value, isForward) {
+      if (isForward) {
+        if (SC.none(value)) {
+          return YES;
+        }
+        return value.get('length') == 0;
+      } else {
+        return value;
+      }
+    }),
+    click: function() {
+      App.statechart.sendAction('removeRepositoryAccesses');
+      return;
+    }
   })
 });
 
@@ -488,6 +529,98 @@ App.DialogWorkingImage = App.ImgView.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.isSavingOrRemoving').oneWay().bool()
 });
 
+
+
+
+/**
+ * @class
+ * Dialog div
+ */
+App.RepositoryAccessDialog = SC.View.extend({
+  attributeBindings: ['title'],
+
+  title: '_admin.user.addRepoAccess'.loc(),
+
+  didInsertElement: function() {
+    this._super();
+
+    // JQuery UI dialog setup
+    this.$().dialog({
+      autoOpen: false,
+      height: 220,
+      width: 550,
+      resizable: false,
+      modal: true,
+      close: function(event, ui) {
+        // For when the X is clicked
+        App.statechart.sendAction('dontAdd');
+      }
+    });
+  }
+
+});
+
+
+/**
+ * @class
+ * Specifies the properties of a SC.RepositoryStatusRecord that should be used for the select option label and value
+ */
+App.RepositoryNameSelectOption = App.SelectOption.extend({
+  labelBinding: '*content.name',
+  valueBinding: '*content.documentID'
+});
+
+/**
+ * @class
+ * Repository Field
+ */
+App.DialogRepositoryNameField = App.FieldView.extend({
+  label: '_admin.user.repositoryAccesses.repository'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'large'.w(),
+    contentBinding: 'App.pageController.addRepositoryNameOptions',
+    itemViewClass: App.RepositoryNameSelectOption,
+    valueBinding: 'App.pageController.addRepositoryName'
+  })
+});
+
+/**
+ * @class
+ * Role Field
+ */
+App.DialogRepositoryRoleField = App.FieldView.extend({
+  label: '_admin.user.repositoryAccesses.role'.loc(),
+  DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
+    classNames: 'large'.w(),
+    contentBinding: 'App.pageController.addRepositoryRoleOptions',
+    valueBinding: 'App.pageController.addRepositoryRole'
+  })
+});
+
+
+/**
+ * @class
+ * Button to Add repository access
+ */
+App.DialogRepositoryAccessAddButton = App.ButtonView.extend({
+  label: '_add'.loc(),
+  click: function() {
+    App.statechart.sendAction('add');
+    return;
+  }
+});
+
+/**
+ * @class
+ * Button to cancel adding repository access
+ */
+App.DialogRepositoryAccessCancelButton = App.ButtonView.extend({
+  label: '_cancel'.loc(),
+  click: function() {
+    App.statechart.sendAction('dontAdd');
+    return;
+  }
+});
 
 // --------------------------------------------------------------------------------------------------------------------
 // Controllers
@@ -647,6 +780,13 @@ App.pageController = SC.Object.create({
   selectedRecord: null,
 
   /**
+   * ArrayProxy wrapper around repository access
+   *
+   * @type SC.ArrayProxy
+   */
+  selectedRecordRepositoryAccesses: SC.ArrayProxy.create({ content: [] }),
+
+  /**
    * Flag to indicate if the selected record is a new record
    */
   isNewSelectedRecord: function() {
@@ -663,6 +803,7 @@ App.pageController = SC.Object.create({
     var nestedRecord = App.userEngine.edit(record.get(App.DOCUMENT_ID_RECORD_FIELD_NAME));
     App.pageController.set('selectedRecordIndex', recordIndex);
     App.pageController.set('selectedRecord', nestedRecord);
+    App.pageController.setPath('selectedRecordRepositoryAccesses.content', nestedRecord.get('repositoryAccesses'));
   },
 
   /**
@@ -677,6 +818,7 @@ App.pageController = SC.Object.create({
     }
 
     App.pageController.set('selectedRecordIndex', -1);
+    App.pageController.setPath('selectedRecordRepositoryAccesses.content', []);
     App.pageController.set('selectedRecord', null);
   },
 
@@ -840,6 +982,47 @@ App.pageController = SC.Object.create({
     }
 
     return !isError;
+  },
+
+  /**
+   * Name of selected repository to which the user will be granted access
+   */
+  addRepositoryName: '',
+
+  /**
+   * Options for repository
+   */
+  addRepositoryNameOptions: SC.ArrayProxy.create({ content: [] }),
+
+  /**
+   *Name of selected role with which the user will be granted access
+   */
+  addRepositoryRole: '',
+
+  /**
+   * Options for user's repository role
+   * @type Array of SC.Object
+   */
+  addRepositoryRoleOptions: [
+    SC.Object.create({label: '_admin.user.repositoryAccesses.workbenchRole'.loc(), value: App.REPOSITORY_WORKBENCH_ROLE}),
+    SC.Object.create({label: '_admin.user.repositoryAccesses.publisherRole'.loc(), value: App.REPOSITORY_PUBLISHER_ROLE}),
+    SC.Object.create({label: '_admin.user.repositoryAccesses.subscriberRole'.loc(), value: App.REPOSITORY_SUBSCRIBER_ROLE})
+  ],
+
+  /**
+   * Open the repository access dialog
+   */
+  showRepositoryAccessDialog: function() {
+    App.pageController.set('addRepositoryName', App.pageController.get('addRepositoryNameOptions').get('firstObject'));
+    $('#repositoryAccessDialog').dialog('open');
+    $('#dialogRepositoryNameField select').focus();
+  },
+
+  /**
+   * Close the repository access dialog
+   */
+  hideRepositoryAccessDialog: function() {
+    $('#repositoryAccessDialog').dialog('close');
   }
 
 });
@@ -944,6 +1127,31 @@ App.statechart = SC.Statechart.create({
       },
 
       /**
+       * Show the dialog
+       */
+      addRepositoryAccesses: function() {
+        App.pageController.showRepositoryAccessDialog();
+        this.gotoState('showingRepositoryAccessDialog');
+      },
+
+      /**
+       * Remove selected repository accesses
+       */
+      removeRepositoryAccesses: function() {
+        var arrayProxy = App.pageController.get('selectedRecordRepositoryAccesses');
+        var selection = arrayProxy.get('selection');
+        var array = arrayProxy.get('content');
+        if (!SC.none(selection)) {
+          selection.forEach(function(item) {
+            arrayProxy.removeObject(item);
+          });
+        }
+        arrayProxy.set('selection', []);
+        App.pageController.setPath('selectedRecord.repositoryAccessesChanged', YES);
+        return;
+      },
+
+      /**
        * Show prior to the selected record
        */
       showPreviousRecord: function() {
@@ -978,11 +1186,46 @@ App.statechart = SC.Statechart.create({
       }
     }),
 
+    showingRepositoryAccessDialog:  SC.State.extend({
+      enterState: function(ctx) {
+      },
+
+      exitState: function() {
+      },
+
+      add: function() {
+        var repoName = App.pageController.getPath('addRepositoryName.name');
+        var repoRole = App.pageController.getPath('addRepositoryRole.value');
+        var role = 'repo.' + repoName +'.' + repoRole;
+
+        var newAccess = {
+          repository: repoName,
+          role: repoRole,
+          label: repoName + ' (' + repoRole + ')',
+          value: role
+        };
+
+        var arrayProxy = App.pageController.get('selectedRecordRepositoryAccesses');
+        arrayProxy.pushObject(newAccess);
+
+        // Set dummy value to trigger record status change
+        App.pageController.setPath('selectedRecord.repositoryAccessesChanged', YES);
+
+        App.pageController.hideRepositoryAccessDialog();
+        this.gotoState('showingDialog');
+      },
+
+      dontAdd: function() {
+        App.pageController.hideRepositoryAccessDialog();
+        this.gotoState('showingDialog');
+        return NO;
+      }
+    }),
+
     /**
      * Call server to save our record
      */
     saving: SC.State.extend({
-
       enterState: function(ctx) {
         App.pageController.set('isSavingOrRemoving', YES);
         this._startSave(ctx.action === 'ok');
@@ -1208,6 +1451,10 @@ if (App.sessionEngine.load()) {
 
   App.viewUtils.setupStandardPage(App.pageFileName);
   App.resultsController.set('content', App.userEngine.getRecords());
+  App.repositoryRuntimeEngine.load();
+
+  var recordArray = App.repositoryRuntimeEngine.getRecords();
+  App.pageController.get('addRepositoryNameOptions').set('content', recordArray);
 
   App.statechart.initStatechart();
 } else {

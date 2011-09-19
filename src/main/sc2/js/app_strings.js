@@ -25,7 +25,7 @@ SC.STRINGS = {
  // ********************************************************
   // General
   // ********************************************************
-  '_add': 'Add',
+  '_add': 'Add New',
   '_save': 'Save',
   '_ok': 'OK',
   '_apply': 'Apply',
@@ -33,6 +33,7 @@ SC.STRINGS = {
   '_refresh': 'Refresh',
   '_refreshing': 'Refreshing ...',
   '_delete': 'Delete',
+  '_removeSelection': 'Delete Selection',
   '_remove': 'Delete',
   '_removeTooltip': 'Delete this record',
   '_back': '\< Back',
@@ -211,6 +212,7 @@ SC.STRINGS = {
   '_admin.user.generalAttributes': 'General',
   '_admin.user.rolesAttributes': 'Roles',
   '_admin.user.confirmDelete': 'Delete this user?',
+  '_admin.user.addRepoAccess': 'New Repository Access;',
 
   '_admin.repo.name': 'Name',
   '_admin.repo.name.help': 'Only lower case letters (a-z), digits (0-9) and underscore (_) characters allowed.',

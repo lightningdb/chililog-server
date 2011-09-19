@@ -130,6 +130,17 @@
       </fieldset>
       <fieldset id="dialogRolesTabContent">
         {{view App.DialogIsSystemAdministratorField id="dialogIsSystemAdministratorField" }}
+        {{#view App.DialogRepoAccessField id="dialogRepoAccessField" }}
+          {{view LabelView}}
+          <div class="input">
+            {{view DataView}}
+            <span class="help-inline">{{help}}</span>
+            <div style="padding-top: 8px;">
+              {{view AddButtonView id="dialogAddRepositoryAccessButton" class="btn"}}
+              {{view RemoveButtonView id="dialogRemoveRepositoryAccessButton" class="btn"}}
+            </div>
+          </div>
+        {{/view}}
       </fieldset>
     </form>
     <div class="clearfix dialogBottomBar">
@@ -150,6 +161,20 @@
   </div>
 {{/view}}
 
+{{#view App.RepositoryAccessDialog id="repositoryAccessDialog" style="display:none" class="admin ui-dialog ui-widget ui-widget-content ui-corner-all"}}
+  <form id="dialogRepoAccess" style="height:100px;">
+    <fieldset>
+      {{view App.DialogRepositoryNameField id="dialogRepositoryNameField" }}
+      {{view App.DialogRepositoryRoleField id="dialogRepositoryRoleField" }}
+    </fieldset>
+  </form>
+  <div class="clearfix dialogBottomBar">
+    <div style="float: right;">
+      {{view App.DialogRepositoryAccessAddButton id="dialogRepositoryAccessAddButton" class="btn primary"}}
+      {{view App.DialogRepositoryAccessCancelButton id="dialogRepositoryAccessCancelButton" class="btn"}}
+     </div>
+  </div>
+{{/view}}
 </script>
 
 

@@ -235,6 +235,8 @@ App.SelectView = SC.CollectionView.extend({
 
   itemViewClass: App.SelectOption,
 
+  multiple: NO,
+
   _value: null,
 
   value: function(key, value) {
@@ -244,7 +246,17 @@ App.SelectView = SC.CollectionView.extend({
       get(this, 'childViews').forEach(function(el, idx) {
         var content = get(el, 'content');
 
-        if (content === value) {
+        // Multiple has array
+        if (value.constructor === Array) {
+          var found = false;
+          for (var i=0; i<value.length; i++) {
+            if (content === value[i]) {
+              found = true;
+              break;
+            }
+          }
+          set(content, 'selected', found);
+        } else if (content === value) {
           set(content, 'selected', true);
         } else {
           set(content, 'selected', false);
