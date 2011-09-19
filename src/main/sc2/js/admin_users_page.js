@@ -21,7 +21,7 @@
 //
 
 // --------------------------------------------------------------------------------------------------------------------
-// Views
+// Main Page Views
 // --------------------------------------------------------------------------------------------------------------------
 /**
  * @class
@@ -181,6 +181,9 @@ App.WorkingImage = App.ImgView.extend({
   isVisibleBinding: SC.Binding.from('App.pageController.isSearching').oneWay().bool()
 });
 
+// --------------------------------------------------------------------------------------------------------------------
+// User Dialog Views
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * @class
@@ -530,11 +533,13 @@ App.DialogWorkingImage = App.ImgView.extend({
 });
 
 
-
+// --------------------------------------------------------------------------------------------------------------------
+// Add Repository Access Dialog Views
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * @class
- * Dialog div
+ * Dialog for adding repository access
  */
 App.RepositoryAccessDialog = SC.View.extend({
   attributeBindings: ['title'],
@@ -577,7 +582,7 @@ App.RepositoryNameSelectOption = App.SelectOption.extend({
 App.DialogRepositoryNameField = App.FieldView.extend({
   label: '_admin.user.repositoryAccesses.repository'.loc(),
   DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
-    classNames: 'large'.w(),
+    classNames: 'xlarge'.w(),
     contentBinding: 'App.pageController.addRepositoryNameOptions',
     itemViewClass: App.RepositoryNameSelectOption,
     valueBinding: 'App.pageController.addRepositoryName'
@@ -591,7 +596,7 @@ App.DialogRepositoryNameField = App.FieldView.extend({
 App.DialogRepositoryRoleField = App.FieldView.extend({
   label: '_admin.user.repositoryAccesses.role'.loc(),
   DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
-    classNames: 'large'.w(),
+    classNames: 'xlarge'.w(),
     contentBinding: 'App.pageController.addRepositoryRoleOptions',
     valueBinding: 'App.pageController.addRepositoryRole'
   })
@@ -818,7 +823,6 @@ App.pageController = SC.Object.create({
     }
 
     App.pageController.set('selectedRecordIndex', -1);
-    App.pageController.setPath('selectedRecordRepositoryAccesses.content', []);
     App.pageController.set('selectedRecord', null);
   },
 
