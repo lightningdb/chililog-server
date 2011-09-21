@@ -25,7 +25,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 var App = SC.Application.create({
   NAMESPACE: 'App',
-  VERSION: '1.0'
+  VERSION: '00.00.02-ALHPA',
+  COPYRIGHT: '&copy; 2011 Cinch Logic.'
 });
 
 

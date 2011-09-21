@@ -1,5 +1,5 @@
   <footer>
-    <div>
-      chililog V0.0.1. &copy; 2011 Cinch Logic.
-    </div>
+    {{#view App.FooterText id="footerText" }}
+      chililog V{{appVersion}}. {{copyright}}
+    {{/view}}
   </footer>

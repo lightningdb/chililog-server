@@ -59,7 +59,7 @@
   <div class="title">
     <h1>Administration</h1>
   </div>
-  <div id="repoContent" class="admin clearfix">
+  <div id="userContent" class="admin clearfix">
     <div class="submenu" style="height:50px;">
       <ul class="tabs">
         <li><a href="admin_repos.html">Repositories</a></li>
@@ -104,9 +104,9 @@
 
   <!-- START COMMON FOOTER BLOCK -->
   <footer>
-    <div>
-      chililog V0.0.1. &copy; 2011 Cinch Logic.
-    </div>
+    {{#view App.FooterText id="footerText" }}
+      chililog V{{appVersion}}. {{copyright}}
+    {{/view}}
   </footer>
   <!-- END COMMON FOOTER BLOCK -->
 </div>

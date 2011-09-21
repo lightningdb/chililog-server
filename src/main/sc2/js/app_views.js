@@ -24,6 +24,15 @@
  *
  * Our own text box supports additional attributes on the textbox
  */
+App.FooterText = SC.View.extend({
+  appVersion: App.VERSION,
+  copyright: App.COPYRIGHT
+});
+
+/** @Class
+ *
+ * Our own text box supports additional attributes on the textbox
+ */
 App.TextBoxView = SC.TextField.extend({
   /**
    * Specify additional attributes
@@ -721,15 +730,18 @@ App.viewUtils = {
     $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
 
     // Open top bar menu when clicked
-    $("a.menu").click(function (e) {
+    $('a.menu').click(function (e) {
       var $li = $(this).parent("li").toggleClass('open');
       return false;
     });
 
     // Close top bar menu when body clicked
-    $("body").bind("click", function (e) {
-      $('a.menu').parent("li").removeClass("open");
+    $('body').bind('click', function (e) {
+      $('a.menu').parent('li').removeClass('open');
     });
+
+    // Show version number
+    $('#appVersion').append(App.VERSION);
   },
 
   /**
