@@ -40,9 +40,6 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
 {
     /**
      * Constructor
-     * 
-     * @param executionHandler
-     *            Thread pool to use to execute handlers
      */
     public HttpServerPipelineFactory()
     {

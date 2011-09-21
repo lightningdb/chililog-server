@@ -33,6 +33,7 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * <p>
@@ -49,13 +50,11 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * </pre>
  * 
  * <p>
- * The web server's request handling pipeline is setup by {@link HttpServerPipelineFactory}. <a
- * href="http://www.jboss.org/netty/community#nabble-td3823513">Three</a> Netty thread pools are used:
+ * The web server's request handling pipeline is setup by {@link HttpServerPipelineFactory}. Two Netty thread pools are
+ * used:
  * <ul>
  * <li>One for the channel bosses (the server channel acceptors). See NioServerSocketChannelFactory javadoc.</li>
  * <li>One for the accepted channels (called workers). See NioServerSocketChannelFactory javadoc.</li>
- * <li>One for task processing, after the request has been decoded and understood. See ExecutionHandler and
- * OrderedMemoryAwareThreadPoolExecutor javadoc.</li>
  * </ul>
  * </p>
  * <p>
@@ -86,11 +85,11 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * </p>
  * 
  * <p>
- * We stopped using the {@lin OrderedMemoryAwareThreadPoolExecutor} and it gave <a
+ * We stopped using the {@link OrderedMemoryAwareThreadPoolExecutor} as a third level worker pool because it created <a
  * href="http://www.jboss.org/netty/community#nabble-td6303816">errors with compression</a> and <a
  * href="http://web.archiveorange.com/archive/v/ZVMdIF9d6poqpmuvDOuq">performance issues</a>. We've since removed it.
- * Not sure if we really need to run in another thread since we are using the Executors.newCachedThreadPool().
- * 
+ * Not sure if we really need to run in another thread pool since we are using the Executors.newCachedThreadPool() which
+ * creates a new thread as needed.
  * </p>
  * 
  * @author vibul

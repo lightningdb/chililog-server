@@ -51,13 +51,11 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * </pre>
  * 
  * <p>
- * The web server's request handling pipeline is setup by {@link JsonHttpServerPipelineFactory}. <a
- * href="http://www.jboss.org/netty/community#nabble-td3823513">Three</a> Netty thread pools are used:
+ * The web server's request handling pipeline is setup by {@link JsonHttpServerPipelineFactory}. Two Netty thread pools
+ * are used:
  * <ul>
  * <li>One for the channel bosses (the server channel acceptors). See NioServerSocketChannelFactory javadoc.</li>
  * <li>One for the accepted channels (called workers). See NioServerSocketChannelFactory javadoc.</li>
- * <li>One for task processing, after the request has been decoded and understood. See ExecutionHandler and
- * OrderedMemoryAwareThreadPoolExecutor javadoc.</li>
  * </ul>
  * </p>
  * <p>
@@ -171,9 +169,10 @@ public class JsonHttpService
                     continue;
                 }
             }
-            
-            SocketAddress address = h.equals("0.0.0.0") ? new InetSocketAddress(appProperties.getPubSubJsonHttpProtocolPort())
-                    : new InetSocketAddress(h, appProperties.getPubSubJsonHttpProtocolPort());
+
+            SocketAddress address = h.equals("0.0.0.0") ? new InetSocketAddress(
+                    appProperties.getPubSubJsonHttpProtocolPort()) : new InetSocketAddress(h,
+                    appProperties.getPubSubJsonHttpProtocolPort());
             Channel channel = bootstrap.bind(address);
             _allChannels.add(channel);
         }

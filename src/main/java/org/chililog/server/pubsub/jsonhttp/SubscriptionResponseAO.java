@@ -94,9 +94,7 @@ public class SubscriptionResponseAO
     }
 
     /**
-     * Returns the type of message: "PublicationRequest"
-     * 
-     * @return
+     * Returns the type of message: "SubscriptionResponse"
      */
     public String getMessageType()
     {

@@ -40,9 +40,6 @@ public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory
 {
     /**
      * Constructor
-     * 
-     * @param executionHandler
-     *            Thread pool to use to execute handlers
      */
     public JsonHttpServerPipelineFactory()
     {

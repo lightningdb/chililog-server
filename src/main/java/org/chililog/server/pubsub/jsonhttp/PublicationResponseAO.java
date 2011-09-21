@@ -79,9 +79,7 @@ public class PublicationResponseAO
     }
 
     /**
-     * Returns the type of message: "PublicationRequest"
-     * 
-     * @return
+     * Returns the type of message: "PublicationResponse"
      */
     public String getMessageType()
     {

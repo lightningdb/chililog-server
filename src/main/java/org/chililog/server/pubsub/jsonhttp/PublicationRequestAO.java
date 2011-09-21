@@ -40,8 +40,6 @@ public class PublicationRequestAO
 
     /**
      * Returns the type of message: "PublicationRequest"
-     * 
-     * @return
      */
     public String getMessageType()
     {

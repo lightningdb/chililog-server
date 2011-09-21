@@ -38,9 +38,7 @@ public class SubscriptionRequestAO
     }
 
     /**
-     * Returns the type of message: "PublicationRequest"
-     * 
-     * @return
+     * Returns the type of message: "SubscriptionRequest"
      */
     public String getMessageType()
     {
