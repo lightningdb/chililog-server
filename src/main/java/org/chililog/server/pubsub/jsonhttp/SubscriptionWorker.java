@@ -34,13 +34,13 @@ import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
 import org.chililog.server.engine.RepositoryStorageWorker;
 import org.chililog.server.pubsub.Strings;
+import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.workbench.workers.AuthenticationTokenAO;
 import org.hornetq.api.core.client.ClientConsumer;
 import org.hornetq.api.core.client.ClientMessage;
 import org.hornetq.api.core.client.ClientSession;
 import org.hornetq.api.core.client.MessageHandler;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
 
 import com.mongodb.DB;
 
@@ -239,7 +239,7 @@ public class SubscriptionWorker
 
                 SubscriptionResponseAO responseAO = new SubscriptionResponseAO(_messageID, logEntry);
                 String responseJson = JsonTranslator.getInstance().toJson(responseAO);
-                _channel.write(new DefaultWebSocketFrame(responseJson));
+                _channel.write(new TextWebSocketFrame(responseJson));
 
                 return;
             }

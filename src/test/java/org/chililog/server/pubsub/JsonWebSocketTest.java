@@ -303,7 +303,7 @@ public class JsonWebSocketTest
         }
 
         // Wait a moment for log entry to be processed
-        Thread.sleep(3000);
+        Thread.sleep(5000);
 
         // Check that the entry is written to the log
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
