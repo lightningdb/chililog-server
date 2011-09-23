@@ -51,8 +51,7 @@ import com.mongodb.DB;
  * @author vibul
  * 
  */
-public class RepositoryService
-{
+public class RepositoryService {
     static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryService.class);
 
     /**
@@ -63,8 +62,7 @@ public class RepositoryService
     /**
      * Returns the singleton instance for this class
      */
-    public static RepositoryService getInstance()
-    {
+    public static RepositoryService getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -74,8 +72,7 @@ public class RepositoryService
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final RepositoryService INSTANCE = new RepositoryService();
     }
 
@@ -84,8 +81,7 @@ public class RepositoryService
      * Singleton constructor
      * </p>
      */
-    private RepositoryService()
-    {
+    private RepositoryService() {
         return;
     }
 
@@ -97,17 +93,13 @@ public class RepositoryService
      * Should be called once at the start of the application
      * </p>
      */
-    public synchronized void start() throws ChiliLogException
-    {
+    public synchronized void start() throws ChiliLogException {
         ArrayList<RepositoryConfigBO> repoConfigList = this.getRepositoryConfigList();
-        for (RepositoryConfigBO repoConfig : repoConfigList)
-        {
-            if (repoConfig.getStartupStatus() == Status.ONLINE)
-            {
+        for (RepositoryConfigBO repoConfig : repoConfigList) {
+            if (repoConfig.getStartupStatus() == Status.ONLINE) {
                 bringRepositoryOnline(repoConfig);
             }
-            else if (repoConfig.getStartupStatus() == Status.READONLY)
-            {
+            else if (repoConfig.getStartupStatus() == Status.READONLY) {
                 makeRepositoryReadOnly(repoConfig);
             }
         }
@@ -119,30 +111,25 @@ public class RepositoryService
      * 
      * @throws Exception
      */
-    public synchronized void stop() throws Exception
-    {
+    public synchronized void stop() throws Exception {
         takeAllRepositoriesOffline();
         return;
     }
-    
+
     /**
      * <p>
      * Brings all repositories online
      * </p>
      */
-    public synchronized void bringAllRepositoriesOnline() throws ChiliLogException
-    {
+    public synchronized void bringAllRepositoriesOnline() throws ChiliLogException {
         ArrayList<RepositoryConfigBO> repoList = this.getRepositoryConfigList();
-        for (RepositoryConfigBO repoConfig : repoList)
-        {
+        for (RepositoryConfigBO repoConfig : repoList) {
             // If offline or readonly, enable it
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
-            if (repo == null)
-            {
+            if (repo == null) {
                 bringRepositoryOnline(repoConfig);
-            } 
-            else if (repo.getStatus() == Status.READONLY)
-            {
+            }
+            else if (repo.getStatus() == Status.READONLY) {
                 // Reload readonly repositories so that it gets the latest definition
                 takeRepositoryOffline(repo);
                 makeRepositoryReadOnly(repoConfig);
@@ -156,19 +143,15 @@ public class RepositoryService
      * Make all repositories read only
      * </p>
      */
-    public synchronized void makeAllRepositoriesReadonly() throws ChiliLogException
-    {
+    public synchronized void makeAllRepositoriesReadonly() throws ChiliLogException {
         ArrayList<RepositoryConfigBO> repoList = this.getRepositoryConfigList();
-        for (RepositoryConfigBO repoConfig : repoList)
-        {
+        for (RepositoryConfigBO repoConfig : repoList) {
             // If offline or readonly, enable it
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
-            if (repo == null)
-            {
+            if (repo == null) {
                 makeRepositoryReadOnly(repoConfig);
-            } 
-            else if (repo.getStatus() == Status.ONLINE)
-            {
+            }
+            else if (repo.getStatus() == Status.ONLINE) {
                 repo.makeReadonly();
             }
         }
@@ -181,10 +164,8 @@ public class RepositoryService
      * Take all repositories offline
      * </p>
      */
-    public synchronized void takeAllRepositoriesOffline() throws ChiliLogException
-    {
-        for (Repository repo : _activeRepositories)
-        {
+    public synchronized void takeAllRepositoriesOffline() throws ChiliLogException {
+        for (Repository repo : _activeRepositories) {
             repo.takeOffline();
         }
         _activeRepositories.clear();
@@ -200,18 +181,14 @@ public class RepositoryService
      * @return Repository runtime information
      * @throws ChiliLogException
      */
-    public synchronized Repository bringRepositoryOnline(ObjectId repositoryInfoDocumentID) throws ChiliLogException
-    {
+    public synchronized Repository bringRepositoryOnline(ObjectId repositoryInfoDocumentID) throws ChiliLogException {
         Repository repo = this.getActiveRepository(repositoryInfoDocumentID);
-        if (repo != null)
-        {
-            if (repo.getStatus() == Status.ONLINE)
-            {
+        if (repo != null) {
+            if (repo.getStatus() == Status.ONLINE) {
                 // Repository is already online
                 return repo;
             }
-            else if (repo.getStatus() == Status.READONLY)
-            {
+            else if (repo.getStatus() == Status.READONLY) {
                 // Remove the repository so we can bring online with the latest definition
                 _activeRepositories.remove(repo);
             }
@@ -230,8 +207,7 @@ public class RepositoryService
      * @return Repository runtime information
      * @throws ChiliLogException
      */
-    private Repository bringRepositoryOnline(RepositoryConfigBO repoConfig) throws ChiliLogException
-    {
+    private Repository bringRepositoryOnline(RepositoryConfigBO repoConfig) throws ChiliLogException {
         Repository repo = new Repository(repoConfig);
         repo.bringOnline();
         _activeRepositories.add(repo);
@@ -239,26 +215,22 @@ public class RepositoryService
     }
 
     /**
-     * Creates a repository and make it readonly 
+     * Creates a repository and make it readonly
      * 
      * @param repositoryInfoDocumentID
      *            Document ID of the repository to stop
      * @return Repository runtime information
      * @throws ChiliLogException
      */
-    public synchronized Repository makeRepositoryReadOnly(ObjectId repositoryInfoDocumentID) throws ChiliLogException
-    {
+    public synchronized Repository makeRepositoryReadOnly(ObjectId repositoryInfoDocumentID) throws ChiliLogException {
         Repository repo = this.getActiveRepository(repositoryInfoDocumentID);
-        if (repo != null)
-        {
-            if (repo.getStatus() == Status.ONLINE)
-            {
+        if (repo != null) {
+            if (repo.getStatus() == Status.ONLINE) {
                 // Make repository readonly
                 repo.makeReadonly();
                 return repo;
             }
-            else if (repo.getStatus() == Status.READONLY)
-            {
+            else if (repo.getStatus() == Status.READONLY) {
                 // Repo already readonly so just return it
                 return repo;
             }
@@ -277,14 +249,13 @@ public class RepositoryService
      * @return Repository runtime information
      * @throws ChiliLogException
      */
-    private synchronized Repository makeRepositoryReadOnly(RepositoryConfigBO repoConfig) throws ChiliLogException
-    {
+    private synchronized Repository makeRepositoryReadOnly(RepositoryConfigBO repoConfig) throws ChiliLogException {
         Repository repo = new Repository(repoConfig);
         repo.makeReadonly();
         _activeRepositories.add(repo);
         return repo;
     }
-    
+
     /**
      * Take the specified repository offline. Streaming of log entries will be disabled and new log entries will not be
      * stored. Also, searching is prohibited on the workbench.
@@ -293,11 +264,9 @@ public class RepositoryService
      *            Document ID of the repository to stop
      * @throws ChiliLogException
      */
-    public synchronized void takeRepositoryOffline(ObjectId repositoryInfoDocumentID) throws ChiliLogException
-    {
+    public synchronized void takeRepositoryOffline(ObjectId repositoryInfoDocumentID) throws ChiliLogException {
         Repository repo = getActiveRepository(repositoryInfoDocumentID);
-        if (repo != null)
-        {
+        if (repo != null) {
             takeRepositoryOffline(repo);
         }
     }
@@ -310,8 +279,7 @@ public class RepositoryService
      *            Runtime information of repository to stop
      * @throws ChiliLogException
      */
-    private synchronized void takeRepositoryOffline(Repository repo) throws ChiliLogException
-    {
+    private synchronized void takeRepositoryOffline(Repository repo) throws ChiliLogException {
         repo.takeOffline();
         _activeRepositories.remove(repo);
         return;
@@ -324,12 +292,9 @@ public class RepositoryService
      *            ID of repository configuration document of repository to find
      * @return Matching repository. <code>null</code> if not found
      */
-    private Repository getActiveRepository(ObjectId repositoryConfigDocumentID)
-    {
-        for (Repository repo : _activeRepositories)
-        {
-            if (repo.getRepoConfig().getDocumentID().equals(repositoryConfigDocumentID))
-            {
+    private Repository getActiveRepository(ObjectId repositoryConfigDocumentID) {
+        for (Repository repo : _activeRepositories) {
+            if (repo.getRepoConfig().getDocumentID().equals(repositoryConfigDocumentID)) {
                 return repo;
             }
         }
@@ -344,8 +309,7 @@ public class RepositoryService
      * 
      * @throws ChiliLogException
      */
-    private ArrayList<RepositoryConfigBO> getRepositoryConfigList() throws ChiliLogException
-    {
+    private ArrayList<RepositoryConfigBO> getRepositoryConfigList() throws ChiliLogException {
         // Get count connections
         DB db = MongoConnection.getInstance().getConnection();
 
@@ -364,13 +328,10 @@ public class RepositoryService
      * @throws ChiliLogException
      *             - if error or not found
      */
-    public synchronized Repository getRepository(ObjectId id) throws ChiliLogException
-    {
+    public synchronized Repository getRepository(ObjectId id) throws ChiliLogException {
         // Check it see if repository is online
-        for (Repository repo : _activeRepositories)
-        {
-            if (repo.getRepoConfig().getDocumentID().equals(id))
-            {
+        for (Repository repo : _activeRepositories) {
+            if (repo.getRepoConfig().getDocumentID().equals(id)) {
                 return repo;
             }
         }
@@ -386,19 +347,15 @@ public class RepositoryService
      * 
      * @throws ChiliLogException
      */
-    public synchronized Repository[] getRepositories() throws ChiliLogException
-    {
+    public synchronized Repository[] getRepositories() throws ChiliLogException {
         ArrayList<Repository> list = new ArrayList<Repository>();
         ArrayList<RepositoryConfigBO> repoConfigList = this.getRepositoryConfigList();
-        for (RepositoryConfigBO repoConfig : repoConfigList)
-        {
+        for (RepositoryConfigBO repoConfig : repoConfigList) {
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
-            if (repo == null)
-            {
+            if (repo == null) {
                 list.add(new Repository(repoConfig));
             }
-            else
-            {
+            else {
                 // Online so send that one
                 list.add(repo);
             }

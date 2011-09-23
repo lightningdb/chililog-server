@@ -37,7 +37,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 
-
 /**
  * <p>
  * Base API class. Contains the interface for <code>HttpRequestHandler</code> to use as well as common methods.
@@ -58,8 +57,7 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
  * </ul>
  * </p>
  */
-public abstract class Worker
-{
+public abstract class Worker {
     private HttpRequest _request = null;
     private Map<String, List<String>> _uriQueryStringParameters;
     private String[] _uriPathParameters = null;
@@ -91,39 +89,33 @@ public abstract class Worker
      * @param request
      *            HTTP request to process
      */
-    public Worker(HttpRequest request)
-    {
+    public Worker(HttpRequest request) {
         _request = request;
     }
 
     /**
      * Returns the HTTP request that is being processed
      */
-    public HttpRequest getRequest()
-    {
+    public HttpRequest getRequest() {
         return _request;
     }
 
     /**
      * Determines how the HTTP request content is to be passed into <code>process()</code>.
      */
-    public ContentIOStyle getRequestContentIOStyle()
-    {
+    public ContentIOStyle getRequestContentIOStyle() {
         return _requestContentIOStyle;
     }
 
-    protected void setRequestContentIOStyle(ContentIOStyle requestContentIOStyle)
-    {
+    protected void setRequestContentIOStyle(ContentIOStyle requestContentIOStyle) {
         _requestContentIOStyle = requestContentIOStyle;
     }
 
     /**
      * Returns an array of supported HTTP request methods.
      */
-    public HttpMethod[] getSupportedMethods()
-    {
-        return new HttpMethod[]
-        { HttpMethod.GET, HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE };
+    public HttpMethod[] getSupportedMethods() {
+        return new HttpMethod[] { HttpMethod.GET, HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE };
     }
 
     /**
@@ -138,8 +130,7 @@ public abstract class Worker
      * assertEquals(this.getUriPathParameters()[0], &quot;123456789&quot;);
      * </pre>
      */
-    public String[] getUriPathParameters()
-    {
+    public String[] getUriPathParameters() {
         return _uriPathParameters;
     }
 
@@ -153,10 +144,8 @@ public abstract class Worker
      * @return Value of specified parameter
      * @throws ChiliLogException
      */
-    public String getUriPathParameter(String paramterName, int parameterIndex) throws ChiliLogException
-    {
-        if (_uriPathParameters == null || parameterIndex < 0 || parameterIndex >= _uriPathParameters.length)
-        {
+    public String getUriPathParameter(String paramterName, int parameterIndex) throws ChiliLogException {
+        if (_uriPathParameters == null || parameterIndex < 0 || parameterIndex >= _uriPathParameters.length) {
             throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, paramterName, _request.getUri());
         }
         return _uriPathParameters[parameterIndex];
@@ -174,8 +163,7 @@ public abstract class Worker
      * assertEquals(this.getUriQueryStringParameters().get(&quot;hello&quot;).get(0), &quot;world&quot;);
      * </pre>
      */
-    public Map<String, List<String>> getUriQueryStringParameters()
-    {
+    public Map<String, List<String>> getUriQueryStringParameters() {
         return _uriQueryStringParameters;
     }
 
@@ -189,22 +177,17 @@ public abstract class Worker
      * @return Query string parameter value
      * @throws ChiliLogException
      */
-    public String getUriQueryStringParameter(String parameterName, boolean isOptional) throws ChiliLogException
-    {
+    public String getUriQueryStringParameter(String parameterName, boolean isOptional) throws ChiliLogException {
         String value = null;
-        if (_uriQueryStringParameters.containsKey(parameterName))
-        {
+        if (_uriQueryStringParameters.containsKey(parameterName)) {
             List<String> l = _uriQueryStringParameters.get(parameterName);
-            if (l != null && !l.isEmpty())
-            {
+            if (l != null && !l.isEmpty()) {
                 value = l.get(0);
             }
         }
 
-        if (StringUtils.isBlank(value))
-        {
-            if (isOptional)
-            {
+        if (StringUtils.isBlank(value)) {
+            if (isOptional) {
                 return null;
             }
             throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_ERROR, parameterName, _request.getUri());
@@ -221,26 +204,22 @@ public abstract class Worker
      *            list criteria to load query string values into
      * @throws ChiliLogException
      */
-    protected void loadBaseListCriteriaParameters(ListCriteria listCritiera) throws ChiliLogException
-    {
+    protected void loadBaseListCriteriaParameters(ListCriteria listCritiera) throws ChiliLogException {
         String recordsPerPage = this.getQueryStringOrHeaderValue(RECORDS_PER_PAGE_URI_QUERYSTRING_PARAMETER_NAME,
                 RECORDS_PER_PAGE_HEADER_NAME, true);
-        if (!StringUtils.isBlank(recordsPerPage))
-        {
+        if (!StringUtils.isBlank(recordsPerPage)) {
             listCritiera.setRecordsPerPage(Integer.parseInt(recordsPerPage));
         }
 
         String startPage = this.getQueryStringOrHeaderValue(START_PAGE_URI_QUERYSTRING_PARAMETER_NAME,
                 START_PAGE_HEADER_NAME, true);
-        if (!StringUtils.isBlank(startPage))
-        {
+        if (!StringUtils.isBlank(startPage)) {
             listCritiera.setStartPage(Integer.parseInt(startPage));
         }
 
         String doPageCount = this.getQueryStringOrHeaderValue(DO_PAGE_COUNT_URI_QUERYSTRING_PARAMETER_NAME,
                 DO_PAGE_COUNT_HEADER_NAME, true);
-        if (!StringUtils.isBlank(doPageCount))
-        {
+        if (!StringUtils.isBlank(doPageCount)) {
             listCritiera.setDoPageCount(doPageCount.equalsIgnoreCase("true"));
         }
     }
@@ -258,14 +237,11 @@ public abstract class Worker
      * @throws ChiliLogException
      */
     protected String getQueryStringOrHeaderValue(String queryStringParameterName, String headerName, boolean isOptional)
-            throws ChiliLogException
-    {
+            throws ChiliLogException {
         String s = this.getUriQueryStringParameter(queryStringParameterName, true);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             s = _request.getHeader(headerName);
-            if (StringUtils.isBlank(s) && !isOptional)
-            {
+            if (StringUtils.isBlank(s) && !isOptional) {
                 throw new ChiliLogException(Strings.URI_QUERY_STRING_PARAMETER_OR_HEADER_ERROR,
                         queryStringParameterName, headerName, _request.getUri());
             }
@@ -277,8 +253,7 @@ public abstract class Worker
     /**
      * Returns the authentication token
      */
-    protected AuthenticationTokenAO getAuthenticationToken()
-    {
+    protected AuthenticationTokenAO getAuthenticationToken() {
         return _authenticationToken;
     }
 
@@ -287,21 +262,18 @@ public abstract class Worker
      * 
      * @param authenticationToken
      */
-    protected void setAuthenticationToken(AuthenticationTokenAO authenticationToken)
-    {
+    protected void setAuthenticationToken(AuthenticationTokenAO authenticationToken) {
         _authenticationToken = authenticationToken;
     }
 
     /**
      * Returns the business object representing the authenticated user
      */
-    protected UserBO getAuthenticatedUser()
-    {
+    protected UserBO getAuthenticatedUser() {
         return _authenticatedUser;
     }
 
-    protected void setAuthenticatedUser(UserBO authenticatedUser)
-    {
+    protected void setAuthenticatedUser(UserBO authenticatedUser) {
         _authenticatedUser = authenticatedUser;
     }
 
@@ -310,17 +282,13 @@ public abstract class Worker
      * 
      * @return Array of repository names
      */
-    protected String[] getAuthenticatedUserAllowedRepository()
-    {
+    protected String[] getAuthenticatedUserAllowedRepository() {
         ArrayList<String> l = new ArrayList<String>();
-        for (String role : _authenticatedUser.getRoles())
-        {
+        for (String role : _authenticatedUser.getRoles()) {
             if (role.endsWith(UserBO.REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX)
-                    || role.endsWith(UserBO.REPOSITORY_WORKBENCH_ROLE_SUFFIX))
-            {
+                    || role.endsWith(UserBO.REPOSITORY_WORKBENCH_ROLE_SUFFIX)) {
                 String repoName = UserBO.extractRepositoryNameFromRole(role);
-                if (!StringUtils.isBlank(repoName) && !l.contains(repoName))
-                {
+                if (!StringUtils.isBlank(repoName) && !l.contains(repoName)) {
                     l.add(repoName);
                 }
             }
@@ -333,35 +301,29 @@ public abstract class Worker
      * 
      * @return True if successful and False if error.
      */
-    public ApiResult validate()
-    {
+    public ApiResult validate() {
         ApiResult result = validateSupportedMethod();
-        if (!result.isSuccess())
-        {
+        if (!result.isSuccess()) {
             return result;
         }
 
         result = parseURI();
-        if (!result.isSuccess())
-        {
+        if (!result.isSuccess()) {
             return result;
         }
 
         result = validateURI();
-        if (!result.isSuccess())
-        {
+        if (!result.isSuccess()) {
             return result;
         }
 
         result = validateAuthenticationToken();
-        if (!result.isSuccess())
-        {
+        if (!result.isSuccess()) {
             return result;
         }
 
         result = validateAuthenticatedUserRole();
-        if (!result.isSuccess())
-        {
+        if (!result.isSuccess()) {
             return result;
         }
 
@@ -384,29 +346,24 @@ public abstract class Worker
      * 
      * @return ApiResult
      */
-    protected ApiResult validateSupportedMethod()
-    {
+    protected ApiResult validateSupportedMethod() {
         HttpMethod requestMethod = _request.getMethod();
         HttpMethod[] supportedMethods = this.getSupportedMethods();
         ApiResult result = new ApiResult();
         boolean found = false;
 
-        for (HttpMethod supportedMethod : supportedMethods)
-        {
-            if (supportedMethod == requestMethod)
-            {
+        for (HttpMethod supportedMethod : supportedMethods) {
+            if (supportedMethod == requestMethod) {
                 found = true;
                 break;
             }
         }
 
-        if (!found)
-        {
+        if (!found) {
             result.setHttpResponseStatus(HttpResponseStatus.METHOD_NOT_ALLOWED);
 
             StringBuilder sb = new StringBuilder();
-            for (HttpMethod supportedMethod : supportedMethods)
-            {
+            for (HttpMethod supportedMethod : supportedMethods) {
                 sb.append(supportedMethod.toString());
                 sb.append(", ");
             }
@@ -424,10 +381,8 @@ public abstract class Worker
      * 
      * @return ApiResult
      */
-    protected ApiResult validateAuthenticationToken()
-    {
-        try
-        {
+    protected ApiResult validateAuthenticationToken() {
+        try {
             _authenticationToken = AuthenticationTokenAO.fromString(_request.getHeader(AUTHENTICATION_TOKEN_HEADER));
 
             // TODO some caching!
@@ -435,8 +390,7 @@ public abstract class Worker
                     new ObjectId(_authenticationToken.getUserID()));
 
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
         return new ApiResult();
@@ -456,29 +410,24 @@ public abstract class Worker
      * 
      * @return ApiResult
      */
-    protected ApiResult parseURI()
-    {
-        try
-        {
+    protected ApiResult parseURI() {
+        try {
             // Get query string
             QueryStringDecoder decoder = new QueryStringDecoder(_request.getUri());
             _uriQueryStringParameters = decoder.getParameters();
 
             // Get
             String[] pathElements = decoder.getPath().split("/");
-            if (pathElements.length > 3)
-            {
+            if (pathElements.length > 3) {
                 // Skip 1st blank element and the api and WorkerName elements.
                 ArrayList<String> l = new ArrayList<String>();
-                for (int i = 3; i < pathElements.length; i++)
-                {
+                for (int i = 3; i < pathElements.length; i++) {
                     l.add(pathElements[i]);
                 }
                 _uriPathParameters = l.toArray(new String[] {});
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
 
@@ -493,22 +442,17 @@ public abstract class Worker
      * 
      * @return ApiResult
      */
-    protected ApiResult validateURI()
-    {
-        try
-        {
+    protected ApiResult validateURI() {
+        try {
             // PUT and DELETE must have a key
             HttpMethod requestMethod = _request.getMethod();
-            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.DELETE)
-            {
-                if (_uriPathParameters == null || StringUtils.isBlank(_uriPathParameters[ID_URI_PATH_PARAMETER_INDEX]))
-                {
+            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.DELETE) {
+                if (_uriPathParameters == null || StringUtils.isBlank(_uriPathParameters[ID_URI_PATH_PARAMETER_INDEX])) {
                     throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, "ID", _request.getUri());
                 }
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
 
@@ -524,8 +468,7 @@ public abstract class Worker
      *            <code>File</code> will be passed in.
      * @return ApiResult to indicate the success/false of processing
      */
-    public ApiResult processPost(Object requestContent) throws Exception
-    {
+    public ApiResult processPost(Object requestContent) throws Exception {
         throw new UnsupportedOperationException("HTTP POST not supported for this API.");
     }
 
@@ -534,8 +477,7 @@ public abstract class Worker
      * 
      * @return ApiResult to indicate the success/false of processing
      */
-    public ApiResult processDelete() throws Exception
-    {
+    public ApiResult processDelete() throws Exception {
         throw new UnsupportedOperationException("HTTP DELETE not supported for this API.");
     }
 
@@ -544,8 +486,7 @@ public abstract class Worker
      * 
      * @return ApiResult to indicate the success/false of processing
      */
-    public ApiResult processGet() throws Exception
-    {
+    public ApiResult processGet() throws Exception {
         throw new UnsupportedOperationException("HTTP GET not supported for this API.");
     }
 
@@ -557,8 +498,7 @@ public abstract class Worker
      *            then a <code>File</code> will be passed in.
      * @return ApiResult to indicate the success/false of processing
      */
-    public ApiResult processPut(Object requestContent) throws Exception
-    {
+    public ApiResult processPut(Object requestContent) throws Exception {
         throw new UnsupportedOperationException("HTTP PUT not supported for this API.");
     }
 
@@ -570,10 +510,8 @@ public abstract class Worker
      * @return String form the bytes. If bytes is null, null is returned.
      * @throws UnsupportedEncodingException
      */
-    protected String bytesToString(byte[] bytes) throws UnsupportedEncodingException
-    {
-        if (bytes == null)
-        {
+    protected String bytesToString(byte[] bytes) throws UnsupportedEncodingException {
+        if (bytes == null) {
             return null;
         }
 
@@ -584,8 +522,7 @@ public abstract class Worker
     /**
      * Specifies how request and response content is to be handled with respect to reading and writing.
      */
-    public static enum ContentIOStyle
-    {
+    public static enum ContentIOStyle {
         /**
          * Keep content in memory as a byte array
          */

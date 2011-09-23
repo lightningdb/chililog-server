@@ -55,13 +55,11 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryConfigTest
-{
+public class RepositoryConfigTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -74,8 +72,7 @@ public class RepositoryConfigTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^repo_info_test[\\w]*$");
@@ -85,21 +82,18 @@ public class RepositoryConfigTest
     }
 
     @Test(expected = ChiliLogException.class)
-    public void testGetNotFound() throws ChiliLogException
-    {
+    public void testGetNotFound() throws ChiliLogException {
         RepositoryConfigController.getInstance().getByName(_db, "notfound");
     }
 
     @Test
-    public void testTryGetNotFound() throws ChiliLogException
-    {
+    public void testTryGetNotFound() throws ChiliLogException {
         RepositoryConfigBO repoInfo = RepositoryConfigController.getInstance().tryGetByName(_db, "notfound");
         assertNull(repoInfo);
     }
 
     @Test
-    public void testCRUD() throws ChiliLogException
-    {
+    public void testCRUD() throws ChiliLogException {
         // Insert
         RepositoryConfigBO repoConfig = new RepositoryConfigBO();
         repoConfig.setName("repo_info_test1");
@@ -113,7 +107,7 @@ public class RepositoryConfigTest
         repoConfig.setMaxMemoryPolicy(MaxMemoryPolicy.BLOCK);
         repoConfig.setPageSize(2);
         repoConfig.setPageCountCache(1);
-        
+
         RepositoryParserConfigBO repoParserConfig = new RepositoryParserConfigBO();
         repoParserConfig.setName("parser1");
         repoParserConfig.setAppliesTo(AppliesTo.All);
@@ -124,7 +118,7 @@ public class RepositoryConfigTest
         repoParserConfig.getProperties().put("key2", "value12");
         repoParserConfig.getProperties().put("key3", "value13");
         repoConfig.getParsers().add(repoParserConfig);
-        
+
         RepositoryFieldConfigBO repoFieldConfig = new RepositoryFieldConfigBO();
         repoFieldConfig.setName("field1");
         repoFieldConfig.setDisplayName("Field Number 1");
@@ -171,7 +165,7 @@ public class RepositoryConfigTest
         assertEquals(2, repoConfig2.getPageSize());
         assertEquals(1, repoConfig2.getPageCountCache());
         assertEquals(1, repoConfig2.getParsers().size());
-        
+
         RepositoryParserConfigBO repoParserConfig2 = repoConfig2.getParsers().get(0);
         assertEquals("parser1", repoParserConfig2.getName());
         assertEquals(AppliesTo.All, repoParserConfig2.getAppliesTo());
@@ -272,7 +266,7 @@ public class RepositoryConfigTest
         assertEquals("com.chililog.server.data.DeclimitedRepositoryParserX", repoParserConfig2.getClassName());
         assertEquals(2L, repoParserConfig2.getMaxKeywords());
         assertEquals(ParseFieldErrorHandling.SkipFieldIgnoreError, repoParserConfig2.getParseFieldErrorHandling());
-       
+
         ht2 = repoParserConfig2.getProperties();
         assertEquals(3, ht2.keySet().size());
         assertTrue(ht2.containsKey("key1"));
@@ -303,7 +297,7 @@ public class RepositoryConfigTest
         String id = repoConfig2.getDocumentID().toString();
         RepositoryConfigBO repoInfo3 = RepositoryConfigController.getInstance().get(_db, new ObjectId(id));
         assertEquals("repo_info_test1x", repoInfo3.getName());
-        
+
         // Remove
         RepositoryConfigController.getInstance().remove(_db, repoConfig);
 
@@ -318,10 +312,8 @@ public class RepositoryConfigTest
     }
 
     @Test
-    public void testDuplicateFieldName() throws ChiliLogException
-    {
-        try
-        {
+    public void testDuplicateFieldName() throws ChiliLogException {
+        try {
             // Insert
             RepositoryConfigBO repoConfig = new RepositoryConfigBO();
             repoConfig.setName("repo_info_test4");
@@ -331,7 +323,7 @@ public class RepositoryConfigTest
             repoParserConfig.setAppliesTo(AppliesTo.All);
             repoParserConfig.setClassName(DelimitedEntryParser.class.getName());
             repoConfig.getParsers().add(repoParserConfig);
-            
+
             RepositoryFieldConfigBO repoFieldConfig = new RepositoryFieldConfigBO();
             repoFieldConfig.setName("field1");
             repoFieldConfig.setDisplayName("Field Number 1");
@@ -356,17 +348,14 @@ public class RepositoryConfigTest
 
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, ex.getErrorCode());
         }
     }
 
     @Test
-    public void testDuplicateParserName() throws ChiliLogException
-    {
-        try
-        {
+    public void testDuplicateParserName() throws ChiliLogException {
+        try {
             // Insert
             RepositoryConfigBO repoConfig = new RepositoryConfigBO();
             repoConfig.setName("repo_info_test5");
@@ -376,28 +365,25 @@ public class RepositoryConfigTest
             repoParserConfig.setAppliesTo(AppliesTo.All);
             repoParserConfig.setClassName(DelimitedEntryParser.class.getName());
             repoConfig.getParsers().add(repoParserConfig);
-            
+
             repoParserConfig = new RepositoryParserConfigBO();
             repoParserConfig.setName("parser1");
             repoParserConfig.setAppliesTo(AppliesTo.All);
             repoParserConfig.setClassName(DelimitedEntryParser.class.getName());
             repoConfig.getParsers().add(repoParserConfig);
-            
+
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, ex.getErrorCode());
         }
     }
-    
+
     @Test
-    public void testDuplicateName() throws ChiliLogException
-    {
-        try
-        {
+    public void testDuplicateName() throws ChiliLogException {
+        try {
             RepositoryConfigBO repoConfig = new RepositoryConfigBO();
             repoConfig.setName("repo_info_test3");
             RepositoryConfigController.getInstance().save(_db, repoConfig);
@@ -408,34 +394,28 @@ public class RepositoryConfigTest
 
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, ex.getErrorCode());
         }
     }
 
     @Test
-    public void testBadName() throws ChiliLogException
-    {
-        try
-        {
+    public void testBadName() throws ChiliLogException {
+        try {
             RepositoryConfigBO repoConfig = new RepositoryConfigBO();
             repoConfig.setName("bad name");
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_NAME_FORMAT_ERROR, ex.getErrorCode());
         }
     }
 
     @Test
-    public void testBadPageFileSize() throws ChiliLogException
-    {
-        try
-        {
+    public void testBadPageFileSize() throws ChiliLogException {
+        try {
             RepositoryConfigBO repoConfig = new RepositoryConfigBO();
             repoConfig.setName("badfilesize");
             repoConfig.setMaxMemory(1);
@@ -444,16 +424,13 @@ public class RepositoryConfigTest
 
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, ex.getErrorCode());
         }
     }
 
-    
     @Test
-    public void testList() throws ChiliLogException
-    {
+    public void testList() throws ChiliLogException {
         // Insert
         RepositoryConfigBO repoConfig = new RepositoryConfigBO();
         repoConfig.setName("repo_info_testlist4");
@@ -480,5 +457,5 @@ public class RepositoryConfigTest
         list = RepositoryConfigController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
     }
-    
+
 }

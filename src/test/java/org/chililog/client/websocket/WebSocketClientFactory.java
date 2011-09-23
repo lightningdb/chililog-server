@@ -20,8 +20,7 @@ import java.util.concurrent.Executors;
  * 
  * @author <a href="http://www.pedantique.org/">Carl Bystr&ouml;m</a>
  */
-public class WebSocketClientFactory
-{
+public class WebSocketClientFactory {
 
     private NioClientSocketChannelFactory socketChannelFactory = new NioClientSocketChannelFactory(
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
@@ -35,22 +34,18 @@ public class WebSocketClientFactory
      *            Callback interface to receive events
      * @return A WebSocket client. Call {@link WebSocketClient#connect()} to connect.
      */
-    public WebSocketClient newClient(final URI url, final WebSocketCallback callback)
-    {
+    public WebSocketClient newClient(final URI url, final WebSocketCallback callback) {
         ClientBootstrap bootstrap = new ClientBootstrap(socketChannelFactory);
 
         String protocol = url.getScheme();
-        if (!protocol.equals("ws") && !protocol.equals("wss"))
-        {
+        if (!protocol.equals("ws") && !protocol.equals("wss")) {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
         }
 
         final WebSocketClientHandler clientHandler = new WebSocketClientHandler(bootstrap, url, callback);
 
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory()
-        {
-            public ChannelPipeline getPipeline() throws Exception
-            {
+        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+            public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline pipeline = Channels.pipeline();
                 pipeline.addLast("decoder", new HttpResponseDecoder());
                 pipeline.addLast("encoder", new HttpRequestEncoder());

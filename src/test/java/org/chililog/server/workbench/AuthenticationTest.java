@@ -55,13 +55,11 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class AuthenticationTest
-{
+public class AuthenticationTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -124,8 +122,7 @@ public class AuthenticationTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^AuthenticationTest[\\w]*$");
@@ -142,8 +139,7 @@ public class AuthenticationTest
      * @throws Exception
      */
     @Test
-    public void testGET() throws Exception
-    {
+    public void testGET() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -166,7 +162,7 @@ public class AuthenticationTest
         BuildProperties buildProperties = BuildProperties.getInstance();
         assertEquals(buildProperties.getAppVersion(), headers.get(Worker.AUTHENTICATION_SERVER_VERSION));
         assertEquals(buildProperties.getBuildTimestamp(), headers.get(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP));
-    } 
+    }
 
     /**
      * Update profile
@@ -174,8 +170,7 @@ public class AuthenticationTest
      * @throws Exception
      */
     @Test
-    public void testUpdateProfile() throws Exception
-    {
+    public void testUpdateProfile() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -299,8 +294,7 @@ public class AuthenticationTest
      * @throws Exception
      */
     @Test
-    public void testChangePassword() throws Exception
-    {
+    public void testChangePassword() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -392,8 +386,7 @@ public class AuthenticationTest
      * @throws Exception
      */
     @Test
-    public void testInvalidPutActions() throws Exception
-    {
+    public void testInvalidPutActions() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -442,8 +435,7 @@ public class AuthenticationTest
      * @throws Exception
      */
     @Test
-    public void testInvalidTokens() throws Exception
-    {
+    public void testInvalidTokens() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -462,7 +454,8 @@ public class AuthenticationTest
         assertEquals("ChiliLogException:Workbench.AuthenticationTokenInvalidError", errorAO.getErrorCode());
 
         // Bad hash
-        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, token + "abc");
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/authentication", HttpMethod.GET, token
+                + "abc");
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -470,15 +463,14 @@ public class AuthenticationTest
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Workbench.AuthenticationTokenInvalidError", errorAO.getErrorCode());
     }
-    
+
     /**
      * POST - login successful
      * 
      * @throws IOException
      */
     @Test
-    public void testPOST_ByUsername() throws IOException
-    {
+    public void testPOST_ByUsername() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -508,15 +500,14 @@ public class AuthenticationTest
         assertEquals("AuthenticationTest@chililog.com", loggedInUser.getEmailAddress());
         assertNotNull(loggedInUser.getDocumentID());
     }
-    
+
     /**
-     * Refresh authentication token  
+     * Refresh authentication token
      * 
      * @throws Exception
      */
     @Test
-    public void testPOST_RefreshToken() throws Exception
-    {
+    public void testPOST_RefreshToken() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -553,31 +544,30 @@ public class AuthenticationTest
         refreshRequestContent.setExpirySeconds(120);
 
         ApiUtils.sendJSON(httpConn, refreshRequestContent);
-        
+
         StringBuilder refreshResponseContent = new StringBuilder();
         ApiUtils.getResponse(httpConn, refreshResponseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        authenticatedUser = JsonTranslator.getInstance()
-                .fromJson(refreshResponseContent.toString(), AuthenticatedUserAO.class);
+        authenticatedUser = JsonTranslator.getInstance().fromJson(refreshResponseContent.toString(),
+                AuthenticatedUserAO.class);
         assertEquals("AuthenticationTest", authenticatedUser.getUsername());
         assertEquals("AuthenticationTest@chililog.com", authenticatedUser.getEmailAddress());
         assertNull(authenticatedUser.getDisplayName());
 
         String token2 = headers.get(Worker.AUTHENTICATION_TOKEN_HEADER);
         assertTrue(token2.contains("\"ExpirySeconds\": 120"));
-  
+
         assertNotSame(token, token2);
     }
-    
+
     /**
      * POST - login successful
      * 
      * @throws IOException
      */
     @Test
-    public void testPOST_ByEmailAddress() throws IOException
-    {
+    public void testPOST_ByEmailAddress() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -614,8 +604,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_UserNotFound() throws IOException
-    {
+    public void testPOST_UserNotFound() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -632,13 +621,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -658,8 +645,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_BadPassword() throws IOException
-    {
+    public void testPOST_BadPassword() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -676,13 +662,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -702,8 +686,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_DisabledStatus() throws IOException
-    {
+    public void testPOST_DisabledStatus() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -720,13 +703,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -746,8 +727,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_AccessDeniedStatus() throws IOException
-    {
+    public void testPOST_AccessDeniedStatus() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -764,13 +744,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -790,8 +768,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_LockedStatus() throws IOException
-    {
+    public void testPOST_LockedStatus() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -808,13 +785,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -827,15 +802,14 @@ public class AuthenticationTest
         assertEquals(Worker.JSON_CONTENT_TYPE, headers.get("Content-Type"));
         assertTrue(responseContent.contains("Account locked."));
     }
-    
+
     /**
      * POST - login failed because user not supplied
      * 
      * @throws IOException
      */
     @Test
-    public void testPOST_NoUser() throws IOException
-    {
+    public void testPOST_NoUser() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -852,13 +826,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -878,8 +850,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testPOST_NoPassword() throws IOException
-    {
+    public void testPOST_NoPassword() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -896,13 +867,11 @@ public class AuthenticationTest
 
         // Get response
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -922,8 +891,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testDELETE() throws IOException
-    {
+    public void testDELETE() throws IOException {
         // Login
         String authToken = ApiUtils.login("AuthenticationTest", "hello there");
 
@@ -948,21 +916,18 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testDELETE_AuthenticationTokenNotPresent() throws IOException
-    {
+    public void testDELETE_AuthenticationTokenNotPresent() throws IOException {
         // Logout
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
 
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -984,8 +949,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testDELETE_AuthenticationTokenInvalid() throws IOException
-    {
+    public void testDELETE_AuthenticationTokenInvalid() throws IOException {
         // Logout
         URL url = new URL("http://localhost:8989/api/Authentication");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -993,13 +957,11 @@ public class AuthenticationTest
         conn.setRequestProperty(Worker.AUTHENTICATION_TOKEN_HEADER, "badtoken");
 
         String responseContent = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -1021,8 +983,7 @@ public class AuthenticationTest
      * @throws IOException
      */
     @Test
-    public void testDELETE_AuthenticationTokenExpired() throws IOException
-    {
+    public void testDELETE_AuthenticationTokenExpired() throws IOException {
         // Login
         String authToken = ApiUtils.login("AuthenticationTest", "hello there", ExpiryType.Absolute, -1);
 

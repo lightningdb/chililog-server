@@ -1,6 +1,7 @@
 /**
  * http://www.germane-software.com/software/Java/Gozirra/
  */
+
 package org.chililog.client.stomp;
 
 /**
@@ -8,4 +9,3 @@ package org.chililog.client.stomp;
  */
 public interface Queue {
 }
-

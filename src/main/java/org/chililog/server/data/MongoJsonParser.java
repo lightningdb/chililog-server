@@ -45,8 +45,7 @@ import com.mongodb.util.JSONCallback;
  * <li>Date - Format is as per specified on the constructor.</li>
  * </p>
  */
-public class MongoJsonParser
-{
+public class MongoJsonParser {
 
     private Pattern _datePattern = null;
     private Pattern _longNumberPattern = null;
@@ -62,8 +61,7 @@ public class MongoJsonParser
      * @param s
      *            String to parse
      */
-    public MongoJsonParser(String s)
-    {
+    public MongoJsonParser(String s) {
         this(s, null);
     }
 
@@ -81,8 +79,7 @@ public class MongoJsonParser
      *            Regular expression to use to test if a string is a long number. Group #1 in the pattern is used. If
      *            null, no long number matching is performed.
      */
-    public MongoJsonParser(String s, Pattern datePattern, String dateFormat, Pattern longNumberPattern)
-    {
+    public MongoJsonParser(String s, Pattern datePattern, String dateFormat, Pattern longNumberPattern) {
         this(s, null);
 
         _datePattern = datePattern;
@@ -93,8 +90,7 @@ public class MongoJsonParser
     /**
      * Create a new parser.
      */
-    private MongoJsonParser(String s, BSONCallback callback)
-    {
+    private MongoJsonParser(String s, BSONCallback callback) {
         this.s = s;
         _callback = (callback == null) ? new JSONCallback() : callback;
     }
@@ -106,8 +102,7 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    public Object parse()
-    {
+    public Object parse() {
         return parse(null);
     }
 
@@ -118,13 +113,11 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    protected Object parse(String name)
-    {
+    protected Object parse(String name) {
         Object value = null;
         char current = get();
 
-        switch (current)
-        {
+        switch (current) {
             // null
             case 'n':
                 read('n');
@@ -157,40 +150,30 @@ public class MongoJsonParser
 
                 // Check for long
                 value = stringValue;
-                if (!StringUtils.isBlank(stringValue))
-                {
-                    if (_longNumberPattern != null)
-                    {
+                if (!StringUtils.isBlank(stringValue)) {
+                    if (_longNumberPattern != null) {
                         Matcher m = _longNumberPattern.matcher(stringValue);
-                        if (m.matches())
-                        {
-                            try
-                            {
+                        if (m.matches()) {
+                            try {
                                 value = Long.parseLong(m.group(1));
                             }
-                            catch (Exception ex)
-                            {
+                            catch (Exception ex) {
                                 throw new JSONParseException(s, pos);
                             }
                         }
                     }
-                    if (_dateFormat != null && _datePattern != null)
-                    {
+                    if (_dateFormat != null && _datePattern != null) {
                         Matcher m = _datePattern.matcher(stringValue);
-                        if (m.matches())
-                        {
-                            try
-                            {
+                        if (m.matches()) {
+                            try {
                                 String dateString = m.group(1);
-                                if (dateString.endsWith("Z"))
-                                {
+                                if (dateString.endsWith("Z")) {
                                     // Simple date format does not recognise Z time zone so make it GMT
                                     dateString = dateString.substring(0, dateString.length() - 1) + "GMT";
                                 }
                                 value = _dateFormat.parse(dateString);
                             }
-                            catch (Exception ex)
-                            {
+                            catch (Exception ex) {
                                 throw new JSONParseException(ex, s, pos);
                             }
                         }
@@ -234,8 +217,7 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    public Object parseObject()
-    {
+    public Object parseObject() {
         return parseObject(null);
     }
 
@@ -246,33 +228,27 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    protected Object parseObject(String name)
-    {
-        if (name != null)
-        {
+    protected Object parseObject(String name) {
+        if (name != null) {
             _callback.objectStart(name);
         }
-        else
-        {
+        else {
             _callback.objectStart();
         }
 
         read('{');
         @SuppressWarnings("unused")
         char current = get();
-        while (get() != '}')
-        {
+        while (get() != '}') {
             String key = parseString();
             read(':');
             Object value = parse(key);
             doCallback(key, value);
 
-            if ((current = get()) == ',')
-            {
+            if ((current = get()) == ',') {
                 read(',');
             }
-            else
-            {
+            else {
                 break;
             }
         }
@@ -281,34 +257,26 @@ public class MongoJsonParser
         return _callback.objectDone();
     }
 
-    protected void doCallback(String name, Object value)
-    {
-        if (value == null)
-        {
+    protected void doCallback(String name, Object value) {
+        if (value == null) {
             _callback.gotNull(name);
         }
-        else if (value instanceof String)
-        {
+        else if (value instanceof String) {
             _callback.gotString(name, (String) value);
         }
-        else if (value instanceof Boolean)
-        {
+        else if (value instanceof Boolean) {
             _callback.gotBoolean(name, (Boolean) value);
         }
-        else if (value instanceof Integer)
-        {
+        else if (value instanceof Integer) {
             _callback.gotInt(name, (Integer) value);
         }
-        else if (value instanceof Long)
-        {
+        else if (value instanceof Long) {
             _callback.gotLong(name, (Long) value);
         }
-        else if (value instanceof Double)
-        {
+        else if (value instanceof Double) {
             _callback.gotDouble(name, (Double) value);
         }
-        else if (value instanceof Date)
-        {
+        else if (value instanceof Date) {
             _callback.gotDate(name, ((Date) value).getTime());
         }
     }
@@ -323,17 +291,14 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if the current character does not match the given character
      */
-    public void read(char ch)
-    {
-        if (!check(ch))
-        {
+    public void read(char ch) {
+        if (!check(ch)) {
             throw new JSONParseException(s, pos);
         }
         pos++;
     }
 
-    public char read()
-    {
+    public char read() {
         if (pos >= s.length())
             throw new IllegalStateException("string done");
         return s.charAt(pos++);
@@ -345,16 +310,13 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if the current character is not a hexidecimal character
      */
-    public void readHex()
-    {
+    public void readHex() {
         if (pos < s.length()
                 && ((s.charAt(pos) >= '0' && s.charAt(pos) <= '9') || (s.charAt(pos) >= 'A' && s.charAt(pos) <= 'F') || (s
-                        .charAt(pos) >= 'a' && s.charAt(pos) <= 'f')))
-        {
+                        .charAt(pos) >= 'a' && s.charAt(pos) <= 'f'))) {
             pos++;
         }
-        else
-        {
+        else {
             throw new JSONParseException(s, pos);
         }
     }
@@ -368,18 +330,15 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if the current character does not match the given character
      */
-    public boolean check(char ch)
-    {
+    public boolean check(char ch) {
         return get() == ch;
     }
 
     /**
      * Advances the position in the string past any whitespace.
      */
-    public void skipWS()
-    {
-        while (pos < s.length() && Character.isWhitespace(s.charAt(pos)))
-        {
+    public void skipWS() {
+        while (pos < s.length() && Character.isWhitespace(s.charAt(pos))) {
             pos++;
         }
     }
@@ -389,8 +348,7 @@ public class MongoJsonParser
      * 
      * @return the next character
      */
-    public char get()
-    {
+    public char get() {
         skipWS();
         if (pos < s.length())
             return s.charAt(pos);
@@ -404,8 +362,7 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    public String parseString()
-    {
+    public String parseString() {
         char quot;
         if (check('\''))
             quot = '\'';
@@ -419,21 +376,17 @@ public class MongoJsonParser
         read(quot);
         StringBuilder buf = new StringBuilder();
         int start = pos;
-        while (pos < s.length() && (current = s.charAt(pos)) != quot)
-        {
-            if (current == '\\')
-            {
+        while (pos < s.length() && (current = s.charAt(pos)) != quot) {
+            if (current == '\\') {
                 pos++;
 
                 char x = get();
 
                 char special = 0;
 
-                switch (x)
-                {
+                switch (x) {
 
-                    case 'u':
-                    { // decode unicode
+                    case 'u': { // decode unicode
                         buf.append(s.substring(start, pos - 1));
                         pos++;
                         int tempPos = pos;
@@ -470,8 +423,7 @@ public class MongoJsonParser
                 }
 
                 buf.append(s.substring(start, pos - 1));
-                if (special != 0)
-                {
+                if (special != 0) {
                     pos++;
                     buf.append(special);
                 }
@@ -493,23 +445,19 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    public Number parseNumber()
-    {
+    public Number parseNumber() {
 
         @SuppressWarnings("unused")
         char current = get();
         int start = this.pos;
         boolean isDouble = false;
 
-        if (check('-') || check('+'))
-        {
+        if (check('-') || check('+')) {
             pos++;
         }
 
-        outer: while (pos < s.length())
-        {
-            switch (s.charAt(pos))
-            {
+        outer: while (pos < s.length()) {
+            switch (s.charAt(pos)) {
                 case '0':
                 case '1':
                 case '2':
@@ -546,15 +494,12 @@ public class MongoJsonParser
     /**
      * Advances the pointed through <i>.digits</i>.
      */
-    public void parseFraction()
-    {
+    public void parseFraction() {
         // get past .
         pos++;
 
-        outer: while (pos < s.length())
-        {
-            switch (s.charAt(pos))
-            {
+        outer: while (pos < s.length()) {
+            switch (s.charAt(pos)) {
                 case '0':
                 case '1':
                 case '2':
@@ -580,20 +525,16 @@ public class MongoJsonParser
     /**
      * Advances the pointer through the exponent.
      */
-    public void parseExponent()
-    {
+    public void parseExponent() {
         // get past E
         pos++;
 
-        if (check('-') || check('+'))
-        {
+        if (check('-') || check('+')) {
             pos++;
         }
 
-        outer: while (pos < s.length())
-        {
-            switch (s.charAt(pos))
-            {
+        outer: while (pos < s.length()) {
+            switch (s.charAt(pos)) {
                 case '0':
                 case '1':
                 case '2':
@@ -619,8 +560,7 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    public Object parseArray()
-    {
+    public Object parseArray() {
         return parseArray(null);
     }
 
@@ -631,14 +571,11 @@ public class MongoJsonParser
      * @throws JSONParseException
      *             if invalid JSON is found
      */
-    protected Object parseArray(String name)
-    {
-        if (name != null)
-        {
+    protected Object parseArray(String name) {
+        if (name != null) {
             _callback.arrayStart(name);
         }
-        else
-        {
+        else {
             _callback.arrayStart();
         }
 
@@ -646,22 +583,18 @@ public class MongoJsonParser
 
         int i = 0;
         char current = get();
-        while (current != ']')
-        {
+        while (current != ']') {
             String elemName = String.valueOf(i++);
             Object elem = parse(elemName);
             doCallback(elemName, elem);
 
-            if ((current = get()) == ',')
-            {
+            if ((current = get()) == ',') {
                 read(',');
             }
-            else if (current == ']')
-            {
+            else if (current == ']') {
                 break;
             }
-            else
-            {
+            else {
                 throw new JSONParseException(s, pos);
             }
         }
@@ -681,36 +614,31 @@ public class MongoJsonParser
      *                     ^
      * </pre>
      */
-    static class JSONParseException extends RuntimeException
-    {
+    static class JSONParseException extends RuntimeException {
 
         private static final long serialVersionUID = -4415279469780082174L;
 
         String s;
         int pos;
 
-        public String getMessage()
-        {
+        public String getMessage() {
             StringBuilder sb = new StringBuilder();
             sb.append("\n");
             sb.append(s);
             sb.append("\n");
-            for (int i = 0; i < pos; i++)
-            {
+            for (int i = 0; i < pos; i++) {
                 sb.append(" ");
             }
             sb.append("^");
             return sb.toString();
         }
 
-        public JSONParseException(String s, int pos)
-        {
+        public JSONParseException(String s, int pos) {
             this.s = s;
             this.pos = pos;
         }
 
-        public JSONParseException(Throwable ex, String s, int pos)
-        {
+        public JSONParseException(Throwable ex, String s, int pos) {
             super(ex);
             this.s = s;
             this.pos = pos;

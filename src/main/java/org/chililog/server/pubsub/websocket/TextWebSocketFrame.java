@@ -43,7 +43,7 @@ public class TextWebSocketFrame extends WebSocketFrame {
     public TextWebSocketFrame(ChannelBuffer binaryData) {
         this.setBinaryData(binaryData);
     }
-    
+
     /**
      * Returns the text data in this frame
      */
@@ -65,7 +65,7 @@ public class TextWebSocketFrame extends WebSocketFrame {
             throw new NullPointerException("text");
         }
         this.setBinaryData(ChannelBuffers.copiedBuffer(text, CharsetUtil.UTF_8));
-    }   
+    }
 
     @Override
     public String toString() {

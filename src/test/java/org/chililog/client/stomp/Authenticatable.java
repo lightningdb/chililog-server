@@ -1,6 +1,7 @@
 /**
  * http://www.germane-software.com/software/Java/Gozirra/
  */
+
 package org.chililog.client.stomp;
 
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Map;
  */
 @SuppressWarnings({ "rawtypes" })
 public interface Authenticatable extends MessageReceiver {
-  public void error( Map headers, String b );
-  public Object token();
-}
+    public void error(Map headers, String b);
 
+    public Object token();
+}

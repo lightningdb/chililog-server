@@ -24,15 +24,13 @@ import java.util.Map;
 import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 
-public class JAASConfiguration extends Configuration
-{
+public class JAASConfiguration extends Configuration {
     private String _loginModuleClassName;
 
     /**
      * Basic constructor
      */
-    public JAASConfiguration()
-    {
+    public JAASConfiguration() {
         _loginModuleClassName = JAASLoginModule.class.getName();
         return;
     }
@@ -45,20 +43,17 @@ public class JAASConfiguration extends Configuration
      *            because our configuration only supports 1 configuration.
      */
     @Override
-    public AppConfigurationEntry[] getAppConfigurationEntry(final String name)
-    {
+    public AppConfigurationEntry[] getAppConfigurationEntry(final String name) {
         Map<String, ?> options = new HashMap<String, String>();
 
         AppConfigurationEntry entry = new AppConfigurationEntry(_loginModuleClassName,
                 AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
 
-        return new AppConfigurationEntry[]
-        { entry };
+        return new AppConfigurationEntry[] { entry };
     }
 
     @Override
-    public void refresh()
-    {
+    public void refresh() {
         return;
     }
 }

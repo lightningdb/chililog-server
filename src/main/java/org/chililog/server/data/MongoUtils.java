@@ -36,8 +36,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class MongoUtils
-{
+public class MongoUtils {
     /**
      * Loads a string field from the mongoDB object
      * 
@@ -51,16 +50,13 @@ public class MongoUtils
      * @throws ChiliLogException
      *             if field is required and it is not found or contains blanks
      */
-    public static String getString(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+    public static String getString(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
 
         String s = (String) dbObject.get(fieldName);
-        if (isRequired && StringUtils.isBlank(s))
-        {
+        if (isRequired && StringUtils.isBlank(s)) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
         return s;
@@ -80,18 +76,14 @@ public class MongoUtils
      * @throws ChiliLogException
      */
     public static void setString(DBObject dbObject, String fieldName, String fieldValue, boolean isRequired)
-            throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+            throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && StringUtils.isBlank(fieldValue))
-        {
+        if (isRequired && StringUtils.isBlank(fieldValue)) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
@@ -110,16 +102,13 @@ public class MongoUtils
      * @throws ChiliLogException
      *             if field is required and it is not found or contains blanks
      */
-    public static Date getDate(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+    public static Date getDate(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
 
         Date d = (Date) dbObject.get(fieldName);
-        if (isRequired && d == null)
-        {
+        if (isRequired && d == null) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
         return d;
@@ -139,18 +128,14 @@ public class MongoUtils
      * @throws ChiliLogException
      */
     public static void setDate(DBObject dbObject, String fieldName, Date fieldValue, boolean isRequired)
-            throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+            throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && fieldValue == null)
-        {
+        if (isRequired && fieldValue == null) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
@@ -169,16 +154,13 @@ public class MongoUtils
      * @throws ChiliLogException
      *             if field is required and it is not found or contains blanks
      */
-    public static Boolean getBoolean(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+    public static Boolean getBoolean(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
 
         Boolean b = (Boolean) dbObject.get(fieldName);
-        if (isRequired && b == null)
-        {
+        if (isRequired && b == null) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
         return b;
@@ -198,18 +180,14 @@ public class MongoUtils
      * @throws ChiliLogException
      */
     public static void setBoolean(DBObject dbObject, String fieldName, Boolean fieldValue, boolean isRequired)
-            throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+            throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && fieldValue == null)
-        {
+        if (isRequired && fieldValue == null) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
@@ -233,16 +211,13 @@ public class MongoUtils
      * @throws ChiliLogException
      *             if field is required and it is not found or contains blanks
      */
-    public static Long getLong(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+    public static Long getLong(DBObject dbObject, String fieldName, boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
 
         Long i = (Long) dbObject.get(fieldName);
-        if (isRequired && i == null)
-        {
+        if (isRequired && i == null) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
         return i;
@@ -262,18 +237,14 @@ public class MongoUtils
      * @throws ChiliLogException
      */
     public static void setLong(DBObject dbObject, String fieldName, Long fieldValue, boolean isRequired)
-            throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+            throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && fieldValue == null)
-        {
+        if (isRequired && fieldValue == null) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
@@ -293,19 +264,15 @@ public class MongoUtils
      *             if field is required and it is not found
      */
     public static ArrayList<String> getStringArrayList(DBObject dbObject, String fieldName, boolean isRequired)
-            throws ChiliLogException
-    {
+            throws ChiliLogException {
         BasicDBList list = (BasicDBList) dbObject.get(fieldName);
-        if (isRequired && list == null)
-        {
+        if (isRequired && list == null) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
 
         ArrayList<String> outList = new ArrayList<String>();
-        if (list != null && list.size() > 0)
-        {
-            for (Object item : list)
-            {
+        if (list != null && list.size() > 0) {
+            for (Object item : list) {
                 outList.add((String) item);
             }
         }
@@ -328,18 +295,14 @@ public class MongoUtils
     public static void setStringArrayList(DBObject dbObject,
                                           String fieldName,
                                           ArrayList<String> fieldValue,
-                                          boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+                                          boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && (fieldValue == null || fieldValue.isEmpty()))
-        {
+        if (isRequired && (fieldValue == null || fieldValue.isEmpty())) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
         dbObject.put(fieldName, fieldValue);
@@ -366,19 +329,15 @@ public class MongoUtils
      *             if field is required and it is not found
      */
     public static Hashtable<String, String> getKeyValuePairs(DBObject dbObject, String fieldName, boolean isRequired)
-            throws ChiliLogException
-    {
+            throws ChiliLogException {
         BasicDBObject obj = (BasicDBObject) dbObject.get(fieldName);
-        if (isRequired && obj == null)
-        {
+        if (isRequired && obj == null) {
             throw new ChiliLogException(Strings.MONGODB_FIELD_NOT_FOUND_ERROR, fieldName);
         }
 
         Hashtable<String, String> hashtable = new Hashtable<String, String>();
-        if (obj != null)
-        {
-            for (Entry<String, Object> s : obj.entrySet())
-            {
+        if (obj != null) {
+            for (Entry<String, Object> s : obj.entrySet()) {
                 String key = s.getKey();
                 String value = s.getValue().toString();
                 hashtable.put(key, value);
@@ -403,24 +362,19 @@ public class MongoUtils
     public static void setKeyValuePairs(DBObject dbObject,
                                         String fieldName,
                                         Hashtable<String, String> fieldValue,
-                                        boolean isRequired) throws ChiliLogException
-    {
-        if (dbObject == null)
-        {
+                                        boolean isRequired) throws ChiliLogException {
+        if (dbObject == null) {
             throw new IllegalArgumentException("dbObject is null");
         }
-        if (StringUtils.isBlank(fieldName))
-        {
+        if (StringUtils.isBlank(fieldName)) {
             throw new IllegalArgumentException("fieldName is blank");
         }
-        if (isRequired && (fieldValue == null || fieldValue.isEmpty()))
-        {
+        if (isRequired && (fieldValue == null || fieldValue.isEmpty())) {
             throw new ChiliLogException(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, fieldName);
         }
 
         BasicDBObject obj = new BasicDBObject();
-        for (Entry<String, String> s : fieldValue.entrySet())
-        {
+        for (Entry<String, String> s : fieldValue.entrySet()) {
             String key = s.getKey();
             String value = s.getValue();
             obj.put(key, value);

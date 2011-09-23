@@ -34,13 +34,11 @@ import com.mongodb.WriteConcern;
  * @author vibul
  * 
  */
-public abstract class Controller
-{
+public abstract class Controller {
     /**
      * Basic constructor
      */
-    public Controller()
-    {
+    public Controller() {
         return;
     }
 
@@ -54,8 +52,7 @@ public abstract class Controller
      * exceptions are raised for network issues, and server errors; waits on a server for the write operation. However,
      * it can be overridden.
      */
-    protected WriteConcern getDBWriteConern()
-    {
+    protected WriteConcern getDBWriteConern() {
         return WriteConcern.SAFE;
     }
 
@@ -69,23 +66,18 @@ public abstract class Controller
      * @throws ChiliLogException
      *             if there is an error during saving
      */
-    public void save(DB db, BO businessObject) throws ChiliLogException
-    {
-        if (db == null)
-        {
+    public void save(DB db, BO businessObject) throws ChiliLogException {
+        if (db == null) {
             throw new NullArgumentException("db");
         }
-        if (businessObject == null)
-        {
+        if (businessObject == null) {
             throw new NullArgumentException("businessObject");
         }
-        
-        try
-        {
+
+        try {
             DBObject obj = businessObject.toDBObject();
             DBCollection coll = db.getCollection(this.getDBCollectionName());
-            if (businessObject.isExistingRecord())
-            {
+            if (businessObject.isExistingRecord()) {
                 long recordVersion = businessObject.getDocumentVersion();
                 obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, recordVersion + 1);
 
@@ -95,14 +87,12 @@ public abstract class Controller
 
                 coll.update(query, obj, false, false, this.getDBWriteConern());
             }
-            else
-            {
-                obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, (long)1);
+            else {
+                obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
                 coll.insert(obj);
             }
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_SAVE_ERROR, ex.getMessage());
         }
     }
@@ -117,29 +107,23 @@ public abstract class Controller
      * @throws ChiliLogException
      *             if there is any error during deleting
      */
-    public void remove(DB db, BO businessObject) throws ChiliLogException
-    {
-        if (db == null)
-        {
+    public void remove(DB db, BO businessObject) throws ChiliLogException {
+        if (db == null) {
             throw new NullArgumentException("db");
         }
-        if (businessObject == null)
-        {
+        if (businessObject == null) {
             throw new NullArgumentException("businessObject");
         }
 
-        try
-        {
+        try {
             DBCollection coll = db.getCollection(this.getDBCollectionName());
-            if (businessObject.isExistingRecord())
-            {
+            if (businessObject.isExistingRecord()) {
                 DBObject obj = new BasicDBObject();
                 obj.put(BO.DOCUMENT_ID_FIELD_NAME, businessObject.getDocumentID());
                 coll.remove(obj);
             }
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_REMOVE_ERROR, ex.getMessage());
         }
     }

@@ -29,7 +29,6 @@ import org.chililog.server.data.RepositoryEntryController;
 import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryConfigBO.Status;
 
-
 /**
  * <p>
  * Runtime information and controller for a repository.
@@ -55,13 +54,12 @@ import org.chililog.server.data.RepositoryConfigBO.Status;
  * @author vibul
  * 
  */
-public class Repository
-{
+public class Repository {
     static Log4JLogger _logger = Log4JLogger.getLogger(Repository.class);
     private RepositoryConfigBO _repoConfig;
     private ArrayList<RepositoryStorageWorker> _storageWorkers = new ArrayList<RepositoryStorageWorker>();
     private Status _status;
-    private boolean _hasStarted = false; 
+    private boolean _hasStarted = false;
 
     /**
      * Constructor specifying the information needed to create a repository
@@ -69,10 +67,8 @@ public class Repository
      * @param repoInfo
      *            Repository meta data
      */
-    public Repository(RepositoryConfigBO repoInfo)
-    {
-        if (repoInfo == null)
-        {
+    public Repository(RepositoryConfigBO repoInfo) {
+        if (repoInfo == null) {
             throw new NullArgumentException("repoInfo cannot be null");
         }
 
@@ -84,8 +80,7 @@ public class Repository
     /**
      * Returns the meta data about this repository
      */
-    public RepositoryConfigBO getRepoConfig()
-    {
+    public RepositoryConfigBO getRepoConfig() {
         return _repoConfig;
     }
 
@@ -96,14 +91,11 @@ public class Repository
      *            new repository configuration
      * @throws ChiliLogException
      */
-    public void setRepoConfig(RepositoryConfigBO repoConfig) throws ChiliLogException
-    {
-        if (repoConfig == null)
-        {
+    public void setRepoConfig(RepositoryConfigBO repoConfig) throws ChiliLogException {
+        if (repoConfig == null) {
             throw new NullArgumentException("repoConfig cannot be null");
         }
-        if (_status != Status.OFFLINE)
-        {
+        if (_status != Status.OFFLINE) {
             throw new ChiliLogException(Strings.REPOSITORY_INFO_UPDATE_ERROR, _repoConfig.getName());
         }
 
@@ -115,20 +107,17 @@ public class Repository
      * Starts this repository. Log entries can be produced and consumed.
      * </p>
      */
-    synchronized void bringOnline() throws ChiliLogException
-    {
-        if (_status == Status.ONLINE)
-        {
+    synchronized void bringOnline() throws ChiliLogException {
+        if (_status == Status.ONLINE) {
             throw new ChiliLogException(Strings.REPOSITORY_ALREADY_ONLINE_ERROR, _repoConfig.getName());
         }
-        if (_hasStarted)
-        {
+        if (_hasStarted) {
             // This should not happen when used via the RepositoryService as intended.
-            throw new UnsupportedOperationException("Restarting a repository is not supported. Instance a new Repository and start it instead.");
+            throw new UnsupportedOperationException(
+                    "Restarting a repository is not supported. Instance a new Repository and start it instead.");
         }
-        
-        try
-        {
+
+        try {
             _logger.info("Bringing Repository '%s' Online", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
@@ -155,8 +144,7 @@ public class Repository
                             .getMqRedeliveryDelayMilliseconds(), -1, true, _repoConfig.getMaxMemoryPolicy().toString());
 
             // If we want to store entries, then start queue on the address and workers to consume and write entries
-            if (_repoConfig.getStoreEntriesIndicator())
-            {
+            if (_repoConfig.getStoreEntriesIndicator()) {
                 // Create queue
                 mqManager.deployQueue(_repoConfig.getPubSubAddress(), _repoConfig.getStorageQueueName(),
                         _repoConfig.getStorageQueueDurableIndicator());
@@ -171,8 +159,7 @@ public class Repository
             _hasStarted = true;
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.ONLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
@@ -183,24 +170,20 @@ public class Repository
      * 
      * @throws ChiliLogException
      */
-    void startStorageWorkers() throws ChiliLogException
-    {
+    void startStorageWorkers() throws ChiliLogException {
         // Make sure existing worker threads are stopped
         stopStorageWorkers();
 
         // Add workers to list
-        try
-        {
-            for (int i = 1; i <= _repoConfig.getStorageQueueWorkerCount(); i++)
-            {
+        try {
+            for (int i = 1; i <= _repoConfig.getStorageQueueWorkerCount(); i++) {
                 String name = String.format("%s StorageWorker #%s", _repoConfig.getName(), i);
                 RepositoryStorageWorker worker = new RepositoryStorageWorker(name, this);
                 worker.start();
                 _storageWorkers.add(worker);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
@@ -211,10 +194,8 @@ public class Repository
      * Makes the repository read only. Log entries can only be searched via the workbench
      * </p>
      */
-    synchronized void makeReadonly() throws ChiliLogException
-    {
-        try
-        {
+    synchronized void makeReadonly() throws ChiliLogException {
+        try {
             _logger.info("Making Repository '%s' Read Only", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
@@ -232,22 +213,19 @@ public class Repository
             _logger.info("Repository '%s' now Read Only.", _repoConfig.getName());
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.READONLY_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
     }
-    
+
     /**
      * <p>
      * Stops this repository. Log entries cannot be produced or consumed.
      * </p>
      */
-    synchronized void takeOffline() throws ChiliLogException
-    {
-        try
-        {
+    synchronized void takeOffline() throws ChiliLogException {
+        try {
             _logger.info("Taking Repository '%s' Offline", _repoConfig.getName());
 
             MqService mqManager = MqService.getInstance();
@@ -265,8 +243,7 @@ public class Repository
             _logger.info("Repository '%s' taken Offline.", _repoConfig.getName());
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.OFFLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
@@ -275,19 +252,15 @@ public class Repository
     /**
      * Start writer threads
      */
-    void stopStorageWorkers() throws ChiliLogException
-    {
-        try
-        {
-            while (_storageWorkers.size() > 0)
-            {
+    void stopStorageWorkers() throws ChiliLogException {
+        try {
+            while (_storageWorkers.size() > 0) {
                 RepositoryStorageWorker worker = _storageWorkers.get(0);
                 worker.stopRunning();
                 _storageWorkers.remove(0);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
@@ -296,30 +269,25 @@ public class Repository
     /**
      * Returns flag to indicate if this repository has started or not
      */
-    public synchronized Status getStatus()
-    {
+    public synchronized Status getStatus() {
         return _status;
     }
 
     /**
      * Returns the array of storage worker threads. This method should only be used for our unit testing!
      */
-    ArrayList<RepositoryStorageWorker> getStorageWorkers()
-    {
+    ArrayList<RepositoryStorageWorker> getStorageWorkers() {
         return _storageWorkers;
     }
 
     /**
      * Make sure we stop
      */
-    protected void finalize() throws Throwable
-    {
-        try
-        {
+    protected void finalize() throws Throwable {
+        try {
             takeOffline();
         }
-        finally
-        {
+        finally {
             super.finalize();
         }
     }

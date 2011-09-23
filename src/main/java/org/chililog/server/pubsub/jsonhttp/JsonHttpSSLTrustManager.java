@@ -30,7 +30,6 @@ import javax.net.ssl.X509TrustManager;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
 
-
 /**
  * <p>
  * Manager to check client side certificates.
@@ -43,8 +42,7 @@ import org.chililog.server.common.Log4JLogger;
  * @author vibul
  * 
  */
-public class JsonHttpSSLTrustManager
-{
+public class JsonHttpSSLTrustManager {
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpSSLTrustManager.class);
 
     /*
@@ -58,8 +56,7 @@ public class JsonHttpSSLTrustManager
     /**
      * Returns the singleton instance for this class
      */
-    public static JsonHttpSSLTrustManager getInstance()
-    {
+    public static JsonHttpSSLTrustManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -69,18 +66,15 @@ public class JsonHttpSSLTrustManager
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final JsonHttpSSLTrustManager INSTANCE = new JsonHttpSSLTrustManager();
     }
 
     /**
      * Constructor
      */
-    private JsonHttpSSLTrustManager()
-    {
-        try
-        {
+    private JsonHttpSSLTrustManager() {
+        try {
             // create a "default" JSSE X509TrustManager.
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(new FileInputStream(AppProperties.getInstance().getPubSubJsonHttpProtocolTrustStorePath()),
@@ -95,10 +89,8 @@ public class JsonHttpSSLTrustManager
              * Iterate over the returned trust managers, look for an instance of X509TrustManager. If found, use that as
              * our "default" trust manager.
              */
-            for (int i = 0; i < _trustManagers.length; i++)
-            {
-                if (_trustManagers[i] instanceof X509TrustManager)
-                {
+            for (int i = 0; i < _trustManagers.length; i++) {
+                if (_trustManagers[i] instanceof X509TrustManager) {
                     _sunJSSEX509TrustManager = (X509TrustManager) _trustManagers[i];
                     return;
                 }
@@ -109,8 +101,7 @@ public class JsonHttpSSLTrustManager
              */
             throw new Exception("X509TrustManager not found.");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.error("Error initializing SSLTrustManager. " + ex.getMessage(), ex);
             System.exit(1);
 
@@ -120,29 +111,25 @@ public class JsonHttpSSLTrustManager
     /*
      * Delegate to the default trust manager.
      */
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
-    {
+    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         _sunJSSEX509TrustManager.checkClientTrusted(chain, authType);
     }
 
     /*
      * Delegate to the default trust manager.
      */
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
-    {
+    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         _sunJSSEX509TrustManager.checkServerTrusted(chain, authType);
     }
 
     /*
      * Merely pass this through.
      */
-    public X509Certificate[] getAcceptedIssuers()
-    {
+    public X509Certificate[] getAcceptedIssuers() {
         return _sunJSSEX509TrustManager.getAcceptedIssuers();
     }
 
-    public TrustManager[] getTrustManagers()
-    {
+    public TrustManager[] getTrustManagers() {
         return _trustManagers;
     }
 }

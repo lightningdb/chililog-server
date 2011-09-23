@@ -37,8 +37,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryParserConfigBO extends BO implements Serializable
-{
+public class RepositoryParserConfigBO extends BO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String _name;
@@ -64,12 +63,10 @@ public class RepositoryParserConfigBO extends BO implements Serializable
     public static final long MAX_KEYWORDS_UNLIMITED = -1;
     public static final long MAX_KEYWORDS_INHERITED = -2;
 
-    
     /**
      * Basic constructor
      */
-    public RepositoryParserConfigBO()
-    {
+    public RepositoryParserConfigBO() {
         return;
     }
 
@@ -80,8 +77,7 @@ public class RepositoryParserConfigBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public RepositoryParserConfigBO(DBObject dbObject) throws ChiliLogException
-    {
+    public RepositoryParserConfigBO(DBObject dbObject) throws ChiliLogException {
         super(dbObject);
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
 
@@ -98,10 +94,8 @@ public class RepositoryParserConfigBO extends BO implements Serializable
 
         BasicDBList list = (BasicDBList) dbObject.get(FIELDS_FIELD_NAME);
         ArrayList<RepositoryFieldConfigBO> fieldList = new ArrayList<RepositoryFieldConfigBO>();
-        if (list != null && list.size() > 0)
-        {
-            for (Object item : list)
-            {
+        if (list != null && list.size() > 0) {
+            for (Object item : list) {
                 RepositoryFieldConfigBO field = new RepositoryFieldConfigBO((DBObject) item);
                 fieldList.add(field);
             }
@@ -121,8 +115,7 @@ public class RepositoryParserConfigBO extends BO implements Serializable
      * @throws ChiliLogException
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
-    {
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException {
         MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
 
         MongoUtils.setString(dbObject, APPLIES_TO_FIELD_NAME, _appliesTo.toString(), true);
@@ -133,11 +126,11 @@ public class RepositoryParserConfigBO extends BO implements Serializable
 
         MongoUtils.setLong(dbObject, MAX_KEYWORDS, _maxKeywords, true);
 
-        MongoUtils.setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString(), true);
+        MongoUtils
+                .setString(dbObject, PARSE_FIELD_ERROR_HANDLING_FIELD_NAME, _parseFieldErrorHandling.toString(), true);
 
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
-        for (RepositoryFieldConfigBO field : _fields)
-        {
+        for (RepositoryFieldConfigBO field : _fields) {
             BasicDBObject obj = new BasicDBObject();
             field.savePropertiesToDBObject(obj);
             fieldList.add(obj);
@@ -151,52 +144,44 @@ public class RepositoryParserConfigBO extends BO implements Serializable
     /**
      * Name of this instance of this parser. Helps to identify the parser in the event of an error.
      */
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
     /**
      * Returns if this parser applies to sources, and if so how it is to be applied.
      */
-    public AppliesTo getAppliesTo()
-    {
+    public AppliesTo getAppliesTo() {
         return _appliesTo;
     }
 
-    public void setAppliesTo(AppliesTo appliesTo)
-    {
+    public void setAppliesTo(AppliesTo appliesTo) {
         _appliesTo = appliesTo;
     }
 
     /**
      * Returns the filters to limit the sources to which this parser is to apply
      */
-    public String getAppliesToSourceFilter()
-    {
+    public String getAppliesToSourceFilter() {
         return _appliesToSourceFilter;
     }
 
-    public void setAppliesToSourceFilter(String appliesToSourceFilter)
-    {
+    public void setAppliesToSourceFilter(String appliesToSourceFilter) {
         _appliesToSourceFilter = appliesToSourceFilter;
     }
 
     /**
      * Returns the filters to limit the hosts to which this parser is to apply
      */
-    public String getAppliesToHostFilter()
-    {
+    public String getAppliesToHostFilter() {
         return _appliesToHostFilter;
     }
 
-    public void setAppliesToHostFilter(String appliesToHostFilter)
-    {
+    public void setAppliesToHostFilter(String appliesToHostFilter) {
         _appliesToHostFilter = appliesToHostFilter;
     }
 
@@ -204,63 +189,54 @@ public class RepositoryParserConfigBO extends BO implements Serializable
      * Full name of class to use for parsing. Class must extend {@link EntryParser}. For example,
      * <code>com.chililog.server.engine.parsers.DelimitedEntryParser</code>
      */
-    public String getClassName()
-    {
+    public String getClassName() {
         return _className;
     }
 
-    public void setClassName(String className)
-    {
+    public void setClassName(String className) {
         _className = className;
     }
 
     /**
      * Maximum number of keywords to be stored per entry
      */
-    public long getMaxKeywords()
-    {
+    public long getMaxKeywords() {
         return _maxKeywords;
     }
 
-    public void setMaxKeywords(long maxKeywords)
-    {
+    public void setMaxKeywords(long maxKeywords) {
         _maxKeywords = maxKeywords;
     }
 
     /**
      * Returns a list fields that is to be parsed and stored in this repository
      */
-    public ArrayList<RepositoryFieldConfigBO> getFields()
-    {
+    public ArrayList<RepositoryFieldConfigBO> getFields() {
         return _fields;
     }
 
     /**
      * Returns a list of parser specific properties for this repository
      */
-    public Hashtable<String, String> getProperties()
-    {
+    public Hashtable<String, String> getProperties() {
         return _properties;
     }
 
     /**
      * Returns the error handling technique to use when parsing a field
      */
-    public ParseFieldErrorHandling getParseFieldErrorHandling()
-    {
+    public ParseFieldErrorHandling getParseFieldErrorHandling() {
         return _parseFieldErrorHandling;
     }
 
-    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling)
-    {
+    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling) {
         _parseFieldErrorHandling = parseFieldErrorHandling;
     }
 
     /**
      * Technique to use if there is an error during parsing a field in a repository entry
      */
-    public static enum ParseFieldErrorHandling
-    {
+    public static enum ParseFieldErrorHandling {
         /**
          * The field will not be written as part of the log entry in the repository and n log entry will be written to
          * ChiliLog
@@ -283,8 +259,7 @@ public class RepositoryParserConfigBO extends BO implements Serializable
     /**
      * Defines if a parser is to be applied to a source or host
      */
-    public static enum AppliesTo
-    {
+    public static enum AppliesTo {
         /**
          * Parser is NOT to be used for any sources and/or hosts
          */

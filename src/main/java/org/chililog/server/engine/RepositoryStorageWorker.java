@@ -50,8 +50,7 @@ import com.mongodb.DB;
  * @author vibul
  * 
  */
-public class RepositoryStorageWorker extends Thread
-{
+public class RepositoryStorageWorker extends Thread {
     private static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryStorageWorker.class);
     private Repository _repo = null;
     private String _deadLetterAddress = null;
@@ -103,33 +102,27 @@ public class RepositoryStorageWorker extends Thread
      * @throws Exception
      *             if error
      */
-    public RepositoryStorageWorker(String name, Repository repo) throws Exception
-    {
+    public RepositoryStorageWorker(String name, Repository repo) throws Exception {
         super(name);
 
-        if (repo == null)
-        {
+        if (repo == null) {
             throw new NullArgumentException("repo");
         }
         _repo = repo;
         _deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
 
         // Load parsers
-        for (RepositoryParserConfigBO repoParserInfo : repo.getRepoConfig().getParsers())
-        {
-            if (repoParserInfo.getAppliesTo() == AppliesTo.All)
-            {
+        for (RepositoryParserConfigBO repoParserInfo : repo.getRepoConfig().getParsers()) {
+            if (repoParserInfo.getAppliesTo() == AppliesTo.All) {
                 _catchAllParser = EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo);
             }
-            else if (repoParserInfo.getAppliesTo() != AppliesTo.None)
-            {
+            else if (repoParserInfo.getAppliesTo() != AppliesTo.None) {
                 _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo));
             }
         }
 
         // If there is no catch all, then set it to the default one (that does no parsing)
-        if (_catchAllParser == null)
-        {
+        if (_catchAllParser == null) {
             _catchAllParser = EntryParserFactory.getDefaultParser(repo.getRepoConfig());
         }
 
@@ -140,10 +133,8 @@ public class RepositoryStorageWorker extends Thread
      * Receive incoming messages and write to the database
      */
     @Override
-    public void run()
-    {
-        if (_isRunning)
-        {
+    public void run() {
+        if (_isRunning) {
             throw new RuntimeException("RepositoryStorageWorker " + this.getName() + " is alrady running");
         }
 
@@ -154,42 +145,37 @@ public class RepositoryStorageWorker extends Thread
         ClientSession session = null;
         RepositoryEntryController controller = RepositoryEntryController.getInstance(_repo.getRepoConfig());
 
-        try
-        {
+        try {
             db = MongoConnection.getInstance().getConnection();
 
             session = MqService.getInstance().getTransactionalSystemClientSession();
             ClientConsumer messageConsumer = session.createConsumer(_repo.getRepoConfig().getStorageQueueName());
             session.start();
 
-            ClientProducer dlqProducer = (_deadLetterAddress == null ? null : session.createProducer(_deadLetterAddress));
+            ClientProducer dlqProducer = (_deadLetterAddress == null ? null : session
+                    .createProducer(_deadLetterAddress));
 
-            while (true)
-            {
+            while (true) {
                 // Wait (sleep) 1/2 second for messages
                 ClientMessage messageReceived = messageConsumer.receive(500);
-                if (messageReceived != null)
-                {
-                    try
-                    {
+                if (messageReceived != null) {
+                    try {
                         String ts = messageReceived.getStringProperty(TIMESTAMP_PROPERTY_NAME);
                         String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
                         String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
                         String severity = messageReceived.getStringProperty(SEVERITY_PROPERTY_NAME);
                         SimpleString messageSimpleString = messageReceived.getBodyBuffer().readNullableSimpleString();
                         String message = "";
-                        if (messageSimpleString != null)
-                        {
+                        if (messageSimpleString != null) {
                             message = messageSimpleString.toString();
                         }
-                        
+
                         // Parse message
                         EntryParser entryParser = getParser(source, host);
                         RepositoryEntryBO repoEntry = entryParser.parse(ts, source, host, severity, message);
 
                         // Save message
-                        if (repoEntry != null)
-                        {
+                        if (repoEntry != null) {
                             controller.save(db, repoEntry);
                             _logger.debug("RepositoryStorageWorker '%s' processed message id %s: %s", this.getName(),
                                     messageReceived.getMessageID(), message);
@@ -202,8 +188,7 @@ public class RepositoryStorageWorker extends Thread
                         // Message could not be parsed so add to dead letter queue
                         // Do it after session.commit() because adding to DLA requires another commit
                         // and we want to flag the original message as having been processed so it is not re-processed
-                        if (repoEntry == null)
-                        {
+                        if (repoEntry == null) {
                             // Cannot parse. Commit and add to Dead Letter Queue with the error
                             _logger.error("RepositoryStorageWorker '%s' parse error processing message id %s: '%s'. "
                                     + "Moved message to dead letter queue.", this.getName(),
@@ -212,8 +197,7 @@ public class RepositoryStorageWorker extends Thread
                             addToDeadLetterQueue(session, dlqProducer, message, entryParser.getLastParseError());
                         }
                     }
-                    catch (Exception ex)
-                    {
+                    catch (Exception ex) {
                         // This exception really should only be for mongoDB write errors
 
                         // Rollback and try delivery again (just in case we have bad DB connection or other)
@@ -230,8 +214,7 @@ public class RepositoryStorageWorker extends Thread
                 }
 
                 // See if we want to quit
-                if (_stopRunning)
-                {
+                if (_stopRunning) {
                     break;
                 }
 
@@ -242,15 +225,13 @@ public class RepositoryStorageWorker extends Thread
             _logger.info("RepositoryStorageWorker '%s' stopped", this.getName());
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // Just log and terminate
             // TODO Repository or some class should have a periodic check to make sure this thread is started again in
             // the event of an exception stopping the thread
             _logger.error(ex, "RepositoryStorageWorker '%s' error. %s", this.getName(), ex.getMessage());
         }
-        finally
-        {
+        finally {
             _isRunning = false;
             MqService.getInstance().closeClientSession(session);
         }
@@ -265,12 +246,9 @@ public class RepositoryStorageWorker extends Thread
      *            Device or machine name or IP address that the source is running on
      * @return Entry parser to use. Null if no parser found.
      */
-    private EntryParser getParser(String source, String host)
-    {
-        for (EntryParser p : _filteredParsers)
-        {
-            if (p.isApplicable(source, host))
-            {
+    private EntryParser getParser(String source, String host) {
+        for (EntryParser p : _filteredParsers) {
+            if (p.isApplicable(source, host)) {
                 return p;
             }
         }
@@ -286,29 +264,25 @@ public class RepositoryStorageWorker extends Thread
      * @param textEntry
      * @param ex
      */
-    private void addToDeadLetterQueue(ClientSession session, ClientProducer dlqProducer, String textEntry, Exception ex)
-    {
-        try
-        {
-            if (dlqProducer == null)
-            {
+    private void addToDeadLetterQueue(ClientSession session, ClientProducer dlqProducer, String textEntry, Exception ex) {
+        try {
+            if (dlqProducer == null) {
                 return;
             }
 
             ClientMessage message = session.createMessage(Message.TEXT_TYPE, false);
-            
+
             // Special property to identify original address
             // See http://docs.jboss.org/hornetq/2.2.2.Final/user-manual/en/html_single/index.html#d0e4430
             message.putStringProperty("_HQ_ORIG_ADDRESS", _repo.getRepoConfig().getPubSubAddress());
-            
+
             message.putStringProperty("RepositoryStorageWorker", this.getName());
             message.putStringProperty("ParseException", ex.toString());
             message.getBodyBuffer().writeString(textEntry);
             dlqProducer.send(message);
             session.commit();
         }
-        catch (Exception ex2)
-        {
+        catch (Exception ex2) {
             // Just log can continue
             _logger.error(ex2, "RepositoryStorageWorker '%s' could not add message to dead letter queue error. %s",
                     this.getName(), ex2.getMessage());
@@ -318,24 +292,21 @@ public class RepositoryStorageWorker extends Thread
     /**
      * Returns the repository to which this thread belongs
      */
-    public Repository getRepository()
-    {
+    public Repository getRepository() {
         return _repo;
     }
 
     /**
      * Returns true if this thread is running, false if not
      */
-    public boolean isRunning()
-    {
+    public boolean isRunning() {
         return _isRunning;
     }
 
     /**
      * Make this thread stop running
      */
-    public void stopRunning()
-    {
+    public void stopRunning() {
         _stopRunning = true;
     }
 

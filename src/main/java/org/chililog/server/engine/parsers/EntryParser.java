@@ -36,7 +36,6 @@ import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 
-
 /**
  * <p>
  * Parses incoming entries to extract fields and keywords
@@ -45,8 +44,7 @@ import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
  * This code is NOT designed for multi-threaded use. It should only be used in 1 thread.
  * </p>
  */
-public abstract class EntryParser
-{
+public abstract class EntryParser {
     public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     public static final String TIMESTAMP_TIMEZONE = "GMT";
 
@@ -74,53 +72,41 @@ public abstract class EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public EntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
-    {
-        if (repoInfo == null)
-        {
+    public EntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) {
+        if (repoInfo == null) {
             throw new NullArgumentException("repoInfo is null");
         }
-        if (repoParserInfo == null)
-        {
+        if (repoParserInfo == null) {
             throw new NullArgumentException("repoParserInfo is null");
         }
 
         _repoName = repoInfo.getName();
         _repoParserInfo = repoParserInfo;
         _maxKeywords = repoInfo.getStorageMaxKeywords();
-        if (repoParserInfo.getMaxKeywords() != RepositoryParserConfigBO.MAX_KEYWORDS_INHERITED)
-        {
+        if (repoParserInfo.getMaxKeywords() != RepositoryParserConfigBO.MAX_KEYWORDS_INHERITED) {
             _maxKeywords = repoParserInfo.getMaxKeywords();
         }
 
         // Get our regular expression ready for matching source and host
-        if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV)
-        {
-            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToSourceFilter()))
-            {
+        if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV) {
+            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToSourceFilter())) {
                 _sourceCSV = _repoParserInfo.getAppliesToSourceFilter().split(",");
-                for (int i = 0; i < _sourceCSV.length; i++)
-                {
+                for (int i = 0; i < _sourceCSV.length; i++) {
                     _sourceCSV[i] = _sourceCSV[i].trim();
                 }
             }
-            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToHostFilter()))
-            {
+            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToHostFilter())) {
                 _hostCSV = _repoParserInfo.getAppliesToHostFilter().split(",");
-                for (int i = 0; i < _hostCSV.length; i++)
-                {
+                for (int i = 0; i < _hostCSV.length; i++) {
                     _hostCSV[i] = _hostCSV[i].trim();
                 }
             }
         }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression)
-        {
-            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToSourceFilter()))
-            {
+        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
+            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToSourceFilter())) {
                 _sourcePattern = Pattern.compile(_repoParserInfo.getAppliesToSourceFilter());
             }
-            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToHostFilter()))
-            {
+            if (!StringUtils.isBlank(_repoParserInfo.getAppliesToHostFilter())) {
                 _hostPattern = Pattern.compile(_repoParserInfo.getAppliesToHostFilter());
             }
         }
@@ -138,24 +124,21 @@ public abstract class EntryParser
     /**
      * Returns the name of the repository to which this parser it attached
      */
-    public String getRepoName()
-    {
+    public String getRepoName() {
         return _repoName;
     }
 
     /**
      * Returns the parser meta data
      */
-    public RepositoryParserConfigBO getRepoParserInfo()
-    {
+    public RepositoryParserConfigBO getRepoParserInfo() {
         return _repoParserInfo;
     }
 
     /**
      * Returns the last error that happened during parsing
      */
-    public Exception getLastParseError()
-    {
+    public Exception getLastParseError() {
         return _lastParseError;
     }
 
@@ -165,8 +148,7 @@ public abstract class EntryParser
      * @param lastParseError
      *            Exception thrown during parsing
      */
-    protected void setLastParseError(Exception lastParseError)
-    {
+    protected void setLastParseError(Exception lastParseError) {
         _lastParseError = lastParseError;
     }
 
@@ -179,43 +161,31 @@ public abstract class EntryParser
      *            Computer name or IP address
      * @return True if this parser is to be used, False if not
      */
-    public boolean isApplicable(String source, String host)
-    {
-        if (_repoParserInfo.getAppliesTo() == AppliesTo.All)
-        {
+    public boolean isApplicable(String source, String host) {
+        if (_repoParserInfo.getAppliesTo() == AppliesTo.All) {
             return true;
         }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV)
-        {
-            if (!StringUtils.isBlank(source) && _sourceCSV != null)
-            {
-                for (String s : _sourceCSV)
-                {
-                    if (s.equalsIgnoreCase(source))
-                    {
+        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV) {
+            if (!StringUtils.isBlank(source) && _sourceCSV != null) {
+                for (String s : _sourceCSV) {
+                    if (s.equalsIgnoreCase(source)) {
                         return true;
                     }
                 }
             }
-            if (!StringUtils.isBlank(host) && _hostCSV != null)
-            {
-                for (String s : _hostCSV)
-                {
-                    if (s.equalsIgnoreCase(host))
-                    {
+            if (!StringUtils.isBlank(host) && _hostCSV != null) {
+                for (String s : _hostCSV) {
+                    if (s.equalsIgnoreCase(host)) {
                         return true;
                     }
                 }
             }
         }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression)
-        {
-            if (!StringUtils.isBlank(source) && _sourcePattern != null)
-            {
+        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
+            if (!StringUtils.isBlank(source) && _sourcePattern != null) {
                 return _sourcePattern.matcher(source).matches();
             }
-            if (!StringUtils.isBlank(host) && _hostPattern != null)
-            {
+            if (!StringUtils.isBlank(host) && _hostPattern != null) {
                 return _hostPattern.matcher(host).matches();
             }
         }
@@ -230,26 +200,20 @@ public abstract class EntryParser
      * @param serverity
      * @param message
      */
-    protected void checkParseArguments(String timestamp, String source, String host, String serverity, String message)
-    {
-        if (StringUtils.isBlank(timestamp))
-        {
+    protected void checkParseArguments(String timestamp, String source, String host, String serverity, String message) {
+        if (StringUtils.isBlank(timestamp)) {
             throw new IllegalArgumentException("Entry timestamp is blank");
         }
-        if (StringUtils.isBlank(source))
-        {
+        if (StringUtils.isBlank(source)) {
             throw new IllegalArgumentException("Entry source is blank");
         }
-        if (StringUtils.isBlank(host))
-        {
+        if (StringUtils.isBlank(host)) {
             throw new IllegalArgumentException("Entry host is blank");
         }
-        if (StringUtils.isBlank(serverity))
-        {
+        if (StringUtils.isBlank(serverity)) {
             throw new IllegalArgumentException("Entry serverity is blank");
         }
-        if (StringUtils.isBlank(message))
-        {
+        if (StringUtils.isBlank(message)) {
             throw new IllegalArgumentException("Entry message is blank");
         }
     }
@@ -261,23 +225,23 @@ public abstract class EntryParser
      * @return Date
      * @throws ParseException
      */
-    protected Date parseTimestamp(String timestamp) throws ParseException
-    {
+    protected Date parseTimestamp(String timestamp) throws ParseException {
         return _dateFormat.parse(timestamp);
     }
 
     /**
      * Parses our message to look for keywords
      * 
-     * @param message Message to parse
+     * @param message
+     *            Message to parse
      * @return List of keywords
      * @throws IOException
      */
-    protected ArrayList<String> parseKeywords(String source, String host, Severity severity, String message) throws IOException
-    {
+    protected ArrayList<String> parseKeywords(String source, String host, Severity severity, String message)
+            throws IOException {
         StringBuilder sb = new StringBuilder();
         ArrayList<String> l = _tokenizer.tokenize(message, _maxKeywords);
-        
+
         // Add source to keywords
         sb.append("s=").append(source);
         l.add(sb.toString());

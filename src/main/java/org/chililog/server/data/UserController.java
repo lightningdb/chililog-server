@@ -38,15 +38,13 @@ import com.mongodb.MongoException;
  * @author vibul
  * 
  */
-public class UserController extends Controller
-{
+public class UserController extends Controller {
     public static final String MONGODB_COLLECTION_NAME = "users";
 
     /**
      * Returns the singleton instance for this class
      */
-    public static UserController getInstance()
-    {
+    public static UserController getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -56,8 +54,7 @@ public class UserController extends Controller
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final UserController INSTANCE = new UserController();
     }
 
@@ -66,8 +63,7 @@ public class UserController extends Controller
      * Singleton constructor
      * </p>
      */
-    private UserController()
-    {
+    private UserController() {
         return;
     }
 
@@ -75,8 +71,7 @@ public class UserController extends Controller
      * Returns the name of the mongoDB collection for this business object
      */
     @Override
-    protected String getDBCollectionName()
-    {
+    protected String getDBCollectionName() {
         return MONGODB_COLLECTION_NAME;
     }
 
@@ -91,11 +86,9 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public UserBO get(DB db, ObjectId id) throws ChiliLogException
-    {
+    public UserBO get(DB db, ObjectId id) throws ChiliLogException {
         UserBO o = tryGet(db, id);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, id.toString());
         }
         return o;
@@ -112,16 +105,12 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public UserBO tryGet(DB db, ObjectId id) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public UserBO tryGet(DB db, ObjectId id) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (id == null)
-            {
+            if (id == null) {
                 throw new IllegalArgumentException("id cannot be null");
             }
 
@@ -129,14 +118,12 @@ public class UserController extends Controller
             BasicDBObject condition = new BasicDBObject();
             condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
             DBObject dbo = coll.findOne(condition);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new UserBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -152,11 +139,9 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public UserBO getByUsername(DB db, String username) throws ChiliLogException
-    {
+    public UserBO getByUsername(DB db, String username) throws ChiliLogException {
         UserBO o = tryGetByUsername(db, username);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, username);
         }
         return o;
@@ -173,16 +158,12 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public UserBO tryGetByUsername(DB db, String username) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public UserBO tryGetByUsername(DB db, String username) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (StringUtils.isBlank(username))
-            {
+            if (StringUtils.isBlank(username)) {
                 throw new IllegalArgumentException("username cannot be blank");
             }
 
@@ -190,14 +171,12 @@ public class UserController extends Controller
             BasicDBObject query = new BasicDBObject();
             query.put(UserBO.USERNAME_FIELD_NAME, username);
             DBObject dbo = coll.findOne(query);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new UserBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -213,11 +192,9 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public UserBO getByEmailAddress(DB db, String emailAddress) throws ChiliLogException
-    {
+    public UserBO getByEmailAddress(DB db, String emailAddress) throws ChiliLogException {
         UserBO o = tryGetByEmailAddress(db, emailAddress);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, emailAddress);
         }
         return o;
@@ -234,16 +211,12 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public UserBO tryGetByEmailAddress(DB db, String emailAddress) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public UserBO tryGetByEmailAddress(DB db, String emailAddress) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (StringUtils.isBlank(emailAddress))
-            {
+            if (StringUtils.isBlank(emailAddress)) {
                 throw new IllegalArgumentException("emailAddress cannot be blank");
             }
 
@@ -251,14 +224,12 @@ public class UserController extends Controller
             BasicDBObject query = new BasicDBObject();
             query.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, emailAddress);
             DBObject dbo = coll.findOne(query);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new UserBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -274,33 +245,27 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public ArrayList<UserBO> getList(DB db, UserListCriteria criteria) throws ChiliLogException
-    {
+    public ArrayList<UserBO> getList(DB db, UserListCriteria criteria) throws ChiliLogException {
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
 
         // Filter
         BasicDBObject condition = new BasicDBObject();
-        if (!StringUtils.isBlank(criteria.getUsernamePattern()))
-        {
+        if (!StringUtils.isBlank(criteria.getUsernamePattern())) {
             Pattern pattern = Pattern.compile(criteria.getUsernamePattern());
             condition.put(UserBO.USERNAME_FIELD_NAME, pattern);
         }
-        if (!StringUtils.isBlank(criteria.getEmailAddressPattern()))
-        {
+        if (!StringUtils.isBlank(criteria.getEmailAddressPattern())) {
             Pattern pattern = Pattern.compile(criteria.getEmailAddressPattern());
             condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, pattern);
         }
-        if (!StringUtils.isBlank(criteria.getRole()))
-        {
+        if (!StringUtils.isBlank(criteria.getRole())) {
             condition.put(UserBO.ROLES_FIELD_NAME, criteria.getRole());
         }
-        if (!StringUtils.isBlank(criteria.getRolePattern()))
-        {
+        if (!StringUtils.isBlank(criteria.getRolePattern())) {
             Pattern repositoryNameMatch = Pattern.compile(criteria.getRolePattern());
             condition.put(UserBO.ROLES_FIELD_NAME, repositoryNameMatch);
         }
-        if (criteria.getStatus() != null)
-        {
+        if (criteria.getStatus() != null) {
             condition.put(UserBO.STATUS_FIELD_NAME, criteria.getStatus().toString());
         }
 
@@ -313,15 +278,13 @@ public class UserController extends Controller
         int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
         DBCursor cur = coll.find(condition).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
         ArrayList<UserBO> list = new ArrayList<UserBO>();
-        while (cur.hasNext())
-        {
+        while (cur.hasNext()) {
             DBObject dbo = cur.next();
             list.add(new UserBO(dbo));
         }
 
         // Do page count by executing query again
-        if (criteria.getDoPageCount())
-        {
+        if (criteria.getDoPageCount()) {
             int documentCount = coll.find(condition).count();
             criteria.calculatePageCount(documentCount);
         }
@@ -339,34 +302,28 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void save(DB db, UserBO user) throws ChiliLogException
-    {
+    public void save(DB db, UserBO user) throws ChiliLogException {
         // Validate unique username
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
         BasicDBObject condition = new BasicDBObject();
         condition.put(UserBO.USERNAME_FIELD_NAME, user.getUsername());
-        if (user.isExistingRecord())
-        {
+        if (user.isExistingRecord()) {
             condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
         }
         long i = coll.getCount(condition);
-        if (i > 0)
-        {
+        if (i > 0) {
             throw new ChiliLogException(Strings.USER_DUPLICATE_USERNAME_ERROR, user.getUsername());
         }
 
         // Validate unique email address
-        if (!StringUtils.isBlank(user.getEmailAddress()))
-        {
+        if (!StringUtils.isBlank(user.getEmailAddress())) {
             condition = new BasicDBObject();
             condition.put(UserBO.EMAIL_ADDRESS_FIELD_NAME, user.getEmailAddress());
-            if (user.isExistingRecord())
-            {
+            if (user.isExistingRecord()) {
                 condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", user.getDocumentID()));
             }
             i = coll.getCount(condition);
-            if (i > 0)
-            {
+            if (i > 0) {
                 throw new ChiliLogException(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, user.getEmailAddress());
             }
         }
@@ -385,8 +342,7 @@ public class UserController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void remove(DB db, UserBO user) throws ChiliLogException
-    {
+    public void remove(DB db, UserBO user) throws ChiliLogException {
         super.remove(db, user);
     }
 }

@@ -33,8 +33,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public abstract class BO
-{
+public abstract class BO {
     private DBObject _dbObject = null;
 
     public static final String DOCUMENT_ID_FIELD_NAME = "_id";
@@ -43,8 +42,7 @@ public abstract class BO
     /**
      * Basic constructor
      */
-    public BO()
-    {
+    public BO() {
         return;
     }
 
@@ -55,8 +53,7 @@ public abstract class BO
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public BO(DBObject dbObject)
-    {
+    public BO(DBObject dbObject) {
         _dbObject = dbObject;
         return;
     }
@@ -72,10 +69,8 @@ public abstract class BO
     /**
      * Converts our properties into
      */
-    public DBObject toDBObject() throws ChiliLogException
-    {
-        if (_dbObject == null)
-        {
+    public DBObject toDBObject() throws ChiliLogException {
+        if (_dbObject == null) {
             _dbObject = new BasicDBObject();
         }
         savePropertiesToDBObject(_dbObject);
@@ -85,22 +80,18 @@ public abstract class BO
     /**
      * Flag to indicate if this business object represents an existing record in mongoDB or not
      */
-    public boolean isExistingRecord()
-    {
+    public boolean isExistingRecord() {
         return _dbObject != null && _dbObject.get(DOCUMENT_ID_FIELD_NAME) != null;
     }
 
     /**
      * Returns the internal mongoDB id
      */
-    public ObjectId getDocumentID()
-    {
-        if (isExistingRecord())
-        {
+    public ObjectId getDocumentID() {
+        if (isExistingRecord()) {
             return (ObjectId) _dbObject.get(DOCUMENT_ID_FIELD_NAME);
         }
-        else
-        {
+        else {
             return null;
         }
     }
@@ -109,14 +100,11 @@ public abstract class BO
      * Returns the version of this record. The version number is used in optimistic locking. If the record has not been
      * saved, then -1 is returned.
      */
-    public long getDocumentVersion()
-    {
-        if (isExistingRecord())
-        {
+    public long getDocumentVersion() {
+        if (isExistingRecord()) {
             return (Long) (_dbObject.get(DOCUMENT_VERSION_FIELD_NAME));
         }
-        else
-        {
+        else {
             return -1;
         }
     }

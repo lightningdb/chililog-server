@@ -24,7 +24,6 @@ import org.chililog.server.common.CryptoUtils;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserBO.Status;
 
-
 /**
  * <p>
  * User API Object is used as part of the User API service to communicate user information with API callers.
@@ -33,8 +32,7 @@ import org.chililog.server.data.UserBO.Status;
  * @author vibul
  * 
  */
-public class UserAO extends AO
-{
+public class UserAO extends AO {
     private String _documentID;
     private Long _documentVersion;
     private String _username;
@@ -48,8 +46,7 @@ public class UserAO extends AO
     /**
      * Basic constructor
      */
-    public UserAO()
-    {
+    public UserAO() {
         return;
     }
 
@@ -59,8 +56,7 @@ public class UserAO extends AO
      * @param userBO
      *            User business object from which data will be copied
      */
-    public UserAO(UserBO userBO)
-    {
+    public UserAO(UserBO userBO) {
         this(userBO, true);
         return;
     }
@@ -75,27 +71,22 @@ public class UserAO extends AO
      *            name and gravatar hash) will be copied. Typically, only administrators get all properties. Non
      *            administrators get bare essentials to help with user lookups.
      */
-    public UserAO(UserBO userBO, boolean copyAllProperties)
-    {
+    public UserAO(UserBO userBO, boolean copyAllProperties) {
         // Note: password hash is NEVER supplied for security reasons
         _documentID = userBO.getDocumentID().toString();
         _documentVersion = userBO.getDocumentVersion();
         _username = userBO.getUsername();
         _displayName = userBO.getDisplayName();
-        if (!StringUtils.isBlank(_emailAddress))
-        {
-            try
-            {
+        if (!StringUtils.isBlank(_emailAddress)) {
+            try {
                 _gravatarMD5Hash = CryptoUtils.createMD5Hash(_emailAddress.trim().toLowerCase());
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // ignore
             }
         }
 
-        if (copyAllProperties)
-        {
+        if (copyAllProperties) {
             _roles = userBO.getRoles();
             _status = userBO.getStatus();
             _emailAddress = userBO.getEmailAddress();
@@ -110,31 +101,25 @@ public class UserAO extends AO
      * @param userBO
      * @throws ChiliLogException
      */
-    public void toBO(UserBO userBO) throws ChiliLogException
-    {
+    public void toBO(UserBO userBO) throws ChiliLogException {
         // Optimistic locking check
         checkOptimisticLocking(_documentVersion, userBO);
 
         userBO.setUsername(_username);
 
         // Password required on create. On update, change the password only if supplied
-        if (userBO.isExistingRecord())
-        {
-            if (!StringUtils.isBlank(_password))
-            {
+        if (userBO.isExistingRecord()) {
+            if (!StringUtils.isBlank(_password)) {
                 userBO.setPassword(_password, true);
             }
         }
-        else
-        {
+        else {
             userBO.setPassword(_password, true);
         }
 
         userBO.removeAllRoles();
-        if (_roles != null)
-        {
-            for (String role : _roles)
-            {
+        if (_roles != null) {
+            for (String role : _roles) {
                 userBO.addRole(role);
             }
         }
@@ -146,93 +131,75 @@ public class UserAO extends AO
         userBO.setEmailAddress(_emailAddress);
     }
 
-    public String getDocumentID()
-    {
+    public String getDocumentID() {
         return _documentID;
     }
 
-    public void setDocumentID(String documentID)
-    {
+    public void setDocumentID(String documentID) {
         _documentID = documentID;
     }
 
-    public Long getDocumentVersion()
-    {
+    public Long getDocumentVersion() {
         return _documentVersion;
     }
 
-    public void setDocumentVersion(Long documentVersion)
-    {
+    public void setDocumentVersion(Long documentVersion) {
         _documentVersion = documentVersion;
     }
 
-    public String getUsername()
-    {
+    public String getUsername() {
         return _username;
     }
 
-    public void setUsername(String username)
-    {
+    public void setUsername(String username) {
         _username = username;
     }
 
-    public String getPassword()
-    {
+    public String getPassword() {
         return _password;
     }
 
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         _password = password;
     }
 
-    public String[] getRoles()
-    {
+    public String[] getRoles() {
         return _roles;
     }
 
-    public void setRoles(String[] roles)
-    {
+    public void setRoles(String[] roles) {
         _roles = roles;
     }
 
-    public Status getStatus()
-    {
+    public Status getStatus() {
         return _status;
     }
 
-    public void setStatus(Status status)
-    {
+    public void setStatus(Status status) {
         _status = status;
     }
 
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
-    public String getEmailAddress()
-    {
+    public String getEmailAddress() {
         return _emailAddress;
     }
 
-    public void setEmailAddress(String emailAddress)
-    {
+    public void setEmailAddress(String emailAddress) {
         _emailAddress = emailAddress;
     }
 
-    public String getGravatarMD5Hash()
-    {
+    public String getGravatarMD5Hash() {
         return _gravatarMD5Hash;
     }
 
-    public void setGravatarMD5Hash(String gravatarMD5Hash)
-    {
+    public void setGravatarMD5Hash(String gravatarMD5Hash) {
         _gravatarMD5Hash = gravatarMD5Hash;
     }
 

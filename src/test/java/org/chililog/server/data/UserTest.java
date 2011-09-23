@@ -45,13 +45,11 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class UserTest
-{
+public class UserTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -64,8 +62,7 @@ public class UserTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^UserTestUser[\\w]*$");
@@ -73,10 +70,9 @@ public class UserTest
         query.put(UserBO.USERNAME_FIELD_NAME, pattern);
         coll.remove(query);
     }
-    
+
     @Test
-    public void testPassword() throws ChiliLogException
-    {
+    public void testPassword() throws ChiliLogException {
         UserBO user = new UserBO();
         user.setPassword("abc", true);
         assertTrue(user.validatePassword("abc"));
@@ -84,27 +80,24 @@ public class UserTest
     }
 
     @Test(expected = ChiliLogException.class)
-    public void testGetNotFound() throws ChiliLogException
-    {
+    public void testGetNotFound() throws ChiliLogException {
         UserController.getInstance().getByUsername(_db, "notfound");
     }
 
     @Test
-    public void testTryGetNotFound() throws ChiliLogException
-    {
+    public void testTryGetNotFound() throws ChiliLogException {
         UserBO user = UserController.getInstance().tryGetByUsername(_db, "notfound");
         assertNull(user);
     }
 
     @Test
-    public void testCRUD() throws ChiliLogException
-    {
+    public void testCRUD() throws ChiliLogException {
         // Insert
         UserBO user = new UserBO();
         user.setUsername("UserTestUser1");
         user.setPassword("abc123!", true);
         user.addRole("junittestrole1");
-        user.addRole("junittestrole2");        
+        user.addRole("junittestrole2");
         user.setDisplayName("Lloyd Christmas");
         user.setEmailAddress("UserTestUser1@chililog.com");
 
@@ -130,7 +123,7 @@ public class UserTest
         String id = user.getDocumentID().toString();
         user2 = UserController.getInstance().get(_db, new ObjectId(id));
         assertEquals("UserTestUser1", user2.getUsername());
-        
+
         // Update
         user.setUsername("UserTestUser2");
         user.addRole("junittestrole3");
@@ -163,8 +156,7 @@ public class UserTest
         UserController.getInstance().remove(_db, user);
     }
 
-    public void testRoles()
-    {
+    public void testRoles() {
         UserBO user = new UserBO();
 
         user.addRole("role1");
@@ -192,10 +184,8 @@ public class UserTest
     }
 
     @Test
-    public void testDuplicateUsername() throws ChiliLogException
-    {
-        try
-        {
+    public void testDuplicateUsername() throws ChiliLogException {
+        try {
             // Insert
             UserBO user = new UserBO();
             user.setUsername("UserTestUser3");
@@ -208,40 +198,33 @@ public class UserTest
             user2.setPassword("abc123!", true);
             user.setEmailAddress("UserTestUser3@chililog.com");
             UserController.getInstance().save(_db, user2);
-            
+
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.USER_DUPLICATE_USERNAME_ERROR, ex.getErrorCode());
         }
     }
-    
-    
+
     @Test
-    public void testEmptyUsername() throws ChiliLogException
-    {
-        try
-        {
+    public void testEmptyUsername() throws ChiliLogException {
+        try {
             // Insert
             UserBO user = new UserBO();
             user.setUsername("");
             user.setPassword("abc123!", true);
             UserController.getInstance().save(_db, user);
-            
+
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, ex.getErrorCode());
         }
     }
-    
+
     @Test
-    public void testDuplicateEmailAddress() throws ChiliLogException
-    {
-        try
-        {
+    public void testDuplicateEmailAddress() throws ChiliLogException {
+        try {
             // Insert
             UserBO user = new UserBO();
             user.setUsername("UserTestUser6");
@@ -254,47 +237,41 @@ public class UserTest
             user2.setPassword("abc123!", true);
             user2.setEmailAddress("UserTestUser6@chililog.com");
             UserController.getInstance().save(_db, user2);
-            
+
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, ex.getErrorCode());
         }
     }
-    
+
     @Test
-    public void testBadEmailAddress() throws ChiliLogException
-    {
-        try
-        {
+    public void testBadEmailAddress() throws ChiliLogException {
+        try {
             // Insert
             UserBO user = new UserBO();
             user.setUsername("UserTestUser7");
             user.setPassword("abc123!", true);
             user.setEmailAddress("bad email address");
             UserController.getInstance().save(_db, user);
-            
+
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, ex.getErrorCode());
         }
     }
-    
+
     @Test
-    public void testNoEmailAddress() throws ChiliLogException
-    {
+    public void testNoEmailAddress() throws ChiliLogException {
         UserBO user = new UserBO();
         user.setUsername("UserTestUser8");
         user.setPassword("abc123!", true);
         UserController.getInstance().save(_db, user);
     }
-    
+
     @Test
-    public void testList() throws ChiliLogException
-    {
+    public void testList() throws ChiliLogException {
         // Insert
         UserBO user = new UserBO();
         user.setUsername("UserTestUserList4");
@@ -312,101 +289,100 @@ public class UserTest
         user2.setEmailAddress("UserTestUserList5@chililog.com");
         user2.setStatus(UserBO.Status.DISABLED);
         UserController.getInstance().save(_db, user2);
-        
+
         List<UserBO> list = null;
 
         // ***************************
         // role
-        // ***************************        
-        UserListCriteria criteria= new UserListCriteria();
+        // ***************************
+        UserListCriteria criteria = new UserListCriteria();
         criteria.setRole("ListRoleA");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(2, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
         assertEquals("UserTestUserList5", list.get(1).getUsername());
-        
-        criteria= new UserListCriteria();
+
+        criteria = new UserListCriteria();
         criteria.setRole("ListRoleB");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(1, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
-        
-        criteria= new UserListCriteria();
+
+        criteria = new UserListCriteria();
         criteria.setRole("no matching role");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
-        
+
         // ***************************
         // username pattern
-        // ***************************        
-        criteria= new UserListCriteria();
+        // ***************************
+        criteria = new UserListCriteria();
         criteria.setUsernamePattern("^UserTestUserList[\\w]*$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(2, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
         assertEquals("UserTestUserList5", list.get(1).getUsername());
 
-        criteria= new UserListCriteria();
+        criteria = new UserListCriteria();
         criteria.setUsernamePattern("^no matches for sure[\\w]*$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
 
         // ***************************
         // email address pattern
-        // ***************************        
-        criteria= new UserListCriteria();
+        // ***************************
+        criteria = new UserListCriteria();
         criteria.setEmailAddressPattern("^UserTestUserList[\\w]*@chililog\\.com$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(2, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
         assertEquals("UserTestUserList5", list.get(1).getUsername());
 
-        criteria= new UserListCriteria();
+        criteria = new UserListCriteria();
         criteria.setEmailAddressPattern("^no matches for sure[\\w]*$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
-        
+
         // ***************************
         // status
-        // ***************************        
-        criteria= new UserListCriteria();
+        // ***************************
+        criteria = new UserListCriteria();
         criteria.setUsernamePattern("^UserTestUserList[\\w]*$");
         criteria.setStatus(UserBO.Status.ENABLED);
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(1, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
 
-        criteria= new UserListCriteria();
+        criteria = new UserListCriteria();
         criteria.setUsernamePattern("^UserTestUserList[\\w]*$");
         criteria.setStatus(UserBO.Status.LOCKED);
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
-        
+
         // ***************************
         // role pattern
-        // ***************************        
-        criteria= new UserListCriteria();
+        // ***************************
+        criteria = new UserListCriteria();
         criteria.setRolePattern("^ListRoleA$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(2, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
         assertEquals("UserTestUserList5", list.get(1).getUsername());
 
-        criteria= new UserListCriteria();
+        criteria = new UserListCriteria();
         criteria.setRolePattern("^ListRoleB$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(1, list.size());
         assertEquals("UserTestUserList4", list.get(0).getUsername());
-       
-        criteria= new UserListCriteria();
+
+        criteria = new UserListCriteria();
         criteria.setRolePattern("^no matches for sure[\\w]*$");
         list = UserController.getInstance().getList(_db, criteria);
         assertEquals(0, list.size());
     }
-    
+
     @Test
-    public void testExtractRepositoryNameFromRole()
-    {
+    public void testExtractRepositoryNameFromRole() {
         assertEquals("aaa", UserBO.extractRepositoryNameFromRole("repo.aaa.administrator"));
         assertEquals("bbb", UserBO.extractRepositoryNameFromRole("repo.bbb.workbench"));
         assertEquals("ccc", UserBO.extractRepositoryNameFromRole("repo.ccc.publisher"));

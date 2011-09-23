@@ -52,34 +52,29 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RegexEntryParserTest
-{
+public class RegexEntryParserTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection("repo_regex_test");
         coll.drop();
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         classTeardown();
     }
 
     @Test
-    public void testOK() throws ChiliLogException
-    {
+    public void testOK() throws ChiliLogException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("regex_test");
         repoInfo.setDisplayName("JUnit Test 1");
@@ -185,7 +180,7 @@ public class RegexEntryParserTest
         cal.set(Calendar.MILLISECOND, 200);
 
         assertNotNull(dbObject);
-        assertEquals(cal.getTime().getTime(), ((Date)dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME)).getTime());
+        assertEquals(cal.getTime().getTime(), ((Date) dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME)).getTime());
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
         assertEquals(22, dbObject.get("fld_field2"));
         assertEquals(23L, dbObject.get("fld_field3"));

@@ -36,16 +36,14 @@ import com.mongodb.ServerAddress;
  * @author vibul
  * 
  */
-public class MongoConnection
-{
+public class MongoConnection {
     private static Logger _logger = Logger.getLogger(MongoConnection.class);
     private Mongo _mongo = null;
 
     /**
      * Returns the singleton instance for this class
      */
-    public static MongoConnection getInstance()
-    {
+    public static MongoConnection getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -55,8 +53,7 @@ public class MongoConnection
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final MongoConnection INSTANCE = new MongoConnection();
     }
 
@@ -70,14 +67,11 @@ public class MongoConnection
      * so might as well terminate here.
      * </p>
      */
-    private MongoConnection()
-    {
-        try
-        {
+    private MongoConnection() {
+        try {
             loadMongo();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error("Error connecting to mongoDB: " + e.getMessage(), e);
             System.exit(1);
         }
@@ -96,8 +90,7 @@ public class MongoConnection
      * @throws UnknownHostException
      * 
      */
-    void loadMongo() throws UnknownHostException, MongoException
-    {
+    void loadMongo() throws UnknownHostException, MongoException {
         AppProperties appProperties = AppProperties.getInstance();
         ServerAddress addr = new ServerAddress(appProperties.getDbIpAddress(), appProperties.getDbIpPort());
         MongoOptions options = new MongoOptions();
@@ -112,8 +105,7 @@ public class MongoConnection
      * @throws ChiliLogException
      *             if connection or authentication fails
      */
-    public DB getConnection() throws ChiliLogException
-    {
+    public DB getConnection() throws ChiliLogException {
         AppProperties appProperties = AppProperties.getInstance();
         return getConnection(appProperties.getDbName(), appProperties.getDbUserName(), appProperties.getDbPassword());
     }
@@ -131,25 +123,20 @@ public class MongoConnection
      * @throws ChiliLogException
      *             if connection or authentication fails
      */
-    public DB getConnection(String dbName, String username, String password) throws ChiliLogException
-    {
-        try
-        {
+    public DB getConnection(String dbName, String username, String password) throws ChiliLogException {
+        try {
             DB db = _mongo.getDB(dbName);
-            
+
             // Quirk in mongoDB driver, for some reason we can't authenticate twice
             // "can't call authenticate twice on the same DBObject" exception
-            if (!db.isAuthenticated())
-            {
-                if (!db.authenticate(username, password.toCharArray()))
-                {
+            if (!db.isAuthenticated()) {
+                if (!db.authenticate(username, password.toCharArray())) {
                     throw new ChiliLogException(Strings.MONGODB_AUTHENTICATION_ERROR, dbName);
                 }
             }
             return db;
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_CONNECTION_ERROR, ex.getMessage());
         }
     }

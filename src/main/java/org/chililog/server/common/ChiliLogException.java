@@ -31,24 +31,21 @@ import java.io.PrintStream;
  * @author vibul
  * 
  */
-public class ChiliLogException extends Exception
-{
+public class ChiliLogException extends Exception {
     private static final long serialVersionUID = 1L;
     private String _errorCode = null;
 
     /**
      * Error code associated with this exception
      */
-    public String getErrorCode()
-    {
+    public String getErrorCode() {
         return _errorCode;
     }
 
     /**
      * Basic constructor
      */
-    public ChiliLogException()
-    {
+    public ChiliLogException() {
         super();
     }
 
@@ -60,8 +57,7 @@ public class ChiliLogException extends Exception
      * @param args
      *            Error message place holder substitutes
      */
-    public ChiliLogException(String errorCode, Object... args)
-    {
+    public ChiliLogException(String errorCode, Object... args) {
         super(getErrorMessage(errorCode, args));
         _errorCode = errorCode;
     }
@@ -76,8 +72,7 @@ public class ChiliLogException extends Exception
      * @param args
      *            Error message place holder substitutes
      */
-    public ChiliLogException(Throwable ex, String errorCode, Object... args)
-    {
+    public ChiliLogException(Throwable ex, String errorCode, Object... args) {
         super(getErrorMessage(errorCode, args), ex);
         _errorCode = errorCode;
     }
@@ -92,8 +87,7 @@ public class ChiliLogException extends Exception
      * 
      * @return Message for this exception
      */
-    private static String getErrorMessage(String errorCode, Object[] args)
-    {
+    private static String getErrorMessage(String errorCode, Object[] args) {
         String s = StringsProperties.getInstance().getString(errorCode, errorCode);
         return String.format(s, args);
     }
@@ -101,17 +95,14 @@ public class ChiliLogException extends Exception
     /**
      * @return The stack trace as a string
      */
-    public String getStackTraceAsString()
-    {
-        try
-        {
+    public String getStackTraceAsString() {
+        try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             this.printStackTrace(ps);
             return baos.toString("UTF-8");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return this.toString();
         }
     }

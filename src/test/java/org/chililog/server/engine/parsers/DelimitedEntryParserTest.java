@@ -52,34 +52,29 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class DelimitedEntryParserTest
-{
+public class DelimitedEntryParserTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection("repo_junit_test");
         coll.drop();
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         classTeardown();
     }
 
     @Test
-    public void testOK() throws ChiliLogException
-    {
+    public void testOK() throws ChiliLogException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("junit_test");
         repoInfo.setDisplayName("JUnit Test 1");
@@ -91,7 +86,7 @@ public class DelimitedEntryParserTest
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
         repoInfo.getParsers().add(repoParserInfo);
-        
+
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.String);
@@ -133,7 +128,8 @@ public class DelimitedEntryParserTest
         DelimitedEntryParser p = new DelimitedEntryParser(repoInfo, repoParserInfo);
 
         // Save Line 1 OK
-        RepositoryEntryBO entry = p.parse("2001-5-5T01:02:03.001Z", "log1", "127.0.0.1", Severity.Critical.toString(), "line1|2|3|4.4|2001-5-5 5:5:5|True");
+        RepositoryEntryBO entry = p.parse("2001-5-5T01:02:03.001Z", "log1", "127.0.0.1", Severity.Critical.toString(),
+                "line1|2|3|4.4|2001-5-5 5:5:5|True");
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -148,9 +144,9 @@ public class DelimitedEntryParserTest
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.set(2001, 4, 5, 1, 2, 3);
         cal.set(Calendar.MILLISECOND, 1);
-        
+
         assertNotNull(dbObject);
-        assertEquals(cal.getTimeInMillis(), ((Date)dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME)).getTime());
+        assertEquals(cal.getTimeInMillis(), ((Date) dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME)).getTime());
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
         assertEquals("line1", dbObject.get("fld_field1"));
         assertEquals(2, dbObject.get("fld_field2"));
@@ -164,7 +160,8 @@ public class DelimitedEntryParserTest
         assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
 
         // Save Line 2 OK
-        entry = p.parse("2021-5-5T05:05:05.002Z","log1", "127.0.0.1", Severity.Debug.toString(), "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
+        entry = p.parse("2021-5-5T05:05:05.002Z", "log1", "127.0.0.1", Severity.Debug.toString(),
+                "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
         assertNotNull(entry);
         dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -178,7 +175,7 @@ public class DelimitedEntryParserTest
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.set(2021, 4, 5, 5, 5, 5);
         cal.set(Calendar.MILLISECOND, 2);
-        
+
         assertNotNull(dbObject);
         assertEquals(cal.getTime(), dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
@@ -201,20 +198,20 @@ public class DelimitedEntryParserTest
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T05:05:05.000Z","", "127.0.0.1", Severity.Warning.toString(), "aaa");
+        entry = p.parse("2021-5-5T05:05:05.000Z", "", "127.0.0.1", Severity.Warning.toString(), "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T05:05:05.000Z","log1", null, Severity.Warning.toString(), "aaa");
+        entry = p.parse("2021-5-5T05:05:05.000Z", "log1", null, Severity.Warning.toString(), "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T5:5:5.0Z","log1", "127.0.0.1", Severity.Warning.toString(), "");
+        entry = p.parse("2021-5-5T5:5:5.0Z", "log1", "127.0.0.1", Severity.Warning.toString(), "");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
         // Missing field
-        entry = p.parse("2021-5-5T5:5:5Z","log1", "127.0.0.1", Severity.Debug.toString(), "line3");
+        entry = p.parse("2021-5-5T5:5:5Z", "log1", "127.0.0.1", Severity.Debug.toString(), "line3");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

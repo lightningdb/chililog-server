@@ -44,8 +44,7 @@ import org.apache.commons.lang.StringUtils;
  * @author vibul
  * @since 1.0
  */
-public class StringsProperties
-{
+public class StringsProperties {
     private static Log4JLogger _logger = Log4JLogger.getLogger(StringsProperties.class);
     private static final String PROPERTY_FILE_NAME = "strings.properties";
 
@@ -54,8 +53,7 @@ public class StringsProperties
     /**
      * Returns the singleton instance for this class
      */
-    public static StringsProperties getInstance()
-    {
+    public static StringsProperties getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -65,8 +63,7 @@ public class StringsProperties
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final StringsProperties INSTANCE = new StringsProperties();
     }
 
@@ -80,14 +77,11 @@ public class StringsProperties
      * so might as well terminate here.
      * </p>
      */
-    private StringsProperties()
-    {
-        try
-        {
+    private StringsProperties() {
+        try {
             _properties = readPropertiesFile();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -107,29 +101,24 @@ public class StringsProperties
      * @throws IOException
      * @throws FileNotFoundException
      */
-    static Properties readPropertiesFile() throws FileNotFoundException, IOException
-    {
+    static Properties readPropertiesFile() throws FileNotFoundException, IOException {
         FileInputStream fis = null;
 
-        try
-        {
+        try {
             Properties properties = new Properties();
 
             // Load from class path
             InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(PROPERTY_FILE_NAME);
-            if (is == null)
-            {
+            if (is == null) {
                 throw new FileNotFoundException("Default strings.properties file inside JAR not found");
             }
             properties.load(is);
-            is.close();           
+            is.close();
 
             return properties;
         }
-        finally
-        {
-            if (fis != null)
-            {
+        finally {
+            if (fis != null) {
                 fis.close();
             }
         }
@@ -142,13 +131,12 @@ public class StringsProperties
      *            Id of the string in strings.properties file
      * @return String or null if not found.
      */
-    public String getString(String stringCode)
-    {
+    public String getString(String stringCode) {
         return _properties.getProperty(stringCode);
     }
- 
+
     /**
-     * Gets the string identified by <code>stringCode</code>.  If not found, <code>defaultValue</code> is returned.
+     * Gets the string identified by <code>stringCode</code>. If not found, <code>defaultValue</code> is returned.
      * 
      * @param stringCode
      *            Id of the string in strings.properties file
@@ -156,8 +144,7 @@ public class StringsProperties
      *            String to return if the string associated with <code>stringCode</code> is null, empty or whitespaces.
      * @return String or defaultValue if not found.
      */
-    public String getString(String stringCode, String defaultValue)
-    {
+    public String getString(String stringCode, String defaultValue) {
         String s = _properties.getProperty(stringCode);
         return StringUtils.isBlank(s) ? defaultValue : s;
     }

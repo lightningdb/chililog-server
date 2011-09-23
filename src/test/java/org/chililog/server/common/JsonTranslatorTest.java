@@ -10,13 +10,11 @@ import org.chililog.server.common.JsonTranslator;
 import org.chililog.server.common.Log4JLogger;
 import org.junit.Test;
 
-public class JsonTranslatorTest
-{
+public class JsonTranslatorTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonTranslatorTest.class);
 
     @Test
-    public void testBasic()
-    {
+    public void testBasic() {
         TestClass t1 = new TestClass();
 
         String json = JsonTranslator.getInstance().toJson(t1);
@@ -35,10 +33,9 @@ public class JsonTranslatorTest
         assertTrue(json.contains("\"Date\": \"2011-01-02T23:22:21+1100\""));
         assertEquals(t1.getDate(), t2.getDate());
 
-        assertTrue(json.contains("\"Colour\": \"Blue\"")); 
+        assertTrue(json.contains("\"Colour\": \"Blue\""));
         assertEquals(t1.getColour(), t2.getColour());
-        
-        
+
         // Show work with trailing white spaces
         JsonTranslator.getInstance().fromJson(json + " \r\n  ", TestClass.class);
     }
@@ -46,96 +43,78 @@ public class JsonTranslatorTest
     /**
      * Inner classes have to be static before GSON can deserialize
      */
-    public static class TestClass
-    {
+    public static class TestClass {
         private String _stringWithBigName = "hello";
         private boolean _boolean = false;
         private int _integer = 1000;
         private Date _date = new GregorianCalendar(2011, 0, 2, 23, 22, 21).getTime();
-        private String[] _stringsList = new String[]
-        { "one", "two", "three" };
+        private String[] _stringsList = new String[] { "one", "two", "three" };
         private Colour _colour = Colour.Blue;
         private long _longNumber = 123123123L;
 
-        public TestClass()
-        {
+        public TestClass() {
             return;
         }
 
-        public String getStringWithBigName()
-        {
+        public String getStringWithBigName() {
             return _stringWithBigName;
         }
 
-        public void setStringWithBigName(String stringWithBigName)
-        {
+        public void setStringWithBigName(String stringWithBigName) {
             _stringWithBigName = stringWithBigName;
         }
 
-        public boolean isBoolean()
-        {
+        public boolean isBoolean() {
             return _boolean;
         }
 
-        public void setBoolean(boolean b)
-        {
+        public void setBoolean(boolean b) {
             _boolean = b;
         }
 
-        public int getInteger()
-        {
+        public int getInteger() {
             return _integer;
         }
 
-        public void setInteger(int integer)
-        {
+        public void setInteger(int integer) {
             _integer = integer;
         }
 
-        public Date getDate()
-        {
+        public Date getDate() {
             return _date;
         }
 
-        public void setDate(Date date)
-        {
+        public void setDate(Date date) {
             _date = date;
         }
 
-        public String[] getStringsList()
-        {
+        public String[] getStringsList() {
             return _stringsList;
         }
 
-        public void setStringsList(String[] stringsList)
-        {
+        public void setStringsList(String[] stringsList) {
             _stringsList = stringsList;
         }
 
-        public Colour getColour()
-        {
+        public Colour getColour() {
             return _colour;
         }
 
-        public void setColour(Colour colour)
-        {
+        public void setColour(Colour colour) {
             _colour = colour;
         }
 
-        public long getLongNumber()
-        {
+        public long getLongNumber() {
             return _longNumber;
         }
 
-        public void setLongNumber(long longNumber)
-        {
+        public void setLongNumber(long longNumber) {
             _longNumber = longNumber;
         }
 
     }
 
-    public static enum Colour
-    {
+    public static enum Colour {
         Red, Green, Blue
     }
 }

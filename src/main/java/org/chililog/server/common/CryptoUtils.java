@@ -46,12 +46,10 @@ import org.apache.commons.lang.NullArgumentException;
  * @author vibul
  * 
  */
-public class CryptoUtils
-{
-    private static final byte[] AES_ENCRYPTION_STRING_SALT = new byte[]
-    { 3, 56, 23, 120, 34, 92 };
-    private static final byte[] AES_ENCRYPTION_INTIALIZATION_VECTOR = new byte[]
-    { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
+public class CryptoUtils {
+    private static final byte[] AES_ENCRYPTION_STRING_SALT = new byte[] { 3, 56, 23, 120, 34, 92 };
+    private static final byte[] AES_ENCRYPTION_INTIALIZATION_VECTOR = new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
+            0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
 
     /**
      * MD5 hash
@@ -61,22 +59,18 @@ public class CryptoUtils
      * @return MD5 hash as a hex string
      * @throws ChiliLogException
      */
-    public static String createMD5Hash(String s) throws ChiliLogException
-    {
-        try
-        {
+    public static String createMD5Hash(String s) throws ChiliLogException {
+        try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] array = md.digest(s.getBytes("CP1252"));
             StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < array.length; ++i)
-            {
+            for (int i = 0; i < array.length; ++i) {
                 sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
             }
 
             return sb.toString();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to MD5 hash: " + ex.getMessage());
         }
     }
@@ -99,10 +93,8 @@ public class CryptoUtils
      * @throws ChiliLogException
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
-    public static String createSHA512Hash(String plainTextValue, byte[] salt) throws ChiliLogException
-    {
-        try
-        {
+    public static String createSHA512Hash(String plainTextValue, byte[] salt) throws ChiliLogException {
+        try {
             SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
             // Salt generation 64 bits long
             salt = new byte[8];
@@ -110,8 +102,7 @@ public class CryptoUtils
 
             return createSHA512Hash(plainTextValue, salt, true);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to hash passwords. " + ex.getMessage());
         }
     }
@@ -140,16 +131,12 @@ public class CryptoUtils
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
     public static String createSHA512Hash(String plainTextValue, byte[] salt, boolean appendSalt)
-            throws ChiliLogException
-    {
-        try
-        {
-            if (plainTextValue == null)
-            {
+            throws ChiliLogException {
+        try {
+            if (plainTextValue == null) {
                 throw new NullArgumentException("plainTextValue");
             }
-            if (salt == null)
-            {
+            if (salt == null) {
                 throw new NullArgumentException("salt");
             }
 
@@ -160,16 +147,13 @@ public class CryptoUtils
             byte[] plainTextWithSaltBytes = new byte[plainTextBytes.length + salt.length];
 
             // Copy plain text bytes into resulting array.
-            for (int i = 0; i < plainTextBytes.length; i++)
-            {
+            for (int i = 0; i < plainTextBytes.length; i++) {
                 plainTextWithSaltBytes[i] = plainTextBytes[i];
             }
 
             // Append salt bytes to the resulting array.
-            if (appendSalt)
-            {
-                for (int i = 0; i < salt.length; i++)
-                {
+            if (appendSalt) {
+                for (int i = 0; i < salt.length; i++) {
                     plainTextWithSaltBytes[plainTextBytes.length + i] = salt[i];
                 }
             }
@@ -183,14 +167,12 @@ public class CryptoUtils
             byte[] hashWithSaltBytes = new byte[hashBytes.length + salt.length];
 
             // Copy hash bytes into resulting array.
-            for (int i = 0; i < hashBytes.length; i++)
-            {
+            for (int i = 0; i < hashBytes.length; i++) {
                 hashWithSaltBytes[i] = hashBytes[i];
             }
 
             // Append salt bytes to the result.
-            for (int i = 0; i < salt.length; i++)
-            {
+            for (int i = 0; i < salt.length; i++) {
                 hashWithSaltBytes[hashBytes.length + i] = salt[i];
             }
 
@@ -198,8 +180,7 @@ public class CryptoUtils
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(hashWithSaltBytes);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to hash passwords. " + ex.getMessage());
         }
     }
@@ -216,8 +197,7 @@ public class CryptoUtils
      * @throws ChiliLogException
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
-    public static boolean verifyHash(String plainTextValue, String hashValue) throws ChiliLogException
-    {
+    public static boolean verifyHash(String plainTextValue, String hashValue) throws ChiliLogException {
         return verifyHash(plainTextValue, null, hashValue);
     }
 
@@ -234,12 +214,9 @@ public class CryptoUtils
      * @throws ChiliLogException
      *             if SHA-512 is not supported or UTF-8 is not a supported encoding algorithm
      */
-    public static boolean verifyHash(String plainTextValue, byte[] salt, String hashValue) throws ChiliLogException
-    {
-        try
-        {
-            if (plainTextValue == null)
-            {
+    public static boolean verifyHash(String plainTextValue, byte[] salt, String hashValue) throws ChiliLogException {
+        try {
+            if (plainTextValue == null) {
                 throw new NullArgumentException("plainTextValue");
             }
 
@@ -257,22 +234,19 @@ public class CryptoUtils
             hashSizeInBytes = hashSizeInBits / 8;
 
             // Make sure that the specified hash value is long enough.
-            if (hashWithSaltBytes.length < hashSizeInBytes)
-            {
+            if (hashWithSaltBytes.length < hashSizeInBytes) {
                 return false;
             }
 
             // Get the salt. If not passed in, then assume salt is stored with the hash
             boolean saltAppended = (salt == null);
             byte[] saltBytes = salt;
-            if (saltAppended)
-            {
+            if (saltAppended) {
                 // Allocate array to hold original salt bytes retrieved from hash.
                 saltBytes = new byte[hashWithSaltBytes.length - hashSizeInBytes];
 
                 // Copy salt from the end of the hash to the new array.
-                for (int i = 0; i < saltBytes.length; i++)
-                {
+                for (int i = 0; i < saltBytes.length; i++) {
                     saltBytes[i] = hashWithSaltBytes[hashSizeInBytes + i];
                 }
             }
@@ -284,8 +258,7 @@ public class CryptoUtils
             // the plain text value must be correct.
             return (hashValue.equals(expectedHashString));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to verify passwords. " + ex.getMessage());
         }
     }
@@ -307,10 +280,8 @@ public class CryptoUtils
      * @return encrypted text
      * @throws ChiliLogException
      */
-    public static String encryptAES(String plainText, String password) throws ChiliLogException
-    {
-        try
-        {
+    public static String encryptAES(String plainText, String password) throws ChiliLogException {
+        try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             KeySpec spec = new PBEKeySpec(password.toCharArray(), AES_ENCRYPTION_STRING_SALT, 1024, 128);
             SecretKey tmp = factory.generateSecret(spec);
@@ -327,8 +298,7 @@ public class CryptoUtils
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(cipherText);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -345,10 +315,8 @@ public class CryptoUtils
      * @return decrypted plain text string
      * @throws ChiliLogException
      */
-    public static String decryptAES(String encryptedText, String password) throws ChiliLogException
-    {
-        try
-        {
+    public static String decryptAES(String encryptedText, String password) throws ChiliLogException {
+        try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             KeySpec spec = new PBEKeySpec(password.toCharArray(), AES_ENCRYPTION_STRING_SALT, 1024, 128);
             SecretKey tmp = factory.generateSecret(spec);
@@ -364,8 +332,7 @@ public class CryptoUtils
 
             return new String(plainTextBytes, "UTF-8");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }
@@ -389,14 +356,11 @@ public class CryptoUtils
      * @return encrypted text
      * @throws ChiliLogException
      */
-    public static String encryptTripleDES(String plainText, String password) throws ChiliLogException
-    {
-        try
-        {
+    public static String encryptTripleDES(String plainText, String password) throws ChiliLogException {
+        try {
             return encryptTripleDES(plainText, password.getBytes("UTF-8"));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -420,15 +384,12 @@ public class CryptoUtils
      * @return encrypted text
      * @throws ChiliLogException
      */
-    public static String encryptTripleDES(String plainText, byte[] password) throws ChiliLogException
-    {
-        try
-        {
+    public static String encryptTripleDES(String plainText, byte[] password) throws ChiliLogException {
+        try {
             final MessageDigest md = MessageDigest.getInstance("md5");
             final byte[] digestOfPassword = md.digest(password);
             final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
-            for (int j = 0, k = 16; j < 8;)
-            {
+            for (int j = 0, k = 16; j < 8;) {
                 keyBytes[k++] = keyBytes[j++];
             }
 
@@ -444,8 +405,7 @@ public class CryptoUtils
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(cipherText);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -462,14 +422,11 @@ public class CryptoUtils
      * @return decrypted plain text string
      * @throws ChiliLogException
      */
-    public static String decryptTripleDES(String encryptedText, String password) throws ChiliLogException
-    {
-        try
-        {
+    public static String decryptTripleDES(String encryptedText, String password) throws ChiliLogException {
+        try {
             return decryptTripleDES(encryptedText, password.getBytes("UTF-8"));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }
@@ -486,15 +443,12 @@ public class CryptoUtils
      * @return decrypted plain text string
      * @throws ChiliLogException
      */
-    public static String decryptTripleDES(String encryptedText, byte[] password) throws ChiliLogException
-    {
-        try
-        {
+    public static String decryptTripleDES(String encryptedText, byte[] password) throws ChiliLogException {
+        try {
             final MessageDigest md = MessageDigest.getInstance("md5");
             final byte[] digestOfPassword = md.digest(password);
             final byte[] keyBytes = Arrays.copyOf(digestOfPassword, 24);
-            for (int j = 0, k = 16; j < 8;)
-            {
+            for (int j = 0, k = 16; j < 8;) {
                 keyBytes[k++] = keyBytes[j++];
             }
 
@@ -509,8 +463,7 @@ public class CryptoUtils
 
             return new String(plainTextBytes, "UTF-8");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }

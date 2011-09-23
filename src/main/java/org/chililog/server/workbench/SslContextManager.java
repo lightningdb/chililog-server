@@ -28,14 +28,12 @@ import javax.net.ssl.SSLContext;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.common.Log4JLogger;
 
-
 /**
  * <p>
  * SSL Context manager for handling SSL traffic.
  * </p>
  */
-public class SslContextManager
-{
+public class SslContextManager {
     private static Log4JLogger _logger = Log4JLogger.getLogger(SslContextManager.class);
     private static final String PROTOCOL = "TLS";
     private SSLContext _serverContext;
@@ -44,8 +42,7 @@ public class SslContextManager
     /**
      * Returns the singleton instance for this class
      */
-    public static SslContextManager getInstance()
-    {
+    public static SslContextManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -55,28 +52,23 @@ public class SslContextManager
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final SslContextManager INSTANCE = new SslContextManager();
     }
 
     /**
      * Constructor for singleton
      */
-    private SslContextManager()
-    {
-        try
-        {
+    private SslContextManager() {
+        try {
             // Key store (Server side certificate)
             String algorithm = Security.getProperty("ssl.KeyManagerFactory.algorithm");
-            if (algorithm == null)
-            {
+            if (algorithm == null) {
                 algorithm = "SunX509";
             }
 
             SSLContext serverContext = null;
-            try
-            {
+            try {
                 KeyStore ks = KeyStore.getInstance("JKS");
                 FileInputStream fin = new FileInputStream(AppProperties.getInstance().getWorkbenchKeyStorePath());
                 ks.load(fin, AppProperties.getInstance().getWorkbenchKeyStorePassword().toCharArray());
@@ -89,28 +81,24 @@ public class SslContextManager
                 serverContext = SSLContext.getInstance(PROTOCOL);
                 serverContext.init(kmf.getKeyManagers(), null, null);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 throw new Error("Failed to initialize the server-side SSLContext", e);
             }
             _serverContext = serverContext;
 
             // Trust store (client side certificate)
             SSLContext clientContext = null;
-            try
-            {
+            try {
                 clientContext = SSLContext.getInstance(PROTOCOL);
                 clientContext.init(null, SSLTrustManager.getInstance().getTrustManagers(), null);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 throw new Error("Failed to initialize the client-side SSLContext", e);
             }
             _clientContext = clientContext;
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.error("Error initializing SslContextManager. " + ex.getMessage(), ex);
             System.exit(1);
 
@@ -120,16 +108,14 @@ public class SslContextManager
     /**
      * Returns the server context with server side key store
      */
-    public SSLContext getServerContext()
-    {
+    public SSLContext getServerContext() {
         return _serverContext;
     }
 
     /**
      * Returns the client context with the client side trust store
      */
-    public SSLContext getClientContext()
-    {
+    public SSLContext getClientContext() {
         return _clientContext;
     }
 }

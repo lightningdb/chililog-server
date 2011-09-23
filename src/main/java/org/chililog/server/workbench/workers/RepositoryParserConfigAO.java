@@ -27,7 +27,6 @@ import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 
-
 /**
  * <p>
  * Repository Parser API Object
@@ -36,23 +35,21 @@ import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling
  * @author vibul
  * 
  */
-public class RepositoryParserConfigAO extends AO
-{
+public class RepositoryParserConfigAO extends AO {
     private String _name;
     private AppliesTo _appliesTo = AppliesTo.None;
     private String _appliesToSourceFilter;
     private String _appliesToHostFilter;
     private String _className;
     private long _maxKeywords = -1;
-   private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
+    private ParseFieldErrorHandling _parseFieldErrorHandling = ParseFieldErrorHandling.SkipField;
     private RepositoryFieldConfigAO[] _fields = null;
     private RepositoryPropertyConfigAO[] _properties = null;
 
     /**
      * Basic constructor
      */
-    public RepositoryParserConfigAO()
-    {
+    public RepositoryParserConfigAO() {
         return;
     }
 
@@ -62,8 +59,7 @@ public class RepositoryParserConfigAO extends AO
      * @param repoParserConfig
      *            Repository parser configuration business object
      */
-    public RepositoryParserConfigAO(RepositoryParserConfigBO repoParserConfig)
-    {
+    public RepositoryParserConfigAO(RepositoryParserConfigBO repoParserConfig) {
         _name = repoParserConfig.getName();
         _appliesTo = repoParserConfig.getAppliesTo();
         _appliesToSourceFilter = repoParserConfig.getAppliesToSourceFilter();
@@ -73,29 +69,23 @@ public class RepositoryParserConfigAO extends AO
 
         _parseFieldErrorHandling = repoParserConfig.getParseFieldErrorHandling();
 
-        if (repoParserConfig.getFields() == null || repoParserConfig.getFields().isEmpty())
-        {
+        if (repoParserConfig.getFields() == null || repoParserConfig.getFields().isEmpty()) {
             _fields = null;
         }
-        else
-        {
+        else {
             ArrayList<RepositoryFieldConfigAO> fieldList = new ArrayList<RepositoryFieldConfigAO>();
-            for (RepositoryFieldConfigBO fieldInfo : repoParserConfig.getFields())
-            {
+            for (RepositoryFieldConfigBO fieldInfo : repoParserConfig.getFields()) {
                 fieldList.add(new RepositoryFieldConfigAO(fieldInfo));
             }
             _fields = fieldList.toArray(new RepositoryFieldConfigAO[] {});
         }
 
-        if (repoParserConfig.getProperties() == null || repoParserConfig.getProperties().isEmpty())
-        {
+        if (repoParserConfig.getProperties() == null || repoParserConfig.getProperties().isEmpty()) {
             _properties = null;
         }
-        else
-        {
+        else {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
-            for (Entry<String, String> e : repoParserConfig.getProperties().entrySet())
-            {
+            for (Entry<String, String> e : repoParserConfig.getProperties().entrySet()) {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
             _properties = propertyList.toArray(new RepositoryPropertyConfigAO[] {});
@@ -111,8 +101,7 @@ public class RepositoryParserConfigAO extends AO
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryParserConfigBO repoParserConfig) throws ChiliLogException
-    {
+    public void toBO(RepositoryParserConfigBO repoParserConfig) throws ChiliLogException {
         repoParserConfig.setName(_name);
         repoParserConfig.setAppliesTo(_appliesTo);
         repoParserConfig.setAppliesToSourceFilter(_appliesToSourceFilter);
@@ -123,10 +112,8 @@ public class RepositoryParserConfigAO extends AO
         repoParserConfig.setParseFieldErrorHandling(_parseFieldErrorHandling);
 
         repoParserConfig.getFields().clear();
-        if (_fields != null && _fields.length > 0)
-        {
-            for (RepositoryFieldConfigAO fieldInfo : _fields)
-            {
+        if (_fields != null && _fields.length > 0) {
+            for (RepositoryFieldConfigAO fieldInfo : _fields) {
                 RepositoryFieldConfigBO bo = new RepositoryFieldConfigBO();
                 fieldInfo.toBO(bo);
                 repoParserConfig.getFields().add(bo);
@@ -134,10 +121,8 @@ public class RepositoryParserConfigAO extends AO
         }
 
         repoParserConfig.getProperties().clear();
-        if (_properties != null && _properties.length > 0)
-        {
-            for (RepositoryPropertyConfigAO property : _properties)
-            {
+        if (_properties != null && _properties.length > 0) {
+            for (RepositoryPropertyConfigAO property : _properties) {
                 repoParserConfig.getProperties().put(property.getKey(), property.getValue());
             }
         }
@@ -145,93 +130,75 @@ public class RepositoryParserConfigAO extends AO
         return;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
-    public AppliesTo getAppliesTo()
-    {
+    public AppliesTo getAppliesTo() {
         return _appliesTo;
     }
 
-    public void setAppliesTo(AppliesTo appliesTo)
-    {
+    public void setAppliesTo(AppliesTo appliesTo) {
         _appliesTo = appliesTo;
     }
 
-    public String getAppliesToSourceFilter()
-    {
+    public String getAppliesToSourceFilter() {
         return _appliesToSourceFilter;
     }
 
-    public void setAppliesToSourceFilter(String appliesToSourceFilter)
-    {
+    public void setAppliesToSourceFilter(String appliesToSourceFilter) {
         _appliesToSourceFilter = appliesToSourceFilter;
     }
 
-    public String getAppliesToHostFilter()
-    {
+    public String getAppliesToHostFilter() {
         return _appliesToHostFilter;
     }
 
-    public void setAppliesToHostFilter(String appliesToHostFilter)
-    {
+    public void setAppliesToHostFilter(String appliesToHostFilter) {
         _appliesToHostFilter = appliesToHostFilter;
     }
 
-    public String getClassName()
-    {
+    public String getClassName() {
         return _className;
     }
 
-    public void setClassName(String className)
-    {
+    public void setClassName(String className) {
         _className = className;
     }
-    
-    public long getMaxKeywords()
-    {
+
+    public long getMaxKeywords() {
         return _maxKeywords;
     }
 
-    public void setMaxKeywords(long maxKeywords)
-    {
+    public void setMaxKeywords(long maxKeywords) {
         _maxKeywords = maxKeywords;
     }
 
-    public ParseFieldErrorHandling getParseFieldErrorHandling()
-    {
+    public ParseFieldErrorHandling getParseFieldErrorHandling() {
         return _parseFieldErrorHandling;
     }
 
-    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling)
-    {
+    public void setParseFieldErrorHandling(ParseFieldErrorHandling parseFieldErrorHandling) {
         _parseFieldErrorHandling = parseFieldErrorHandling;
     }
 
-    public RepositoryFieldConfigAO[] getFields()
-    {
+    public RepositoryFieldConfigAO[] getFields() {
         return _fields;
     }
 
-    public void setFields(RepositoryFieldConfigAO[] fields)
-    {
+    public void setFields(RepositoryFieldConfigAO[] fields) {
         _fields = fields;
     }
 
-    public RepositoryPropertyConfigAO[] getProperties()
-    {
+    public RepositoryPropertyConfigAO[] getProperties() {
         return _properties;
     }
 
-    public void setProperties(RepositoryPropertyConfigAO[] properties)
-    {
+    public void setProperties(RepositoryPropertyConfigAO[] properties) {
         _properties = properties;
     }
 

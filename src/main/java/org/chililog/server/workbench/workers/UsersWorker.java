@@ -47,8 +47,7 @@ import com.mongodb.DB;
  * <li>delete - HTTP DELETE /api/users/{id}</li>
  * </p>
  */
-public class UsersWorker extends Worker
-{
+public class UsersWorker extends Worker {
     public static final String USERNAME_URI_QUERYSTRING_PARAMETER_NAME = "username";
     public static final String EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME = "email";
     public static final String ROLE_URI_QUERYSTRING_PARAMETER_NAME = "role";
@@ -57,8 +56,7 @@ public class UsersWorker extends Worker
     /**
      * Constructor
      */
-    public UsersWorker(HttpRequest request)
-    {
+    public UsersWorker(HttpRequest request) {
         super(request);
         return;
     }
@@ -67,40 +65,34 @@ public class UsersWorker extends Worker
      * Can only create and delete sessions
      */
     @Override
-    public HttpMethod[] getSupportedMethods()
-    {
-        return new HttpMethod[]
-        { HttpMethod.POST, HttpMethod.DELETE, HttpMethod.GET, HttpMethod.PUT };
+    public HttpMethod[] getSupportedMethods() {
+        return new HttpMethod[] { HttpMethod.POST, HttpMethod.DELETE, HttpMethod.GET, HttpMethod.PUT };
     }
 
     /**
      * Let's validate if the user is able to access these functions
      */
     @Override
-    protected ApiResult validateAuthenticatedUserRole()
-    {
+    protected ApiResult validateAuthenticatedUserRole() {
         HttpMethod requestMethod = this.getRequest().getMethod();
-        try
-        {
+        try {
             UserBO user = this.getAuthenticatedUser();
 
             // Administrators can do it all
-            if (user.isSystemAdministrator())
-            {
+            if (user.isSystemAdministrator()) {
                 return new ApiResult();
             }
 
             // Cannot PUT, POST or DELETE
-            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.POST || requestMethod == HttpMethod.DELETE)
-            {
+            if (requestMethod == HttpMethod.PUT || requestMethod == HttpMethod.POST
+                    || requestMethod == HttpMethod.DELETE) {
                 throw new ChiliLogException(Strings.NOT_AUTHORIZED_ERROR);
             }
 
             // Allow GET
             return new ApiResult();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
 
@@ -112,12 +104,9 @@ public class UsersWorker extends Worker
      * @throws Exception
      */
     @Override
-    public ApiResult processPost(Object requestContent) throws Exception
-    {
-        try
-        {
-            if (requestContent == null)
-            {
+    public ApiResult processPost(Object requestContent) throws Exception {
+        try {
+            if (requestContent == null) {
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
@@ -132,8 +121,7 @@ public class UsersWorker extends Worker
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -144,24 +132,20 @@ public class UsersWorker extends Worker
      * @throws Exception
      */
     @Override
-    public ApiResult processDelete() throws Exception
-    {
-        try
-        {
+    public ApiResult processDelete() throws Exception {
+        try {
             String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
 
             DB db = MongoConnection.getInstance().getConnection();
             UserBO userBO = UserController.getInstance().tryGet(db, new ObjectId(id));
-            if (userBO != null)
-            {
+            if (userBO != null) {
                 UserController.getInstance().remove(db, userBO);
             }
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), null, null);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -172,12 +156,9 @@ public class UsersWorker extends Worker
      * @throws Exception
      */
     @Override
-    public ApiResult processPut(Object requestContent) throws Exception
-    {
-        try
-        {
-            if (requestContent == null)
-            {
+    public ApiResult processPut(Object requestContent) throws Exception {
+        try {
+            if (requestContent == null) {
                 throw new ChiliLogException(Strings.REQUIRED_CONTENT_ERROR);
             }
 
@@ -194,29 +175,25 @@ public class UsersWorker extends Worker
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
 
     /**
-     * Read. Anyone is allowed to get a list of users. This helps the client side link usernames with display names and 
+     * Read. Anyone is allowed to get a list of users. This helps the client side link usernames with display names and
      * gravatars. However, unless you are the system administrator, you don't get roles and email addresses.
      * 
      * @throws Exception
      */
     @Override
-    public ApiResult processGet() throws Exception
-    {
-        try
-        {
+    public ApiResult processGet() throws Exception {
+        try {
             DB db = MongoConnection.getInstance().getConnection();
             Object responseContent = null;
             boolean isSysAdmin = this.getAuthenticatedUser().isSystemAdministrator();
 
-            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
-            {
+            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0) {
                 UserListCriteria criteria = new UserListCriteria();
                 this.loadBaseListCriteriaParameters(criteria);
 
@@ -229,39 +206,33 @@ public class UsersWorker extends Worker
                 criteria.setRole(this.getUriQueryStringParameter(ROLE_URI_QUERYSTRING_PARAMETER_NAME, true));
 
                 String status = this.getUriQueryStringParameter(STATUS_URI_QUERYSTRING_PARAMETER_NAME, true);
-                if (!StringUtils.isBlank(status))
-                {
+                if (!StringUtils.isBlank(status)) {
                     criteria.setStatus(Enum.valueOf(Status.class, status));
                 }
 
                 ArrayList<UserBO> boList = UserController.getInstance().getList(db, criteria);
-                if (!boList.isEmpty())
-                {
+                if (!boList.isEmpty()) {
                     ArrayList<UserAO> aoList = new ArrayList<UserAO>();
-                    for (UserBO userBO : boList)
-                    {
+                    for (UserBO userBO : boList) {
                         aoList.add(new UserAO(userBO, isSysAdmin));
                     }
                     responseContent = aoList.toArray(new UserAO[] {});
 
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
-                    if (criteria.getDoPageCount())
-                    {
+                    if (criteria.getDoPageCount()) {
                         result.getHeaders().put(PAGE_COUNT_HEADER, new Integer(criteria.getPageCount()).toString());
                     }
                     return result;
                 }
             }
-            else
-            {
+            else {
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)), isSysAdmin);
             }
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }

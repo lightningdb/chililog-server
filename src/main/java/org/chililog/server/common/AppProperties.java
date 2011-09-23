@@ -67,16 +67,14 @@ import org.apache.commons.lang.WordUtils;
  * @author vibul
  * @since 1.0
  */
-public class AppProperties
-{
+public class AppProperties {
     private static Log4JLogger _logger = Log4JLogger.getLogger(AppProperties.class);
     private static final String APP_PROPERTY_FILE_NAME = "app.properties";
 
     /**
      * Returns the singleton instance for this class
      */
-    public static AppProperties getInstance()
-    {
+    public static AppProperties getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -86,8 +84,7 @@ public class AppProperties
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final AppProperties INSTANCE = new AppProperties();
     }
 
@@ -101,14 +98,11 @@ public class AppProperties
      * so might as well terminate here.
      * </p>
      */
-    private AppProperties()
-    {
-        try
-        {
+    private AppProperties() {
+        try {
             loadProperties();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -128,8 +122,7 @@ public class AppProperties
      * 
      * @throws Exception
      */
-    public void loadProperties() throws Exception
-    {
+    public void loadProperties() throws Exception {
         Properties properties = readPropertiesFile();
         parseProperties(properties);
     }
@@ -148,18 +141,15 @@ public class AppProperties
      * @throws IOException
      * @throws FileNotFoundException
      */
-    static Properties readPropertiesFile() throws FileNotFoundException, IOException
-    {
+    static Properties readPropertiesFile() throws FileNotFoundException, IOException {
         FileInputStream fis = null;
 
-        try
-        {
+        try {
             Properties properties = new Properties();
 
             // Load default from class path
             InputStream is = AppProperties.class.getClassLoader().getResourceAsStream(APP_PROPERTY_FILE_NAME);
-            if (is == null)
-            {
+            if (is == null) {
                 throw new FileNotFoundException("'app.properties' file not found in classpath");
             }
             properties.load(is);
@@ -167,10 +157,8 @@ public class AppProperties
 
             return properties;
         }
-        finally
-        {
-            if (fis != null)
-            {
+        finally {
+            if (fis != null) {
                 fis.close();
             }
         }
@@ -189,34 +177,28 @@ public class AppProperties
      *            Properties to parse
      * @throws Exception
      */
-    private void parseProperties(Properties properties) throws Exception
-    {
+    private void parseProperties(Properties properties) throws Exception {
         Class<AppProperties> cls = AppProperties.class;
         Field[] ff = cls.getDeclaredFields();
-        for (Field f : ff)
-        {
+        for (Field f : ff) {
             // Look for field names like APP_NAME
             String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
+            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$")) {
                 continue;
             }
 
             // Build cache field (_appName) and method (loadAppName) methods
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
+            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[] { '_' });
             baseName = baseName.replace("_", "");
             String cacheMethodName = "load" + baseName;
             String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
 
             // If field not exist, then skip
             Field cacheField = null;
-            try
-            {
+            try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
             }
-            catch (NoSuchFieldException e)
-            {
+            catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -235,11 +217,10 @@ public class AppProperties
     // *****************************************************************************************************************
     // *****************************************************************************************************************
 
-     /**
+    /**
      * If true, JSON serialization is to be human readable. If false, white spaces will be eliminated.
      */
-    public boolean getJsonPretty()
-    {
+    public boolean getJsonPretty() {
         return _jsonPretty;
     }
 
@@ -247,8 +228,7 @@ public class AppProperties
 
     private boolean _jsonPretty = false;
 
-    static boolean loadJsonPretty(Properties properties)
-    {
+    static boolean loadJsonPretty(Properties properties) {
         return loadBoolean(properties, JSON_PRETTY, false);
     }
 
@@ -261,8 +241,7 @@ public class AppProperties
     /**
      * Returns the IP address of the mongoDB Database Server
      */
-    public String getDbIpAddress()
-    {
+    public String getDbIpAddress() {
         return _dbIpAddress;
     }
 
@@ -270,16 +249,14 @@ public class AppProperties
 
     private String _dbIpAddress = null;
 
-    static String loadDbIpAddress(Properties properties)
-    {
+    static String loadDbIpAddress(Properties properties) {
         return loadString(properties, DB_IP_ADDRESS);
     }
 
     /**
      * Returns the IP port that the mongoDB Database Server is listening on. Defaults to 27017 if not set.
      */
-    public int getDbIpPort()
-    {
+    public int getDbIpPort() {
         return _dbIpPort;
     }
 
@@ -287,16 +264,14 @@ public class AppProperties
 
     private int _dbIpPort = 0;
 
-    static int loadDbIpPort(Properties properties)
-    {
+    static int loadDbIpPort(Properties properties) {
         return loadInt(properties, DB_IP_PORT, 27017);
     }
 
     /**
      * Returns the name of the database within the mongoDB server to use
      */
-    public String getDbName()
-    {
+    public String getDbName() {
         return _dbName;
     }
 
@@ -304,16 +279,14 @@ public class AppProperties
 
     private String _dbName = null;
 
-    static String loadDbName(Properties properties)
-    {
+    static String loadDbName(Properties properties) {
         return loadString(properties, DB_NAME);
     }
 
     /**
      * Returns the usename to use for authenticating of the mongoDB database
      */
-    public String getDbUserName()
-    {
+    public String getDbUserName() {
         return _dbUserName;
     }
 
@@ -321,16 +294,14 @@ public class AppProperties
 
     private String _dbUserName = null;
 
-    static String loadDbUserName(Properties properties)
-    {
+    static String loadDbUserName(Properties properties) {
         return loadString(properties, DB_USER_NAME);
     }
 
     /**
      * Returns the password to use for authenticating of the mongoDB database
      */
-    public String getDbPassword()
-    {
+    public String getDbPassword() {
         return _dbPassword;
     }
 
@@ -338,16 +309,14 @@ public class AppProperties
 
     private String _dbPassword = null;
 
-    static String loadDbPassword(Properties properties)
-    {
+    static String loadDbPassword(Properties properties) {
         return loadString(properties, DB_PASSWORD);
     }
 
     /**
      * Returns the number of connections per host. The default is 10.
      */
-    public int getDbConnectionsPerHost()
-    {
+    public int getDbConnectionsPerHost() {
         return _dbConnectionsPerHost;
     }
 
@@ -355,8 +324,7 @@ public class AppProperties
 
     private int _dbConnectionsPerHost = 0;
 
-    static int loadDbConnectionsPerHost(Properties properties)
-    {
+    static int loadDbConnectionsPerHost(Properties properties) {
         return loadInt(properties, DB_CONNECTIONS_PER_HOST, 10);
     }
 
@@ -370,8 +338,7 @@ public class AppProperties
      * Returns The name of the ChiliLog system user. This auto-create user will have permission to manage all aspects of
      * ChiliLog. If it is not set, then we generate a random one. It should be set for load-balanced installations.
      */
-    public String getMqSystemUsername()
-    {
+    public String getMqSystemUsername() {
         return _mqSystemUsername;
     }
 
@@ -379,11 +346,9 @@ public class AppProperties
 
     private String _mqSystemUsername = null;
 
-    static String loadMqSystemUsername(Properties properties)
-    {
+    static String loadMqSystemUsername(Properties properties) {
         String s = loadString(properties, MQ_SYSTEM_USERNAME, StringUtils.EMPTY);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             s = "systemuser_" + UUID.randomUUID().toString();
         }
         return s;
@@ -393,8 +358,7 @@ public class AppProperties
      * Returns The password of the ChiliLog system user. This auto-create user will have permission to manage all
      * aspects of ChiliLog. If it is not set, then we generate a random one.
      */
-    public String getMqSystemPassword()
-    {
+    public String getMqSystemPassword() {
         return _mqSystemPassword;
     }
 
@@ -402,11 +366,9 @@ public class AppProperties
 
     private String _mqSystemPassword = null;
 
-    static String loadMqSystemPassword(Properties properties)
-    {
+    static String loadMqSystemPassword(Properties properties) {
         String s = loadString(properties, MQ_SYSTEM_PASSWORD, StringUtils.EMPTY);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             s = UUID.randomUUID().toString();
         }
         return s;
@@ -416,8 +378,7 @@ public class AppProperties
      * Returns Flag to indicate if journalling is enabled or not. If so, then messages from message queues flagged as
      * durable will be persisted (or journalled). Default is false.
      */
-    public boolean getMqJournallingEnabled()
-    {
+    public boolean getMqJournallingEnabled() {
         return _mqJournallingEnabled;
     }
 
@@ -425,16 +386,14 @@ public class AppProperties
 
     private boolean _mqJournallingEnabled = false;
 
-    static boolean loadMqJournallingEnabled(Properties properties)
-    {
+    static boolean loadMqJournallingEnabled(Properties properties) {
         return loadBoolean(properties, MQ_JOURNALLING_ENABLED, false);
     }
 
     /**
      * Returns the directory to store journal files
      */
-    public String getMqJournalDirectory()
-    {
+    public String getMqJournalDirectory() {
         return _mqJournalDirectory;
     }
 
@@ -442,8 +401,7 @@ public class AppProperties
 
     private String _mqJournalDirectory = null;
 
-    static String loadMqJournalDirectory(Properties properties)
-    {
+    static String loadMqJournalDirectory(Properties properties) {
         String s = loadString(properties, MQ_JOURNAL_DIRECTORY);
         return s;
     }
@@ -451,8 +409,7 @@ public class AppProperties
     /**
      * Returns the directory to store paging files.
      */
-    public String getMqPagingDirectory()
-    {
+    public String getMqPagingDirectory() {
         return _mqPagingDirectory;
     }
 
@@ -460,8 +417,7 @@ public class AppProperties
 
     private String _mqPagingDirectory = null;
 
-    static String loadMqPagingDirectory(Properties properties)
-    {
+    static String loadMqPagingDirectory(Properties properties) {
         String s = loadString(properties, MQ_PAGING_DIRECTORY);
         return s;
     }
@@ -470,8 +426,7 @@ public class AppProperties
      * Returns the time period in milliseconds during which an authenticated user is valid and credentials will not be
      * validated by calling JAAS. Defaults to 10000 (10 seconds).
      */
-    public int getMqSecurityInvalidationInterval()
-    {
+    public int getMqSecurityInvalidationInterval() {
         return _mqSecurityInvalidationInterval;
     }
 
@@ -479,8 +434,7 @@ public class AppProperties
 
     private int _mqSecurityInvalidationInterval = 10000;
 
-    static int loadMqSecurityInvalidationInterval(Properties properties)
-    {
+    static int loadMqSecurityInvalidationInterval(Properties properties) {
         int i = loadInt(properties, MQ_SECURITY_INVALIDATION_INTERVAL, 10000);
         return i;
     }
@@ -488,8 +442,7 @@ public class AppProperties
     /**
      * Returns Flag to indicate if message queue clustering is to be used. Default is false.
      */
-    public boolean getMqClusteredEnabled()
-    {
+    public boolean getMqClusteredEnabled() {
         return _mqClusteredEnabled;
     }
 
@@ -497,8 +450,7 @@ public class AppProperties
 
     private boolean _mqClusteredEnabled = false;
 
-    static boolean loadMqClusteredEnabled(Properties properties)
-    {
+    static boolean loadMqClusteredEnabled(Properties properties) {
         return loadBoolean(properties, MQ_CLUSTERED_ENABLED, false);
     }
 
@@ -507,8 +459,7 @@ public class AppProperties
      * dead letter queue. A message is catergorised as failed if it has been acknowledge AND its transactional session
      * is rolled back.
      */
-    public int getMqRedeliveryMaxAttempts()
-    {
+    public int getMqRedeliveryMaxAttempts() {
         return _mqRedeliveryMaxAttempts;
     }
 
@@ -516,16 +467,14 @@ public class AppProperties
 
     private int _mqRedeliveryMaxAttempts = -1;
 
-    static int loadMqRedeliveryMaxAttempts(Properties properties)
-    {
+    static int loadMqRedeliveryMaxAttempts(Properties properties) {
         return loadInt(properties, MQ_REDELIVERY_MAX_ATTEMPTS);
     }
 
     /**
      * Returns the number of milliseconds before a re-delivery of a failed message is made.
      */
-    public int getMqRedeliveryDelayMilliseconds()
-    {
+    public int getMqRedeliveryDelayMilliseconds() {
         return _mqRedeliveryDelayMilliseconds;
     }
 
@@ -533,16 +482,14 @@ public class AppProperties
 
     private int _mqRedeliveryDelayMilliseconds = -1;
 
-    static int loadMqRedeliveryDelayMilliseconds(Properties properties)
-    {
+    static int loadMqRedeliveryDelayMilliseconds(Properties properties) {
         return loadInt(properties, MQ_REDELIVERY_DELAY_MILLISECONDS);
     }
 
     /**
      * Returns the address to send for undelivered messages
      */
-    public String getMqDeadLetterAddress()
-    {
+    public String getMqDeadLetterAddress() {
         return _mqDeadLetterAddress;
     }
 
@@ -550,8 +497,7 @@ public class AppProperties
 
     private String _mqDeadLetterAddress = null;
 
-    static String loadMqDeadLetterAddress(Properties properties)
-    {
+    static String loadMqDeadLetterAddress(Properties properties) {
         return loadString(properties, MQ_DEAD_LETTER_ADDRESS, null);
     }
 
@@ -564,8 +510,7 @@ public class AppProperties
     /**
      * Returns Flag to indicate if the message queue HornetQ and JMS protocols are to be enabled for pubsub use
      */
-    public boolean getPubSubCoreProtocolEnabled()
-    {
+    public boolean getPubSubCoreProtocolEnabled() {
         return _pubSubCoreProtocolEnabled;
     }
 
@@ -573,16 +518,14 @@ public class AppProperties
 
     private boolean _pubSubCoreProtocolEnabled = false;
 
-    static boolean loadPubSubCoreProtocolEnabled(Properties properties)
-    {
+    static boolean loadPubSubCoreProtocolEnabled(Properties properties) {
         return loadBoolean(properties, PUB_SUB_CORE_PROTOCOL_ENABLED, false);
     }
 
     /**
      * Returns configuration settings for the message queue HornetQ and JMS protocols
      */
-    public Hashtable<String, Object> getPubSubCoreProtocolConfig()
-    {
+    public Hashtable<String, Object> getPubSubCoreProtocolConfig() {
         return _pubSubCoreProtocolConfig;
     }
 
@@ -590,18 +533,14 @@ public class AppProperties
 
     private Hashtable<String, Object> _pubSubCoreProtocolConfig = null;
 
-    static Hashtable<String, Object> loadPubSubCoreProtocolConfig(Properties properties)
-    {
+    static Hashtable<String, Object> loadPubSubCoreProtocolConfig(Properties properties) {
         Hashtable<String, Object> m = new Hashtable<String, Object>();
-        for (Object key : properties.keySet())
-        {
+        for (Object key : properties.keySet()) {
             String keyAsString = (String) key;
             if (keyAsString.startsWith(PUB_SUB_CORE_PROTOCOL_CONFIG)
-                    && !keyAsString.equalsIgnoreCase("pubsub.core.enabled"))
-            {
+                    && !keyAsString.equalsIgnoreCase("pubsub.core.enabled")) {
                 String value = properties.getProperty(keyAsString);
-                if (!StringUtils.isBlank(value))
-                {
+                if (!StringUtils.isBlank(value)) {
                     m.put(keyAsString.substring(PUB_SUB_CORE_PROTOCOL_CONFIG.length()), value);
                 }
             }
@@ -612,8 +551,7 @@ public class AppProperties
     /**
      * Returns Flag to indicate if the JSON HTTP protocol is to be enabled for pubsub use
      */
-    public boolean getPubSubJsonHttpProtocolEnabled()
-    {
+    public boolean getPubSubJsonHttpProtocolEnabled() {
         return _pubSubJsonHttpProtocolEnabled;
     }
 
@@ -621,16 +559,14 @@ public class AppProperties
 
     private boolean _pubSubJsonHttpProtocolEnabled = false;
 
-    static boolean loadPubSubJsonHttpProtocolEnabled(Properties properties)
-    {
+    static boolean loadPubSubJsonHttpProtocolEnabled(Properties properties) {
         return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED, false);
     }
 
     /**
      * Returns the IP address to use for binding our UI web server
      */
-    public String getPubSubJsonHttpProtocolHost()
-    {
+    public String getPubSubJsonHttpProtocolHost() {
         return _pubSubJsonHttpProtocolHost;
     }
 
@@ -638,16 +574,14 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolHost = null;
 
-    static String loadPubSubJsonHttpProtocolHost(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolHost(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_HOST);
     }
 
     /**
      * Returns the IP port to use for binding our UI web server
      */
-    public int getPubSubJsonHttpProtocolPort()
-    {
+    public int getPubSubJsonHttpProtocolPort() {
         return _pubSubJsonHttpProtocolPort;
     }
 
@@ -655,16 +589,14 @@ public class AppProperties
 
     private int _pubSubJsonHttpProtocolPort = 0;
 
-    static int loadPubSubJsonHttpProtocolPort(Properties properties)
-    {
+    static int loadPubSubJsonHttpProtocolPort(Properties properties) {
         return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_PORT, 61615);
     }
 
     /**
      * Returns the maximum number of active threads to execute tasks
      */
-    public int getPubSubJsonHttpProtocolTaskThreadPoolSize()
-    {
+    public int getPubSubJsonHttpProtocolTaskThreadPoolSize() {
         return _pubSubJsonHttpProtocolTaskThreadPoolSize;
     }
 
@@ -672,16 +604,14 @@ public class AppProperties
 
     private int _pubSubJsonHttpProtocolTaskThreadPoolSize = 0;
 
-    static int loadPubSubJsonHttpProtocolTaskThreadPoolSize(Properties properties)
-    {
+    static int loadPubSubJsonHttpProtocolTaskThreadPoolSize(Properties properties) {
         return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE, 16);
     }
 
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize()
-    {
+    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize() {
         return _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize;
     }
 
@@ -689,16 +619,14 @@ public class AppProperties
 
     private long _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(Properties properties)
-    {
+    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(Properties properties) {
         return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
 
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize()
-    {
+    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize() {
         return _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize;
     }
 
@@ -706,16 +634,14 @@ public class AppProperties
 
     private long _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(Properties properties)
-    {
+    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(Properties properties) {
         return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
 
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
-    public int getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds()
-    {
+    public int getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds() {
         return _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds;
     }
 
@@ -723,16 +649,14 @@ public class AppProperties
 
     private int _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds = 0;
 
-    static int loadPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(Properties properties)
-    {
+    static int loadPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(Properties properties) {
         return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
 
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getPubSubJsonHttpProtocolSslEnabled()
-    {
+    public boolean getPubSubJsonHttpProtocolSslEnabled() {
         return _pubSubJsonHttpProtocolSslEnabled;
     }
 
@@ -740,16 +664,14 @@ public class AppProperties
 
     private boolean _pubSubJsonHttpProtocolSslEnabled = false;
 
-    static boolean loadPubSubJsonHttpProtocolSslEnabled(Properties properties)
-    {
+    static boolean loadPubSubJsonHttpProtocolSslEnabled(Properties properties) {
         return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStorePath()
-    {
+    public String getPubSubJsonHttpProtocolKeyStorePath() {
         return _pubSubJsonHttpProtocolKeyStorePath;
     }
 
@@ -757,16 +679,14 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolKeyStorePath = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStorePath(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolKeyStorePath(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStorePassword()
-    {
+    public String getPubSubJsonHttpProtocolKeyStorePassword() {
         return _pubSubJsonHttpProtocolKeyStorePassword;
     }
 
@@ -774,16 +694,14 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolKeyStorePassword = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStorePassword(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolKeyStorePassword(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStoreKeyPassword()
-    {
+    public String getPubSubJsonHttpProtocolKeyStoreKeyPassword() {
         return _pubSubJsonHttpProtocolKeyStoreKeyPassword;
     }
 
@@ -791,16 +709,14 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolKeyStoreKeyPassword = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStoreKeyPassword(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolKeyStoreKeyPassword(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolTrustStorePath()
-    {
+    public String getPubSubJsonHttpProtocolTrustStorePath() {
         return _pubSubJsonHttpProtocolTrustStorePath;
     }
 
@@ -808,16 +724,14 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolTrustStorePath = null;
 
-    static String loadPubSubJsonHttpProtocolTrustStorePath(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolTrustStorePath(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolTrustStorePassword()
-    {
+    public String getPubSubJsonHttpProtocolTrustStorePassword() {
         return _pubSubJsonHttpProtocolTrustStorePassword;
     }
 
@@ -825,8 +739,7 @@ public class AppProperties
 
     private String _pubSubJsonHttpProtocolTrustStorePassword = null;
 
-    static String loadPubSubJsonHttpProtocolTrustStorePassword(Properties properties)
-    {
+    static String loadPubSubJsonHttpProtocolTrustStorePassword(Properties properties) {
         return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PASSWORD, null);
     }
 
@@ -838,8 +751,7 @@ public class AppProperties
     /**
      * Returns Flag to indicate if the workbench service is to be enabled
      */
-    public boolean getWorkbenchEnabled()
-    {
+    public boolean getWorkbenchEnabled() {
         return _workbenchEnabled;
     }
 
@@ -847,8 +759,7 @@ public class AppProperties
 
     private boolean _workbenchEnabled = true;
 
-    static boolean loadWorkbenchEnabled(Properties properties)
-    {
+    static boolean loadWorkbenchEnabled(Properties properties) {
         return loadBoolean(properties, WORKBENCH_ENABLED, true);
     }
 
@@ -861,8 +772,7 @@ public class AppProperties
      * <tt>localhost,192.168.1.1</tt>
      * </p>
      */
-    public String getWorkbenchHost()
-    {
+    public String getWorkbenchHost() {
         return _workbenchHost;
     }
 
@@ -870,16 +780,14 @@ public class AppProperties
 
     private String _workbenchHost = null;
 
-    static String loadWorkbenchHost(Properties properties)
-    {
+    static String loadWorkbenchHost(Properties properties) {
         return loadString(properties, WORKBENCH_HOST);
     }
 
     /**
      * Returns the IP port to use for binding our WorkBench web server
      */
-    public int getWorkbenchPort()
-    {
+    public int getWorkbenchPort() {
         return _workbenchPort;
     }
 
@@ -887,16 +795,14 @@ public class AppProperties
 
     private int _workbenchPort = 0;
 
-    static int loadWorkbenchPort(Properties properties)
-    {
+    static int loadWorkbenchPort(Properties properties) {
         return loadInt(properties, WORKBENCH_PORT, 8989);
     }
 
     /**
      * Returns the maximum number of active threads to execute tasks
      */
-    public int getWorkbenchTaskThreadPoolSize()
-    {
+    public int getWorkbenchTaskThreadPoolSize() {
         return _workbenchTaskThreadPoolSize;
     }
 
@@ -904,16 +810,14 @@ public class AppProperties
 
     private int _workbenchTaskThreadPoolSize = 0;
 
-    static int loadWorkbenchTaskThreadPoolSize(Properties properties)
-    {
+    static int loadWorkbenchTaskThreadPoolSize(Properties properties) {
         return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_SIZE, 16);
     }
 
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getWorkbenchTaskThreadPoolMaxChannelMemorySize()
-    {
+    public long getWorkbenchTaskThreadPoolMaxChannelMemorySize() {
         return _workbenchTaskThreadPoolMaxChannelMemorySize;
     }
 
@@ -921,16 +825,14 @@ public class AppProperties
 
     private long _workbenchTaskThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadWorkbenchTaskThreadPoolMaxChannelMemorySize(Properties properties)
-    {
+    static long loadWorkbenchTaskThreadPoolMaxChannelMemorySize(Properties properties) {
         return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
     }
 
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getWorkbenchTaskThreadPoolMaxThreadMemorySize()
-    {
+    public long getWorkbenchTaskThreadPoolMaxThreadMemorySize() {
         return _workbenchTaskThreadPoolMaxThreadMemorySize;
     }
 
@@ -938,16 +840,14 @@ public class AppProperties
 
     private long _workbenchTaskThreadPoolMaxThreadMemorySize = 0;
 
-    static long loadWorkbenchTaskThreadPoolMaxThreadMemorySize(Properties properties)
-    {
+    static long loadWorkbenchTaskThreadPoolMaxThreadMemorySize(Properties properties) {
         return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
     }
 
     /**
      * Returns the amount of time for an inactive thread to shut itself down
      */
-    public int getWorkbenchTaskThreadPoolKeepAliveSeconds()
-    {
+    public int getWorkbenchTaskThreadPoolKeepAliveSeconds() {
         return _workbenchTaskThreadPoolKeepAliveSeconds;
     }
 
@@ -955,16 +855,14 @@ public class AppProperties
 
     private int _workbenchTaskThreadPoolKeepAliveSeconds = 0;
 
-    static int loadWorkbenchTaskThreadPoolKeepAliveSeconds(Properties properties)
-    {
+    static int loadWorkbenchTaskThreadPoolKeepAliveSeconds(Properties properties) {
         return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
     }
 
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getWorkbenchSslEnabled()
-    {
+    public boolean getWorkbenchSslEnabled() {
         return _workbenchSslEnabled;
     }
 
@@ -972,16 +870,14 @@ public class AppProperties
 
     private boolean _workbenchSslEnabled = false;
 
-    static boolean loadWorkbenchSslEnabled(Properties properties)
-    {
+    static boolean loadWorkbenchSslEnabled(Properties properties) {
         return loadBoolean(properties, WORKBENCH_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getWorkbenchKeyStorePath()
-    {
+    public String getWorkbenchKeyStorePath() {
         return _workbenchKeyStorePath;
     }
 
@@ -989,16 +885,14 @@ public class AppProperties
 
     private String _workbenchKeyStorePath = null;
 
-    static String loadWorkbenchKeyStorePath(Properties properties)
-    {
+    static String loadWorkbenchKeyStorePath(Properties properties) {
         return loadString(properties, WORKBENCH_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getWorkbenchKeyStorePassword()
-    {
+    public String getWorkbenchKeyStorePassword() {
         return _workbenchKeyStorePassword;
     }
 
@@ -1006,16 +900,14 @@ public class AppProperties
 
     private String _workbenchKeyStorePassword = null;
 
-    static String loadWorkbenchKeyStorePassword(Properties properties)
-    {
+    static String loadWorkbenchKeyStorePassword(Properties properties) {
         return loadString(properties, WORKBENCH_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getWorkbenchKeyStoreKeyPassword()
-    {
+    public String getWorkbenchKeyStoreKeyPassword() {
         return _workbenchKeyStoreKeyPassword;
     }
 
@@ -1023,16 +915,14 @@ public class AppProperties
 
     private String _workbenchKeyStoreKeyPassword = null;
 
-    static String loadWorkbenchKeyStoreKeyPassword(Properties properties)
-    {
+    static String loadWorkbenchKeyStoreKeyPassword(Properties properties) {
         return loadString(properties, WORKBENCH_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getWorkbenchTrustStorePath()
-    {
+    public String getWorkbenchTrustStorePath() {
         return _workbenchTrustStorePath;
     }
 
@@ -1040,16 +930,14 @@ public class AppProperties
 
     private String _workbenchTrustStorePath = null;
 
-    static String loadWorkbenchTrustStorePath(Properties properties)
-    {
+    static String loadWorkbenchTrustStorePath(Properties properties) {
         return loadString(properties, WORKBENCH_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getWorkbenchTrustStorePassword()
-    {
+    public String getWorkbenchTrustStorePassword() {
         return _workbenchTrustStorePassword;
     }
 
@@ -1057,16 +945,14 @@ public class AppProperties
 
     private String _workbenchTrustStorePassword = null;
 
-    static String loadWorkbenchTrustStorePassword(Properties properties)
-    {
+    static String loadWorkbenchTrustStorePassword(Properties properties) {
         return loadString(properties, WORKBENCH_TRUST_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getWorkbenchStaticFilesDirectory()
-    {
+    public String getWorkbenchStaticFilesDirectory() {
         return _workbenchStaticFilesDirectory;
     }
 
@@ -1074,16 +960,14 @@ public class AppProperties
 
     private String _workbenchStaticFilesDirectory = null;
 
-    static String loadWorkbenchStaticFilesDirectory(Properties properties)
-    {
+    static String loadWorkbenchStaticFilesDirectory(Properties properties) {
         return loadString(properties, WORKBENCH_STATIC_FILES_DIRECTORY, ".");
     }
 
     /**
      * Returns the number of seconds static files are cached in the browser
      */
-    public int getWorkbenchStaticFilesCacheSeconds()
-    {
+    public int getWorkbenchStaticFilesCacheSeconds() {
         return _workbenchStaticFilesCacheSeconds;
     }
 
@@ -1091,16 +975,14 @@ public class AppProperties
 
     private int _workbenchStaticFilesCacheSeconds = 0;
 
-    static int loadWorkbenchStaticFilesCacheSeconds(Properties properties)
-    {
+    static int loadWorkbenchStaticFilesCacheSeconds(Properties properties) {
         return loadInt(properties, WORKBENCH_STATIC_FILES_CACHE_SECONDS, 0);
     }
 
     /**
      * Returns the salt to use for hashing of the authentication token
      */
-    public byte[] getWorkbenchApiAuthenticationHashSalt()
-    {
+    public byte[] getWorkbenchApiAuthenticationHashSalt() {
         return _workbenchApiAuthenticationHashSalt;
     }
 
@@ -1108,14 +990,11 @@ public class AppProperties
 
     private byte[] _workbenchApiAuthenticationHashSalt = null;
 
-    static byte[] loadWorkbenchApiAuthenticationHashSalt(Properties properties)
-    {
-        try
-        {
+    static byte[] loadWorkbenchApiAuthenticationHashSalt(Properties properties) {
+        try {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes();
         }
     }
@@ -1123,8 +1002,7 @@ public class AppProperties
     /**
      * Returns the password to use for authentication token encryption
      */
-    public byte[] getWorkbenchApiAuthenticationEncryptionPassword()
-    {
+    public byte[] getWorkbenchApiAuthenticationEncryptionPassword() {
         return _workbenchApiAuthenticationEncryptionPassword;
     }
 
@@ -1132,14 +1010,11 @@ public class AppProperties
 
     private byte[] _workbenchApiAuthenticationEncryptionPassword = null;
 
-    static byte[] loadWorkbenchApiAuthenticationEncryptionPassword(Properties properties)
-    {
-        try
-        {
+    static byte[] loadWorkbenchApiAuthenticationEncryptionPassword(Properties properties) {
+        try {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
@@ -1160,11 +1035,9 @@ public class AppProperties
      * @throws IllegalArgumentException
      *             if the value of the named properties is blank
      */
-    private static String loadString(Properties properties, String name)
-    {
+    private static String loadString(Properties properties, String name) {
         String s = properties.getProperty(name);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             throw new IllegalArgumentException(String.format("The property '%s' in '%s' is blank.'", name,
                     APP_PROPERTY_FILE_NAME));
         }
@@ -1183,11 +1056,9 @@ public class AppProperties
      * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
      *         <code>defaultValue</code>
      */
-    private static String loadString(Properties properties, String name, String defaultValue)
-    {
+    private static String loadString(Properties properties, String name, String defaultValue) {
         String s = properties.getProperty(name);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             return defaultValue;
         }
         return s;
@@ -1205,8 +1076,7 @@ public class AppProperties
      * @throws IllegalArgumentException
      *             if the value of the named properties is blank
      */
-    private static int loadInt(Properties properties, String name)
-    {
+    private static int loadInt(Properties properties, String name) {
         String s = loadString(properties, name);
         return Integer.parseInt(s);
     }
@@ -1223,11 +1093,9 @@ public class AppProperties
      * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
      *         <code>defaultValue</code>
      */
-    private static int loadInt(Properties properties, String name, int defaultValue)
-    {
+    private static int loadInt(Properties properties, String name, int defaultValue) {
         String s = loadString(properties, name, null);
-        if (s == null)
-        {
+        if (s == null) {
             return defaultValue;
         }
         return Integer.parseInt(s);
@@ -1245,11 +1113,9 @@ public class AppProperties
      * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
      *         <code>defaultValue</code>
      */
-    private static long loadLong(Properties properties, String name, int defaultValue)
-    {
+    private static long loadLong(Properties properties, String name, int defaultValue) {
         String s = loadString(properties, name, null);
-        if (s == null)
-        {
+        if (s == null) {
             return defaultValue;
         }
         return Long.parseLong(s);
@@ -1268,8 +1134,7 @@ public class AppProperties
      *             if the value of the named properties is blank
      */
     @SuppressWarnings("unused")
-    private static boolean loadBoolean(Properties properties, String name)
-    {
+    private static boolean loadBoolean(Properties properties, String name) {
         String s = loadString(properties, name);
         return Boolean.parseBoolean(s);
     }
@@ -1286,11 +1151,9 @@ public class AppProperties
      * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
      *         <code>defaultValue</code>
      */
-    private static boolean loadBoolean(Properties properties, String name, boolean defaultValue)
-    {
+    private static boolean loadBoolean(Properties properties, String name, boolean defaultValue) {
         String s = loadString(properties, name, null);
-        if (s == null)
-        {
+        if (s == null) {
             return defaultValue;
         }
         return Boolean.parseBoolean(s);
@@ -1299,48 +1162,40 @@ public class AppProperties
     /**
      * Returns a string representation of the parsed properties
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
 
         Class<AppProperties> cls = AppProperties.class;
-        for (Field f : cls.getDeclaredFields())
-        {
+        for (Field f : cls.getDeclaredFields()) {
             // Look for field names like APP_NAME
             String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
+            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$")) {
                 continue;
             }
 
             // Build cache field (_appName) and method (loadAppName) methods
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
+            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[] { '_' });
             baseName = baseName.replace("_", "");
             String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
 
             // If field not exist, then skip
             Field cacheField = null;
-            try
-            {
+            try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
             }
-            catch (NoSuchFieldException e)
-            {
+            catch (NoSuchFieldException e) {
                 continue;
             }
 
             // Get the value
-            try
-            {
+            try {
                 Object o = cacheField.get(this);
                 sb.append(f.get(null));
                 sb.append(" = ");
                 sb.append(o == null ? "<not set>" : o.toString());
                 sb.append("\n");
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 sb.append("ERROR: Cannot load value for: " + propertyNameFieldName);
             }
 

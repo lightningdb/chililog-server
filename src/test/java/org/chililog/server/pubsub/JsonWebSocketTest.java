@@ -44,8 +44,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonWebSocketTest
-{
+public class JsonWebSocketTest {
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
 
@@ -53,8 +52,7 @@ public class JsonWebSocketTest
     private static final String MONGODB_COLLECTION_NAME = "repo_json_ws_test";
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         // Create repo
         _repoInfo = new RepositoryConfigBO();
         _repoInfo.setName(REPOSITORY_NAME);
@@ -83,8 +81,7 @@ public class JsonWebSocketTest
 
         // Clean up old test data if any exists
         coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
 
@@ -118,19 +115,16 @@ public class JsonWebSocketTest
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         // Drop collection for each test
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Stop it all
         JsonHttpService.getInstance().stop();
         RepositoryService.getInstance().stop();
@@ -138,24 +132,23 @@ public class JsonWebSocketTest
 
         // Drop collection
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
-        
+
         // Clean up users
         coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^JsonWsTestUser[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
-        
+
         // Clean old repository info
         coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
         query = new BasicDBObject();
         query.put("name", pattern);
-        coll.remove(query);        
+        coll.remove(query);
     }
 
     /**
@@ -174,8 +167,7 @@ public class JsonWebSocketTest
     public static void sendPublicshRequest(WebSocketClient client,
                                            PublishCallbackHandler callbackHandler,
                                            String msgID,
-                                           int entryCount) throws Exception
-    {
+                                           int entryCount) throws Exception {
         PublicationRequestAO request = new PublicationRequestAO();
         request.setMessageID(msgID);
         request.setUsername("JsonWsTestUser_Publisher");
@@ -184,8 +176,7 @@ public class JsonWebSocketTest
 
         LogEntryAO[] logEntries = new LogEntryAO[entryCount];
 
-        for (int i = 0; i < entryCount; i++)
-        {
+        for (int i = 0; i < entryCount; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -214,10 +205,8 @@ public class JsonWebSocketTest
         assertNull(response.getErrorStackTrace());
     }
 
-   
     @Test
-    public void testPublishOneLogEntry() throws Exception
-    {
+    public void testPublishOneLogEntry() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -241,8 +230,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishManyLogEntries() throws Exception
-    {
+    public void testPublishManyLogEntries() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -266,8 +254,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishSubsequentLogEntries() throws Exception
-    {
+    public void testPublishSubsequentLogEntries() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -292,11 +279,9 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishMultipleConnections() throws Exception
-    {
+    public void testPublishMultipleConnections() throws Exception {
         // 20 threads each adding 2 log entries = 40 log entries in total
-        for (int i = 0; i < 20; i++)
-        {
+        for (int i = 0; i < 20; i++) {
             PublishThread runnable = new PublishThread();
             Thread thread = new Thread(runnable);
             thread.start();
@@ -312,14 +297,12 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testSubscribeMultipleConnections() throws Exception
-    {
+    public void testSubscribeMultipleConnections() throws Exception {
         // Subscribe
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"),
-                callbackHandler);
+        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
         subcriberClient.connect().awaitUninterruptibly();
         Thread.sleep(500);
         assertTrue(callbackHandler.connected);
@@ -346,8 +329,7 @@ public class JsonWebSocketTest
         callbackHandler.messagesReceived.clear();
 
         // Publish 20 threads each adding 2 log entries = 40 log entries in total
-        for (int i = 0; i < 20; i++)
-        {
+        for (int i = 0; i < 20; i++) {
             PublishThread runnable = new PublishThread();
             Thread thread = new Thread(runnable);
             thread.start();
@@ -374,8 +356,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testUnsupportRequest() throws Exception
-    {
+    public void testUnsupportRequest() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -385,11 +366,12 @@ public class JsonWebSocketTest
         client.connect().awaitUninterruptibly();
         Thread.sleep(500);
         assertTrue(callbackHandler.connected);
-    
+
         // Send request
         callbackHandler.messageReceived = null;
-        String requestJson = JsonTranslator.getInstance().toJson("this is a string so that it cannot be recognised as a message");
-                
+        String requestJson = JsonTranslator.getInstance().toJson(
+                "this is a string so that it cannot be recognised as a message");
+
         client.send(new DefaultWebSocketFrame(requestJson));
 
         // Wait for it to be processed
@@ -405,10 +387,9 @@ public class JsonWebSocketTest
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(0, coll.find().count());
     }
-    
+
     @Test
-    public void testPublishBadJSON() throws Exception
-    {
+    public void testPublishBadJSON() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -428,8 +409,7 @@ public class JsonWebSocketTest
 
         LogEntryAO[] logEntries = new LogEntryAO[1];
 
-        for (int i = 0; i < 1; i++)
-        {
+        for (int i = 0; i < 1; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -444,7 +424,7 @@ public class JsonWebSocketTest
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
         requestJson = requestJson.replace("MessageID", "MessageID: \"big stuff up to json syntax\" ");
-                
+
         client.send(new DefaultWebSocketFrame(requestJson));
 
         // Wait for it to be processed
@@ -454,7 +434,7 @@ public class JsonWebSocketTest
         assertNotNull(callbackHandler.messageReceived);
         PublicationResponseAO response = JsonTranslator.getInstance().fromJson(callbackHandler.messageReceived,
                 PublicationResponseAO.class);
-        
+
         // Still OK because the error is in the parsing done by subscribers
         assertFalse(response.isSuccess());
         assertNotNull(response.getErrorMessage());
@@ -468,10 +448,9 @@ public class JsonWebSocketTest
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(0, coll.find().count());
     }
-    
+
     @Test
-    public void testPublishBadLogEntry() throws Exception
-    {
+    public void testPublishBadLogEntry() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -491,10 +470,9 @@ public class JsonWebSocketTest
 
         LogEntryAO[] logEntries = new LogEntryAO[1];
 
-        for (int i = 0; i < 1; i++)
-        {
+        for (int i = 0; i < 1; i++) {
             LogEntryAO logEntry = new LogEntryAO();
-            logEntry.setTimestamp("xxxx");          // Unparsable Date 
+            logEntry.setTimestamp("xxxx"); // Unparsable Date
             logEntry.setSource("junit");
             logEntry.setHost("localhost");
             logEntry.setSeverity("4");
@@ -506,7 +484,7 @@ public class JsonWebSocketTest
         // Send request
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
-                
+
         client.send(new DefaultWebSocketFrame(requestJson));
 
         // Wait for it to be processed
@@ -517,7 +495,7 @@ public class JsonWebSocketTest
         PublicationResponseAO response = JsonTranslator.getInstance().fromJson(callbackHandler.messageReceived,
                 PublicationResponseAO.class);
         assertEquals("testPublishBadLogEntry", response.getMessageID());
-        
+
         // Still OK because the error is in the parsing done by subscribers
         assertTrue(response.isSuccess());
         assertNull(response.getErrorMessage());
@@ -533,8 +511,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishBadUsername() throws Exception
-    {
+    public void testPublishBadUsername() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -553,8 +530,7 @@ public class JsonWebSocketTest
         request.setRepositoryName(REPOSITORY_NAME);
 
         LogEntryAO[] logEntries = new LogEntryAO[1];
-        for (int i = 0; i < 1; i++)
-        {
+        for (int i = 0; i < 1; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -588,8 +564,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishBadPassword() throws Exception
-    {
+    public void testPublishBadPassword() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -608,8 +583,7 @@ public class JsonWebSocketTest
         request.setRepositoryName(REPOSITORY_NAME);
 
         LogEntryAO[] logEntries = new LogEntryAO[1];
-        for (int i = 0; i < 1; i++)
-        {
+        for (int i = 0; i < 1; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -643,8 +617,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testPublishBadRole() throws Exception
-    {
+    public void testPublishBadRole() throws Exception {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -663,8 +636,7 @@ public class JsonWebSocketTest
         request.setRepositoryName(REPOSITORY_NAME);
 
         LogEntryAO[] logEntries = new LogEntryAO[1];
-        for (int i = 0; i < 1; i++)
-        {
+        for (int i = 0; i < 1; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -698,8 +670,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testSubscribeBadUsername() throws Exception
-    {
+    public void testSubscribeBadUsername() throws Exception {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -739,8 +710,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testSubscribeBadPassword() throws Exception
-    {
+    public void testSubscribeBadPassword() throws Exception {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -780,8 +750,7 @@ public class JsonWebSocketTest
     }
 
     @Test
-    public void testSubscribeBadRole() throws Exception
-    {
+    public void testSubscribeBadRole() throws Exception {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
@@ -826,21 +795,17 @@ public class JsonWebSocketTest
      * @author vibul
      * 
      */
-    public static class PublishThread implements Runnable
-    {
+    public static class PublishThread implements Runnable {
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishThread.class);
 
-        public void run()
-        {
-            try
-            {
+        public void run() {
+            try {
                 _logger.debug("WS thread " + Thread.currentThread().getName() + " started");
 
                 PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
                 WebSocketClientFactory factory = new WebSocketClientFactory();
 
-                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"),
-                        callbackHandler);
+                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
 
                 // Connect
                 client.connect().awaitUninterruptibly();
@@ -850,8 +815,7 @@ public class JsonWebSocketTest
                 // Publish
                 sendPublicshRequest(client, callbackHandler, "PublishThread" + Thread.currentThread().getName(), 2);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -863,42 +827,36 @@ public class JsonWebSocketTest
      * @author vibul
      * 
      */
-    public static class PublishCallbackHandler implements WebSocketCallback
-    {
+    public static class PublishCallbackHandler implements WebSocketCallback {
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishCallbackHandler.class);
 
         public boolean connected = false;
         public String messageReceived = null;
 
-        public PublishCallbackHandler()
-        {
+        public PublishCallbackHandler() {
             return;
         }
 
         @Override
-        public void onConnect(WebSocketClient client)
-        {
+        public void onConnect(WebSocketClient client) {
             _logger.debug("Publish WebSocket connected!");
             connected = true;
         }
 
         @Override
-        public void onDisconnect(WebSocketClient client)
-        {
+        public void onDisconnect(WebSocketClient client) {
             _logger.debug("Publish WebSocket disconnected!");
             connected = false;
         }
 
         @Override
-        public void onMessage(WebSocketClient client, WebSocketFrame frame)
-        {
+        public void onMessage(WebSocketClient client, WebSocketFrame frame) {
             _logger.debug("Publish WebSocket Received Message:" + frame.getTextData());
             messageReceived = frame.getTextData();
         }
 
         @Override
-        public void onError(Throwable t)
-        {
+        public void onError(Throwable t) {
             _logger.error(t, "Publish WebSocket error");
         }
 
@@ -910,42 +868,36 @@ public class JsonWebSocketTest
      * @author vibul
      * 
      */
-    public static class SubscribeCallbackHandler implements WebSocketCallback
-    {
+    public static class SubscribeCallbackHandler implements WebSocketCallback {
         private static Log4JLogger _logger = Log4JLogger.getLogger(SubscribeCallbackHandler.class);
 
         public boolean connected = false;
         public ArrayList<String> messagesReceived = new ArrayList<String>();
 
-        public SubscribeCallbackHandler()
-        {
+        public SubscribeCallbackHandler() {
             return;
         }
 
         @Override
-        public void onConnect(WebSocketClient client)
-        {
+        public void onConnect(WebSocketClient client) {
             _logger.debug("Subscribe WebSocket connected!");
             connected = true;
         }
 
         @Override
-        public void onDisconnect(WebSocketClient client)
-        {
+        public void onDisconnect(WebSocketClient client) {
             _logger.debug("Subscribe WebSocket disconnected!");
             connected = false;
         }
 
         @Override
-        public void onMessage(WebSocketClient client, WebSocketFrame frame)
-        {
+        public void onMessage(WebSocketClient client, WebSocketFrame frame) {
             _logger.debug("Subscribe WebSocket Received Message:" + frame.getTextData());
             messagesReceived.add(frame.getTextData());
         }
 
         @Override
-        public void onError(Throwable t)
-        {
+        public void onError(Throwable t) {
             _logger.error(t, "Subscribe WebSocket error");
         }
 

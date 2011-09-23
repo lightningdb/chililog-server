@@ -40,8 +40,7 @@ import com.mongodb.MongoException;
  * @author vibul
  * 
  */
-public class RepositoryEntryController extends Controller
-{
+public class RepositoryEntryController extends Controller {
     private RepositoryConfigBO _repoInfo = null;
     private String _mongoDBCollectionName = null;
 
@@ -52,8 +51,7 @@ public class RepositoryEntryController extends Controller
      *            Meta data for the repository to which we will be reading and writing
      * @return RepositoryEntryController
      */
-    public static RepositoryEntryController getInstance(RepositoryConfigBO repoInfo)
-    {
+    public static RepositoryEntryController getInstance(RepositoryConfigBO repoInfo) {
         // TODO cache entry controllers
         return new RepositoryEntryController(repoInfo);
     }
@@ -64,8 +62,7 @@ public class RepositoryEntryController extends Controller
      * @param repoInfo
      *            Repository info
      */
-    RepositoryEntryController(RepositoryConfigBO repoInfo)
-    {
+    RepositoryEntryController(RepositoryConfigBO repoInfo) {
         _repoInfo = repoInfo;
         _mongoDBCollectionName = repoInfo.getMongoDBCollectionName();
     }
@@ -74,16 +71,14 @@ public class RepositoryEntryController extends Controller
      * Returns the mongoDB collection name
      */
     @Override
-    protected String getDBCollectionName()
-    {
+    protected String getDBCollectionName() {
         return _mongoDBCollectionName;
     }
 
     /**
      * Returns the meta data of the repository to which we will be reading and writing
      */
-    public RepositoryConfigBO getRepoInfo()
-    {
+    public RepositoryConfigBO getRepoInfo() {
         return _repoInfo;
     }
 
@@ -98,11 +93,9 @@ public class RepositoryEntryController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryEntryBO get(DB db, ObjectId id) throws ChiliLogException
-    {
+    public RepositoryEntryBO get(DB db, ObjectId id) throws ChiliLogException {
         RepositoryEntryBO o = tryGet(db, id);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.USER_NOT_FOUND_ERROR, id.toString());
         }
         return o;
@@ -119,16 +112,12 @@ public class RepositoryEntryController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryEntryBO tryGet(DB db, ObjectId id) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public RepositoryEntryBO tryGet(DB db, ObjectId id) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (id == null)
-            {
+            if (id == null) {
                 throw new IllegalArgumentException("id cannot be null");
             }
 
@@ -136,14 +125,12 @@ public class RepositoryEntryController extends Controller
             BasicDBObject condition = new BasicDBObject();
             condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
             DBObject dbo = coll.findOne(condition);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new RepositoryEntryBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -158,14 +145,11 @@ public class RepositoryEntryController extends Controller
      * @return List of matching entries
      * @throws ChiliLogException
      */
-    public ArrayList<RepositoryEntryBO> getList(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
-    {
+    public ArrayList<RepositoryEntryBO> getList(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException {
         ArrayList<DBObject> list = executeFindQuery(db, criteria);
         ArrayList<RepositoryEntryBO> boList = new ArrayList<RepositoryEntryBO>();
-        if (list != null && !list.isEmpty())
-        {
-            for (DBObject o : list)
-            {
+        if (list != null && !list.isEmpty()) {
+            for (DBObject o : list) {
                 boList.add(new RepositoryEntryBO(o));
             }
         }
@@ -181,16 +165,12 @@ public class RepositoryEntryController extends Controller
      *            Criteria to filter resultset. Fields, conditions and orderby are used.
      * @return List of matching entries
      */
-    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public ArrayList<DBObject> executeFindQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new NullArgumentException("db");
             }
-            if (criteria == null)
-            {
+            if (criteria == null) {
                 throw new NullArgumentException("criteria");
             }
 
@@ -204,23 +184,20 @@ public class RepositoryEntryController extends Controller
 
             DBCursor cur = coll.find(conditions, fields).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
             ArrayList<DBObject> list = new ArrayList<DBObject>();
-            while (cur.hasNext())
-            {
+            while (cur.hasNext()) {
                 DBObject dbo = cur.next();
                 list.add(dbo);
             }
 
             // Do page count by executing query again
-            if (criteria.getDoPageCount())
-            {
+            if (criteria.getDoPageCount()) {
                 int documentCount = coll.find(conditions).count();
                 criteria.calculatePageCount(documentCount);
             }
 
             return list;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -234,16 +211,12 @@ public class RepositoryEntryController extends Controller
      *            Criteria to filter resultset. Condition is used.
      * @return Number of matching entries
      */
-    public int executeCountQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public int executeCountQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new NullArgumentException("db");
             }
-            if (criteria == null)
-            {
+            if (criteria == null) {
                 throw new NullArgumentException("criteria");
             }
 
@@ -253,8 +226,7 @@ public class RepositoryEntryController extends Controller
 
             return coll.find(conditions).count();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -269,30 +241,24 @@ public class RepositoryEntryController extends Controller
      * @return List of distinct values for the nominated field.
      */
     @SuppressWarnings("rawtypes")
-    public List executeDistinctQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public List executeDistinctQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new NullArgumentException("db");
             }
-            if (criteria == null)
-            {
+            if (criteria == null) {
                 throw new NullArgumentException("criteria");
             }
 
             DBCollection coll = db.getCollection(this.getDBCollectionName());
 
             DBObject fields = criteria.getFieldsDbObject();
-            if (fields == null || fields.keySet().isEmpty())
-            {
+            if (fields == null || fields.keySet().isEmpty()) {
                 throw new IllegalArgumentException("Field is required for a 'distinct' query.");
             }
 
             String fieldName = null;
-            for (String n : fields.keySet())
-            {
+            for (String n : fields.keySet()) {
                 fieldName = n;
                 break;
             }
@@ -301,8 +267,7 @@ public class RepositoryEntryController extends Controller
 
             return coll.distinct(fieldName, conditions);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -317,16 +282,12 @@ public class RepositoryEntryController extends Controller
      *            used.
      * @return Specified fields and aggregation counter.
      */
-    public DBObject executeGroupQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public DBObject executeGroupQuery(DB db, RepositoryEntryListCriteria criteria) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new NullArgumentException("db");
             }
-            if (criteria == null)
-            {
+            if (criteria == null) {
                 throw new NullArgumentException("criteria");
             }
 
@@ -339,8 +300,7 @@ public class RepositoryEntryController extends Controller
             return coll
                     .group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -355,8 +315,7 @@ public class RepositoryEntryController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void save(DB db, RepositoryEntryBO entry) throws ChiliLogException
-    {
+    public void save(DB db, RepositoryEntryBO entry) throws ChiliLogException {
         // Save it
         super.save(db, entry);
     }
@@ -371,8 +330,7 @@ public class RepositoryEntryController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void remove(DB db, RepositoryEntryBO entry) throws ChiliLogException
-    {
+    public void remove(DB db, RepositoryEntryBO entry) throws ChiliLogException {
         super.remove(db, entry);
     }
 }

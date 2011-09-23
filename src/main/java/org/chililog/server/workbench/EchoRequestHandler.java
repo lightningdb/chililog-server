@@ -54,8 +54,7 @@ import org.jboss.netty.util.CharsetUtil;
  * This code is based on the Netty HTTP Snoop sample (http://www.jboss.org/netty/documentation.html).
  * </p>
  */
-public class EchoRequestHandler extends WorkbenchRequestHandler
-{
+public class EchoRequestHandler extends WorkbenchRequestHandler {
     private HttpRequest _request;
 
     private boolean _readingChunks = false;
@@ -67,15 +66,12 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
      * Process the message
      */
     @Override
-    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
+    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         // First time called, _readingChunks will be false
-        if (!_readingChunks)
-        {
+        if (!_readingChunks) {
             HttpRequest request = this._request = (HttpRequest) e.getMessage();
 
-            if (is100ContinueExpected(request))
-            {
+            if (is100ContinueExpected(request)) {
                 send100Continue(e);
             }
 
@@ -88,58 +84,46 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
             buf.append("HOSTNAME: " + getHost(request, "unknown") + "\r\n");
             buf.append("REQUEST_URI: " + request.getUri() + "\r\n\r\n");
 
-            for (Map.Entry<String, String> h : request.getHeaders())
-            {
+            for (Map.Entry<String, String> h : request.getHeaders()) {
                 buf.append("HEADER: " + h.getKey() + " = " + h.getValue() + "\r\n");
             }
             buf.append("\r\n");
 
             QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
             Map<String, List<String>> params = queryStringDecoder.getParameters();
-            if (!params.isEmpty())
-            {
-                for (Entry<String, List<String>> p : params.entrySet())
-                {
+            if (!params.isEmpty()) {
+                for (Entry<String, List<String>> p : params.entrySet()) {
                     String key = p.getKey();
                     List<String> vals = p.getValue();
-                    for (String val : vals)
-                    {
+                    for (String val : vals) {
                         buf.append("PARAM: " + key + " = " + val + "\r\n");
                     }
                 }
                 buf.append("\r\n");
             }
 
-            if (request.isChunked())
-            {
+            if (request.isChunked()) {
                 _readingChunks = true;
             }
-            else
-            {
+            else {
                 ChannelBuffer content = request.getContent();
-                if (content.readable())
-                {
+                if (content.readable()) {
                     buf.append("CONTENT: " + content.toString(CharsetUtil.UTF_8) + "\r\n");
                 }
                 writeResponse(e);
             }
         }
-        else
-        {
+        else {
             HttpChunk chunk = (HttpChunk) e.getMessage();
-            if (chunk.isLast())
-            {
+            if (chunk.isLast()) {
                 _readingChunks = false;
                 buf.append("END OF CONTENT\r\n");
 
                 HttpChunkTrailer trailer = (HttpChunkTrailer) chunk;
-                if (!trailer.getHeaderNames().isEmpty())
-                {
+                if (!trailer.getHeaderNames().isEmpty()) {
                     buf.append("\r\n");
-                    for (String name : trailer.getHeaderNames())
-                    {
-                        for (String value : trailer.getHeaders(name))
-                        {
+                    for (String name : trailer.getHeaderNames()) {
+                        for (String value : trailer.getHeaders(name)) {
                             buf.append("TRAILING HEADER: " + name + " = " + value + "\r\n");
                         }
                     }
@@ -148,8 +132,7 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
 
                 writeResponse(e);
             }
-            else
-            {
+            else {
                 buf.append("CHUNK: " + chunk.getContent().toString(CharsetUtil.UTF_8) + "\r\n");
             }
         }
@@ -160,8 +143,7 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
      * 
      * @param e
      */
-    private void writeResponse(MessageEvent e)
-    {
+    private void writeResponse(MessageEvent e) {
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
 
@@ -170,24 +152,20 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
         response.setContent(ChannelBuffers.copiedBuffer(buf.toString(), CharsetUtil.UTF_8));
         response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
 
-        if (keepAlive)
-        {
+        if (keepAlive) {
             // Add 'Content-Length' header only for a keep-alive connection.
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
         }
 
         // Encode the cookie.
         String cookieString = _request.getHeader(COOKIE);
-        if (cookieString != null)
-        {
+        if (cookieString != null) {
             CookieDecoder cookieDecoder = new CookieDecoder();
             Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-            if (!cookies.isEmpty())
-            {
+            if (!cookies.isEmpty()) {
                 // Reset the cookies if necessary.
                 CookieEncoder cookieEncoder = new CookieEncoder(true);
-                for (Cookie cookie : cookies)
-                {
+                for (Cookie cookie : cookies) {
                     cookieEncoder.addCookie(cookie);
                 }
                 response.addHeader(SET_COOKIE, cookieEncoder.encode());
@@ -198,14 +176,12 @@ public class EchoRequestHandler extends WorkbenchRequestHandler
         ChannelFuture future = e.getChannel().write(response);
 
         // Close the non-keep-alive connection after the write operation is done.
-        if (!keepAlive)
-        {
+        if (!keepAlive) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
     }
 
-    private void send100Continue(MessageEvent e)
-    {
+    private void send100Continue(MessageEvent e) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
         e.getChannel().write(response);
     }

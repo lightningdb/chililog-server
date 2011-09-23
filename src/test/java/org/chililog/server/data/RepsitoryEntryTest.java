@@ -41,14 +41,12 @@ import com.mongodb.DBCollection;
  * @author vibul
  * 
  */
-public class RepsitoryEntryTest
-{
+public class RepsitoryEntryTest {
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -63,16 +61,14 @@ public class RepsitoryEntryTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(_repoInfo.getMongoDBCollectionName());
         coll.drop();
     }
 
     @Test
-    public void testCRUD() throws ChiliLogException
-    {
+    public void testCRUD() throws ChiliLogException {
         Date ts = new Date();
 
         // Insert
@@ -130,8 +126,7 @@ public class RepsitoryEntryTest
     }
 
     @Test
-    public void testSeverity() throws ChiliLogException
-    {
+    public void testSeverity() throws ChiliLogException {
         // Invalid parse values must default to info
         assertEquals(Severity.Information, Severity.parse(null));
         assertEquals(Severity.Information, Severity.parse(""));

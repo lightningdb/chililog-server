@@ -65,8 +65,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
     private SubscriptionWorker _subscriptionWorker = null;
 
     private WebSocketHandshaker _handshaker = null;
-    
-    
+
     /**
      * Handles incoming HTTP data
      * 

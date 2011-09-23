@@ -26,15 +26,13 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 
-
 /**
  * Parses the string representation of a field's value and returns its as a strongly typed object
  * 
  * @author vibul
  * 
  */
-public abstract class FieldParser
-{
+public abstract class FieldParser {
     private RepositoryFieldConfigBO _repoFieldInfo;
     private Pattern _preparsePattern = null;
     private int _preparsePatternGroup = 1;
@@ -45,20 +43,17 @@ public abstract class FieldParser
      * @param repoFieldInfo
      *            Field meta data
      */
-    public FieldParser(RepositoryFieldConfigBO repoFieldInfo)
-    {
+    public FieldParser(RepositoryFieldConfigBO repoFieldInfo) {
         _repoFieldInfo = repoFieldInfo;
 
         Hashtable<String, String> properties = _repoFieldInfo.getProperties();
         String s = properties.get(RepositoryFieldConfigBO.PREPARSE_PATTERN_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             _preparsePattern = Pattern.compile(s);
         }
 
         String g = properties.get(RepositoryFieldConfigBO.PREPARSE_PATTERN_GROUP_PROPERTY_NAME);
-        if (!StringUtils.isBlank(g))
-        {
+        if (!StringUtils.isBlank(g)) {
             _preparsePatternGroup = Integer.parseInt(g);
         }
     }
@@ -66,8 +61,7 @@ public abstract class FieldParser
     /**
      * Returns the field meta data for this field parser
      */
-    public RepositoryFieldConfigBO getRepoFieldInfo()
-    {
+    public RepositoryFieldConfigBO getRepoFieldInfo() {
         return _repoFieldInfo;
     }
 
@@ -78,13 +72,10 @@ public abstract class FieldParser
      *            value to pre-parse
      * @return String for parsing
      */
-    protected String preparse(String value)
-    {
-        if (_preparsePattern != null && !StringUtils.isBlank(value))
-        {
+    protected String preparse(String value) {
+        if (_preparsePattern != null && !StringUtils.isBlank(value)) {
             Matcher m = _preparsePattern.matcher(value);
-            if (m.find())
-            {
+            if (m.find()) {
                 return m.group(_preparsePatternGroup);
             }
         }

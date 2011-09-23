@@ -30,13 +30,11 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
 
-public class TextTokenizer
-{
+public class TextTokenizer {
     /**
      * Returns the singleton instance for this class
      */
-    public static TextTokenizer getInstance()
-    {
+    public static TextTokenizer getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -46,16 +44,14 @@ public class TextTokenizer
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final TextTokenizer INSTANCE = new TextTokenizer();
     }
 
     /**
      * 
      */
-    private TextTokenizer()
-    {
+    private TextTokenizer() {
 
     }
 
@@ -86,12 +82,10 @@ public class TextTokenizer
      * @return Array of keywords
      * @throws IOException
      */
-    public ArrayList<String> tokenize(String text, long maxKeywords) throws IOException
-    {
+    public ArrayList<String> tokenize(String text, long maxKeywords) throws IOException {
         ArrayList<String> tokens = new ArrayList<String>();
 
-        if (StringUtils.isEmpty(text) || maxKeywords == 0)
-        {
+        if (StringUtils.isEmpty(text) || maxKeywords == 0) {
             return tokens;
         }
 
@@ -101,62 +95,49 @@ public class TextTokenizer
 
         StringBuilder sb = new StringBuilder();
         TermAttribute termAttribute = stream.getAttribute(TermAttribute.class);
-        while (stream.incrementToken())
-        {
+        while (stream.incrementToken()) {
             char[] termBuffer = termAttribute.termBuffer();
             int length = termAttribute.termLength();
 
             boolean doSplit = true;
 
             // Check if we want to split
-            if (Character.isDigit(termBuffer[0]))
-            {
+            if (Character.isDigit(termBuffer[0])) {
                 doSplit = false;
             }
-            else
-            {
-                for (int j = 0; j < length; j++)
-                {
+            else {
+                for (int j = 0; j < length; j++) {
                     char c = termBuffer[j];
-                    if (!Character.isLetterOrDigit(c) && c != '.' && c != '@')
-                    {
+                    if (!Character.isLetterOrDigit(c) && c != '.' && c != '@') {
                         doSplit = false;
                         break;
                     }
                 }
             }
 
-            if (doSplit)
-            {
+            if (doSplit) {
                 sb.setLength(0);
-                for (int i = 0; i < length; i++)
-                {
+                for (int i = 0; i < length; i++) {
                     char c = termBuffer[i];
-                    if (c == '.' || c == '@')
-                    {
-                        if (!addToken(tokens, lookup, sb.toString(), maxKeywords))
-                        {
+                    if (c == '.' || c == '@') {
+                        if (!addToken(tokens, lookup, sb.toString(), maxKeywords)) {
                             return tokens;
                         }
                         sb.setLength(0);
                     }
-                    else
-                    {
+                    else {
                         sb.append(c);
                     }
                 }
 
                 // Add last part
-                if (!addToken(tokens, lookup, sb.toString(), maxKeywords))
-                {
+                if (!addToken(tokens, lookup, sb.toString(), maxKeywords)) {
                     return tokens;
                 }
             }
-            else
-            {
+            else {
                 // No splitting, just add term
-                if (!addToken(tokens, lookup, termAttribute.term(), maxKeywords))
-                {
+                if (!addToken(tokens, lookup, termAttribute.term(), maxKeywords)) {
                     return tokens;
                 }
             }
@@ -178,14 +159,11 @@ public class TextTokenizer
      *            maximum number of keywords
      * @return True if it is OK to keep adding tokens, False if no more tokens should be added
      */
-    private boolean addToken(ArrayList<String> tokens, HashMap<String, String> lookup, String token, long maxKeywords)
-    {
-        if (!StringUtils.isBlank(token) && !lookup.containsKey(token))
-        {
+    private boolean addToken(ArrayList<String> tokens, HashMap<String, String> lookup, String token, long maxKeywords) {
+        if (!StringUtils.isBlank(token) && !lookup.containsKey(token)) {
             tokens.add(token);
             lookup.put(token, null);
-            if (maxKeywords > 0 && tokens.size() >= maxKeywords)
-            {
+            if (maxKeywords > 0 && tokens.size() >= maxKeywords) {
                 return false;
             }
         }

@@ -30,34 +30,29 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
 
-
 /**
  * <p>
  * Sets up the pipeline of handlers for incoming JSON log requests over HTTP and HTTP web sockets
  * </p>
  */
-public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory
-{
+public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
     /**
      * Constructor
      */
-    public JsonHttpServerPipelineFactory()
-    {
+    public JsonHttpServerPipelineFactory() {
     }
 
     /**
      * Creates an HTTP Pipeline for our server
      */
-    public ChannelPipeline getPipeline() throws Exception
-    {
+    public ChannelPipeline getPipeline() throws Exception {
         AppProperties appProperties = AppProperties.getInstance();
 
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
         // SSL handling
-        if (appProperties.getPubSubJsonHttpProtocolSslEnabled())
-        {
+        if (appProperties.getPubSubJsonHttpProtocolSslEnabled()) {
             SSLEngine engine = JsonHttpSslContextManager.getInstance().getServerContext().createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));

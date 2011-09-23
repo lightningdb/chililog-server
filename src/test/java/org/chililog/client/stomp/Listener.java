@@ -1,6 +1,7 @@
 /**
  * http://www.germane-software.com/software/Java/Gozirra/
  */
+
 package org.chililog.client.stomp;
 
 import java.util.Map;
@@ -10,5 +11,5 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public interface Listener {
-  public void message( Map headers, String body );
+    public void message(Map headers, String body);
 }

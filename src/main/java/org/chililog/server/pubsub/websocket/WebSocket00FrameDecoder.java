@@ -1,18 +1,12 @@
 /*
- * Copyright 2010 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
+ * Copyright 2010 Red Hat, Inc. Red Hat licenses this file to you under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the
+ * License.
  */
+
 package org.chililog.server.pubsub.websocket;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -25,15 +19,14 @@ import org.jboss.netty.handler.codec.replay.VoidEnum;
 /**
  * Decodes {@link ChannelBuffer}s into {@link WebSocketFrame}s.
  * <p>
- * For the detailed instruction on adding add Web Socket support to your HTTP
- * server, take a look into the <tt>WebSocketServer</tt> example located in the
- * {@code org.jboss.netty.example.http.websocket} package.
- *
+ * For the detailed instruction on adding add Web Socket support to your HTTP server, take a look into the
+ * <tt>WebSocketServer</tt> example located in the {@code org.jboss.netty.example.http.websocket} package.
+ * 
  * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
  * @author Mike Heath (mheath@apache.org)
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @version $Rev: 2342 $, $Date: 2010-07-07 14:07:39 +0900 (Wed, 07 Jul 2010) $
- *
+ * 
  * @apiviz.landmark
  * @apiviz.uses org.jboss.netty.handler.codec.http.websocket.WebSocketFrame
  */
@@ -49,18 +42,19 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
     }
 
     /**
-     * Creates a new instance of {@code WebSocketFrameDecoder} with the specified {@code maxFrameSize}.  If the client
+     * Creates a new instance of {@code WebSocketFrameDecoder} with the specified {@code maxFrameSize}. If the client
      * sends a frame size larger than {@code maxFrameSize}, the channel will be closed.
-     *
-     * @param maxFrameSize  the maximum frame size to decode
+     * 
+     * @param maxFrameSize
+     *            the maximum frame size to decode
      */
     public WebSocket00FrameDecoder(int maxFrameSize) {
         this.maxFrameSize = maxFrameSize;
     }
 
     @Override
-    protected Object decode(ChannelHandlerContext ctx, Channel channel,
-            ChannelBuffer buffer, VoidEnum state) throws Exception {
+    protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, VoidEnum state)
+            throws Exception {
 
         // Discard all data received if closing handshake was received before.
         if (receivedClosingHandshake) {
@@ -73,7 +67,8 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
         if ((type & 0x80) == 0x80) {
             // If the MSB on type is set, decode the frame length
             return decodeBinaryFrame(type, buffer);
-        } else {
+        }
+        else {
             // Decode a 0xff terminated UTF-8 string
             return decodeTextFrame(type, buffer);
         }
@@ -90,14 +85,14 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
             if (frameSize > maxFrameSize) {
                 throw new TooLongFrameException();
             }
-            lengthFieldSize ++;
+            lengthFieldSize++;
             if (lengthFieldSize > 8) {
                 // Perhaps a malicious peer?
                 throw new TooLongFrameException();
             }
         } while ((b & 0x80) == 0x80);
 
-        if (type == ((byte)0xFF) && frameSize == 0) {
+        if (type == ((byte) 0xFF) && frameSize == 0) {
             receivedClosingHandshake = true;
             return new CloseWebSocketFrame();
         }
@@ -114,7 +109,8 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
             if (rbytes > maxFrameSize) {
                 // Frame length exceeded the maximum
                 throw new TooLongFrameException();
-            } else {
+            }
+            else {
                 // Wait until more data is received
                 return null;
             }
@@ -127,14 +123,12 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
 
         ChannelBuffer binaryData = buffer.readBytes(frameSize);
         buffer.skipBytes(1);
-        
-        int ffDelimPos = binaryData.indexOf(
-                binaryData.readerIndex(), binaryData.writerIndex(), (byte) 0xFF);
+
+        int ffDelimPos = binaryData.indexOf(binaryData.readerIndex(), binaryData.writerIndex(), (byte) 0xFF);
         if (ffDelimPos >= 0) {
-            throw new IllegalArgumentException(
-                    "a text frame should not contain 0xFF.");
+            throw new IllegalArgumentException("a text frame should not contain 0xFF.");
         }
-        
+
         return new TextWebSocketFrame(binaryData);
     }
 }

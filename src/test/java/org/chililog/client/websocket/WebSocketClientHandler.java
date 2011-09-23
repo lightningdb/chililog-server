@@ -34,27 +34,23 @@ import java.net.URI;
  * 
  * @author <a href="http://www.pedantique.org/">Carl Bystr&ouml;m</a>
  */
-public class WebSocketClientHandler extends SimpleChannelUpstreamHandler implements WebSocketClient
-{
+public class WebSocketClientHandler extends SimpleChannelUpstreamHandler implements WebSocketClient {
     private ClientBootstrap bootstrap;
     private URI url;
     private WebSocketCallback callback;
     private boolean handshakeCompleted = false;
     private Channel channel;
 
-    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketCallback callback)
-    {
+    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketCallback callback) {
         this.bootstrap = bootstrap;
         this.url = url;
         this.callback = callback;
     }
 
     @Override
-    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-    {
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         String path = url.getPath();
-        if (url.getQuery() != null && url.getQuery().length() > 0)
-        {
+        if (url.getQuery() != null && url.getQuery().length() > 0) {
             path = url.getPath() + "?" + url.getQuery();
         }
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path);
@@ -69,17 +65,14 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
     }
 
     @Override
-    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception
-    {
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         callback.onDisconnect(this);
         handshakeCompleted = false;
     }
 
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
-        if (!handshakeCompleted)
-        {
+    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+        if (!handshakeCompleted) {
             HttpResponse response = (HttpResponse) e.getMessage();
             final HttpResponseStatus status = new HttpResponseStatus(101, "Web Socket Protocol Handshake");
 
@@ -87,8 +80,7 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
             final boolean validUpgrade = response.getHeader(Names.UPGRADE).equals(Values.WEBSOCKET);
             final boolean validConnection = response.getHeader(Names.CONNECTION).equals(Values.UPGRADE);
 
-            if (!validStatus || !validUpgrade || !validConnection)
-            {
+            if (!validStatus || !validUpgrade || !validConnection) {
                 throw new WebSocketException("Invalid handshake response");
             }
 
@@ -98,8 +90,7 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
             return;
         }
 
-        if (e.getMessage() instanceof HttpResponse)
-        {
+        if (e.getMessage() instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) e.getMessage();
             throw new WebSocketException("Unexpected HttpResponse (status=" + response.getStatus() + ", content="
                     + response.getContent().toString(CharsetUtil.UTF_8) + ")");
@@ -110,35 +101,29 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
-    {
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         final Throwable t = e.getCause();
         callback.onError(t);
         e.getChannel().close();
     }
 
-    public ChannelFuture connect()
-    {
+    public ChannelFuture connect() {
         return bootstrap.connect(new InetSocketAddress(url.getHost(), url.getPort()));
     }
 
-    public ChannelFuture disconnect()
-    {
+    public ChannelFuture disconnect() {
         return channel.close();
     }
 
-    public ChannelFuture send(WebSocketFrame frame)
-    {
+    public ChannelFuture send(WebSocketFrame frame) {
         return channel.write(frame);
     }
 
-    public URI getUrl()
-    {
+    public URI getUrl() {
         return url;
     }
 
-    public void setUrl(URI url)
-    {
+    public void setUrl(URI url) {
         this.url = url;
     }
 }

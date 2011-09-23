@@ -39,15 +39,13 @@ import com.mongodb.MongoException;
  * @author vibul
  * 
  */
-public class RepositoryConfigController extends Controller
-{
+public class RepositoryConfigController extends Controller {
     public static final String MONGODB_COLLECTION_NAME = "repo";
 
     /**
      * Returns the singleton instance for this class
      */
-    public static RepositoryConfigController getInstance()
-    {
+    public static RepositoryConfigController getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -57,8 +55,7 @@ public class RepositoryConfigController extends Controller
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final RepositoryConfigController INSTANCE = new RepositoryConfigController();
     }
 
@@ -67,8 +64,7 @@ public class RepositoryConfigController extends Controller
      * Singleton constructor
      * </p>
      */
-    private RepositoryConfigController()
-    {
+    private RepositoryConfigController() {
         return;
     }
 
@@ -76,8 +72,7 @@ public class RepositoryConfigController extends Controller
      * Returns the name of the mongoDB collection for this business object
      */
     @Override
-    protected String getDBCollectionName()
-    {
+    protected String getDBCollectionName() {
         return MONGODB_COLLECTION_NAME;
     }
 
@@ -92,11 +87,9 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryConfigBO get(DB db, ObjectId id) throws ChiliLogException
-    {
+    public RepositoryConfigBO get(DB db, ObjectId id) throws ChiliLogException {
         RepositoryConfigBO o = tryGet(db, id);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, id.toString());
         }
         return o;
@@ -113,16 +106,12 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryConfigBO tryGet(DB db, ObjectId id) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public RepositoryConfigBO tryGet(DB db, ObjectId id) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (id == null)
-            {
+            if (id == null) {
                 throw new IllegalArgumentException("id cannot be null");
             }
 
@@ -130,14 +119,12 @@ public class RepositoryConfigController extends Controller
             BasicDBObject condition = new BasicDBObject();
             condition.put(BO.DOCUMENT_ID_FIELD_NAME, id);
             DBObject dbo = coll.findOne(condition);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new RepositoryConfigBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -153,11 +140,9 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if not found or database error
      */
-    public RepositoryConfigBO getByName(DB db, String name) throws ChiliLogException
-    {
+    public RepositoryConfigBO getByName(DB db, String name) throws ChiliLogException {
         RepositoryConfigBO o = tryGetByName(db, name);
-        if (o == null)
-        {
+        if (o == null) {
             throw new ChiliLogException(Strings.REPO_INFO_NOT_FOUND_ERROR, name);
         }
         return o;
@@ -174,16 +159,12 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public RepositoryConfigBO tryGetByName(DB db, String name) throws ChiliLogException
-    {
-        try
-        {
-            if (db == null)
-            {
+    public RepositoryConfigBO tryGetByName(DB db, String name) throws ChiliLogException {
+        try {
+            if (db == null) {
                 throw new IllegalArgumentException("db cannot be null");
             }
-            if (StringUtils.isBlank(name))
-            {
+            if (StringUtils.isBlank(name)) {
                 throw new IllegalArgumentException("name cannot be blank");
             }
 
@@ -191,14 +172,12 @@ public class RepositoryConfigController extends Controller
             BasicDBObject condition = new BasicDBObject();
             condition.put(RepositoryConfigBO.NAME_FIELD_NAME, name);
             DBObject dbo = coll.findOne(condition);
-            if (dbo == null)
-            {
+            if (dbo == null) {
                 return null;
             }
             return new RepositoryConfigBO(dbo);
         }
-        catch (MongoException ex)
-        {
+        catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -214,19 +193,16 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if database or data error
      */
-    public ArrayList<RepositoryConfigBO> getList(DB db, RepositoryConfigListCriteria criteria) throws ChiliLogException
-    {
+    public ArrayList<RepositoryConfigBO> getList(DB db, RepositoryConfigListCriteria criteria) throws ChiliLogException {
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
 
         // Filter
         BasicDBObject condition = new BasicDBObject();
-        if (!StringUtils.isBlank(criteria.getNamePattern()))
-        {
+        if (!StringUtils.isBlank(criteria.getNamePattern())) {
             Pattern pattern = Pattern.compile(criteria.getNamePattern());
             condition.put(RepositoryConfigBO.NAME_FIELD_NAME, pattern);
         }
-        if (criteria.getNameRestrictions() != null && criteria.getNameRestrictions().length > 0)
-        {
+        if (criteria.getNameRestrictions() != null && criteria.getNameRestrictions().length > 0) {
             condition.put(RepositoryConfigBO.NAME_FIELD_NAME, new BasicDBObject("$in", criteria.getNameRestrictions()));
         }
 
@@ -239,15 +215,13 @@ public class RepositoryConfigController extends Controller
         int skipDocumentCount = (criteria.getStartPage() - 1) * recordsPerPage;
         DBCursor cur = coll.find(condition).skip(skipDocumentCount).limit(recordsPerPage).sort(orderBy);
         ArrayList<RepositoryConfigBO> list = new ArrayList<RepositoryConfigBO>();
-        while (cur.hasNext())
-        {
+        while (cur.hasNext()) {
             DBObject dbo = cur.next();
             list.add(new RepositoryConfigBO(dbo));
         }
 
         // Do page count by executing query again
-        if (criteria.getDoPageCount())
-        {
+        if (criteria.getDoPageCount()) {
             int documentCount = coll.find(condition).count();
             criteria.calculatePageCount(documentCount);
         }
@@ -265,54 +239,43 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void save(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException
-    {
+    public void save(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException {
         // Validate unique name
         DBCollection coll = db.getCollection(MONGODB_COLLECTION_NAME);
         BasicDBObject condition = new BasicDBObject();
         condition.put(RepositoryConfigBO.NAME_FIELD_NAME, repoConfig.getName());
-        if (repoConfig.isExistingRecord())
-        {
+        if (repoConfig.isExistingRecord()) {
             condition.put(BO.DOCUMENT_ID_FIELD_NAME, new BasicDBObject("$ne", repoConfig.getDocumentID()));
         }
         long i = coll.getCount(condition);
-        if (i > 0)
-        {
+        if (i > 0) {
             throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, repoConfig.getName());
         }
 
         // Validate unique parser names
-        for (RepositoryParserConfigBO p : repoConfig.getParsers())
-        {
+        for (RepositoryParserConfigBO p : repoConfig.getParsers()) {
             String parserName = p.getName();
             int pCount = 0;
-            for (RepositoryParserConfigBO p2 : repoConfig.getParsers())
-            {
-                if (p2.getName().equals(parserName))
-                {
+            for (RepositoryParserConfigBO p2 : repoConfig.getParsers()) {
+                if (p2.getName().equals(parserName)) {
                     pCount++;
                 }
             }
-            if (pCount != 1)
-            {
+            if (pCount != 1) {
                 throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, parserName,
                         repoConfig.getName());
             }
 
             // Validate unique field names per parser
-            for (RepositoryFieldConfigBO f : p.getFields())
-            {
+            for (RepositoryFieldConfigBO f : p.getFields()) {
                 String fieldName = f.getName();
                 int count = 0;
-                for (RepositoryFieldConfigBO f2 : p.getFields())
-                {
-                    if (f2.getName().equals(fieldName))
-                    {
+                for (RepositoryFieldConfigBO f2 : p.getFields()) {
+                    if (f2.getName().equals(fieldName)) {
                         count++;
                     }
                 }
-                if (count != 1)
-                {
+                if (count != 1) {
                     throw new ChiliLogException(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, fieldName, parserName,
                             repoConfig.getName());
                 }
@@ -332,22 +295,18 @@ public class RepositoryConfigController extends Controller
      * @param db
      *            Database connection
      */
-    private void createIndexes(DB db)
-    {
+    private void createIndexes(DB db) {
         DBCollection col = db.getCollection(this.getDBCollectionName());
         List<DBObject> indexes = col.getIndexInfo();
 
         boolean found = false;
-        for (DBObject idx : indexes)
-        {
-            if (idx.get("name").equals("keyword_ts_index"))
-            {
+        for (DBObject idx : indexes) {
+            if (idx.get("name").equals("keyword_ts_index")) {
                 found = true;
                 break;
             }
         }
-        if (!found)
-        {
+        if (!found) {
             BasicDBObject keys = new BasicDBObject();
             keys.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, 1);
             keys.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, 1);
@@ -365,8 +324,7 @@ public class RepositoryConfigController extends Controller
      * @throws ChiliLogException
      *             if there are errors
      */
-    public void remove(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException
-    {
+    public void remove(DB db, RepositoryConfigBO repoConfig) throws ChiliLogException {
         super.remove(db, repoConfig);
     }
 }

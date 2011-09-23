@@ -24,8 +24,7 @@ package org.chililog.server.engine;
  * @author vibul
  * 
  */
-public class Strings
-{
+public class Strings {
     public static final String PREFIX = "Engine.";
     public static final String ONLINE_REPOSITORY_ERROR = PREFIX + "RepositoryOnlineError";
     public static final String REPOSITORY_ALREADY_ONLINE_ERROR = PREFIX + "RepositoryAlreadyOnlineError";
@@ -38,7 +37,7 @@ public class Strings
     public static final String STOP_REPOSITORY_STORAGE_WORKER_ERROR = PREFIX + "StopRepositoryStorageWorkerError";
     public static final String LOAD_REPOSITORIES_ERROR = PREFIX + "LoadRepositoriesError";
     public static final String CLOSE_MQ_SESSION_ERROR = PREFIX + "CloseMqSessionError";
-    
+
     public static final String PARSER_FACTORY_ERROR = PREFIX + "Parser.FactoryError";
     public static final String PARSER_INITIALIZATION_ERROR = PREFIX + "Parser.IntializationError";
     public static final String PARSER_DELIMITER_NOT_SET_ERROR = PREFIX + "Parser.DelimiterNotSetError";

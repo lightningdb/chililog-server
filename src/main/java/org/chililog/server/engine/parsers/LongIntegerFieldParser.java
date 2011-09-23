@@ -26,15 +26,13 @@ import java.util.Hashtable;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 
-
 /**
  * Parses a long integer field.
  * 
  * @author vibul
  * 
  */
-public class LongIntegerFieldParser extends FieldParser
-{
+public class LongIntegerFieldParser extends FieldParser {
     private Long _defaultValue = null;
     private NumberFormat _numberFormatter = null;
 
@@ -45,27 +43,22 @@ public class LongIntegerFieldParser extends FieldParser
      *            Field meta data
      * @throws ParseException
      */
-    public LongIntegerFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
-    {
+    public LongIntegerFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
 
         String d = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
         String s = properties.get(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             _numberFormatter = new DecimalFormat(s);
         }
 
-        if (!StringUtils.isBlank(d))
-        {
-            if (_numberFormatter == null)
-            {
+        if (!StringUtils.isBlank(d)) {
+            if (_numberFormatter == null) {
                 _defaultValue = Long.parseLong(d);
             }
-            else
-            {
+            else {
                 _defaultValue = _numberFormatter.parse(d).longValue();
             }
         }
@@ -75,8 +68,7 @@ public class LongIntegerFieldParser extends FieldParser
      * Parses a long integer.
      */
     @Override
-    public Object parse(String value) throws ParseException
-    {
+    public Object parse(String value) throws ParseException {
         return parseLong(value);
     }
 
@@ -97,45 +89,34 @@ public class LongIntegerFieldParser extends FieldParser
      * @return integer value.
      * @throws ParseException
      */
-    private Long parseLong(String value) throws ParseException
-    {
-        try
-        {
+    private Long parseLong(String value) throws ParseException {
+        try {
             value = preparse(value);
-            
-            if (!StringUtils.isBlank(value))
-            {
+
+            if (!StringUtils.isBlank(value)) {
                 value = value.trim();
             }
-            if (_numberFormatter == null)
-            {
+            if (_numberFormatter == null) {
                 return Long.parseLong(value);
             }
-            else
-            {
+            else {
                 return _numberFormatter.parse(value).longValue();
             }
         }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
+        catch (ParseException ex) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex;
         }
-        catch (NumberFormatException ex2)
-        {
-            if (_defaultValue != null)
-            {
+        catch (NumberFormatException ex2) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex2;
         }
-        catch (NullPointerException ex3)
-        {
-            if (_defaultValue != null)
-            {
+        catch (NullPointerException ex3) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex3;

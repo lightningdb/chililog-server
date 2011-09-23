@@ -1,18 +1,12 @@
 /*
- * Copyright 2010 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
+ * Copyright 2010 Red Hat, Inc. Red Hat licenses this file to you under the Apache License, version 2.0 (the "License");
+ * you may not use this file except in compliance with the License. You may obtain a copy of the License at:
+ * http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific language governing permissions and limitations under the
+ * License.
  */
+
 package org.chililog.server.pubsub.websocket;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -24,15 +18,14 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 /**
  * Encodes a {@link WebSocketFrame} into a {@link ChannelBuffer}.
  * <p>
- * For the detailed instruction on adding add Web Socket support to your HTTP
- * server, take a look into the <tt>WebSocketServer</tt> example located in the
- * {@code org.jboss.netty.example.http.websocket} package.
- *
+ * For the detailed instruction on adding add Web Socket support to your HTTP server, take a look into the
+ * <tt>WebSocketServer</tt> example located in the {@code org.jboss.netty.example.http.websocket} package.
+ * 
  * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
  * @author Mike Heath (mheath@apache.org)
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @version $Rev: 2362 $, $Date: 2010-09-09 19:59:22 +0900 (Thu, 09 Sep 2010) $
- *
+ * 
  * @apiviz.landmark
  * @apiviz.uses org.jboss.netty.handler.codec.http.websocket.WebSocketFrame
  */
@@ -46,28 +39,26 @@ public class WebSocket00FrameEncoder extends OneToOneEncoder {
             if (frame.getType() == WebSocketFrameType.TEXT) {
                 // Text frame
                 ChannelBuffer data = frame.getBinaryData();
-                ChannelBuffer encoded =
-                    channel.getConfig().getBufferFactory().getBuffer(
-                            data.order(), data.readableBytes() + 2);
+                ChannelBuffer encoded = channel.getConfig().getBufferFactory()
+                        .getBuffer(data.order(), data.readableBytes() + 2);
                 encoded.writeByte((byte) 0x00);
                 encoded.writeBytes(data, data.readerIndex(), data.readableBytes());
                 encoded.writeByte((byte) 0xFF);
                 return encoded;
-            } else if (frame.getType() == WebSocketFrameType.CLOSE) {
+            }
+            else if (frame.getType() == WebSocketFrameType.CLOSE) {
                 // Close frame
                 ChannelBuffer data = frame.getBinaryData();
-                ChannelBuffer encoded = channel.getConfig().getBufferFactory().getBuffer(
-                            data.order(), 2);
+                ChannelBuffer encoded = channel.getConfig().getBufferFactory().getBuffer(data.order(), 2);
                 encoded.writeByte((byte) 0xFF);
-                encoded.writeByte((byte) 0x00);                
+                encoded.writeByte((byte) 0x00);
                 return encoded;
-            } else {
+            }
+            else {
                 // Binary frame
                 ChannelBuffer data = frame.getBinaryData();
                 int dataLen = data.readableBytes();
-                ChannelBuffer encoded =
-                    channel.getConfig().getBufferFactory().getBuffer(
-                            data.order(), dataLen + 5);
+                ChannelBuffer encoded = channel.getConfig().getBufferFactory().getBuffer(data.order(), dataLen + 5);
 
                 // Encode type.
                 encoded.writeByte((byte) 0x80);
@@ -81,16 +72,19 @@ public class WebSocket00FrameEncoder extends OneToOneEncoder {
                     if (b2 == 0) {
                         if (b3 == 0) {
                             encoded.writeByte(b4);
-                        } else {
+                        }
+                        else {
                             encoded.writeByte(b3 | 0x80);
                             encoded.writeByte(b4);
                         }
-                    } else {
+                    }
+                    else {
                         encoded.writeByte(b2 | 0x80);
                         encoded.writeByte(b3 | 0x80);
                         encoded.writeByte(b4);
                     }
-                } else {
+                }
+                else {
                     encoded.writeByte(b1 | 0x80);
                     encoded.writeByte(b2 | 0x80);
                     encoded.writeByte(b3 | 0x80);

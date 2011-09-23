@@ -50,8 +50,7 @@ import com.mongodb.BasicDBObject;
  * @author vibul
  * 
  */
-public class DelimitedEntryParser extends EntryParser
-{
+public class DelimitedEntryParser extends EntryParser {
     private static Log4JLogger _logger = Log4JLogger.getLogger(DelimitedEntryParser.class);
     private String _delimiter;
     private ArrayList<DelimitedFieldInfo> _fields = new ArrayList<DelimitedFieldInfo>();
@@ -78,36 +77,29 @@ public class DelimitedEntryParser extends EntryParser
      * @throws ChiliLogException
      */
     public DelimitedEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
-            throws ChiliLogException
-    {
+            throws ChiliLogException {
         super(repoInfo, repoParserInfo);
 
-        try
-        {
+        try {
             Hashtable<String, String> properties = repoParserInfo.getProperties();
             _delimiter = properties.get(DELIMITER_PROPERTY_NAME);
-            if (StringUtils.isBlank(_delimiter))
-            {
+            if (StringUtils.isBlank(_delimiter)) {
                 throw new ChiliLogException(Strings.PARSER_DELIMITER_NOT_SET_ERROR, repoParserInfo.getName(),
                         repoInfo.getName());
             }
 
             // Parse our field value so that we don't have to keep on doing it
-            for (RepositoryFieldConfigBO f : repoParserInfo.getFields())
-            {
+            for (RepositoryFieldConfigBO f : repoParserInfo.getFields()) {
                 String s = f.getProperties().get(POSITION_FIELD_PROPERTY_NAME);
                 Integer i = Integer.parseInt(s) - 1;
                 _fields.add(new DelimitedFieldInfo(i, f));
             }
         }
-        catch (Exception ex)
-        {
-            if (ex instanceof ChiliLogException)
-            {
+        catch (Exception ex) {
+            if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
             }
-            else
-            {
+            else {
                 throw new ChiliLogException(ex, Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
                         repoInfo.getName(), ex.getMessage());
             }
@@ -134,31 +126,25 @@ public class DelimitedEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
-    {
-        try
-        {
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message) {
+        try {
             this.setLastParseError(null);
             checkParseArguments(timestamp, source, host, severity, message);
 
             BasicDBObject parsedFields = new BasicDBObject();
 
             String[] ss = StringUtils.split(message, _delimiter);
-            for (DelimitedFieldInfo delimitedField : _fields)
-            {
+            for (DelimitedFieldInfo delimitedField : _fields) {
                 String fieldName = delimitedField.getRepoFieldInfo().getDbObjectName();
                 String fieldStringValue = null;
                 Object fieldValue = null;
-                try
-                {
+                try {
                     fieldStringValue = ss[delimitedField.getArrayIndex()];
                     fieldValue = delimitedField.getParser().parse(fieldStringValue);
                     parsedFields.put(fieldName, fieldValue);
                 }
-                catch (Exception ex)
-                {
-                    switch (this.getRepoParserInfo().getParseFieldErrorHandling())
-                    {
+                catch (Exception ex) {
+                    switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                         case SkipField:
                             String msg = StringsProperties.getInstance().getString(
                                     Strings.PARSER_FIELD_ERROR_SKIP_FIELD);
@@ -183,8 +169,7 @@ public class DelimitedEntryParser extends EntryParser
 
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message, parsedFields);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;
@@ -194,14 +179,12 @@ public class DelimitedEntryParser extends EntryParser
     /**
      * Encapsulates a delimited field
      */
-    private static class DelimitedFieldInfo
-    {
+    private static class DelimitedFieldInfo {
         private int _arrayIndex;
         private RepositoryFieldConfigBO _repoFieldInfo;
         private FieldParser _parser;
 
-        public DelimitedFieldInfo(int arrayIndex, RepositoryFieldConfigBO repoFieldInfo) throws ParseException
-        {
+        public DelimitedFieldInfo(int arrayIndex, RepositoryFieldConfigBO repoFieldInfo) throws ParseException {
             _arrayIndex = arrayIndex;
             _repoFieldInfo = repoFieldInfo;
             _parser = FieldParserFactory.getParser(repoFieldInfo);
@@ -210,24 +193,21 @@ public class DelimitedEntryParser extends EntryParser
         /**
          * Returns the index position of this field relative to other field. E.g. 0 is the 1st field.
          */
-        public int getArrayIndex()
-        {
+        public int getArrayIndex() {
             return _arrayIndex;
         }
 
         /**
          * Returns the field meta data
          */
-        public RepositoryFieldConfigBO getRepoFieldInfo()
-        {
+        public RepositoryFieldConfigBO getRepoFieldInfo() {
             return _repoFieldInfo;
         }
 
         /**
          * Returns the field value parser
          */
-        public FieldParser getParser()
-        {
+        public FieldParser getParser() {
             return _parser;
         }
 

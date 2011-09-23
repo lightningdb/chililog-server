@@ -29,32 +29,27 @@ import org.junit.Test;
  * @author vibul
  * 
  */
-public class StringsPropertiesTest
-{
+public class StringsPropertiesTest {
     @Test
-    public void testOK()
-    {
+    public void testOK() {
         String s = StringsProperties.getInstance().getString("Test");
         assertTrue(s.equals("Test12"));
     }
 
     @Test
-    public void testBlank()
-    {
+    public void testBlank() {
         String s = StringsProperties.getInstance().getString("TestBlank");
         assertTrue(s.equals(""));
     }
 
     @Test
-    public void testNotFound()
-    {
+    public void testNotFound() {
         String s = StringsProperties.getInstance().getString("NotFound");
         assertNull(s);
     }
 
     @Test
-    public void testDefaultValue()
-    {
+    public void testDefaultValue() {
         String s = StringsProperties.getInstance().getString("NotFound", "default");
         assertTrue(s.equals("default"));
     }

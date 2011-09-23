@@ -47,8 +47,7 @@ import com.mongodb.DB;
 /**
  * Worker to process subscription requests
  */
-public class SubscriptionWorker
-{
+public class SubscriptionWorker {
     private static Log4JLogger _logger = Log4JLogger.getLogger(SubscriptionWorker.class);
 
     private Channel _channel = null;
@@ -61,8 +60,7 @@ public class SubscriptionWorker
      * @param channel
      *            Netty channel to write to
      */
-    public SubscriptionWorker(Channel channel)
-    {
+    public SubscriptionWorker(Channel channel) {
         _channel = channel;
     }
 
@@ -75,13 +73,10 @@ public class SubscriptionWorker
      *            Publishing response in JSON format
      * @return true if successful; false if error
      */
-    public boolean process(String request, StringBuilder response)
-    {
+    public boolean process(String request, StringBuilder response) {
         String messageID = null;
-        try
-        {
-            if (StringUtils.isBlank(request))
-            {
+        try {
+            if (StringUtils.isBlank(request)) {
                 throw new IllegalArgumentException("Request content is blank.");
             }
 
@@ -117,8 +112,7 @@ public class SubscriptionWorker
             // Finish
             return true;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.error(ex, "Error processing message: %s", request);
 
             SubscriptionResponseAO responseAO = new SubscriptionResponseAO(messageID, ex);
@@ -130,21 +124,16 @@ public class SubscriptionWorker
     /**
      * Stop subscription
      */
-    public void stop()
-    {
-        try
-        {
-            if (_consumer != null)
-            {
+    public void stop() {
+        try {
+            if (_consumer != null) {
                 _consumer.close();
             }
-            if (_session != null)
-            {
+            if (_session != null) {
                 _session.close();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.error(ex, "Error stopping subscription");
         }
     }
@@ -155,8 +144,7 @@ public class SubscriptionWorker
      * @param subscriptionAO
      * @throws ChiliLogException
      */
-    public void authenticate(SubscriptionRequestAO subscriptionAO) throws ChiliLogException
-    {
+    public void authenticate(SubscriptionRequestAO subscriptionAO) throws ChiliLogException {
         String repoName = subscriptionAO.getRepositoryName();
 
         // Check db
@@ -168,30 +156,26 @@ public class SubscriptionWorker
         // Check user
         UserBO user = UserController.getInstance().getByUsername(db, subscriptionAO.getUsername());
         boolean passwordOK = false;
-        if (subscriptionAO.getPassword().startsWith("token:"))
-        {
+        if (subscriptionAO.getPassword().startsWith("token:")) {
             // Password is a token so we need to check the token
             // Must have come from the workbench
             String jsonToken = subscriptionAO.getPassword().substring(6);
             AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
             passwordOK = token.getUserID().equals(user.getDocumentID().toString());
         }
-        else
-        {
+        else {
             // Make sure user exists and password is valid
             passwordOK = user.validatePassword(subscriptionAO.getPassword());
-        }        
-        if (!passwordOK)
-        {
+        }
+        if (!passwordOK) {
             throw new ChiliLogException(Strings.SUBSCRIBER_AUTHENTICATION_ERROR);
         }
-        
+
         // Make sure the user can publish to the repository
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
         String subscriptionRole = UserBO.createRepositorySubscriberRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(subscriptionRole) && !user.isSystemAdministrator())
-        {
+        if (!user.hasRole(administratorRole) && !user.hasRole(subscriptionRole) && !user.isSystemAdministrator()) {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR, subscriptionAO.getUsername(), repoName);
         }
     }
@@ -199,8 +183,7 @@ public class SubscriptionWorker
     /**
      * Class to handle incoming log messages
      */
-    public static class MqMessageHandler implements MessageHandler
-    {
+    public static class MqMessageHandler implements MessageHandler {
         private static Log4JLogger _logger = Log4JLogger.getLogger(MqMessageHandler.class);
         private String _messageID = null;
         private Channel _channel = null;
@@ -211,8 +194,7 @@ public class SubscriptionWorker
          * @param channel
          *            Netty channel to write messages into
          */
-        public MqMessageHandler(Channel channel, String messageID)
-        {
+        public MqMessageHandler(Channel channel, String messageID) {
             _messageID = messageID;
             _channel = channel;
         }
@@ -221,12 +203,9 @@ public class SubscriptionWorker
          * When a message is received, pass it on to the client
          */
         @Override
-        public void onMessage(ClientMessage message)
-        {
-            try
-            {
-                if (!_channel.isOpen() || !_channel.isConnected())
-                {
+        public void onMessage(ClientMessage message) {
+            try {
+                if (!_channel.isOpen() || !_channel.isConnected()) {
                     return;
                 }
 
@@ -243,8 +222,7 @@ public class SubscriptionWorker
 
                 return;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 _logger.error(ex, "Error forwarding subscription message JSON HTTP web socket client");
             }
         }

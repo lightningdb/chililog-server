@@ -23,15 +23,13 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.BO;
 import org.chililog.server.workbench.Strings;
 
-
 /**
  * API Object class contains common methods
  * 
  * @author vibul
  * 
  */
-public abstract class AO
-{
+public abstract class AO {
     /**
      * Performs optimistic locking checks
      * 
@@ -42,16 +40,12 @@ public abstract class AO
      * @throws ChiliLogException
      *             if the document versions differ
      */
-    protected void checkOptimisticLocking(Long documentVersion, BO businessObject) throws ChiliLogException
-    {
-        if (businessObject.isExistingRecord())
-        {
-            if (documentVersion == null)
-            {
+    protected void checkOptimisticLocking(Long documentVersion, BO businessObject) throws ChiliLogException {
+        if (businessObject.isExistingRecord()) {
+            if (documentVersion == null) {
                 throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, "DocumentVersion");
             }
-            if (documentVersion != businessObject.getDocumentVersion())
-            {
+            if (documentVersion != businessObject.getDocumentVersion()) {
                 throw new ChiliLogException(Strings.OPTIMISTIC_LOCKING_ERROR);
             }
         }
@@ -68,10 +62,8 @@ public abstract class AO
      * @throws ChiliLogException
      *             if fieldValue is blank
      */
-    protected String checkRequiredField(String fieldName, String fieldValue) throws ChiliLogException
-    {
-        if (StringUtils.isBlank(fieldValue))
-        {
+    protected String checkRequiredField(String fieldName, String fieldValue) throws ChiliLogException {
+        if (StringUtils.isBlank(fieldValue)) {
             throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, fieldName);
         }
         return fieldValue;
@@ -88,10 +80,8 @@ public abstract class AO
      * @throws ChiliLogException
      *             if fieldValue is blank
      */
-    protected Long checkRequiredField(String fieldName, Long fieldValue) throws ChiliLogException
-    {
-        if (fieldValue == null)
-        {
+    protected Long checkRequiredField(String fieldName, Long fieldValue) throws ChiliLogException {
+        if (fieldValue == null) {
             throw new ChiliLogException(Strings.REQUIRED_FIELD_ERROR, fieldName);
         }
         return fieldValue;

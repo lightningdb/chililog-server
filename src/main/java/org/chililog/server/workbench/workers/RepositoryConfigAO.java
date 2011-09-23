@@ -27,7 +27,6 @@ import org.chililog.server.data.RepositoryConfigBO.MaxMemoryPolicy;
 import org.chililog.server.data.RepositoryConfigBO.Status;
 import org.chililog.server.data.UserBO;
 
-
 /**
  * <p>
  * Repository Config API object is used as part of the {@link RepositoryConfigWorker} service.
@@ -36,8 +35,7 @@ import org.chililog.server.data.UserBO;
  * @author vibul
  * 
  */
-public class RepositoryConfigAO extends AO
-{
+public class RepositoryConfigAO extends AO {
     private String _documentID;
     private Long _documentVersion;
     private String _name;
@@ -58,12 +56,11 @@ public class RepositoryConfigAO extends AO
     private RepositoryParserConfigAO[] _parsers = null;
 
     private String[] _users = null;
-    
+
     /**
      * Basic constructor
      */
-    public RepositoryConfigAO()
-    {
+    public RepositoryConfigAO() {
         return;
     }
 
@@ -75,8 +72,7 @@ public class RepositoryConfigAO extends AO
      * @param users
      *            Users list of users to check if they have access to this repository
      */
-    public RepositoryConfigAO(RepositoryConfigBO repoConfig, UserBO[] users)
-    {
+    public RepositoryConfigAO(RepositoryConfigBO repoConfig, UserBO[] users) {
         _documentID = repoConfig.getDocumentID().toString();
         _documentVersion = repoConfig.getDocumentVersion();
         _name = repoConfig.getName();
@@ -95,49 +91,38 @@ public class RepositoryConfigAO extends AO
         _pageSize = repoConfig.getPageSize();
         _pageCountCache = repoConfig.getPageCountCache();
 
-        if (repoConfig.getParsers() == null || repoConfig.getParsers().isEmpty())
-        {
+        if (repoConfig.getParsers() == null || repoConfig.getParsers().isEmpty()) {
             _parsers = null;
         }
-        else
-        {
+        else {
             ArrayList<RepositoryParserConfigAO> parserList = new ArrayList<RepositoryParserConfigAO>();
-            for (RepositoryParserConfigBO parserInfo : repoConfig.getParsers())
-            {
+            for (RepositoryParserConfigBO parserInfo : repoConfig.getParsers()) {
                 parserList.add(new RepositoryParserConfigAO(parserInfo));
             }
             _parsers = parserList.toArray(new RepositoryParserConfigAO[] {});
         }
 
-        if (users != null) 
-        {
+        if (users != null) {
             String publisherRole = repoConfig.getPublisherRoleName();
             String subscriberRole = repoConfig.getSubscriberRoleName();
             String workbenchRole = repoConfig.getWorkbenchRoleName();
             ArrayList<String> userList = new ArrayList<String>();
-            for (UserBO user : users )
-            {
-                if (user.isSystemAdministrator())
-                {
-                    userList.add(String.format("%s=%s", user.getUsername(), UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));                       
+            for (UserBO user : users) {
+                if (user.isSystemAdministrator()) {
+                    userList.add(String.format("%s=%s", user.getUsername(), UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));
                 }
-                else 
-                {
+                else {
                     String[] roles = user.getRoles();
-                    for (String role : roles)
-                    {
-                       if (publisherRole.equals(role) || 
-                           subscriberRole.equals(role) ||
-                           workbenchRole.equals(role))
-                       {
-                           userList.add(String.format("%s=%s", user.getUsername(), role));
-                       }
+                    for (String role : roles) {
+                        if (publisherRole.equals(role) || subscriberRole.equals(role) || workbenchRole.equals(role)) {
+                            userList.add(String.format("%s=%s", user.getUsername(), role));
+                        }
                     }
                 }
             }
             _users = userList.toArray(new String[] {});
         }
-        
+
         return;
     }
 
@@ -148,8 +133,7 @@ public class RepositoryConfigAO extends AO
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryConfigBO repoInfo) throws ChiliLogException
-    {
+    public void toBO(RepositoryConfigBO repoInfo) throws ChiliLogException {
         checkOptimisticLocking(_documentVersion, repoInfo);
 
         repoInfo.setName(_name);
@@ -168,10 +152,8 @@ public class RepositoryConfigAO extends AO
         repoInfo.setPageCountCache(_pageCountCache);
 
         repoInfo.getParsers().clear();
-        if (_parsers != null && _parsers.length > 0)
-        {
-            for (RepositoryParserConfigAO parserInfo : _parsers)
-            {
+        if (_parsers != null && _parsers.length > 0) {
+            for (RepositoryParserConfigAO parserInfo : _parsers) {
                 RepositoryParserConfigBO bo = new RepositoryParserConfigBO();
                 parserInfo.toBO(bo);
                 repoInfo.getParsers().add(bo);
@@ -181,166 +163,134 @@ public class RepositoryConfigAO extends AO
         return;
     }
 
-    public String getDocumentID()
-    {
+    public String getDocumentID() {
         return _documentID;
     }
 
-    public void setDocumentID(String documentID)
-    {
+    public void setDocumentID(String documentID) {
         _documentID = documentID;
     }
 
-    public Long getDocumentVersion()
-    {
+    public Long getDocumentVersion() {
         return _documentVersion;
     }
 
-    public void setDocumentVersion(Long documentVersion)
-    {
+    public void setDocumentVersion(Long documentVersion) {
         _documentVersion = documentVersion;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return _description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         _description = description;
     }
 
-    public Status getStartupStatus()
-    {
+    public Status getStartupStatus() {
         return _startupStatus;
     }
 
-    public void setStartupStatus(Status startupStatus)
-    {
+    public void setStartupStatus(Status startupStatus) {
         _startupStatus = startupStatus;
     }
 
-    public boolean getStoreEntriesIndicator()
-    {
+    public boolean getStoreEntriesIndicator() {
         return _storeEntriesIndicator;
     }
 
-    public void setStoreEntriesIndicator(boolean storeEntriesIndicator)
-    {
+    public void setStoreEntriesIndicator(boolean storeEntriesIndicator) {
         _storeEntriesIndicator = storeEntriesIndicator;
     }
 
-    public boolean getStorageQueueDurableIndicator()
-    {
+    public boolean getStorageQueueDurableIndicator() {
         return _storageQueueDurableIndicator;
     }
 
-    public void setStorageQueueDurableIndicator(boolean storageQueueDurableIndicator)
-    {
+    public void setStorageQueueDurableIndicator(boolean storageQueueDurableIndicator) {
         _storageQueueDurableIndicator = storageQueueDurableIndicator;
     }
 
-    public long getStorageQueueWorkerCount()
-    {
+    public long getStorageQueueWorkerCount() {
         return _storageQueueWorkerCount;
     }
 
-    public void setStorageQueueWorkerCount(long storageQueueWorkerCount)
-    {
+    public void setStorageQueueWorkerCount(long storageQueueWorkerCount) {
         _storageQueueWorkerCount = storageQueueWorkerCount;
     }
 
-    public long getStorageMaxKeywords()
-    {
+    public long getStorageMaxKeywords() {
         return _storageMaxKeywords;
     }
 
-    public void setStorageMaxKeywords(long maxKeywords)
-    {
+    public void setStorageMaxKeywords(long maxKeywords) {
         _storageMaxKeywords = maxKeywords;
     }
-    
-    public long getMaxMemory()
-    {
+
+    public long getMaxMemory() {
         return _maxMemory;
     }
 
-    public void setMaxMemory(long maxMemory)
-    {
+    public void setMaxMemory(long maxMemory) {
         _maxMemory = maxMemory;
     }
 
-    public MaxMemoryPolicy getMaxMemoryPolicy()
-    {
+    public MaxMemoryPolicy getMaxMemoryPolicy() {
         return _maxMemoryPolicy;
     }
 
-    public void setMaxMemoryPolicy(MaxMemoryPolicy maxMemoryPolicy)
-    {
+    public void setMaxMemoryPolicy(MaxMemoryPolicy maxMemoryPolicy) {
         _maxMemoryPolicy = maxMemoryPolicy;
     }
 
-    public long getPageSize()
-    {
+    public long getPageSize() {
         return _pageSize;
     }
 
-    public void setPageSize(long pageSize)
-    {
+    public void setPageSize(long pageSize) {
         _pageSize = pageSize;
     }
 
-    public long getPageCountCache()
-    {
+    public long getPageCountCache() {
         return _pageCountCache;
     }
 
-    public void setPageCountCache(long pageCountCache)
-    {
+    public void setPageCountCache(long pageCountCache) {
         _pageCountCache = pageCountCache;
     }
 
-    public RepositoryParserConfigAO[] getParsers()
-    {
+    public RepositoryParserConfigAO[] getParsers() {
         return _parsers;
     }
 
-    public void setParsers(RepositoryParserConfigAO[] parsers)
-    {
+    public void setParsers(RepositoryParserConfigAO[] parsers) {
         _parsers = parsers;
     }
 
     /**
      * Returns the users who can access this repository in the format username=role
      */
-    public String[] getUsers()
-    {
+    public String[] getUsers() {
         return _users;
     }
 
-    public void setUsers(String[] users)
-    {
+    public void setUsers(String[] users) {
         _users = users;
     }
 

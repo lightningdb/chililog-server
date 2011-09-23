@@ -38,13 +38,11 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.common.TextTokenizer;
 import org.junit.Test;
 
-public class TextTokenizerTest
-{
+public class TextTokenizerTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(TextTokenizerTest.class);
 
     @Test
-    public void testBasic() throws IOException
-    {
+    public void testBasic() throws IOException {
         List<String> text = TextTokenizer.getInstance().tokenize("Hello, I am Jim.", -1);
         _logger.info(text.toString());
         assertEquals(4, text.size());
@@ -84,8 +82,9 @@ public class TextTokenizerTest
         _logger.info(xml.toString());
 
         // json
-        List<String> json = TextTokenizer.getInstance().tokenize("{ name: \"chililog\", display_name: \"ChiliLog Log\", " +
-                "description: \"Log repository for ChiliLog events\", startup_status: 'ONLINE'}", -1);
+        List<String> json = TextTokenizer.getInstance().tokenize(
+                "{ name: \"chililog\", display_name: \"ChiliLog Log\", "
+                        + "description: \"Log repository for ChiliLog events\", startup_status: 'ONLINE'}", -1);
         _logger.info(json.toString());
 
         // stack trace
@@ -133,8 +132,7 @@ public class TextTokenizerTest
      * @throws IOException
      */
     @Test
-    public void testBenchmarkHashMap() throws IOException
-    {
+    public void testBenchmarkHashMap() throws IOException {
         ArrayList<String> l = new ArrayList<String>();
         l.add("the");
         l.add("quick");
@@ -153,22 +151,19 @@ public class TextTokenizerTest
         // l.add("faster");
 
         HashMap<String, String> m = new HashMap<String, String>();
-        for (String s : l)
-        {
+        for (String s : l) {
             m.put(s, s);
         }
 
         Date startTime = new Date();
-        for (int i = 0; i < 1000000; i++)
-        {
+        for (int i = 0; i < 1000000; i++) {
             l.contains("faster");
         }
         Date endTime = new Date();
         _logger.info("Array search: %s", endTime.getTime() - startTime.getTime());
 
         startTime = new Date();
-        for (int i = 0; i < 1000000; i++)
-        {
+        for (int i = 0; i < 1000000; i++) {
             m.containsKey("faster");
         }
         endTime = new Date();
@@ -182,11 +177,9 @@ public class TextTokenizerTest
      * @throws IOException
      */
     @Test
-    public void testBenchmarkRegex() throws IOException
-    {
+    public void testBenchmarkRegex() throws IOException {
         Date startTime = new Date();
-        for (int i = 0; i < 10000; i++)
-        {
+        for (int i = 0; i < 10000; i++) {
             basicTokenize("2011-03-26 15:32:22,376 [main] ERROR com.chililog.server.common.ChiliLogExceptionTest - "
                     + "com.chililog.server.common.ChiliLogException: Test12\n"
                     + "at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:69)\n"
@@ -222,8 +215,7 @@ public class TextTokenizerTest
         _logger.info("No special parsing search: %s", endTime.getTime() - startTime.getTime());
 
         startTime = new Date();
-        for (int i = 0; i < 10000; i++)
-        {
+        for (int i = 0; i < 10000; i++) {
             TextTokenizer
                     .getInstance()
                     .tokenize(
@@ -268,8 +260,7 @@ public class TextTokenizerTest
 
         Pattern CLASS_NAME_PATTERN = Pattern.compile("^(\\D.*)\\.(\\D.*)*$");
         startTime = new Date();
-        for (int i = 0; i < 10000; i++)
-        {
+        for (int i = 0; i < 10000; i++) {
             List<String> l = basicTokenize("2011-03-26 15:32:22,376 [main] ERROR com.chililog.server.common.ChiliLogExceptionTest - "
                     + "com.chililog.server.common.ChiliLogException: Test12\n"
                     + "at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:69)\n"
@@ -300,8 +291,7 @@ public class TextTokenizerTest
                     + "at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:63)\n"
                     + "... 23 more");
 
-            for (String term : l)
-            {
+            for (String term : l) {
                 CLASS_NAME_PATTERN.matcher(term).matches();
                 EMAIL_ADDRESS_PATTERN.matcher(term).matches();
                 CLASS_NAME_PATTERN.matcher(term).matches();
@@ -320,12 +310,10 @@ public class TextTokenizerTest
      * @return
      * @throws IOException
      */
-    public List<String> basicTokenize(String text) throws IOException
-    {
+    public List<String> basicTokenize(String text) throws IOException {
         List<String> tokens = new ArrayList<String>();
 
-        if (StringUtils.isEmpty(text))
-        {
+        if (StringUtils.isEmpty(text)) {
             return tokens;
         }
 
@@ -334,11 +322,9 @@ public class TextTokenizerTest
         TokenStream stream = analyzer.tokenStream("field", new StringReader(text));
 
         TermAttribute termAttribute = stream.getAttribute(TermAttribute.class);
-        while (stream.incrementToken())
-        {
+        while (stream.incrementToken()) {
             String term = termAttribute.term();
-            if (!lookup.containsKey(term))
-            {
+            if (!lookup.containsKey(term)) {
                 tokens.add(term);
                 lookup.put(term, null);
             }

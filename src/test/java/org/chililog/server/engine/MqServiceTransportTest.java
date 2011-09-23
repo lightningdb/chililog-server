@@ -63,8 +63,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class MqServiceTransportTest
-{
+public class MqServiceTransportTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(MqServiceTransportTest.class);
 
     private static DB _db;
@@ -85,8 +84,7 @@ public class MqServiceTransportTest
     private static ClientSessionFactory _coreClientSessionFactory;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
 
         // Clean up old test data if any exists
@@ -130,8 +128,7 @@ public class MqServiceTransportTest
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         MqService.getInstance().stop();
 
         // Clean up old test data if any exists
@@ -144,8 +141,7 @@ public class MqServiceTransportTest
 
     // TODO Bug in HornetQ means exception not thrown
     // @Test (expected=LoginException.class)
-    public void testBassPassword_Stomp() throws Exception
-    {
+    public void testBassPassword_Stomp() throws Exception {
         new Client("localhost", 61613, "ser", "ser");
     }
 
@@ -154,8 +150,7 @@ public class MqServiceTransportTest
      * 
      * @throws Exception
      */
-    public void testOK(ClientSessionFactory csf, String type) throws Exception
-    {
+    public void testOK(ClientSessionFactory csf, String type) throws Exception {
 
         // ************************************
         // Create queue OK
@@ -164,8 +159,7 @@ public class MqServiceTransportTest
         String queueAddress = "MqTransportTest" + type;
         String queueName = "MqTransportTest" + type;
         ClientSession coreSession = null;
-        try
-        {
+        try {
             coreSession = csf.createSession(SYSTEM_USERNAME, SYSTEM_PASSWORD, false, false, false, false, csf
                     .getServerLocator().getAckBatchSize());
 
@@ -176,18 +170,15 @@ public class MqServiceTransportTest
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
         }
-        finally
-        {
-            if (coreSession != null)
-            {
+        finally {
+            if (coreSession != null) {
                 coreSession.close();
             }
         }
 
         // Read/Write to queue
         ClientSession session = null;
-        try
-        {
+        try {
             // ************************************
             // Write OK
             // ************************************
@@ -215,14 +206,12 @@ public class MqServiceTransportTest
             // Read FAIL
             // ************************************
             // Should not be able to consume messages because we in the writer role
-            try
-            {
+            try {
                 ClientConsumer messageConsumer = session.createConsumer(queueName);
                 messageConsumer.toString();
                 fail("Exception expected for failed read");
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // HornetQException[errorCode=105 message=Unable to validate user: MqTransportTestUser_Writer for check
                 // type
                 // CONSUME for address HornetQIntegrationTest]
@@ -268,24 +257,20 @@ public class MqServiceTransportTest
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
         }
-        finally
-        {
-            if (session != null)
-            {
+        finally {
+            if (session != null) {
                 session.close();
             }
         }
     }
 
     @Test
-    public void testOK_InVM() throws Exception
-    {
+    public void testOK_InVM() throws Exception {
         testOK(_inVmClientSessionFactory, "invm");
     }
 
     @Test
-    public void testOK_Core() throws Exception
-    {
+    public void testOK_Core() throws Exception {
         testOK(_coreClientSessionFactory, "core");
     }
 
@@ -296,8 +281,7 @@ public class MqServiceTransportTest
      */
     // Stomp no longer supported because of assumption of jms.topic queue name
     // @Test
-    public void testOK_Stomp() throws Exception
-    {
+    public void testOK_Stomp() throws Exception {
 
         // ************************************
         // Create queue OK
@@ -306,8 +290,7 @@ public class MqServiceTransportTest
         String queueAddress = "MqTransportTestStomp";
         String queueName = "MqTransportTestStomp";
         ClientSession coreSession = null;
-        try
-        {
+        try {
             coreSession = _inVmClientSessionFactory.createSession(SYSTEM_USERNAME, SYSTEM_PASSWORD, false, false,
                     false, false, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
@@ -318,18 +301,15 @@ public class MqServiceTransportTest
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
         }
-        finally
-        {
-            if (coreSession != null)
-            {
+        finally {
+            if (coreSession != null) {
                 coreSession.close();
             }
         }
 
         // Read/Write to queue
         ClientSession session = null;
-        try
-        {
+        try {
             // ************************************
             // Write OK
             // ************************************
@@ -396,10 +376,8 @@ public class MqServiceTransportTest
             Thread.sleep(1000);
             assertEquals(msg, msgListener.getLastMessageBody());
         }
-        finally
-        {
-            if (session != null)
-            {
+        finally {
+            if (session != null) {
                 session.close();
             }
         }
@@ -412,8 +390,7 @@ public class MqServiceTransportTest
      */
     // Stomp no longer supported because of assumption of jms.topic queue name
     // @Test
-    public void testOK_StompToCore() throws Exception
-    {
+    public void testOK_StompToCore() throws Exception {
 
         // ************************************
         // Create queue OK
@@ -422,8 +399,7 @@ public class MqServiceTransportTest
         String queueAddress = "MqTransportTestStompToCore";
         String queueName = "MqTransportTestStompToCore";
         ClientSession coreSession = null;
-        try
-        {
+        try {
             coreSession = _inVmClientSessionFactory.createSession(SYSTEM_USERNAME, SYSTEM_PASSWORD, false, false,
                     false, false, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
@@ -434,18 +410,15 @@ public class MqServiceTransportTest
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
         }
-        finally
-        {
-            if (coreSession != null)
-            {
+        finally {
+            if (coreSession != null) {
                 coreSession.close();
             }
         }
 
         // Read/Write to queue
         ClientSession session = null;
-        try
-        {
+        try {
             // ************************************
             // Write OK
             // ************************************
@@ -507,10 +480,8 @@ public class MqServiceTransportTest
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
         }
-        finally
-        {
-            if (session != null)
-            {
+        finally {
+            if (session != null) {
                 session.close();
             }
         }
@@ -523,8 +494,7 @@ public class MqServiceTransportTest
      */
     // Stomp no longer supported because of assumption of jms.topic queue name
     // @Test
-    public void testOK_CoreToStomp() throws Exception
-    {
+    public void testOK_CoreToStomp() throws Exception {
         // ************************************
         // Create queue OK
         // ************************************
@@ -532,8 +502,7 @@ public class MqServiceTransportTest
         String queueAddress = "MqTransportTestCoreToStomp";
         String queueName = "MqTransportTestCoreToStomp";
         ClientSession coreSession = null;
-        try
-        {
+        try {
             coreSession = _inVmClientSessionFactory.createSession(SYSTEM_USERNAME, SYSTEM_PASSWORD, false, false,
                     false, false, _inVmClientSessionFactory.getServerLocator().getAckBatchSize());
 
@@ -544,18 +513,15 @@ public class MqServiceTransportTest
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
         }
-        finally
-        {
-            if (coreSession != null)
-            {
+        finally {
+            if (coreSession != null) {
                 coreSession.close();
             }
         }
 
         // Read/Write to queue
         ClientSession session = null;
-        try
-        {
+        try {
             // ************************************
             // Write OK
             // ************************************
@@ -596,10 +562,8 @@ public class MqServiceTransportTest
             Thread.sleep(1000);
             assertEquals(msg, msgListener.getLastMessageBody());
         }
-        finally
-        {
-            if (session != null)
-            {
+        finally {
+            if (session != null) {
                 session.close();
             }
         }

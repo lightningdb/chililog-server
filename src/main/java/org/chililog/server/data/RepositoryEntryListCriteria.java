@@ -34,8 +34,7 @@ import com.mongodb.BasicDBObject;
  * @author vibul
  * 
  */
-public class RepositoryEntryListCriteria extends ListCriteria
-{
+public class RepositoryEntryListCriteria extends ListCriteria {
     private Date _from = null;
     private Date _to = null;
     private String _fields = null;
@@ -55,34 +54,29 @@ public class RepositoryEntryListCriteria extends ListCriteria
     /**
      * Basic constructor
      */
-    public RepositoryEntryListCriteria()
-    {
+    public RepositoryEntryListCriteria() {
         return;
     }
 
     /**
      * Returns the timestamp from which the search should start. If set, this is added to the condition.
      */
-    public Date getFrom()
-    {
+    public Date getFrom() {
         return _from;
     }
 
-    public void setFrom(Date from)
-    {
+    public void setFrom(Date from) {
         _from = from;
     }
 
     /**
      * Returns the timestamp from which the search should stop. If set, this is added to the condition.
      */
-    public Date getTo()
-    {
+    public Date getTo() {
         return _to;
     }
 
-    public void setTo(Date to)
-    {
+    public void setTo(Date to) {
         _to = to;
     }
 
@@ -97,23 +91,19 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Retrieving+a+Subset+of+Fields.
      * </p>
      */
-    public String getFields()
-    {
+    public String getFields() {
         return _fields;
     }
 
-    public void setFields(String fields)
-    {
+    public void setFields(String fields) {
         _fields = fields;
     }
 
     /**
      * Returns the fields as DBObject
      */
-    public BasicDBObject getFieldsDbObject()
-    {
-        if (StringUtils.isBlank(_fields))
-        {
+    public BasicDBObject getFieldsDbObject() {
+        if (StringUtils.isBlank(_fields)) {
             return null;
         }
 
@@ -142,74 +132,63 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Advanced+Queries.
      * </p>
      */
-    public String getConditions()
-    {
+    public String getConditions() {
         return _conditions;
     }
 
-    public void setConditions(String conditions)
-    {
+    public void setConditions(String conditions) {
         _conditions = conditions;
     }
 
     /**
      * <p>
      * The keywords to append to the conditions property (if any). Keywords are parsed and normalized via
-     * </p>    
+     * </p>
      */
-    public String getKeywords()
-    {
+    public String getKeywords() {
         return _keywords;
     }
 
-    public void setKeywords(String keywords)
-    {
+    public void setKeywords(String keywords) {
         _keywords = keywords;
     }
-    
+
     /**
      * <p>
-     * How the keywords are to be used in the search criteria.  All or any keywords are to be used
-     * </p> 
+     * How the keywords are to be used in the search criteria. All or any keywords are to be used
+     * </p>
      */
-    public KeywordUsage getKeywordUsage()
-    {
+    public KeywordUsage getKeywordUsage() {
         return _keywordUsage;
     }
 
-    public void setKeywordUsage(KeywordUsage keywordUsage)
-    {
+    public void setKeywordUsage(KeywordUsage keywordUsage) {
         _keywordUsage = keywordUsage;
     }
 
     /**
      * Returns the conditions as DBObject
-     * @throws IOException 
+     * 
+     * @throws IOException
      */
-    public BasicDBObject getConditionsDbObject() throws IOException
-    {
+    public BasicDBObject getConditionsDbObject() throws IOException {
         BasicDBObject o = null;
 
-        if (StringUtils.isBlank(_conditions))
-        {
+        if (StringUtils.isBlank(_conditions)) {
             o = new BasicDBObject();
         }
-        else
-        {
+        else {
             MongoJsonParser parser = new MongoJsonParser(_conditions, DATE_PATTERN, DATE_FORMAT, LONG_NUMBER_PATTERN);
             o = (BasicDBObject) parser.parse();
         }
 
-        if (_from != null)
-        {
+        if (_from != null) {
             o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$gte", _from));
         }
-        if (_to != null)
-        {
+        if (_to != null) {
             o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
         }
-        if (!StringUtils.isBlank(_keywords)) 
-        {
+        if (!StringUtils.isBlank(_keywords)) {
             String operator = _keywordUsage == KeywordUsage.All ? "$all" : "$in";
             ArrayList<String> l = TextTokenizer.getInstance().tokenize(_keywords, 200);
             o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject(operator, l));
@@ -229,23 +208,19 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Sorting+and+Natural+Order
      * </p>
      */
-    public String getOrderBy()
-    {
+    public String getOrderBy() {
         return _orderBy;
     }
 
-    public void setOrderBy(String orderBy)
-    {
+    public void setOrderBy(String orderBy) {
         _orderBy = orderBy;
     }
 
     /**
      * Returns the order by fields as DBObject
      */
-    public BasicDBObject getOrderByDbObject()
-    {
-        if (StringUtils.isBlank(_orderBy))
-        {
+    public BasicDBObject getOrderByDbObject() {
+        if (StringUtils.isBlank(_orderBy)) {
             return null;
         }
 
@@ -273,23 +248,19 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Advanced+Queries.
      * </p>
      */
-    public String getInitial()
-    {
+    public String getInitial() {
         return _initial;
     }
 
-    public void setInitial(String initial)
-    {
+    public void setInitial(String initial) {
         _initial = initial;
     }
 
     /**
      * Returns the initial values as DBObject
      */
-    public BasicDBObject getIntialDbObject()
-    {
-        if (StringUtils.isBlank(_initial))
-        {
+    public BasicDBObject getIntialDbObject() {
+        if (StringUtils.isBlank(_initial)) {
             return null;
         }
 
@@ -316,13 +287,11 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Advanced+Queries.
      * </p>
      */
-    public String getReduceFunction()
-    {
+    public String getReduceFunction() {
         return _reduceFunction;
     }
 
-    public void setReduceFunction(String reduce)
-    {
+    public void setReduceFunction(String reduce) {
         _reduceFunction = reduce;
     }
 
@@ -344,21 +313,18 @@ public class RepositoryEntryListCriteria extends ListCriteria
      * See http://www.mongodb.org/display/DOCS/Advanced+Queries.
      * </p>
      */
-    public String getFinalizeFunction()
-    {
+    public String getFinalizeFunction() {
         return _finalizeFunction;
     }
 
-    public void setFinalizeFunction(String finalize)
-    {
+    public void setFinalizeFunction(String finalize) {
         _finalizeFunction = finalize;
     }
 
     /**
      * The type of query that can be performed
      */
-    public static enum QueryType
-    {
+    public static enum QueryType {
         /**
          * <p>
          * Find and return matching entries. See http://www.mongodb.org/display/DOCS/Advanced+Queries.
@@ -443,14 +409,14 @@ public class RepositoryEntryListCriteria extends ListCriteria
          */
         GROUP
     }
-    
+
     /**
-     * How the keywords are to be used as conditions 
+     * How the keywords are to be used as conditions
+     * 
      * @author vibul
-     *
+     * 
      */
-    public static enum KeywordUsage
-    {
+    public static enum KeywordUsage {
         /**
          * Any (one or more) keywords must exist
          */

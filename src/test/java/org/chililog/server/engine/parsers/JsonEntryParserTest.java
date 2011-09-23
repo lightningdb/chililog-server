@@ -52,34 +52,29 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonEntryParserTest
-{
+public class JsonEntryParserTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection("repo_json_test");
         coll.drop();
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         classTeardown();
     }
 
     @Test
-    public void testOK() throws ChiliLogException, ParseException
-    {
+    public void testOK() throws ChiliLogException, ParseException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("json_test");
         repoInfo.setDisplayName("Json Test 1");
@@ -91,8 +86,7 @@ public class JsonEntryParserTest
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put(JsonEntryParser.DATE_PATTERN_PROPERTY_NAME,
                 "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
-        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME,
-                "yyyy-MM-dd'T'HH:mm:ssZ");
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd'T'HH:mm:ssZ");
         repoParserInfo.getProperties().put(JsonEntryParser.LONG_NUMBER_PATTERN_PROPERTY_NAME,
                 "^NumberLong\\(([0-9]+)\\)$");
         repoInfo.getParsers().add(repoParserInfo);
@@ -114,7 +108,8 @@ public class JsonEntryParserTest
         SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
         // Save OK
-        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(), sb.toString());
+        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(),
+                sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -129,7 +124,7 @@ public class JsonEntryParserTest
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.set(2010, 10, 29, 19, 41, 46);
         cal.set(Calendar.MILLISECOND, 0);
-        
+
         assertNotNull(dbObject);
         assertEquals(cal.getTime(), dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
@@ -150,8 +145,7 @@ public class JsonEntryParserTest
     }
 
     @Test
-    public void testParseError() throws ChiliLogException
-    {
+    public void testParseError() throws ChiliLogException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("json_test");
         repoInfo.setDisplayName("Json Test 2");
@@ -163,8 +157,7 @@ public class JsonEntryParserTest
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put(JsonEntryParser.DATE_PATTERN_PROPERTY_NAME,
                 "^([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)$");
-        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME,
-                "yyyy-MM-dd'T'HH:mm:ssZ");
+        repoParserInfo.getProperties().put(JsonEntryParser.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd'T'HH:mm:ssZ");
         repoParserInfo.getProperties().put(JsonEntryParser.LONG_NUMBER_PATTERN_PROPERTY_NAME,
                 "^NumberLong\\(([0-9]+)\\)$");
         repoInfo.getParsers().add(repoParserInfo);
@@ -172,7 +165,8 @@ public class JsonEntryParserTest
         JsonEntryParser p = new JsonEntryParser(repoInfo, repoParserInfo);
 
         // Error because xxx is not json format
-        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46Z","log1", "127.0.0.1", Severity.Emergency.toString(), "xxx");
+        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46Z", "log1", "127.0.0.1", Severity.Emergency.toString(),
+                "xxx");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

@@ -26,8 +26,7 @@ package org.chililog.server.workbench.workers;
  * @author vibul
  * 
  */
-public class AuthenticationAO
-{
+public class AuthenticationAO {
     private String _username;
 
     private String _password;
@@ -36,68 +35,58 @@ public class AuthenticationAO
 
     private int _expirySeconds;
 
-    public AuthenticationAO()
-    {
+    public AuthenticationAO() {
         return;
     }
 
     /**
      * The user's login name
      */
-    public String getUsername()
-    {
+    public String getUsername() {
         return _username;
     }
 
-    public void setUsername(String username)
-    {
+    public void setUsername(String username) {
         _username = username;
     }
 
     /**
      * The user's password
      */
-    public String getPassword()
-    {
+    public String getPassword() {
         return _password;
     }
 
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         _password = password;
     }
 
     /**
      * Method used to determine when the issued authentication token expires. See {@link ExpiryType}
      */
-    public ExpiryType getExpiryType()
-    {
+    public ExpiryType getExpiryType() {
         return _expiryType;
     }
 
-    public void setExpiryType(ExpiryType expiryType)
-    {
+    public void setExpiryType(ExpiryType expiryType) {
         _expiryType = expiryType;
     }
 
     /**
      * Number of seconds before the issued authentication token expires
      */
-    public int getExpirySeconds()
-    {
+    public int getExpirySeconds() {
         return _expirySeconds;
     }
 
-    public void setExpirySeconds(int expirySeconds)
-    {
+    public void setExpirySeconds(int expirySeconds) {
         _expirySeconds = expirySeconds;
     }
 
     /**
      * Determines how an authentication will exipre
      */
-    public static enum ExpiryType
-    {
+    public static enum ExpiryType {
         /**
          * A new token will be issues to extend the expiry period upon every API call
          */

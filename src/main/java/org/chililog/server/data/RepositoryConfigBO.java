@@ -64,8 +64,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryConfigBO extends BO implements Serializable
-{
+public class RepositoryConfigBO extends BO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private static Pattern _namePattern = Pattern.compile("^[a-z0-9_]+$");
@@ -108,8 +107,7 @@ public class RepositoryConfigBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryConfigBO()
-    {
+    public RepositoryConfigBO() {
         return;
     }
 
@@ -120,8 +118,7 @@ public class RepositoryConfigBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public RepositoryConfigBO(DBObject dbObject) throws ChiliLogException
-    {
+    public RepositoryConfigBO(DBObject dbObject) throws ChiliLogException {
         super(dbObject);
 
         // General
@@ -146,10 +143,8 @@ public class RepositoryConfigBO extends BO implements Serializable
         // Parser
         BasicDBList list = (BasicDBList) dbObject.get(PARSERS_FIELD_NAME);
         ArrayList<RepositoryParserConfigBO> parserList = new ArrayList<RepositoryParserConfigBO>();
-        if (list != null && list.size() > 0)
-        {
-            for (Object item : list)
-            {
+        if (list != null && list.size() > 0) {
+            for (Object item : list) {
                 RepositoryParserConfigBO field = new RepositoryParserConfigBO((DBObject) item);
                 parserList.add(field);
             }
@@ -167,19 +162,16 @@ public class RepositoryConfigBO extends BO implements Serializable
      * @throws ChiliLogException
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
-    {
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException {
         MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
 
         // Check name format
-        if (!_namePattern.matcher(_name).matches())
-        {
+        if (!_namePattern.matcher(_name).matches()) {
             throw new ChiliLogException(Strings.REPO_INFO_NAME_FORMAT_ERROR, _name);
         }
 
         // Check that page file size is less than max memory
-        if (_pageSize > _maxMemory)
-        {
+        if (_pageSize > _maxMemory) {
             throw new ChiliLogException(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, _pageSize, _maxMemory);
         }
 
@@ -203,8 +195,7 @@ public class RepositoryConfigBO extends BO implements Serializable
 
         // Parsers
         ArrayList<DBObject> fieldList = new ArrayList<DBObject>();
-        for (RepositoryParserConfigBO parser : _parsers)
-        {
+        for (RepositoryParserConfigBO parser : _parsers) {
             BasicDBObject obj = new BasicDBObject();
             parser.savePropertiesToDBObject(obj);
             fieldList.add(obj);
@@ -221,76 +212,65 @@ public class RepositoryConfigBO extends BO implements Serializable
      * If the name is "xxx", then the mongoDB collection name is "xxx_repository"
      * </p>
      */
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
     /**
      * Returns the name of the collection in mongoDB where repository entries will be stored.
      */
-    public String getMongoDBCollectionName()
-    {
+    public String getMongoDBCollectionName() {
         return String.format("repo_%s", _name);
     }
 
     /**
      * Returns user friendly display name for this repository
      */
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
     /**
      * Returns the description for this repository
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         return _description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         _description = description;
     }
 
     /**
      * Returns the status of the repository
      */
-    public Status getStartupStatus()
-    {
+    public Status getStartupStatus() {
         return _startupStatus;
     }
 
-    public void setStartupStatus(Status status)
-    {
+    public void setStartupStatus(Status status) {
         _startupStatus = status;
     }
 
     /**
      * Returns a list fields that is to be parsed and stored in this repository
      */
-    public ArrayList<RepositoryParserConfigBO> getParsers()
-    {
+    public ArrayList<RepositoryParserConfigBO> getParsers() {
         return _parsers;
     }
 
     /**
      * Returns the address for publishers to use for sending in log entries
      */
-    public String getPubSubAddress()
-    {
+    public String getPubSubAddress() {
         return buildPubSubAddress(_name);
     }
 
@@ -301,61 +281,53 @@ public class RepositoryConfigBO extends BO implements Serializable
      *            Name of the repository
      * @return HornetQ name of the repository
      */
-    public static String buildPubSubAddress(String repositoryName)
-    {
+    public static String buildPubSubAddress(String repositoryName) {
         return String.format("repo.%s", repositoryName);
     }
 
     /**
      * Returns the address of the message queue that used for storing incoming log entries
      */
-    public String getStorageQueueName()
-    {
+    public String getStorageQueueName() {
         return String.format("repo.%s.storage", _name);
     }
 
     /**
      * Returns the name of the role that has all access to this repository
      */
-    public String getAdministratorRoleName()
-    {
+    public String getAdministratorRoleName() {
         return UserBO.createRepositoryAdministratorRoleName(_name);
     }
 
     /**
      * Returns the name of the role that can use the workbench to access the data in this repository
      */
-    public String getWorkbenchRoleName()
-    {
+    public String getWorkbenchRoleName() {
         return UserBO.createRepositoryWorkbenchRoleName(_name);
     }
 
     /**
      * Returns the name of the role that can publish (write) log entries to this repository
      */
-    public String getPublisherRoleName()
-    {
+    public String getPublisherRoleName() {
         return UserBO.createRepositoryPublisherRoleName(_name);
     }
 
     /**
      * Returns the name of the role that can subscribe to (read) this repository
      */
-    public String getSubscriberRoleName()
-    {
+    public String getSubscriberRoleName() {
         return UserBO.createRepositorySubscriberRoleName(_name);
     }
 
     /**
      * Returns a flag indicating if the log entries published to this repository is to be stored in the database.
      */
-    public boolean getStoreEntriesIndicator()
-    {
+    public boolean getStoreEntriesIndicator() {
         return _storeEntriesIndicator;
     }
 
-    public void setStoreEntriesIndicator(boolean storeEntriesIndicator)
-    {
+    public void setStoreEntriesIndicator(boolean storeEntriesIndicator) {
         _storeEntriesIndicator = storeEntriesIndicator;
     }
 
@@ -373,13 +345,11 @@ public class RepositoryConfigBO extends BO implements Serializable
      * entries contain critical information that cannot be lost.
      * </p>
      */
-    public boolean getStorageQueueDurableIndicator()
-    {
+    public boolean getStorageQueueDurableIndicator() {
         return _storageQueueDurableIndicator;
     }
 
-    public void setStorageQueueDurableIndicator(boolean storageQueueDurableIndicator)
-    {
+    public void setStorageQueueDurableIndicator(boolean storageQueueDurableIndicator) {
         _storageQueueDurableIndicator = storageQueueDurableIndicator;
     }
 
@@ -392,39 +362,33 @@ public class RepositoryConfigBO extends BO implements Serializable
      * The default is 1.
      * </p>
      */
-    public long getStorageQueueWorkerCount()
-    {
+    public long getStorageQueueWorkerCount() {
         return _storageQueueWorkerCount;
     }
 
-    public void setStorageQueueWorkerCount(long writeWorkerCount)
-    {
+    public void setStorageQueueWorkerCount(long writeWorkerCount) {
         _storageQueueWorkerCount = writeWorkerCount;
     }
 
     /**
      * The maximum amount of memory (in bytes) that will be used by the storage queue. <code>-1</code> means no limit.
      */
-    public long getMaxMemory()
-    {
+    public long getMaxMemory() {
         return _maxMemory;
     }
 
-    public void setMaxMemory(long maxMemory)
-    {
+    public void setMaxMemory(long maxMemory) {
         _maxMemory = maxMemory;
     }
 
     /**
      * Determines what happens when MaxMemory is reached on the storage queue.
      */
-    public MaxMemoryPolicy getMaxMemoryPolicy()
-    {
+    public MaxMemoryPolicy getMaxMemoryPolicy() {
         return _maxMemoryPolicy;
     }
 
-    public void setMaxMemoryPolicy(MaxMemoryPolicy maxMemoryPolicy)
-    {
+    public void setMaxMemoryPolicy(MaxMemoryPolicy maxMemoryPolicy) {
         _maxMemoryPolicy = maxMemoryPolicy;
     }
 
@@ -432,13 +396,11 @@ public class RepositoryConfigBO extends BO implements Serializable
      * If MaxMemoryPolicy is set to PAGE, then this value determines the size of each page file on the hard disk in
      * bytes.
      */
-    public long getPageSize()
-    {
+    public long getPageSize() {
         return _pageSize;
     }
 
-    public void setPageSize(long pageSize)
-    {
+    public void setPageSize(long pageSize) {
         _pageSize = pageSize;
     }
 
@@ -446,26 +408,22 @@ public class RepositoryConfigBO extends BO implements Serializable
      * If MaxMemoryPolicy is set to PAGE, then this value determines the number of pages to be kept in memory during
      * page navigation.
      */
-    public long getPageCountCache()
-    {
+    public long getPageCountCache() {
         return _pageCountCache;
     }
 
-    public void setPageCountCache(long writeQueuePageCountCache)
-    {
+    public void setPageCountCache(long writeQueuePageCountCache) {
         _pageCountCache = writeQueuePageCountCache;
     }
 
     /**
      * Returns the maximum number of keywords to store.
      */
-    public long getStorageMaxKeywords()
-    {
+    public long getStorageMaxKeywords() {
         return _storageMaxKeywords;
     }
 
-    public void setStorageMaxKeywords(long parserMaxKeywords)
-    {
+    public void setStorageMaxKeywords(long parserMaxKeywords) {
         _storageMaxKeywords = parserMaxKeywords;
     }
 
@@ -475,15 +433,14 @@ public class RepositoryConfigBO extends BO implements Serializable
      * @author vibul
      * 
      */
-    public enum Status
-    {
+    public enum Status {
         /**
          * Users with permission can read from and write to this repository
          */
         ONLINE,
-        
+
         /**
-         * Users with permission can read from this repository. 
+         * Users with permission can read from this repository.
          */
         READONLY,
 
@@ -499,8 +456,7 @@ public class RepositoryConfigBO extends BO implements Serializable
      * @author vibul
      * 
      */
-    public enum MaxMemoryPolicy
-    {
+    public enum MaxMemoryPolicy {
         /**
          * Messages will be pushed to page files on the hard disk once queue memory limit is reached.
          */

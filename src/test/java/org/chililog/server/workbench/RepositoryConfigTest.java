@@ -64,16 +64,14 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryConfigTest
-{
+public class RepositoryConfigTest {
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;
     private static String _repoWorkbenchUserAuthToken;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -158,8 +156,7 @@ public class RepositoryConfigTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         // Clean up old user test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^TestRepoInfo[\\w]*$");
@@ -183,8 +180,7 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testCRUD() throws Exception
-    {
+    public void testCRUD() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -197,14 +193,14 @@ public class RepositoryConfigTest
         RepositoryFieldConfigAO f1 = new RepositoryFieldConfigAO();
         f1.setName("field1");
         f1.setDataType(RepositoryFieldConfigBO.DataType.String);
-        f1.setProperties(new RepositoryPropertyConfigAO[]
-        { new RepositoryPropertyConfigAO("F1", "F2"), new RepositoryPropertyConfigAO("F3", "F4") });
+        f1.setProperties(new RepositoryPropertyConfigAO[] { new RepositoryPropertyConfigAO("F1", "F2"),
+                new RepositoryPropertyConfigAO("F3", "F4") });
 
         RepositoryFieldConfigAO f2 = new RepositoryFieldConfigAO();
         f2.setName("field2");
         f2.setDataType(RepositoryFieldConfigBO.DataType.Integer);
-        f2.setProperties(new RepositoryPropertyConfigAO[]
-        { new RepositoryPropertyConfigAO("F5", "F6"), new RepositoryPropertyConfigAO("F7", "F8") });
+        f2.setProperties(new RepositoryPropertyConfigAO[] { new RepositoryPropertyConfigAO("F5", "F6"),
+                new RepositoryPropertyConfigAO("F7", "F8") });
 
         RepositoryConfigAO createRepoInfoAO = new RepositoryConfigAO();
         createRepoInfoAO.setName("test_repoinfo_1");
@@ -227,13 +223,11 @@ public class RepositoryConfigTest
         createRepoParserInfo.setClassName(DelimitedEntryParser.class.getName());
         createRepoParserInfo.setMaxKeywords(101);
         createRepoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
-        createRepoInfoAO.setParsers(new RepositoryParserConfigAO[]
-        { createRepoParserInfo });
+        createRepoInfoAO.setParsers(new RepositoryParserConfigAO[] { createRepoParserInfo });
 
-        createRepoParserInfo.setFields(new RepositoryFieldConfigAO[]
-        { f1, f2 });
-        createRepoParserInfo.setProperties(new RepositoryPropertyConfigAO[]
-        { new RepositoryPropertyConfigAO("1", "2"), new RepositoryPropertyConfigAO("3", "4") });
+        createRepoParserInfo.setFields(new RepositoryFieldConfigAO[] { f1, f2 });
+        createRepoParserInfo.setProperties(new RepositoryPropertyConfigAO[] { new RepositoryPropertyConfigAO("1", "2"),
+                new RepositoryPropertyConfigAO("3", "4") });
 
         ApiUtils.sendJSON(httpConn, createRepoInfoAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -324,10 +318,9 @@ public class RepositoryConfigTest
         readResponseAO.setName("test_repoinfo_1_update");
         readResponseAO.setStorageMaxKeywords(200);
         readResponseAO.getParsers()[0].setMaxKeywords(201);
-        readResponseAO.getParsers()[0].setFields(new RepositoryFieldConfigAO[]
-        { f1 });
-        readResponseAO.getParsers()[0].setProperties(new RepositoryPropertyConfigAO[]
-        { new RepositoryPropertyConfigAO("1", "2") });
+        readResponseAO.getParsers()[0].setFields(new RepositoryFieldConfigAO[] { f1 });
+        readResponseAO.getParsers()[0].setProperties(new RepositoryPropertyConfigAO[] { new RepositoryPropertyConfigAO(
+                "1", "2") });
 
         ApiUtils.sendJSON(httpConn, readResponseAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
@@ -379,16 +372,15 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testRepoAdminUser() throws Exception
-    {
+    public void testRepoAdminUser() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
         HashMap<String, String> headers = new HashMap<String, String>();
 
         // Get chililog repository
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config?name=chililog", HttpMethod.GET, _systemAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config?name=chililog",
+                HttpMethod.GET, _systemAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
@@ -399,27 +391,26 @@ public class RepositoryConfigTest
         RepositoryConfigAO chililogRepoInfoAO = getListResponseAO[0];
 
         // Get list - should only get back repositories we can access
-        httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config?", HttpMethod.GET, _repoAdminAuthToken);
+        httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config?", HttpMethod.GET,
+                _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
 
-        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), RepositoryConfigAO[].class);
+        getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
+                RepositoryConfigAO[].class);
         assertEquals(1, getListResponseAO.length);
         assertEquals("test_repoinfo_common", getListResponseAO[0].getName());
         assertEquals(3, getListResponseAO[0].getUsers().length);
 
-        for (String user : getListResponseAO[0].getUsers())
-        {
-            if (!user.equals("admin=system.administrator") &&
-                !user.equals("TestRepoInfo_SystemAdmin=system.administrator") &&
-                !user.equals("TestRepoInfo_RepoWorkbench=repo.test_repoinfo_common.workbench"))
-            {
+        for (String user : getListResponseAO[0].getUsers()) {
+            if (!user.equals("admin=system.administrator")
+                    && !user.equals("TestRepoInfo_SystemAdmin=system.administrator")
+                    && !user.equals("TestRepoInfo_RepoWorkbench=repo.test_repoinfo_common.workbench")) {
                 Assert.fail("Invalid users have access to this repository");
             }
         }
-        
+
         // Create - not authroized
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_config", HttpMethod.POST,
                 _repoAdminAuthToken);
@@ -459,8 +450,8 @@ public class RepositoryConfigTest
 
         // Delete - not authorized
         httpConn = ApiUtils.getHttpURLConnection(
-                "http://localhost:8989/api/repository_config/" + getListResponseAO[0].getDocumentID(), HttpMethod.DELETE,
-                _repoAdminAuthToken);
+                "http://localhost:8989/api/repository_config/" + getListResponseAO[0].getDocumentID(),
+                HttpMethod.DELETE, _repoAdminAuthToken);
 
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check401UnauthorizedResponse(responseCode.toString(), headers);
@@ -475,8 +466,7 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testRepoWorkbenchUser() throws Exception
-    {
+    public void testRepoWorkbenchUser() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -564,8 +554,7 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testMissingID() throws Exception
-    {
+    public void testMissingID() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -604,8 +593,7 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testListing() throws Exception
-    {
+    public void testListing() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -651,8 +639,7 @@ public class RepositoryConfigTest
      * @throws Exception
      */
     @Test
-    public void testBadContent() throws Exception
-    {
+    public void testBadContent() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -701,8 +688,7 @@ public class RepositoryConfigTest
         createRepoParserInfo.setClassName("");
 
         createRepoInfoAO.setDisplayName("Repository Test 1");
-        createRepoInfoAO.setParsers(new RepositoryParserConfigAO[]
-        { createRepoParserInfo });
+        createRepoInfoAO.setParsers(new RepositoryParserConfigAO[] { createRepoParserInfo });
 
         ApiUtils.sendJSON(httpConn, createRepoInfoAO);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);

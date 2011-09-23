@@ -10,8 +10,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
  * @author vibul
  * 
  */
-public interface WebSocketClient
-{
+public interface WebSocketClient {
     /**
      * Connect to server Host and port is setup by the factory.
      * 

@@ -24,8 +24,7 @@ package org.chililog.server.data;
  * @author vibul
  * 
  */
-public class Strings
-{
+public class Strings {
     public static final String PREFIX = "Data.";
     public static final String MONGODB_AUTHENTICATION_ERROR = PREFIX + "MongoDB.AuthenticationError";
     public static final String MONGODB_CONNECTION_ERROR = PREFIX + "MongoDB.ConnectionError";
@@ -34,12 +33,12 @@ public class Strings
     public static final String MONGODB_QUERY_ERROR = PREFIX + "MongoDB.QueryError";
     public static final String MONGODB_SAVE_ERROR = PREFIX + "MongoDB.SaveError";
     public static final String MONGODB_REMOVE_ERROR = PREFIX + "MongoDB.RemoveError";
-        
+
     public static final String USER_NOT_FOUND_ERROR = PREFIX + "User.NotFoundError";
     public static final String USER_DUPLICATE_USERNAME_ERROR = PREFIX + "User.DuplicateUsernameError";
     public static final String USER_DUPLICATE_EMAIL_ADDRESS_ERROR = PREFIX + "User.DuplicateEmailAddressError";
     public static final String USER_EMAIL_ADDRESS_FORMAT_ERROR = PREFIX + "User.EmailAddressFormatError";
-    
+
     public static final String REPO_INFO_NAME_FORMAT_ERROR = PREFIX + "RepoInfo.NameFormatError";
     public static final String REPO_INFO_PASSWORD_FORMAT_ERROR = PREFIX + "RepoInfo.PasswordFormatError";
     public static final String REPO_INFO_DUPLICATE_NAME_ERROR = PREFIX + "RepoInfo.DuplicateNameError";
@@ -48,8 +47,7 @@ public class Strings
     public static final String REPO_INFO_NOT_FOUND_ERROR = PREFIX + "RepoInfo.NotFoundError";
     public static final String REPO_INFO_FIELD_PROPERTIES_ERROR = PREFIX + "RepoInfo.FieldPropertiesError";
     public static final String REPO_INFO_PAGE_FILE_SIZE_ERROR = PREFIX + "RepoInfo.PageFileSizeError";
-    
+
     public static final String REPO_NAME_NOT_SET_ERROR = PREFIX + "Repo.NameNotSetError";
 
-    
 }

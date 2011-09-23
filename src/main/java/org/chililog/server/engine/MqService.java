@@ -66,8 +66,7 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
  * @author vibul
  * 
  */
-public class MqService
-{
+public class MqService {
     static Log4JLogger _logger = Log4JLogger.getLogger(MqService.class);
     private HornetQServer _hornetqServer;
 
@@ -79,8 +78,7 @@ public class MqService
     /**
      * Returns the singleton instance for this class
      */
-    public static MqService getInstance()
-    {
+    public static MqService getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -90,8 +88,7 @@ public class MqService
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final MqService INSTANCE = new MqService();
     }
 
@@ -105,16 +102,13 @@ public class MqService
      * 
      * @throws Exception
      */
-    private MqService()
-    {
-        try
-        {
+    private MqService() {
+        try {
             _systemUsername = AppProperties.getInstance().getMqSystemUsername();
             _systemPassword = AppProperties.getInstance().getMqSystemPassword();
             return;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error("Error loading MQ Connection Manager: " + e.getMessage(), e);
             System.exit(1);
 
@@ -124,16 +118,14 @@ public class MqService
     /**
      * Returns the trusted system user name
      */
-    public String getSystemUsername()
-    {
+    public String getSystemUsername() {
         return _systemUsername;
     }
 
     /**
      * Returns the trusted system user's password
      */
-    public String getSystemPassword()
-    {
+    public String getSystemPassword() {
         return _systemPassword;
     }
 
@@ -142,10 +134,8 @@ public class MqService
      * 
      * @throws Exception
      */
-    public void start() throws Exception
-    {
-        if (_hornetqServer != null)
-        {
+    public void start() throws Exception {
+        if (_hornetqServer != null) {
             _logger.info("Message Queue Already Started.");
             return;
         }
@@ -215,8 +205,7 @@ public class MqService
      * 
      * @return HornetQ transport configuration
      */
-    private HashSet<TransportConfiguration> createHornetTransports()
-    {
+    private HashSet<TransportConfiguration> createHornetTransports() {
         HashSet<TransportConfiguration> transports = new HashSet<TransportConfiguration>();
         AppProperties appProperties = AppProperties.getInstance();
         TransportConfiguration transport;
@@ -226,8 +215,7 @@ public class MqService
         transports.add(transport);
 
         // Core or JMS protocol
-        if (appProperties.getPubSubCoreProtocolEnabled())
-        {
+        if (appProperties.getPubSubCoreProtocolEnabled()) {
             _logger.info("Configuring Core Protocol");
             transport = new TransportConfiguration(NettyAcceptorFactory.class.getName(),
                     appProperties.getPubSubCoreProtocolConfig());
@@ -262,8 +250,7 @@ public class MqService
     /**
      * Returns our instance of the HornetQ server
      */
-    public HornetQServer getNativeServer()
-    {
+    public HornetQServer getNativeServer() {
         return _hornetqServer;
     }
 
@@ -272,10 +259,8 @@ public class MqService
      * 
      * @throws Exception
      */
-    public void stop() throws Exception
-    {
-        if (_hornetqServer == null)
-        {
+    public void stop() throws Exception {
+        if (_hornetqServer == null) {
             _logger.info("HornetQ Message Queue Already Stopped.");
             return;
         }
@@ -296,8 +281,7 @@ public class MqService
      * @return MqSession connection to HornetQ
      * @throws Exception
      */
-    public ClientSession getTransactionalSystemClientSession() throws Exception
-    {
+    public ClientSession getTransactionalSystemClientSession() throws Exception {
         return _csf.createSession(_systemUsername, _systemPassword, false, false, false, false, _sl.getAckBatchSize());
     }
 
@@ -310,8 +294,7 @@ public class MqService
      * @return MqSession connection to HornetQ
      * @throws Exception
      */
-    public ClientSession getNonTransactionalSystemClientSession() throws Exception
-    {
+    public ClientSession getNonTransactionalSystemClientSession() throws Exception {
         return _csf.createSession(_systemUsername, _systemPassword, false, true, true, false, _sl.getAckBatchSize());
     }
 
@@ -334,8 +317,7 @@ public class MqService
      * @return MqSession connection to HornetQ
      * @throws Exception
      */
-    public ClientSession getTransactionalClientSession(String username, String password) throws Exception
-    {
+    public ClientSession getTransactionalClientSession(String username, String password) throws Exception {
         return _csf.createSession(username, password, false, false, false, false, _sl.getAckBatchSize());
     }
 
@@ -359,8 +341,7 @@ public class MqService
      * @return ClientSession session connection to HornetQ
      * @throws Exception
      */
-    public ClientSession getNonTransactionalClientSession(String username, String password) throws Exception
-    {
+    public ClientSession getNonTransactionalClientSession(String username, String password) throws Exception {
         return _csf.createSession(username, password, false, true, true, false, _sl.getAckBatchSize());
     }
 
@@ -370,17 +351,13 @@ public class MqService
      * @param clientSession
      *            session to close
      */
-    public void closeClientSession(ClientSession clientSession)
-    {
-        try
-        {
-            if (clientSession != null)
-            {
+    public void closeClientSession(ClientSession clientSession) {
+        try {
+            if (clientSession != null) {
                 clientSession.close();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // Log and ignore errors on closing a connection
             _logger.error(ex, Strings.CLOSE_MQ_SESSION_ERROR, ex.getMessage());
         }
@@ -437,8 +414,7 @@ public class MqService
                                    final long redeliveryDelay,
                                    final long redistributionDelay,
                                    final boolean sendToDLAOnNoRoute,
-                                   final String addressFullMessagePolicy) throws Exception
-    {
+                                   final String addressFullMessagePolicy) throws Exception {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.addAddressSettings(address, DLA, expiryAddress, lastValueQueue, deliveryAttempts, maxSizeBytes,
                 pageSizeBytes, pageMaxCacheSize, redeliveryDelay, redistributionDelay, sendToDLAOnNoRoute,
@@ -458,8 +434,7 @@ public class MqService
      *            Comma separated list of roles that can subscribe to the address; i.e. read log entries
      * @throws Exception
      */
-    public void addSecuritySettings(String address, String publisherRoles, String subscriberRoles) throws Exception
-    {
+    public void addSecuritySettings(String address, String publisherRoles, String subscriberRoles) throws Exception {
         String adminRoleName = UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME;
 
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
@@ -478,8 +453,7 @@ public class MqService
      *            represents a work and # represents more than 1 work.
      * @throws Exception
      */
-    public void removeSecuritySettings(String queueAddress) throws Exception
-    {
+    public void removeSecuritySettings(String queueAddress) throws Exception {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.removeSecuritySettings(queueAddress);
         return;
@@ -497,26 +471,22 @@ public class MqService
      * @throws Exception
      *             if error
      */
-    public void deployQueue(String queueAddress, String queueName, boolean isDurable) throws Exception
-    {
+    public void deployQueue(String queueAddress, String queueName, boolean isDurable) throws Exception {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         boolean doCreate = false;
 
         // Let check if we really have to create a new queue
         QueueControl qc = getQueueControl(queueAddress, queueName);
-        if (qc == null)
-        {
+        if (qc == null) {
             doCreate = true;
         }
-        else if (qc.isDurable() != isDurable)
-        {
+        else if (qc.isDurable() != isDurable) {
             // Queue exist but properties are different so we have to delete/create
             hqControl.destroyQueue(queueName);
             doCreate = true;
         }
 
-        if (doCreate)
-        {
+        if (doCreate) {
             hqControl.createQueue(queueAddress, queueName, null, isDurable);
         }
     }
@@ -529,8 +499,7 @@ public class MqService
      * @throws Exception
      *             if error
      */
-    public void destroyQueue(String queueName) throws Exception
-    {
+    public void destroyQueue(String queueName) throws Exception {
         HornetQServerControl hqControl = _hornetqServer.getHornetQServerControl();
         hqControl.destroyQueue(queueName);
     }
@@ -545,13 +514,11 @@ public class MqService
      * @return <code>QueueControl</code> that can be used for managing queues. Null if returned if queue not found
      * @throws Exception
      */
-    public QueueControl getQueueControl(String queueAddress, String queueName) throws Exception
-    {
+    public QueueControl getQueueControl(String queueAddress, String queueName) throws Exception {
         ObjectName objectName = ObjectNameBuilder.DEFAULT.getQueueObjectName(new SimpleString(queueAddress),
                 new SimpleString(queueName));
 
-        if (!_hornetqServer.getMBeanServer().isRegistered(objectName))
-        {
+        if (!_hornetqServer.getMBeanServer().isRegistered(objectName)) {
             return null;
         }
 
@@ -563,8 +530,7 @@ public class MqService
     /**
      * Returns if our HornetQ message service is running or not
      */
-    public boolean isRunning()
-    {
+    public boolean isRunning() {
         return _hornetqServer != null;
     }
 }

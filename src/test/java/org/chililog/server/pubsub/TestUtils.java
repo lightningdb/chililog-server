@@ -32,15 +32,13 @@ import java.util.HashMap;
 import org.chililog.server.common.JsonTranslator;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 
-
 /**
  * Collection of utility methods
  * 
  * @author vibul
  * 
  */
-public class TestUtils
-{
+public class TestUtils {
     /**
      * Builds a HTTP connection ready for sending to server
      * 
@@ -53,16 +51,13 @@ public class TestUtils
      * @return HttpURLConnection
      * @throws Exception
      */
-    public static HttpURLConnection getHttpURLConnection(String urlString, HttpMethod method) throws Exception
-    {
+    public static HttpURLConnection getHttpURLConnection(String urlString, HttpMethod method) throws Exception {
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        if (method == HttpMethod.DELETE)
-        {
+        if (method == HttpMethod.DELETE) {
             conn.setRequestMethod(method.getName());
         }
-        if (method == HttpMethod.POST || method == HttpMethod.PUT)
-        {
+        if (method == HttpMethod.POST || method == HttpMethod.PUT) {
             conn.setDoOutput(true);
             conn.setRequestMethod(method.getName());
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -80,8 +75,7 @@ public class TestUtils
      *            Object to jsonify
      * @throws IOException
      */
-    public static void postJSON(HttpURLConnection httpConn, Object objectToJsonify) throws IOException
-    {
+    public static void postJSON(HttpURLConnection httpConn, Object objectToJsonify) throws IOException {
         OutputStreamWriter out = new OutputStreamWriter(httpConn.getOutputStream());
         JsonTranslator.getInstance().toJson(objectToJsonify, out);
         out.close();
@@ -97,8 +91,7 @@ public class TestUtils
     public static void getResponse(HttpURLConnection httpConn,
                                    StringBuilder responseContent,
                                    StringBuilder responseCode,
-                                   HashMap<String, String> headers) throws IOException
-    {
+                                   HashMap<String, String> headers) throws IOException {
         String s = getResponseContent(httpConn);
         responseContent.setLength(0);
         responseContent.append(s);
@@ -117,21 +110,16 @@ public class TestUtils
      * @return
      * @throws IOException
      */
-    public static String getResponseContent(HttpURLConnection httpConn) throws IOException
-    {
-        try
-        {
-            if (httpConn.getInputStream() == null)
-            {
+    public static String getResponseContent(HttpURLConnection httpConn) throws IOException {
+        try {
+            if (httpConn.getInputStream() == null) {
                 return null;
             }
-            else
-            {
+            else {
                 StringBuilder sb = new StringBuilder();
                 BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
                 String str;
-                while ((str = in.readLine()) != null)
-                {
+                while ((str = in.readLine()) != null) {
                     sb.append(str + "\n");
                 }
                 in.close();
@@ -139,8 +127,7 @@ public class TestUtils
                 return sb.toString();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return getResponseErrorContent(httpConn);
         }
     }
@@ -152,19 +139,15 @@ public class TestUtils
      * @return
      * @throws IOException
      */
-    public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException
-    {
-        if (httpConn.getErrorStream() == null)
-        {
+    public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException {
+        if (httpConn.getErrorStream() == null) {
             return null;
         }
-        else
-        {
+        else {
             StringBuilder sb = new StringBuilder();
             BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
             String str;
-            while ((str = in.readLine()) != null)
-            {
+            while ((str = in.readLine()) != null) {
                 sb.append(str + "\n");
             }
             in.close();
@@ -180,24 +163,19 @@ public class TestUtils
      * @param headers
      * @return 1st response line
      */
-    public static String getResponseHeaders(URLConnection conn, HashMap<String, String> headers)
-    {
+    public static String getResponseHeaders(URLConnection conn, HashMap<String, String> headers) {
         headers.clear();
         String responseCode = "";
-        for (int i = 0;; i++)
-        {
+        for (int i = 0;; i++) {
             String name = conn.getHeaderFieldKey(i);
             String value = conn.getHeaderField(i);
-            if (name == null && value == null)
-            {
+            if (name == null && value == null) {
                 break;
             }
-            if (name == null)
-            {
+            if (name == null) {
                 responseCode = value;
             }
-            else
-            {
+            else {
                 headers.put(name, value);
             }
         }
@@ -210,8 +188,7 @@ public class TestUtils
      * @param responseCode
      * @param headers
      */
-    public static void check200OKResponse(String responseCode, HashMap<String, String> headers)
-    {
+    public static void check200OKResponse(String responseCode, HashMap<String, String> headers) {
         assertEquals("HTTP/1.1 200 OK", responseCode);
         assertEquals("application/json; charset=UTF-8", headers.get("Content-Type"));
     }
@@ -222,8 +199,7 @@ public class TestUtils
      * @param responseCode
      * @param headers
      */
-    public static void check400BadRequestResponse(String responseCode, HashMap<String, String> headers)
-    {
+    public static void check400BadRequestResponse(String responseCode, HashMap<String, String> headers) {
         assertEquals("HTTP/1.1 400 Bad Request", responseCode);
 
         // Should have ErrorAO to describe error

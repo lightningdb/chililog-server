@@ -37,21 +37,18 @@ import org.jboss.netty.handler.codec.http.HttpContentCompressor;
  * 
  * <pre>
  * ChannelHandler deflater = ctx.getPipeline().get(&quot;deflater&quot;);
- * if (deflater instanceof ConditionalHttpContentCompressor)
- * {
+ * if (deflater instanceof ConditionalHttpContentCompressor) {
  *     ((ConditionalHttpContentCompressor) deflater).setDoCompression(false);
  * }
  * </pre>
  */
-public class ConditionalHttpContentCompressor extends HttpContentCompressor
-{
+public class ConditionalHttpContentCompressor extends HttpContentCompressor {
     private boolean _doCompression = true;
 
     /**
      * Creates a new handler with the default compression level (<tt>6</tt>).
      */
-    public ConditionalHttpContentCompressor()
-    {
+    public ConditionalHttpContentCompressor() {
         super();
     }
 
@@ -62,8 +59,7 @@ public class ConditionalHttpContentCompressor extends HttpContentCompressor
      *            {@code 1} yields the fastest compression and {@code 9} yields the best compression. {@code 0} means no
      *            compression. The default compression level is {@code 6}.
      */
-    public ConditionalHttpContentCompressor(int compressionLevel)
-    {
+    public ConditionalHttpContentCompressor(int compressionLevel) {
         super(compressionLevel);
     }
 
@@ -71,14 +67,11 @@ public class ConditionalHttpContentCompressor extends HttpContentCompressor
      * 
      */
     @Override
-    public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
-        if (_doCompression)
-        {
+    public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+        if (_doCompression) {
             super.writeRequested(ctx, e);
         }
-        else
-        {
+        else {
             ctx.sendDownstream(e);
         }
     }
@@ -86,16 +79,14 @@ public class ConditionalHttpContentCompressor extends HttpContentCompressor
     /**
      * Flag to indicate if compression is to be performed
      */
-    public boolean isDoCompression()
-    {
+    public boolean isDoCompression() {
         return _doCompression;
     }
 
     /**
      * Set flag to indicate if compression is to be performed.
      */
-    public void setDoCompression(boolean doCompression)
-    {
+    public void setDoCompression(boolean doCompression) {
         _doCompression = doCompression;
     }
 

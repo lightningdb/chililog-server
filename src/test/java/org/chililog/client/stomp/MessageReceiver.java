@@ -1,6 +1,7 @@
 /**
  * http://www.germane-software.com/software/Java/Gozirra/
  */
+
 package org.chililog.client.stomp;
 
 import java.util.Map;
@@ -10,7 +11,9 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public interface MessageReceiver {
-  public void receive( Command c, Map h, String b );
-  public void disconnect();
-  public boolean isClosed();
+    public void receive(Command c, Map h, String b);
+
+    public void disconnect();
+
+    public boolean isClosed();
 }

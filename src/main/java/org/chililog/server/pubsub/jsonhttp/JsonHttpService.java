@@ -84,8 +84,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * @author vibul
  * 
  */
-public class JsonHttpService
-{
+public class JsonHttpService {
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpService.class);
     private static final ChannelGroup _allChannels = new DefaultChannelGroup("PubSubJsonHttpWebServerManager");
     private ChannelFactory _channelFactory = null;
@@ -94,8 +93,7 @@ public class JsonHttpService
     /**
      * Returns the singleton instance for this class
      */
-    public static JsonHttpService getInstance()
-    {
+    public static JsonHttpService getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -105,8 +103,7 @@ public class JsonHttpService
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final JsonHttpService INSTANCE = new JsonHttpService();
     }
 
@@ -120,16 +117,14 @@ public class JsonHttpService
      * 
      * @throws Exception
      */
-    private JsonHttpService()
-    {
+    private JsonHttpService() {
         return;
     }
 
     /**
      * Start all pubsub services
      */
-    public synchronized void start()
-    {
+    public synchronized void start() {
         // Create producer session pool equivalent to the number of threads for Json HTTP so that each thread does not
         // have to wait for a session
         _mqProducerSessionPool = new MqProducerSessionPool(AppProperties.getInstance()
@@ -137,8 +132,7 @@ public class JsonHttpService
 
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (_channelFactory != null)
-        {
+        if (_channelFactory != null) {
             _logger.info("PubSub JSON HTTP Web Sever Already Started.");
             return;
         }
@@ -156,16 +150,12 @@ public class JsonHttpService
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpProtocolHost());
-        for (String h : hosts)
-        {
-            if (StringUtils.isBlank(h))
-            {
-                if (hosts.length == 1)
-                {
+        for (String h : hosts) {
+            if (StringUtils.isBlank(h)) {
+                if (hosts.length == 1) {
                     h = "0.0.0.0";
                 }
-                else
-                {
+                else {
                     continue;
                 }
             }
@@ -183,10 +173,8 @@ public class JsonHttpService
     /**
      * Stop all pubsub services
      */
-    public synchronized void stop()
-    {
-        if (_mqProducerSessionPool != null)
-        {
+    public synchronized void stop() {
+        if (_mqProducerSessionPool != null) {
             _mqProducerSessionPool.cleanup();
             _mqProducerSessionPool = null;
         }
@@ -204,16 +192,14 @@ public class JsonHttpService
     /**
      * Returns the producer session pool
      */
-    MqProducerSessionPool getMqProducerSessionPool()
-    {
+    MqProducerSessionPool getMqProducerSessionPool() {
         return _mqProducerSessionPool;
     }
 
     /**
      * Returns the group holding all channels so we can shutdown without hanging
      */
-    ChannelGroup getAllChannels()
-    {
+    ChannelGroup getAllChannels() {
         return _allChannels;
     }
 }

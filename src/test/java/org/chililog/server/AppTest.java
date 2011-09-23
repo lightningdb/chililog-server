@@ -56,8 +56,7 @@ import com.mongodb.DBObject;
 /**
  * Unit test for simple App.
  */
-public class AppTest
-{
+public class AppTest {
 
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
@@ -66,8 +65,7 @@ public class AppTest
     private static final String MONGODB_COLLECTION_NAME = "repo_app_junit_test";
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
 
         // Create repo
         _repoInfo = new RepositoryConfigBO();
@@ -76,7 +74,7 @@ public class AppTest
         _repoInfo.setStoreEntriesIndicator(true);
         _repoInfo.setStorageQueueDurableIndicator(false);
         _repoInfo.setStorageQueueWorkerCount(2);
-        
+
         RepositoryParserConfigBO repoParserInfo = new RepositoryParserConfigBO();
         repoParserInfo.setName("parser1");
         repoParserInfo.setAppliesTo(AppliesTo.All);
@@ -84,7 +82,7 @@ public class AppTest
         repoParserInfo.setParseFieldErrorHandling(ParseFieldErrorHandling.SkipEntry);
         repoParserInfo.getProperties().put(DelimitedEntryParser.DELIMITER_PROPERTY_NAME, "|");
         _repoInfo.getParsers().add(repoParserInfo);
-        
+
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.String);
@@ -142,14 +140,13 @@ public class AppTest
 
         // Clean up old test data if any exists
         coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
 
         // Create repository record
         RepositoryConfigController.getInstance().save(_db, _repoInfo);
-        
+
         // Create publisher user
         UserBO user = new UserBO();
         user.setUsername("AppTestUser_Publisher");
@@ -166,22 +163,20 @@ public class AppTest
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old users
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^AppTestUser[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
-        
+
         // Clean old repository info
         coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         query.put("name", REPOSITORY_NAME);
@@ -193,14 +188,13 @@ public class AppTest
     }
 
     @Test
-    public void test10000() throws Exception
-    {
+    public void test10000() throws Exception {
         // Start
         App.start(null);
 
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
-        
+
         // Write some repository entries
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession("AppTestUser_Publisher",
                 "222");
@@ -208,8 +202,7 @@ public class AppTest
         String publicationAddress = _repoInfo.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(publicationAddress);
 
-        for (int i = 0; i < 10000; i++)
-        {
+        for (int i = 0; i < 10000; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "AppTest");

@@ -24,8 +24,7 @@ package org.chililog.server.data;
  * @author vibul
  * 
  */
-public abstract class ListCriteria
-{
+public abstract class ListCriteria {
     private int _recordsPerPage = Integer.MAX_VALUE;
     private int _startPage = 1;
     private boolean _doPageCount = false;
@@ -34,32 +33,28 @@ public abstract class ListCriteria
     /**
      * Basic constructor
      */
-    public ListCriteria()
-    {
+    public ListCriteria() {
         return;
     }
 
     /**
      * Returns the number of records or records to return in this query. Defaults to maximum integer value.
      */
-    public int getRecordsPerPage()
-    {
+    public int getRecordsPerPage() {
         return _recordsPerPage;
     }
 
     /**
      * Sets the number of records to return in this query
      */
-    public void setRecordsPerPage(int recordsPerPage)
-    {
+    public void setRecordsPerPage(int recordsPerPage) {
         _recordsPerPage = recordsPerPage;
     }
 
     /**
      * Returns the page at which to start retrieving records
      */
-    public int getStartPage()
-    {
+    public int getStartPage() {
         return _startPage;
     }
 
@@ -68,8 +63,7 @@ public abstract class ListCriteria
      * 
      * @param startPage
      */
-    public void setStartPage(int startPage)
-    {
+    public void setStartPage(int startPage) {
         _startPage = startPage;
     }
 
@@ -77,8 +71,7 @@ public abstract class ListCriteria
      * Flag to indicate if a page count is to be returned in <code>getPageCount</code>. Default is false and a page
      * count will not be returned.
      */
-    public boolean getDoPageCount()
-    {
+    public boolean getDoPageCount() {
         return _doPageCount;
     }
 
@@ -87,30 +80,27 @@ public abstract class ListCriteria
      * 
      * @param doPageCount
      */
-    public void setDoPageCount(boolean doPageCount)
-    {
+    public void setDoPageCount(boolean doPageCount) {
         _doPageCount = doPageCount;
     }
 
     /**
      * Returns the total number of pages. -1 indicates that the page count has not been set.
      */
-    public int getPageCount()
-    {
+    public int getPageCount() {
         return _pageCount;
     }
 
     /**
      * Calculate the number of pages given the total number of records matching the criteria
      * 
-     * @param recordCount number of records matching the criteria
+     * @param recordCount
+     *            number of records matching the criteria
      */
-    protected void calculatePageCount(int recordCount)
-    {
+    protected void calculatePageCount(int recordCount) {
         _pageCount = recordCount / _recordsPerPage;
         int mod = recordCount % _recordsPerPage;
-        if (mod > 0)
-        {
+        if (mod > 0) {
             _pageCount++;
         }
     }

@@ -55,8 +55,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
  * 
  * </p>
  */
-public class HttpRequestHandler extends SimpleChannelUpstreamHandler
-{
+public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
     private WorkbenchRequestHandler _workbenchRequestHandler = null;
@@ -65,17 +64,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * Handles incoming messages by routing to services
      */
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
+    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         Object msg = e.getMessage();
 
-        if (msg instanceof HttpRequest)
-        {
+        if (msg instanceof HttpRequest) {
             // New request so let's figure our the service to call
             HttpRequest request = (HttpRequest) msg;
             String uri = request.getUri();
-            if (StringUtils.isBlank(uri))
-            {
+            if (StringUtils.isBlank(uri)) {
                 send404NotFound(e);
                 return;
             }
@@ -83,35 +79,28 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
             // Route
             // Could have used reflection but since we have so few routes, it is quicker to hard code
             uri = uri.toLowerCase();
-            if (uri.startsWith("/api/"))
-            {
+            if (uri.startsWith("/api/")) {
                 _workbenchRequestHandler = new ApiRequestHandler();
             }
-            else if (uri.equalsIgnoreCase("/workbench") || uri.equalsIgnoreCase("/workbench/"))
-            {
+            else if (uri.equalsIgnoreCase("/workbench") || uri.equalsIgnoreCase("/workbench/")) {
                 redirectToWorkBenchIndexHtml(e);
                 return;
             }
-            else if (uri.startsWith("/static") || uri.startsWith("/workbench"))
-            {
+            else if (uri.startsWith("/static") || uri.startsWith("/workbench")) {
                 _workbenchRequestHandler = new StaticFileRequestHandler();
             }
-            else if (uri.startsWith("/echo"))
-            {
+            else if (uri.startsWith("/echo")) {
                 _workbenchRequestHandler = new EchoRequestHandler();
             }
-            else
-            {
+            else {
                 send404NotFound(e);
                 return;
             }
         }
-        else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame)
-        {
+        else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame) {
             // If this is HTTP chunk or web socket frame, then use existing _workbenchRequestHandler
         }
-        else
-        {
+        else {
             throw new NotImplementedException("Message Type " + msg.getClass().getName());
         }
 
@@ -141,16 +130,13 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * </pre>
      */
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception
-    {
-        try
-        {
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+        try {
             _logger.debug(e.getCause(), "ERROR: Unhandled exception: " + e.getCause().getMessage()
                     + ". Closing channel " + ctx.getChannel().getId());
             e.getChannel().close();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.debug(ex, "ERROR trying to close socket because we got an unhandled exception");
         }
     }
@@ -161,8 +147,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * @param e
      *            Message event that we are processing
      */
-    private void send404NotFound(MessageEvent e)
-    {
+    private void send404NotFound(MessageEvent e) {
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.NOT_FOUND);
         ChannelFuture future = e.getChannel().write(response);
         future.addListener(ChannelFutureListener.CLOSE);
@@ -178,8 +163,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * 
      * @param e
      */
-    private void redirectToWorkBenchIndexHtml(MessageEvent e)
-    {
+    private void redirectToWorkBenchIndexHtml(MessageEvent e) {
         String indexHTML = "/workbench/index.html";
 
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND);
@@ -194,8 +178,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler
      * channels.
      */
     @Override
-    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-    {
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e) {
         WorkbenchService.getInstance().getAllChannels().add(e.getChannel());
     }
 

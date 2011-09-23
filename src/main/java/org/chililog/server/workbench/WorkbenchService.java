@@ -95,8 +95,7 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  * @author vibul
  * 
  */
-public class WorkbenchService
-{
+public class WorkbenchService {
     private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchService.class);
     private static final ChannelGroup _allChannels = new DefaultChannelGroup("WorkbenchWebServerManager");
     private ChannelFactory _channelFactory = null;
@@ -104,8 +103,7 @@ public class WorkbenchService
     /**
      * Returns the singleton instance for this class
      */
-    public static WorkbenchService getInstance()
-    {
+    public static WorkbenchService getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -115,8 +113,7 @@ public class WorkbenchService
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final WorkbenchService INSTANCE = new WorkbenchService();
     }
 
@@ -130,26 +127,22 @@ public class WorkbenchService
      * 
      * @throws Exception
      */
-    private WorkbenchService()
-    {
+    private WorkbenchService() {
         return;
     }
 
     /**
      * Start the web server
      */
-    public synchronized void start()
-    {
+    public synchronized void start() {
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (_channelFactory != null)
-        {
+        if (_channelFactory != null) {
             _logger.info("Workbench Web Sever Already Started.");
             return;
         }
 
-        if (!appProperties.getWorkbenchEnabled())
-        {
+        if (!appProperties.getWorkbenchEnabled()) {
             _logger.info("Workbench Web Sever not enabled and will not be started.");
             return;
         }
@@ -168,16 +161,12 @@ public class WorkbenchService
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getWorkbenchHost());
-        for (String h : hosts)
-        {
-            if (StringUtils.isBlank(h))
-            {
-                if (hosts.length == 1)
-                {
+        for (String h : hosts) {
+            if (StringUtils.isBlank(h)) {
+                if (hosts.length == 1) {
                     h = "0.0.0.0";
                 }
-                else
-                {
+                else {
                     continue;
                 }
             }
@@ -194,8 +183,7 @@ public class WorkbenchService
     /**
      * Stop the web server
      */
-    public synchronized void stop()
-    {
+    public synchronized void stop() {
         _logger.info("Stopping Workbench Web Sever ...");
 
         ChannelGroupFuture future = _allChannels.close();
@@ -210,8 +198,7 @@ public class WorkbenchService
     /**
      * Returns the group holding all channels so we can shutdown without hanging
      */
-    ChannelGroup getAllChannels()
-    {
+    ChannelGroup getAllChannels() {
         return _allChannels;
     }
 

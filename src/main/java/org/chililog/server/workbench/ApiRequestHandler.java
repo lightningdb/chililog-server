@@ -66,7 +66,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
-
 /**
  * <p>
  * Routes the request to an API worker for processing
@@ -99,8 +98,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
  * }
  * </pre>
  */
-public class ApiRequestHandler extends WorkbenchRequestHandler
-{
+public class ApiRequestHandler extends WorkbenchRequestHandler {
     private static Log4JLogger _logger = Log4JLogger.getLogger(ApiRequestHandler.class);
 
     /**
@@ -132,75 +130,62 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * Process the message
      */
     @Override
-    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
-        try
-        {
+    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+        try {
             ApiResult result;
 
             // Collect HTTP information - whether chunk or not
-            if (!_readingChunks)
-            {
+            if (!_readingChunks) {
                 // Initialize
                 _request = (HttpRequest) e.getMessage();
                 result = instanceApiWorker();
-                if (!result.isSuccess())
-                {
+                if (!result.isSuccess()) {
                     writeResponse(ctx, e, result);
                     return;
                 }
 
                 // Send 100 continue to tell browser that there is no validation errors, send content now.
-                if (is100ContinueExpected(_request))
-                {
+                if (is100ContinueExpected(_request)) {
                     send100Continue(e);
                 }
 
                 // Get request content
-                if (_request.isChunked())
-                {
+                if (_request.isChunked()) {
                     // Read chunks
                     _readingChunks = true;
 
                     // Setup buffer to store chunk
-                    if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.ByteArray)
-                    {
+                    if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.ByteArray) {
                         // Store in memory
                         _requestContentStream = new ByteArrayOutputStream();
                     }
-                    else if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.File)
-                    {
+                    else if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.File) {
                         // Store as file on the file system
                         File _requestContentFile = File.createTempFile("ApiService_", ".dat");
                         _requestContentStream = new BufferedOutputStream(new FileOutputStream(_requestContentFile));
                     }
-                    else
-                    {
+                    else {
                         throw new UnsupportedOperationException("ContentIOStyle "
                                 + _apiWorker.getRequestContentIOStyle().toString());
                     }
 
                     return;
                 }
-                else
-                {
+                else {
                     // No chunks. Process it.
                     writeResponse(ctx, e, invokeApiWorker(false));
                     return;
                 }
             }
-            else
-            {
+            else {
                 HttpChunk chunk = (HttpChunk) e.getMessage();
-                if (chunk.isLast())
-                {
+                if (chunk.isLast()) {
                     // No more chunks. Process it.
                     _readingChunks = false;
                     writeResponse(ctx, e, invokeApiWorker(true));
                     return;
                 }
-                else
-                {
+                else {
                     _requestContentStream.write(chunk.getContent().array());
                     return;
                 }
@@ -208,12 +193,10 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
 
             // Don't code here. Unreachable code
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             writeResponse(ctx, e, ex);
         }
-        finally
-        {
+        finally {
             cleanup();
         }
     }
@@ -227,26 +210,22 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * <code>com.chililog.server.intefaces.management.workers.AuthenticationWorker</code> will be instanced.
      * </p>
      */
-    private ApiResult instanceApiWorker() throws Exception
-    {
-        // TODO - Invoke in another thread because we are mostly reading and writing to mongodb 
+    private ApiResult instanceApiWorker() throws Exception {
+        // TODO - Invoke in another thread because we are mostly reading and writing to mongodb
         String className = null;
-        try
-        {
+        try {
             String uri = _request.getUri();
             String[] segments = uri.split("/");
             String apiName = segments[2];
 
             // Get rid of query string
             int qs = apiName.indexOf("?");
-            if (qs > 0)
-            {
+            if (qs > 0) {
                 apiName = apiName.substring(0, qs);
             }
 
             // Merge _ to camel case
-            apiName = WordUtils.capitalizeFully(apiName, new char[]
-            { '_' });
+            apiName = WordUtils.capitalizeFully(apiName, new char[] { '_' });
             apiName = apiName.replace("_", "");
 
             className = "org.chililog.server.workbench.workers." + apiName + "Worker";
@@ -257,8 +236,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
 
             return _apiWorker.validate();
         }
-        catch (ClassNotFoundException ex)
-        {
+        catch (ClassNotFoundException ex) {
             return new ApiResult(HttpResponseStatus.NOT_FOUND, new ChiliLogException(ex, Strings.API_NOT_FOUND_ERROR,
                     className, _request.getUri()));
         }
@@ -272,43 +250,34 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @return {@link ApiResult} indicating the success or failure of the operation
      * @throws IOException
      */
-    private ApiResult invokeApiWorker(boolean isChunked) throws Exception
-    {
+    private ApiResult invokeApiWorker(boolean isChunked) throws Exception {
         Object requestContent = null;
         ContentIOStyle requestContentIOStyle = _apiWorker.getRequestContentIOStyle();
 
-        if (isChunked)
-        {
+        if (isChunked) {
             // Chunked so request data is stored in streams
-            if (requestContentIOStyle == ContentIOStyle.ByteArray)
-            {
+            if (requestContentIOStyle == ContentIOStyle.ByteArray) {
                 // byte[]
                 requestContent = ((ByteArrayOutputStream) _requestContentStream).toByteArray();
             }
-            else if (requestContentIOStyle == ContentIOStyle.File)
-            {
+            else if (requestContentIOStyle == ContentIOStyle.File) {
                 // File
                 _requestContentStream.close();
                 requestContent = _requestContentFile;
             }
-            else
-            {
+            else {
                 throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
             }
         }
-        else
-        {
+        else {
             // Not chunked so our request data is stored in the request content
             ChannelBuffer content = _request.getContent();
-            if (content.readable())
-            {
-                if (requestContentIOStyle == ContentIOStyle.ByteArray)
-                {
+            if (content.readable()) {
+                if (requestContentIOStyle == ContentIOStyle.ByteArray) {
                     // byte[]
                     requestContent = content.array();
                 }
-                else if (requestContentIOStyle == ContentIOStyle.File)
-                {
+                else if (requestContentIOStyle == ContentIOStyle.File) {
                     // File
                     _requestContentFile = File.createTempFile("ApiService_", ".dat");
                     _requestContentStream = new FileOutputStream(_requestContentFile);
@@ -317,39 +286,32 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
 
                     requestContent = _requestContentFile;
                 }
-                else
-                {
+                else {
                     throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
                 }
             }
         }
 
         // If debugging, we want to output our request
-        if (_logger.isDebugEnabled())
-        {
+        if (_logger.isDebugEnabled()) {
             logHttpRequest(requestContent);
         }
 
         // Dispatch
         HttpMethod requestMethod = _request.getMethod();
-        if (requestMethod == HttpMethod.GET)
-        {
+        if (requestMethod == HttpMethod.GET) {
             return _apiWorker.processGet();
         }
-        else if (requestMethod == HttpMethod.DELETE)
-        {
+        else if (requestMethod == HttpMethod.DELETE) {
             return _apiWorker.processDelete();
         }
-        else if (requestMethod == HttpMethod.POST)
-        {
+        else if (requestMethod == HttpMethod.POST) {
             return _apiWorker.processPost(requestContent);
         }
-        else if (requestMethod == HttpMethod.PUT)
-        {
+        else if (requestMethod == HttpMethod.PUT) {
             return _apiWorker.processPut(requestContent);
         }
-        else
-        {
+        else {
             throw new UnsupportedOperationException("HTTP method " + requestMethod.toString() + " not supproted.");
         }
     }
@@ -362,12 +324,11 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param result
      *            {@link ApiResult} API processing result
      */
-    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, ApiResult result)
-    {
+    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, ApiResult result) {
         // Log it
-        _logger.info("%s %s REMOTE_IP=%s STATUS=%s", _request.getMethod(), _request.getUri(), 
-                e.getRemoteAddress().toString(), result.getResponseStatus());
-        
+        _logger.info("%s %s REMOTE_IP=%s STATUS=%s", _request.getMethod(), _request.getUri(), e.getRemoteAddress()
+                .toString(), result.getResponseStatus());
+
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
 
@@ -376,36 +337,30 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
 
         // Headers
         setDateHeader(response);
-        for (Entry<String, String> header : result.getHeaders().entrySet())
-        {
+        for (Entry<String, String> header : result.getHeaders().entrySet()) {
             response.setHeader(header.getKey(), header.getValue());
         }
 
         // Content
-        if (result.getResponseContent() != null)
-        {
+        if (result.getResponseContent() != null) {
             response.setHeader(CONTENT_TYPE, result.getResponseContentType());
-            if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray)
-            {
+            if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray) {
                 byte[] content = (byte[]) result.getResponseContent();
                 toogleCompression(ctx, content.length > 4096); // Compress if > 4K
                 response.setContent(ChannelBuffers.copiedBuffer(content));
             }
-            else
-            {
+            else {
                 throw new NotImplementedException("ContentIOStyle " + result.getResponseContentIOStyle().toString());
             }
         }
 
         // If debugging, we want to output our response
-        if (_logger.isDebugEnabled())
-        {
+        if (_logger.isDebugEnabled()) {
             logHttpResponse(response, result.getResponseContent());
         }
 
         // Add 'Content-Length' header only for a keep-alive connection.
-        if (keepAlive)
-        {
+        if (keepAlive) {
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
         }
 
@@ -413,8 +368,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
         ChannelFuture future = e.getChannel().write(response);
 
         // Close the non-keep-alive connection after the write operation is done.
-        if (!keepAlive)
-        {
+        if (!keepAlive) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
     }
@@ -427,8 +381,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param ex
      *            Exception that was thrown
      */
-    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, Exception ex) throws Exception
-    {
+    private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, Exception ex) throws Exception {
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
 
@@ -452,14 +405,12 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
         response.setContent(buffer);
 
         // If debugging, we want to output our response
-        if (_logger.isDebugEnabled())
-        {
+        if (_logger.isDebugEnabled()) {
             logHttpResponse(response, response.getContent().array());
         }
 
         // Add 'Content-Length' header only for a keep-alive connection.
-        if (keepAlive)
-        {
+        if (keepAlive) {
             response.setHeader(CONTENT_LENGTH, response.getContent().readableBytes());
         }
 
@@ -467,8 +418,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
         ChannelFuture future = e.getChannel().write(response);
 
         // Close the non-keep-alive connection after the write operation is done.
-        if (!keepAlive)
-        {
+        if (!keepAlive) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
     }
@@ -476,17 +426,13 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
     /**
      * Cleanup temp files, etc.
      */
-    private void cleanup()
-    {
-        try
-        {
-            if (_requestContentFile != null && _requestContentFile.exists())
-            {
+    private void cleanup() {
+        try {
+            if (_requestContentFile != null && _requestContentFile.exists()) {
                 _requestContentFile.delete();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _logger.error(ex, "Error cleaning up.");
         }
     }
@@ -496,8 +442,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * 
      * @param e
      */
-    private void send100Continue(MessageEvent e)
-    {
+    private void send100Continue(MessageEvent e) {
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, CONTINUE);
         e.getChannel().write(response);
     }
@@ -510,8 +455,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param file
      *            file to extract content type
      */
-    private void setDateHeader(HttpResponse response)
-    {
+    private void setDateHeader(HttpResponse response) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -527,11 +471,9 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param doCompression
      *            True to turn compression on, False to turn it off
      */
-    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression)
-    {
+    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression) {
         ChannelHandler deflater = ctx.getPipeline().get("deflater");
-        if (deflater instanceof ConditionalHttpContentCompressor)
-        {
+        if (deflater instanceof ConditionalHttpContentCompressor) {
             ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
         }
     }
@@ -542,34 +484,27 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param requestContent
      *            HTTP request body
      */
-    private void logHttpRequest(Object requestContent)
-    {
-        try
-        {
+    private void logHttpRequest(Object requestContent) {
+        try {
             StringBuilder sb = new StringBuilder();
             sb.append(String.format("HTTP Request %s '%s'", _request.getMethod().toString(), _request.getUri()));
 
-            for (Map.Entry<String, String> h : _request.getHeaders())
-            {
+            for (Map.Entry<String, String> h : _request.getHeaders()) {
                 sb.append("\r\nHEADER: " + h.getKey() + " = " + h.getValue());
             }
 
-            if (requestContent != null)
-            {
-                if (requestContent instanceof byte[])
-                {
+            if (requestContent != null) {
+                if (requestContent instanceof byte[]) {
                     sb.append("\r\nCONTENT: " + new String((byte[]) requestContent, "UTF-8"));
                 }
-                else if (requestContent instanceof File)
-                {
+                else if (requestContent instanceof File) {
                     sb.append("\r\nCONTENT: stored in file");
                 }
             }
 
             _logger.debug(sb.toString());
         }
-        catch (Throwable ex)
-        {
+        catch (Throwable ex) {
             // Ignore
             ex.toString();
         }
@@ -583,40 +518,32 @@ public class ApiRequestHandler extends WorkbenchRequestHandler
      * @param responseContent
      *            HTTP response content
      */
-    private void logHttpResponse(HttpResponse response, Object responseContent)
-    {
-        try
-        {
+    private void logHttpResponse(HttpResponse response, Object responseContent) {
+        try {
             StringBuilder sb = new StringBuilder();
             sb.append(String.format("HTTP Response to %s '%s'. %s", _request.getMethod().toString(), _request.getUri(),
                     response.getStatus().toString()));
 
             String contentType = StringUtils.EMPTY;
-            for (Map.Entry<String, String> h : response.getHeaders())
-            {
+            for (Map.Entry<String, String> h : response.getHeaders()) {
                 sb.append("\r\nHEADER: " + h.getKey() + " = " + h.getValue());
-                if (h.getKey().equals(HttpHeaders.Names.CONTENT_TYPE))
-                {
+                if (h.getKey().equals(HttpHeaders.Names.CONTENT_TYPE)) {
                     contentType = h.getValue();
                 }
             }
 
-            if (responseContent != null)
-            {
-                if (responseContent instanceof byte[] && contentType.contains("UTF-8"))
-                {
+            if (responseContent != null) {
+                if (responseContent instanceof byte[] && contentType.contains("UTF-8")) {
                     sb.append("\r\nCONTENT: " + new String((byte[]) responseContent, "UTF-8"));
                 }
-                else if (responseContent instanceof File)
-                {
+                else if (responseContent instanceof File) {
                     sb.append("\r\nCONTENT: stored in file");
                 }
             }
 
             _logger.debug(sb.toString());
         }
-        catch (Throwable ex)
-        {
+        catch (Throwable ex) {
             // Ignore
             ex.toString();
         }

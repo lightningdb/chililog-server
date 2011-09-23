@@ -30,34 +30,29 @@ import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
-
 /**
  * <p>
  * Sets up the pipeline of handlers for incoming HTTP requests.
  * </p>
  */
-public class HttpServerPipelineFactory implements ChannelPipelineFactory
-{
+public class HttpServerPipelineFactory implements ChannelPipelineFactory {
     /**
      * Constructor
      */
-    public HttpServerPipelineFactory()
-    {
+    public HttpServerPipelineFactory() {
     }
 
     /**
      * Creates an HTTP Pipeline for our server
      */
-    public ChannelPipeline getPipeline() throws Exception
-    {
+    public ChannelPipeline getPipeline() throws Exception {
         AppProperties appProperties = AppProperties.getInstance();
 
         // Create a default pipeline implementation.
         ChannelPipeline pipeline = pipeline();
 
         // SSL handling
-        if (appProperties.getWorkbenchSslEnabled())
-        {
+        if (appProperties.getWorkbenchSslEnabled()) {
             SSLEngine engine = SslContextManager.getInstance().getServerContext().createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));
@@ -74,14 +69,13 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
         // Chunked handler for SSL large static file downloads
-        if (appProperties.getWorkbenchSslEnabled())
-        {
+        if (appProperties.getWorkbenchSslEnabled()) {
             pipeline.addLast("chunkedWriter", new ChunkedWriteHandler());
         }
 
         // Compress
         pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
-        
+
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());
 

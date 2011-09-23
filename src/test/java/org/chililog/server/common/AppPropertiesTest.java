@@ -31,318 +31,284 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 /**
  * JUnit test cases for <code>AppProperties</code>
  * 
  * @author vibul
  * 
  */
-public class AppPropertiesTest
-{
+public class AppPropertiesTest {
     private static Logger _logger = Logger.getLogger(AppPropertiesTest.class);
 
     @BeforeClass
-    public static void testClassInit() throws Exception
-    {
+    public static void testClassInit() throws Exception {
         // Reload properties
         SystemProperties.getInstance().loadProperties();
     }
 
     @Before
     @After
-    public void testCleanup() throws Exception
-    {
+    public void testCleanup() throws Exception {
         // Reload properties so that we start with default
         SystemProperties.getInstance().loadProperties();
     }
-    
+
     @Test
-    public void testDbIpAddress() throws UnknownHostException
-    {
+    public void testDbIpAddress() throws UnknownHostException {
         String s = AppProperties.getInstance().getDbIpAddress();
         assertEquals("localhost", s);
     }
 
     @Test
-    public void testDbIpPort() throws UnknownHostException
-    {
+    public void testDbIpPort() throws UnknownHostException {
         int s = AppProperties.getInstance().getDbIpPort();
         assertEquals(27017, s);
     }
 
     @Test
-    public void testDbName() throws UnknownHostException
-    {
+    public void testDbName() throws UnknownHostException {
         String s = AppProperties.getInstance().getDbName();
         assertEquals("chililog", s);
     }
 
     @Test
-    public void testDbUserName() throws UnknownHostException
-    {
+    public void testDbUserName() throws UnknownHostException {
         String s = AppProperties.getInstance().getDbUserName();
         assertEquals("chililog", s);
     }
 
     @Test
-    public void testDbPassowrd() throws UnknownHostException
-    {
+    public void testDbPassowrd() throws UnknownHostException {
         String s = AppProperties.getInstance().getDbPassword();
         assertEquals("chililog12", s);
     }
 
     @Test
-    public void testDbConnectionsPerHost() throws UnknownHostException
-    {
+    public void testDbConnectionsPerHost() throws UnknownHostException {
         int i = AppProperties.getInstance().getDbConnectionsPerHost();
         assertEquals(10, i);
     }
-    
+
     @Test
-    public void testMqJournallingEnabled() throws UnknownHostException
-    {
+    public void testMqJournallingEnabled() throws UnknownHostException {
         assertFalse(AppProperties.getInstance().getMqJournallingEnabled());
     }
 
     @Test
-    public void testMqJournalDirectory() throws UnknownHostException
-    {
+    public void testMqJournalDirectory() throws UnknownHostException {
         String s = AppProperties.getInstance().getMqJournalDirectory();
         assertEquals("/tmp/chililog/journal", s);
     }
 
     @Test
-    public void testMqPagingDirectory() throws UnknownHostException
-    {
+    public void testMqPagingDirectory() throws UnknownHostException {
         String s = AppProperties.getInstance().getMqPagingDirectory();
         assertEquals("/tmp/chililog/paging", s);
     }
 
     @Test
-    public void testMqSecurityInvalidationInterval() throws UnknownHostException
-    {
+    public void testMqSecurityInvalidationInterval() throws UnknownHostException {
         int i = AppProperties.getInstance().getMqSecurityInvalidationInterval();
         assertEquals(0, i);
     }
 
     @Test
-    public void testMqClusteredEnabled() throws UnknownHostException
-    {
+    public void testMqClusteredEnabled() throws UnknownHostException {
         assertFalse(AppProperties.getInstance().getMqClusteredEnabled());
     }
 
     @Test
-    public void testMqRedeliveryMaxAttempts() throws UnknownHostException
-    {
+    public void testMqRedeliveryMaxAttempts() throws UnknownHostException {
         assertEquals(3, AppProperties.getInstance().getMqRedeliveryMaxAttempts());
     }
 
     @Test
-    public void testMqRedeliveryDelayMilliSeconds() throws UnknownHostException
-    {
+    public void testMqRedeliveryDelayMilliSeconds() throws UnknownHostException {
         assertEquals(3000, AppProperties.getInstance().getMqRedeliveryDelayMilliseconds());
     }
 
     @Test
-    public void testPubSubCoreProtocolEnabled() throws UnknownHostException
-    {
+    public void testPubSubCoreProtocolEnabled() throws UnknownHostException {
         assertTrue(AppProperties.getInstance().getPubSubCoreProtocolEnabled());
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolEnabled() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolEnabled() throws UnknownHostException {
         assertTrue(AppProperties.getInstance().getPubSubJsonHttpProtocolEnabled());
     }
-    
+
     @Test
-    public void testPubSubJsonHttpProtocolHost() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolHost() throws UnknownHostException {
         String s = AppProperties.getInstance().getPubSubJsonHttpProtocolHost();
         assertEquals("0.0.0.0", s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_HOST));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolPort() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolPort() throws UnknownHostException {
         int s = AppProperties.getInstance().getPubSubJsonHttpProtocolPort();
         assertEquals(61615, s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_PORT));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolSize() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolTaskThreadPoolSize() throws UnknownHostException {
         int s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolSize();
         assertEquals(16, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException {
         long s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize();
         assertEquals(1048576, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException {
         long s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize();
         assertEquals(1048576, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
     }
-   
+
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds() throws UnknownHostException {
         int s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds();
         assertEquals(30, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolSSLEnabled() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolSSLEnabled() throws UnknownHostException {
         boolean b = AppProperties.getInstance().getPubSubJsonHttpProtocolSslEnabled();
         assertFalse(b);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStorePath() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolKeyStorePath() throws UnknownHostException {
         String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStorePath();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStorePassword() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolKeyStorePassword() throws UnknownHostException {
         String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStorePassword();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStoreKeyPassword() throws UnknownHostException
-    {
+    public void testPubSubJsonHttpProtocolKeyStoreKeyPassword() throws UnknownHostException {
         String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStoreKeyPassword();
         assertTrue(StringUtils.isBlank(s));
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD));
     }
 
-    
-    
     @Test
-    public void testWorkbenchEnabled() throws UnknownHostException
-    {
+    public void testWorkbenchEnabled() throws UnknownHostException {
         assertTrue(AppProperties.getInstance().getWorkbenchEnabled());
     }
-    
+
     @Test
-    public void testWorkbenchHost() throws UnknownHostException
-    {
+    public void testWorkbenchHost() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchHost();
         assertEquals("localhost", s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_HOST));
     }
 
     @Test
-    public void testWorkbenchPort() throws UnknownHostException
-    {
+    public void testWorkbenchPort() throws UnknownHostException {
         int s = AppProperties.getInstance().getWorkbenchPort();
         assertEquals(8989, s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_PORT));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolSize() throws UnknownHostException
-    {
+    public void testWorkbenchTaskThreadPoolSize() throws UnknownHostException {
         int s = AppProperties.getInstance().getWorkbenchTaskThreadPoolSize();
         assertEquals(16, s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_SIZE));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException
-    {
+    public void testWorkbenchTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException {
         long s = AppProperties.getInstance().getWorkbenchTaskThreadPoolMaxChannelMemorySize();
         assertEquals(1048576, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException
-    {
+    public void testWorkbenchTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException {
         long s = AppProperties.getInstance().getWorkbenchTaskThreadPoolMaxThreadMemorySize();
         assertEquals(1048576, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
-    }
-   
-    @Test
-    public void testWorkbenchTaskThreadPoolKeepAliveSeconds() throws UnknownHostException
-    {
-        int s = AppProperties.getInstance().getWorkbenchTaskThreadPoolKeepAliveSeconds();
-        assertEquals(30, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
     }
 
     @Test
-    public void testWorkbenchSSLEnabled() throws UnknownHostException
-    {
+    public void testWorkbenchTaskThreadPoolKeepAliveSeconds() throws UnknownHostException {
+        int s = AppProperties.getInstance().getWorkbenchTaskThreadPoolKeepAliveSeconds();
+        assertEquals(30, s);
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+    }
+
+    @Test
+    public void testWorkbenchSSLEnabled() throws UnknownHostException {
         boolean b = AppProperties.getInstance().getWorkbenchSslEnabled();
         assertFalse(b);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_SSL_ENABLED));
     }
 
     @Test
-    public void testWorkbenchKeyStorePath() throws UnknownHostException
-    {
+    public void testWorkbenchKeyStorePath() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchKeyStorePath();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_KEY_STORE_PATH));
     }
 
     @Test
-    public void testWorkbenchKeyStorePassword() throws UnknownHostException
-    {
+    public void testWorkbenchKeyStorePassword() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchKeyStorePassword();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_KEY_STORE_PASSWORD));
     }
 
     @Test
-    public void testWorkbenchKeyStoreKeyPassword() throws UnknownHostException
-    {
+    public void testWorkbenchKeyStoreKeyPassword() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchKeyStoreKeyPassword();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_KEY_STORE_KEY_PASSWORD));
     }
 
     @Test
-    public void testWorkbenchKeyStaticFilesDirectory() throws UnknownHostException
-    {
+    public void testWorkbenchKeyStaticFilesDirectory() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchStaticFilesDirectory();
         assertTrue(s.equals("./src/main/sc2") || s.equals("../workbench")); // cater for debug and release builds
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_STATIC_FILES_DIRECTORY));
     }
 
     @Test
-    public void testWorkbenchStaticFilesCacheSeconds() throws UnknownHostException
-    {
+    public void testWorkbenchStaticFilesCacheSeconds() throws UnknownHostException {
         int s = AppProperties.getInstance().getWorkbenchStaticFilesCacheSeconds();
         assertTrue(s == 3 || s == 31535000); // cater for debug and release builds
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_STATIC_FILES_CACHE_SECONDS));
     }
 
     @Test
-    public void testToString()
-    {
+    public void testToString() {
         String s = AppProperties.getInstance().toString();
         assertTrue(StringUtils.isNotBlank(s));
         _logger.debug("\n" + s);

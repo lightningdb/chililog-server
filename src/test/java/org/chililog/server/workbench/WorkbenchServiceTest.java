@@ -57,17 +57,15 @@ import org.junit.Test;
  * @author vibul
  * 
  */
-public class WorkbenchServiceTest
-{
+public class WorkbenchServiceTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchServiceTest.class);
 
     private static String _workbenchStaticFilesDirectory = null;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _workbenchStaticFilesDirectory = AppProperties.getInstance().getWorkbenchStaticFilesDirectory() + "/testdata";
-        
+
         File dir = deleteDirectory(_workbenchStaticFilesDirectory);
         dir.mkdirs();
 
@@ -75,28 +73,24 @@ public class WorkbenchServiceTest
     }
 
     @AfterClass
-    public static void classTeardown()
-    {
+    public static void classTeardown() {
         WorkbenchService.getInstance().stop();
         deleteDirectory(_workbenchStaticFilesDirectory);
     }
 
     private static File deleteDirectory(String dirPath) {
         File dir = new File(dirPath);
-        if (dir.exists())
-        {
-            for (String f : dir.list())
-            {
+        if (dir.exists()) {
+            for (String f : dir.list()) {
                 new File(dir, f).delete();
             }
-            dir.delete();        
+            dir.delete();
         }
         return dir;
     }
-    
+
     @Test
-    public void testEchoGET2() throws IOException
-    {
+    public void testEchoGET2() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/echo/test");
 
@@ -104,8 +98,7 @@ public class WorkbenchServiceTest
         BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         StringBuffer sb = new StringBuffer();
         String str;
-        while ((str = in.readLine()) != null)
-        {
+        while ((str = in.readLine()) != null) {
             sb.append(str + "\n");
         }
         in.close();
@@ -121,8 +114,7 @@ public class WorkbenchServiceTest
      * @throws IOException
      */
     @Test(expected = FileNotFoundException.class)
-    public void testNotFound() throws IOException
-    {
+    public void testNotFound() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/not/found");
         url.getContent();
@@ -135,8 +127,7 @@ public class WorkbenchServiceTest
      * @throws ParseException
      */
     @Test()
-    public void testStaticFileCache() throws IOException, ParseException
-    {
+    public void testStaticFileCache() throws IOException, ParseException {
         String TEXT = "abc\n123";
 
         String fileName = UUID.randomUUID().toString() + ".txt";
@@ -161,8 +152,7 @@ public class WorkbenchServiceTest
         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuffer sb = new StringBuffer();
         String str;
-        while ((str = in.readLine()) != null)
-        {
+        while ((str = in.readLine()) != null) {
             sb.append(str + "\n");
         }
         in.close();
@@ -171,20 +161,16 @@ public class WorkbenchServiceTest
 
         // Get headers
         HashMap<String, String> headers = new HashMap<String, String>();
-        for (int i = 0;; i++)
-        {
+        for (int i = 0;; i++) {
             String name = conn.getHeaderFieldKey(i);
             String value = conn.getHeaderField(i);
-            if (name == null && value == null)
-            {
+            if (name == null && value == null) {
                 break;
             }
-            if (name == null)
-            {
+            if (name == null) {
                 _logger.debug("*** Intial Call, Response code: %s", value);
             }
-            else
-            {
+            else {
                 headers.put(name, value);
                 _logger.debug("%s = %s", name, value);
             }
@@ -215,8 +201,7 @@ public class WorkbenchServiceTest
 
         in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         sb = new StringBuffer();
-        while ((str = in.readLine()) != null)
-        {
+        while ((str = in.readLine()) != null) {
             sb.append(str + "\n");
         }
         in.close();
@@ -226,21 +211,17 @@ public class WorkbenchServiceTest
 
         HashMap<String, String> headers2 = new HashMap<String, String>();
         String responseCode = "";
-        for (int i = 0;; i++)
-        {
+        for (int i = 0;; i++) {
             String name = conn.getHeaderFieldKey(i);
             String value = conn.getHeaderField(i);
-            if (name == null && value == null)
-            {
+            if (name == null && value == null) {
                 break;
             }
-            if (name == null)
-            {
+            if (name == null) {
                 responseCode = value;
                 _logger.debug("*** Cache Call, Response code: %s", value);
             }
-            else
-            {
+            else {
                 headers2.put(name, value);
                 _logger.debug("%s = %s", name, value);
             }
@@ -265,17 +246,14 @@ public class WorkbenchServiceTest
      * @throws DecoderException
      */
     @Test()
-    public void testStaticFileCompression() throws IOException, ParseException, DecoderException
-    {
-        String[] fileExtensions = new String[]
-        { ".html", ".js", ".css", ".json", ".txt", ".xml", ".nocompression" };
+    public void testStaticFileCompression() throws IOException, ParseException, DecoderException {
+        String[] fileExtensions = new String[] { ".html", ".js", ".css", ".json", ".txt", ".xml", ".nocompression" };
 
         // Get 10K string
         String TEXT = new RandomString(1024 * 10).nextString();
         byte[] TEXT_ARRAY = TEXT.getBytes("UTF-8");
 
-        for (String fileExtension : fileExtensions)
-        {
+        for (String fileExtension : fileExtensions) {
             String fileName = UUID.randomUUID().toString() + fileExtension;
             File file = new File(_workbenchStaticFilesDirectory, fileName);
 
@@ -296,29 +274,24 @@ public class WorkbenchServiceTest
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             InputStream is = conn.getInputStream();
             int b;
-            while ((b = is.read()) != -1)
-            {
+            while ((b = is.read()) != -1) {
                 os.write(b);
             }
 
             // Get headers
             String responseCode = "";
             HashMap<String, String> headers = new HashMap<String, String>();
-            for (int i = 0;; i++)
-            {
+            for (int i = 0;; i++) {
                 String name = conn.getHeaderFieldKey(i);
                 String value = conn.getHeaderField(i);
-                if (name == null && value == null)
-                {
+                if (name == null && value == null) {
                     break;
                 }
-                if (name == null)
-                {
+                if (name == null) {
                     responseCode = value;
                     _logger.debug("*** Intial Call, Response code: %s", value);
                 }
-                else
-                {
+                else {
                     headers.put(name, value);
                     _logger.debug("%s = %s", name, value);
                 }
@@ -328,13 +301,11 @@ public class WorkbenchServiceTest
             assertEquals("HTTP/1.1 200 OK", responseCode);
             assertTrue(!StringUtils.isBlank(headers.get("Date")));
 
-            if (fileExtension != ".nocompression")
-            {
+            if (fileExtension != ".nocompression") {
                 // Uncompress and check it out
                 assertEquals("gzip", headers.get("Content-Encoding"));
                 byte[] uncompressedContent = uncompress(os.toByteArray());
-                for (int j = 0; j < TEXT_ARRAY.length; j++)
-                {
+                for (int j = 0; j < TEXT_ARRAY.length; j++) {
                     assertEquals(TEXT_ARRAY[j], uncompressedContent[j]);
                 }
             }
@@ -353,12 +324,11 @@ public class WorkbenchServiceTest
      * @throws ParseException
      */
     @Test()
-    public void testApiNotFound() throws IOException, ParseException
-    {
+    public void testApiNotFound() throws IOException, ParseException {
         URL url = new URL("http://localhost:8989/api/notfound");
         URLConnection conn = url.openConnection();
 
-        //String content = ApiUtils.getResponseContent((HttpURLConnection) conn);
+        // String content = ApiUtils.getResponseContent((HttpURLConnection) conn);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         String responseCode = ApiUtils.getResponseHeaders(conn, headers);
@@ -376,8 +346,7 @@ public class WorkbenchServiceTest
      * @return
      * @throws DecoderException
      */
-    public byte[] uncompress(byte[] input) throws DecoderException
-    {
+    public byte[] uncompress(byte[] input) throws DecoderException {
         int uncomprLen = 40000;
         byte[] uncompr = new byte[uncomprLen];
         int err;
@@ -392,8 +361,7 @@ public class WorkbenchServiceTest
         err = d_stream.inflateInit(JZlib.W_GZIP);
         checkZipError(d_stream, err, "inflateInit");
 
-        while (d_stream.total_out < uncomprLen && d_stream.total_in < input.length)
-        {
+        while (d_stream.total_out < uncomprLen && d_stream.total_in < input.length) {
             d_stream.avail_in = d_stream.avail_out = 1; /* force small buffers */
             err = d_stream.inflate(JZlib.Z_NO_FLUSH);
             if (err == JZlib.Z_STREAM_END)
@@ -415,10 +383,8 @@ public class WorkbenchServiceTest
      * @param msg
      * @throws DecoderException
      */
-    void checkZipError(ZStream z, int err, String msg) throws DecoderException
-    {
-        if (err != JZlib.Z_OK)
-        {
+    void checkZipError(ZStream z, int err, String msg) throws DecoderException {
+        if (err != JZlib.Z_OK) {
             throw new DecoderException(z.msg);
         }
     }
@@ -426,8 +392,7 @@ public class WorkbenchServiceTest
     /**
      * Create a random string
      */
-    public static class RandomString
-    {
+    public static class RandomString {
 
         private final char[] symbols = new char[36];
 
@@ -435,8 +400,7 @@ public class WorkbenchServiceTest
 
         private final char[] buf;
 
-        public RandomString(int length)
-        {
+        public RandomString(int length) {
             for (int idx = 0; idx < 10; ++idx)
                 symbols[idx] = (char) ('0' + idx);
             for (int idx = 10; idx < 36; ++idx)
@@ -447,8 +411,7 @@ public class WorkbenchServiceTest
             buf = new char[length];
         }
 
-        public String nextString()
-        {
+        public String nextString() {
             for (int idx = 0; idx < buf.length; ++idx)
                 buf[idx] = symbols[random.nextInt(symbols.length)];
             return new String(buf);

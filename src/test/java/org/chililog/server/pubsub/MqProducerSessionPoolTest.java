@@ -28,48 +28,39 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-public class MqProducerSessionPoolTest
-{
+public class MqProducerSessionPoolTest {
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         MqService.getInstance().start();
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         MqService.getInstance().stop();
     }
 
     @Test
-    public void testExhaustPool() throws Exception
-    {
+    public void testExhaustPool() throws Exception {
         MqProducerSessionPool.Pooled p;
         MqProducerSessionPool pool = new MqProducerSessionPool(5);
         assertEquals(5, pool.size());
 
-        for (int i = 0; i < 5; i++)
-        {
+        for (int i = 0; i < 5; i++) {
             p = pool.getPooled();
             p.session.close();
         }
 
-        try
-        {
+        try {
             p = pool.getPooled();
             fail("Exception expected");
         }
-        catch (ChiliLogException ex)
-        {
+        catch (ChiliLogException ex) {
             assertEquals(Strings.GET_POOLED_PUBLISHER_SESSION_TIMEOUT_ERROR, ex.getErrorCode());
         }
     }
 
     @Test
-    public void testUseAndReturn() throws Exception
-    {
+    public void testUseAndReturn() throws Exception {
         MqProducerSessionPool.Pooled p;
         MqProducerSessionPool pool = new MqProducerSessionPool(5);
         assertEquals(5, pool.size());
@@ -80,22 +71,21 @@ public class MqProducerSessionPoolTest
         pool.returnPooled(p);
         assertEquals(5, pool.size());
     }
-    
+
     @Test
-    public void testUseAndReplace() throws Exception
-    {
+    public void testUseAndReplace() throws Exception {
         MqProducerSessionPool.Pooled p;
         MqProducerSessionPool pool = new MqProducerSessionPool(5);
         assertEquals(5, pool.size());
 
         // Use and close session because of assumed error
         p = pool.getPooled();
-        assertEquals(4, pool.size());        
+        assertEquals(4, pool.size());
         p.session.close();
 
         // Add a new connection
         pool.addPooled();
-        assertEquals(5, pool.size());        
+        assertEquals(5, pool.size());
     }
-    
+
 }

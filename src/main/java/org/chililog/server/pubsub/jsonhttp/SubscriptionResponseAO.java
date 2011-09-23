@@ -24,8 +24,7 @@ import java.io.PrintStream;
 /**
  * Subscription Response API JSON binding object. Encapsulates the data for subscription log entries
  */
-public class SubscriptionResponseAO
-{
+public class SubscriptionResponseAO {
     private String _messageType = "SubscriptionResponse";
     private String _messageID = "";
     private LogEntryAO _logEntry = null;
@@ -36,8 +35,7 @@ public class SubscriptionResponseAO
     /**
      * Basic constructor
      */
-    public SubscriptionResponseAO()
-    {
+    public SubscriptionResponseAO() {
         return;
     }
 
@@ -47,8 +45,7 @@ public class SubscriptionResponseAO
      * @param messageID
      *            Request message id for correlation
      */
-    public SubscriptionResponseAO(String messageID)
-    {
+    public SubscriptionResponseAO(String messageID) {
         _messageID = messageID;
     }
 
@@ -60,8 +57,7 @@ public class SubscriptionResponseAO
      * @param logEntry
      *            Log entry to has been received
      */
-    public SubscriptionResponseAO(String messageID, LogEntryAO logEntry)
-    {
+    public SubscriptionResponseAO(String messageID, LogEntryAO logEntry) {
         _messageID = messageID;
         _logEntry = logEntry;
     }
@@ -74,21 +70,18 @@ public class SubscriptionResponseAO
      * @param ex
      *            Exception describing the error
      */
-    public SubscriptionResponseAO(String messageID, Throwable ex)
-    {
+    public SubscriptionResponseAO(String messageID, Throwable ex) {
         _success = false;
         _messageID = messageID;
         _errorMessage = ex.getMessage();
 
-        try
-        {
+        try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             ex.printStackTrace(ps);
             _errorStackTrace = baos.toString("UTF-8");
         }
-        catch (Exception ex2)
-        {
+        catch (Exception ex2) {
             _errorStackTrace = ex.toString();
         }
     }
@@ -96,39 +89,33 @@ public class SubscriptionResponseAO
     /**
      * Returns the type of message: "SubscriptionResponse"
      */
-    public String getMessageType()
-    {
+    public String getMessageType() {
         return _messageType;
     }
 
-    public void setMessageType(String messageType)
-    {
+    public void setMessageType(String messageType) {
         _messageType = messageType;
     }
 
     /**
      * Returns the message id as set in the request
      */
-    public String getMessageID()
-    {
+    public String getMessageID() {
         return _messageID;
     }
 
-    public void setMessageID(String messageId)
-    {
+    public void setMessageID(String messageId) {
         _messageID = messageId;
     }
 
     /**
      * Returns the only entry received during subscription.
      */
-    public LogEntryAO getLogEntry()
-    {
+    public LogEntryAO getLogEntry() {
         return _logEntry;
     }
 
-    public void setLogEntry(LogEntryAO logEntry)
-    {
+    public void setLogEntry(LogEntryAO logEntry) {
         _logEntry = logEntry;
     }
 
@@ -136,13 +123,11 @@ public class SubscriptionResponseAO
      * Returns if the request as identified by the message id has been processed successfully. If not, error details are
      * supplied.
      */
-    public boolean isSuccess()
-    {
+    public boolean isSuccess() {
         return _success;
     }
 
-    public void setSuccess(boolean success)
-    {
+    public void setSuccess(boolean success) {
         _success = success;
     }
 
@@ -150,26 +135,22 @@ public class SubscriptionResponseAO
      * In the event of an unsuccessful processing of a request, returns the error message. If successful, null is
      * returned.
      */
-    public String getErrorMessage()
-    {
+    public String getErrorMessage() {
         return _errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage)
-    {
+    public void setErrorMessage(String errorMessage) {
         _errorMessage = errorMessage;
     }
 
     /**
      * Returns the stack trace in the event of an error, null if successful.
      */
-    public String getErrorStackTrace()
-    {
+    public String getErrorStackTrace() {
         return _errorStackTrace;
     }
 
-    public void setErrorStackTrace(String errorStackTrace)
-    {
+    public void setErrorStackTrace(String errorStackTrace) {
         _errorStackTrace = errorStackTrace;
     }
 

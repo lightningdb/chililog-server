@@ -63,8 +63,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryTest
-{
+public class RepositoryTest {
     private static DB _db;
     private static RepositoryConfigBO _repoConfig;
 
@@ -79,8 +78,7 @@ public class RepositoryTest
     private static final String MONGODB_COLLECTION_NAME = "repo_junit_test";
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
 
         // Clean up old test data if any exists
@@ -161,15 +159,13 @@ public class RepositoryTest
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         coll.drop();
@@ -182,8 +178,7 @@ public class RepositoryTest
     }
 
     @Test
-    public void testBasicOK() throws Exception
-    {
+    public void testBasicOK() throws Exception {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
@@ -243,8 +238,7 @@ public class RepositoryTest
     }
 
     @Test
-    public void testUpdateRepositoryConfig() throws Exception
-    {
+    public void testUpdateRepositoryConfig() throws Exception {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
@@ -256,13 +250,11 @@ public class RepositoryTest
 
         // Try to update repo - should error because it is not off line
         // Simulate we getting new repoConfig from the DB
-        try
-        {
+        try {
             repo.setRepoConfig(_repoConfig);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ChiliLogException.class, ex.getClass());
         }
 
@@ -288,8 +280,7 @@ public class RepositoryTest
         String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
-        for (int i = 1; i <= 10000; i++)
-        {
+        for (int i = 1; i <= 10000; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
@@ -306,8 +297,7 @@ public class RepositoryTest
         Thread.sleep(5000);
 
         // Check that threads are still running
-        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
-        {
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers()) {
             assertTrue(rw.isRunning());
         }
         assertEquals(10, repo.getStorageWorkers().size());
@@ -331,8 +321,7 @@ public class RepositoryTest
     }
 
     @Test
-    public void testRepositoryStatusSwitching() throws Exception
-    {
+    public void testRepositoryStatusSwitching() throws Exception {
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
 
@@ -345,13 +334,11 @@ public class RepositoryTest
         assertEquals(Status.ONLINE, repo.getStatus());
 
         // try to bring online again - should error
-        try
-        {
+        try {
             repo.bringOnline();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ChiliLogException.class, ex.getClass());
         }
 
@@ -362,8 +349,7 @@ public class RepositoryTest
         String queueAddress = _repoConfig.getPubSubAddress();
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
-        for (int i = 1; i <= 10; i++)
-        {
+        for (int i = 1; i <= 10; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
@@ -400,8 +386,7 @@ public class RepositoryTest
         // Have to wait for at least 1 seconds for credentials cache to timeout
         // security-invalidation-interval defaults to 0 milliseconds
         Thread.sleep(1000);
-        try
-        {
+        try {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
@@ -413,8 +398,7 @@ public class RepositoryTest
             producer.send(message);
             producerSession.commit();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
             // repo.junit_test]
             assertEquals(HornetQException.class, ex.getClass());
@@ -422,8 +406,7 @@ public class RepositoryTest
         }
 
         // Check that there are no threads are still running
-        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
-        {
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers()) {
             assertTrue(!rw.isRunning());
         }
         assertEquals(0, repo.getStorageWorkers().size());
@@ -442,8 +425,7 @@ public class RepositoryTest
         // Have to wait for at least 1 seconds for credentials cache to timeout
         // security-invalidation-interval defaults to 0 milliseconds
         Thread.sleep(1000);
-        try
-        {
+        try {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
@@ -455,8 +437,7 @@ public class RepositoryTest
             producer.send(message);
             producerSession.commit();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
             // repo.junit_test]
             assertEquals(HornetQException.class, ex.getClass());
@@ -475,8 +456,7 @@ public class RepositoryTest
     }
 
     @Test
-    public void testBadEntries() throws Exception
-    {
+    public void testBadEntries() throws Exception {
         String deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
         SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
         sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
@@ -502,16 +482,14 @@ public class RepositoryTest
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         // Write some good entries
-        for (int i = 1; i <= 100; i++)
-        {
+        for (int i = 1; i <= 100; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
             message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
             message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
             message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
             message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "Debug");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
-            if (i == 33)
-            {
+            if (i == 33) {
                 entry1 = i + " - bad entry no delimiter";
             }
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
@@ -524,8 +502,7 @@ public class RepositoryTest
         Thread.sleep(3000);
 
         // Check that threads are still running
-        for (RepositoryStorageWorker rw : repo.getStorageWorkers())
-        {
+        for (RepositoryStorageWorker rw : repo.getStorageWorkers()) {
             assertTrue(rw.isRunning());
         }
         assertEquals(2, repo.getStorageWorkers().size());
@@ -551,26 +528,21 @@ public class RepositoryTest
     }
 
     @Test
-    public void testRepositoryService() throws Exception
-    {
+    public void testRepositoryService() throws Exception {
         // Start queues
         MqService.getInstance().start();
 
         // Start
         RepositoryService.getInstance().start();
         Repository[] repos = RepositoryService.getInstance().getRepositories();
-        for (Repository r : repos)
-        {
-            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE)
-            {
+        for (Repository r : repos) {
+            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE) {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
-            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY)
-            {
+            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
                 assertEquals(Status.READONLY, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
         }
@@ -578,18 +550,14 @@ public class RepositoryTest
         // Start again - should not error
         RepositoryService.getInstance().start();
         Repository[] repos2 = RepositoryService.getInstance().getRepositories();
-        for (Repository r : repos2)
-        {
-            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE)
-            {
+        for (Repository r : repos2) {
+            if (r.getRepoConfig().getStartupStatus() == Status.ONLINE) {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
-            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY)
-            {
+            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
                 assertEquals(Status.READONLY, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
         }
@@ -598,8 +566,7 @@ public class RepositoryTest
         // Stop
         RepositoryService.getInstance().stop();
         repos2 = RepositoryService.getInstance().getRepositories();
-        for (Repository r : repos2)
-        {
+        for (Repository r : repos2) {
             assertEquals(Status.OFFLINE, r.getStatus());
         }
         assertEquals(repos.length, repos2.length);
@@ -607,8 +574,7 @@ public class RepositoryTest
         // Stop again
         RepositoryService.getInstance().stop();
         repos2 = RepositoryService.getInstance().getRepositories();
-        for (Repository r : repos2)
-        {
+        for (Repository r : repos2) {
             assertEquals(Status.OFFLINE, r.getStatus());
         }
         assertEquals(repos.length, repos2.length);

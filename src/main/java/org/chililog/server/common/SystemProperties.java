@@ -52,15 +52,13 @@ import org.apache.commons.lang.WordUtils;
  * @author vibul
  * @since 1.0
  */
-public class SystemProperties
-{
+public class SystemProperties {
     private static Log4JLogger _logger = Log4JLogger.getLogger(SystemProperties.class);
 
     /**
      * Returns the singleton instance for this class
      */
-    public static SystemProperties getInstance()
-    {
+    public static SystemProperties getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -70,8 +68,7 @@ public class SystemProperties
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final SystemProperties INSTANCE = new SystemProperties();
     }
 
@@ -85,14 +82,11 @@ public class SystemProperties
      * might as well terminate here.
      * </p>
      */
-    private SystemProperties()
-    {
-        try
-        {
+    private SystemProperties() {
+        try {
             loadProperties();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error(e, "Error loading system properties: " + e.getMessage());
             System.exit(1);
         }
@@ -110,33 +104,27 @@ public class SystemProperties
      * 
      * @throws Exception
      */
-    public void loadProperties() throws Exception
-    {
+    public void loadProperties() throws Exception {
         Class<SystemProperties> cls = SystemProperties.class;
-        for (Field f : cls.getDeclaredFields())
-        {
+        for (Field f : cls.getDeclaredFields()) {
             // Look for field names like CHILILOG_CONFIG_DIRECTORY
             String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
+            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$")) {
                 continue;
             }
 
             // Build cache field (_chiliLogConfigDirectory) and method (loadChiliLogConfigDirectory) names
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
+            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[] { '_' });
             baseName = baseName.replace("Chililog", "ChiliLog").replace("_", "");
             String cacheMethodName = "load" + baseName;
             String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
 
             // If field not exist, then skip
             Field cacheField = null;
-            try
-            {
+            try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
             }
-            catch (NoSuchFieldException e)
-            {
+            catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -152,8 +140,7 @@ public class SystemProperties
     /**
      * @return The Java home directory
      */
-    public String getJavaHome()
-    {
+    public String getJavaHome() {
         return _javaHome;
     }
 
@@ -161,16 +148,14 @@ public class SystemProperties
 
     private String _javaHome = null;
 
-    static String loadJavaHome()
-    {
+    static String loadJavaHome() {
         return System.getProperty(JAVA_HOME);
     }
-    
+
     /**
      * @return The Java vendor
      */
-    public String getJavaVender()
-    {
+    public String getJavaVender() {
         return _javaVender;
     }
 
@@ -178,16 +163,14 @@ public class SystemProperties
 
     private String _javaVender = null;
 
-    static String loadJavaVender()
-    {
+    static String loadJavaVender() {
         return System.getProperty(JAVA_VENDER);
     }
-    
+
     /**
      * @return The Java version
      */
-    public String getJavaVersion()
-    {
+    public String getJavaVersion() {
         return _javaVersion;
     }
 
@@ -195,16 +178,14 @@ public class SystemProperties
 
     private String _javaVersion = null;
 
-    static String loadJavaVersion()
-    {
+    static String loadJavaVersion() {
         return System.getProperty(JAVA_VERSION);
     }
 
     /**
      * @return The operating system name
      */
-    public String getOsName()
-    {
+    public String getOsName() {
         return _osName;
     }
 
@@ -212,16 +193,14 @@ public class SystemProperties
 
     private String _osName = null;
 
-    static String loadOsName()
-    {
+    static String loadOsName() {
         return System.getProperty(OS_NAME);
     }
-    
+
     /**
      * @return The operating system architecture
      */
-    public String getOsArchitecture()
-    {
+    public String getOsArchitecture() {
         return _osArchitecture;
     }
 
@@ -229,16 +208,14 @@ public class SystemProperties
 
     private String _osArchitecture = null;
 
-    static String loadOsArchitecture()
-    {
+    static String loadOsArchitecture() {
         return System.getProperty(OS_ARCHITECTURE);
     }
-    
+
     /**
      * @return The operating system version
      */
-    public String getOsVersion()
-    {
+    public String getOsVersion() {
         return _osVersion;
     }
 
@@ -246,16 +223,14 @@ public class SystemProperties
 
     private String _osVersion = null;
 
-    static String loadOsVersion()
-    {
+    static String loadOsVersion() {
         return System.getProperty(OS_VERSION);
     }
 
     /**
      * String representation of the values are have parsed
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
 
         // Get all system properties
@@ -263,10 +238,10 @@ public class SystemProperties
 
         // Enumerate all system properties
         Enumeration<?> e = props.propertyNames();
-        for (; e.hasMoreElements(); ) {
-            String name = (String)e.nextElement();
-            String value = (String)props.get(name);
-            
+        for (; e.hasMoreElements();) {
+            String name = (String) e.nextElement();
+            String value = (String) props.get(name);
+
             sb.append(name);
             sb.append(" = ");
             sb.append(value);

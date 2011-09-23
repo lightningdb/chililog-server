@@ -24,19 +24,16 @@ import java.util.Hashtable;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 
-
 /**
  * Parses a string field.
  * 
  * @author vibul
  * 
  */
-public class StringFieldParser extends FieldParser
-{
+public class StringFieldParser extends FieldParser {
     private String _defaultValue = null;
 
-    public StringFieldParser(RepositoryFieldConfigBO repoFieldInfo)
-    {
+    public StringFieldParser(RepositoryFieldConfigBO repoFieldInfo) {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
@@ -47,8 +44,7 @@ public class StringFieldParser extends FieldParser
      * Parses a string. If string is blank the default value is returned (if it was specified).
      */
     @Override
-    public Object parse(String value) throws ParseException
-    {
+    public Object parse(String value) throws ParseException {
         return parseString(value);
     }
 
@@ -59,11 +55,9 @@ public class StringFieldParser extends FieldParser
      *            value to parse
      * @return parsed string
      */
-    private String parseString(String value)
-    {
+    private String parseString(String value) {
         value = preparse(value);
-        if (StringUtils.isBlank(value) && _defaultValue != null)
-        {
+        if (StringUtils.isBlank(value) && _defaultValue != null) {
             return (String) _defaultValue;
         }
         return value;

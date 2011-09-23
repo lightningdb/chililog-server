@@ -26,16 +26,14 @@ package org.chililog.server.workbench.workers;
  * @author vibul
  * 
  */
-public class RepositoryPropertyConfigAO extends AO
-{
+public class RepositoryPropertyConfigAO extends AO {
     private String _key;
     private String _value;
 
     /**
      * Basic constructor
      */
-    public RepositoryPropertyConfigAO()
-    {
+    public RepositoryPropertyConfigAO() {
         return;
     }
 
@@ -47,30 +45,25 @@ public class RepositoryPropertyConfigAO extends AO
      * @param value
      *            Property value
      */
-    public RepositoryPropertyConfigAO(String key, String value)
-    {
+    public RepositoryPropertyConfigAO(String key, String value) {
         _key = key;
         _value = value;
         return;
     }
 
-    public String getKey()
-    {
+    public String getKey() {
         return _key;
     }
 
-    public void setKey(String key)
-    {
+    public void setKey(String key) {
         _key = key;
     }
 
-    public String getValue()
-    {
+    public String getValue() {
         return _value;
     }
 
-    public void setValue(String value)
-    {
+    public void setValue(String value) {
         _value = value;
     }
 

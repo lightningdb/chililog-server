@@ -63,8 +63,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryRuntimeTest
-{
+public class RepositoryRuntimeTest {
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;
@@ -73,8 +72,7 @@ public class RepositoryRuntimeTest
     private static String _repoInfoId;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
@@ -157,8 +155,7 @@ public class RepositoryRuntimeTest
         _repoInfoId = repoConfig.getDocumentID().toString();
 
         coll = _db.getCollection(repoConfig.getMongoDBCollectionName());
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
 
@@ -186,8 +183,7 @@ public class RepositoryRuntimeTest
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old user test data if any exists
         DBCollection coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^TestRepo[\\w]*$");
@@ -205,8 +201,7 @@ public class RepositoryRuntimeTest
         App.stop(null);
 
         coll = _db.getCollection("repo_test_repo");
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
     }
@@ -217,8 +212,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetAll() throws Exception
-    {
+    public void testGetAll() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -235,10 +229,8 @@ public class RepositoryRuntimeTest
                 RepositoryStatusAO[].class);
         assertTrue(getListResponseAO.length > 0);
         String myRepoDocId = null;
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
-            if (r.getName().equals("test_repo"))
-            {
+        for (RepositoryStatusAO r : getListResponseAO) {
+            if (r.getName().equals("test_repo")) {
                 myRepoDocId = r.getDocumentID();
             }
         }
@@ -275,8 +267,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetOne() throws Exception
-    {
+    public void testGetOne() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -336,8 +327,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetEntries() throws Exception
-    {
+    public void testGetEntries() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -402,8 +392,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetEntriesWithCriteria() throws Exception
-    {
+    public void testGetEntriesWithCriteria() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -453,8 +442,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetEntriesReadOnly() throws Exception
-    {
+    public void testGetEntriesReadOnly() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -515,7 +503,7 @@ public class RepositoryRuntimeTest
 
         errorAO = JsonTranslator.getInstance().fromJson(responseContent.toString(), ErrorAO.class);
         assertEquals("ChiliLogException:Workbench.RepositoryNotFoundError", errorAO.getErrorCode());
-        
+
         // Bring repo online again
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
@@ -527,8 +515,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testGetEntriesOffline() throws Exception
-    {
+    public void testGetEntriesOffline() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -552,16 +539,15 @@ public class RepositoryRuntimeTest
                 + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
         ApiUtils.getResponse(httpConn, responseContent, responseCode, headers);
         ApiUtils.check200OKResponse(responseCode.toString(), headers);
-   }
-    
+    }
+
     /**
      * Test start and stop repositories
      * 
      * @throws Exception
      */
     @Test
-    public void testStartStopSystemAdmin() throws Exception
-    {
+    public void testStartStopSystemAdmin() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -590,8 +576,7 @@ public class RepositoryRuntimeTest
 
         RepositoryStatusAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.OFFLINE, r.getStatus());
         }
 
@@ -618,8 +603,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
@@ -639,14 +623,11 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
-            if (r.getDocumentID().equals(_repoInfoId))
-            {
+        for (RepositoryStatusAO r : getListResponseAO) {
+            if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -667,8 +648,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
@@ -688,18 +668,15 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
-            if (r.getDocumentID().equals(_repoInfoId))
-            {
+        for (RepositoryStatusAO r : getListResponseAO) {
+            if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.READONLY, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
-        
+
         // Start 1
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
@@ -716,8 +693,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
     }
@@ -728,8 +704,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testStartStopRepoAdmin() throws Exception
-    {
+    public void testStartStopRepoAdmin() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -744,8 +719,7 @@ public class RepositoryRuntimeTest
 
         RepositoryStatusAO[] getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
@@ -758,8 +732,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
@@ -784,14 +757,11 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
-            if (r.getDocumentID().equals(_repoInfoId))
-            {
+        for (RepositoryStatusAO r : getListResponseAO) {
+            if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -816,8 +786,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
 
@@ -837,18 +806,15 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
-            if (r.getDocumentID().equals(_repoInfoId))
-            {
+        for (RepositoryStatusAO r : getListResponseAO) {
+            if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.READONLY, r.getStatus());
             }
-            else
-            {
+            else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
-        
+
         // Start 1
         httpConn = ApiUtils.getHttpURLConnection("http://localhost:8989/api/repository_runtime/" + _repoInfoId
                 + "?action=online", HttpMethod.POST, _systemAdminAuthToken);
@@ -865,8 +831,7 @@ public class RepositoryRuntimeTest
 
         getListResponseAO = JsonTranslator.getInstance().fromJson(responseContent.toString(),
                 RepositoryStatusAO[].class);
-        for (RepositoryStatusAO r : getListResponseAO)
-        {
+        for (RepositoryStatusAO r : getListResponseAO) {
             assertEquals(Status.ONLINE, r.getStatus());
         }
     }
@@ -877,8 +842,7 @@ public class RepositoryRuntimeTest
      * @throws Exception
      */
     @Test
-    public void testStartStopReloadAllError() throws Exception
-    {
+    public void testStartStopReloadAllError() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -955,21 +919,18 @@ public class RepositoryRuntimeTest
      * @throws IOException
      */
     @Test
-    public void testDELETE() throws IOException
-    {
+    public void testDELETE() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/repository_runtime");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("DELETE");
 
         String content = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -991,8 +952,7 @@ public class RepositoryRuntimeTest
      * @throws IOException
      */
     @Test
-    public void testPUT() throws IOException
-    {
+    public void testPUT() throws IOException {
         // Create a URL for the desired page
         URL url = new URL("http://localhost:8989/api/repository_runtime");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -1000,13 +960,11 @@ public class RepositoryRuntimeTest
         conn.setRequestMethod("PUT");
 
         String content = null;
-        try
-        {
+        try {
             conn.getInputStream();
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 

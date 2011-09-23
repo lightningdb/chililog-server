@@ -25,17 +25,14 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.CryptoUtils;
 import org.junit.Test;
 
-
-public class CryptoUtilsTest
-{
+public class CryptoUtilsTest {
     private static Logger _logger = Logger.getLogger(CryptoUtilsTest.class);
 
     @Test
-    public void testMD5Hash() throws Exception
-    {
+    public void testMD5Hash() throws Exception {
         String hashValue = CryptoUtils.createMD5Hash("admin");
         _logger.info("Hashed password of 'admin' is " + hashValue);
-        
+
         hashValue = CryptoUtils.createMD5Hash("sandpit");
         _logger.info("Hashed password of 'sandpit' is " + hashValue);
 
@@ -43,10 +40,9 @@ public class CryptoUtilsTest
         _logger.info("Hashed password of 'hello' is " + hashValue);
 
     }
-    
+
     @Test
-    public void testSHA512() throws Exception
-    {
+    public void testSHA512() throws Exception {
         String hashValue = CryptoUtils.createSHA512Hash("admin", null);
         _logger.info("Hashed password of 'admin' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("admin", hashValue));
@@ -73,8 +69,7 @@ public class CryptoUtilsTest
     }
 
     @Test
-    public void testNotOK() throws Exception
-    {
+    public void testNotOK() throws Exception {
         String hashValue = CryptoUtils.createSHA512Hash("admin", null);
         assertFalse(CryptoUtils.verifyHash("not admin", hashValue));
     }
@@ -85,8 +80,7 @@ public class CryptoUtilsTest
      * @throws Exception
      */
     @Test
-    public void testSaltiness() throws Exception
-    {
+    public void testSaltiness() throws Exception {
         String hashValue = CryptoUtils.createSHA512Hash("Yeeeeee Haaaaaa", null);
         String hashValue2 = CryptoUtils.createSHA512Hash("Yeeeeee Haaaaaa", null);
         assertFalse(hashValue.equals(hashValue2));
@@ -98,28 +92,24 @@ public class CryptoUtilsTest
      * @throws ChiliLogException
      */
     @Test
-    public void testSaltSupplied() throws ChiliLogException
-    {
-        byte[] salt = new byte[]
-        { 1, 2, 3, 4, 5, 6, 7, 8 };
+    public void testSaltSupplied() throws ChiliLogException {
+        byte[] salt = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
 
         String hashValue = CryptoUtils.createSHA512Hash("rocksalt", salt, false);
         _logger.info("Hashed password of 'rocksalt' is " + hashValue);
         assertTrue(CryptoUtils.verifyHash("rocksalt", salt, hashValue));
     }
-        
+
     @Test
-    public void testEncryptDecryptAES() throws ChiliLogException
-    {
+    public void testEncryptDecryptAES() throws ChiliLogException {
         String encryptedText = CryptoUtils.encryptAES("secret", "my password");
         String decryptedText = CryptoUtils.decryptAES(encryptedText, "my password");
         _logger.info("Encrypted 'secret' is " + encryptedText);
         assertEquals("secret", decryptedText);
     }
-    
+
     @Test
-    public void testEncryptDecrypt2() throws ChiliLogException
-    {
+    public void testEncryptDecrypt2() throws ChiliLogException {
         String encryptedText = CryptoUtils.encryptTripleDES("secret", "my password");
         String decryptedText = CryptoUtils.decryptTripleDES(encryptedText, "my password");
         _logger.info("Encrypted 'secret' is " + encryptedText);

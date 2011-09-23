@@ -24,8 +24,7 @@ import java.io.PrintStream;
 /**
  * Publication Response API JSON binding object. Encapsulates the data for publishing log entries
  */
-public class PublicationResponseAO
-{
+public class PublicationResponseAO {
     private String _messageType = "PublicationResponse";
     private String _messageID = "";
     private boolean _success = true;
@@ -35,8 +34,7 @@ public class PublicationResponseAO
     /**
      * Basic constructor
      */
-    public PublicationResponseAO()
-    {
+    public PublicationResponseAO() {
         return;
     }
 
@@ -46,8 +44,7 @@ public class PublicationResponseAO
      * @param messageID
      *            Request message id for correlation
      */
-    public PublicationResponseAO(String messageID)
-    {
+    public PublicationResponseAO(String messageID) {
         _messageID = messageID;
     }
 
@@ -59,21 +56,18 @@ public class PublicationResponseAO
      * @param ex
      *            Exception describing the error
      */
-    public PublicationResponseAO(String messageID, Throwable ex)
-    {
+    public PublicationResponseAO(String messageID, Throwable ex) {
         _success = false;
         _messageID = messageID;
         _errorMessage = ex.getMessage();
-        
-        try
-        {
+
+        try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             ex.printStackTrace(ps);
             _errorStackTrace = baos.toString("UTF-8");
         }
-        catch (Exception ex2)
-        {
+        catch (Exception ex2) {
             _errorStackTrace = ex.toString();
         }
     }
@@ -81,26 +75,22 @@ public class PublicationResponseAO
     /**
      * Returns the type of message: "PublicationResponse"
      */
-    public String getMessageType()
-    {
+    public String getMessageType() {
         return _messageType;
     }
 
-    public void setMessageType(String messageType)
-    {
+    public void setMessageType(String messageType) {
         _messageType = messageType;
     }
 
     /**
      * Returns the message id as set in the request
      */
-    public String getMessageID()
-    {
+    public String getMessageID() {
         return _messageID;
     }
 
-    public void setMessageID(String messageID)
-    {
+    public void setMessageID(String messageID) {
         _messageID = messageID;
     }
 
@@ -108,13 +98,11 @@ public class PublicationResponseAO
      * Returns if the request as identified by the message id has been processed successfully. If not, error details are
      * supplied.
      */
-    public boolean isSuccess()
-    {
+    public boolean isSuccess() {
         return _success;
     }
 
-    public void setSuccess(boolean success)
-    {
+    public void setSuccess(boolean success) {
         _success = success;
     }
 
@@ -122,26 +110,22 @@ public class PublicationResponseAO
      * In the event of an unsuccessful processing of a request, returns the error message. If successful, null is
      * returned.
      */
-    public String getErrorMessage()
-    {
+    public String getErrorMessage() {
         return _errorMessage;
     }
 
-    public void setErrorMessage(String errorMessage)
-    {
+    public void setErrorMessage(String errorMessage) {
         _errorMessage = errorMessage;
     }
 
     /**
      * Returns the stack trace in the event of an error, null if successful.
      */
-    public String getErrorStackTrace()
-    {
+    public String getErrorStackTrace() {
         return _errorStackTrace;
     }
 
-    public void setErrorStackTrace(String errorStackTrace)
-    {
+    public void setErrorStackTrace(String errorStackTrace) {
         _errorStackTrace = errorStackTrace;
     }
 

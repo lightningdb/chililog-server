@@ -51,34 +51,29 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class DefaultEntryParserTest
-{
+public class DefaultEntryParserTest {
     private static DB _db;
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection("repo_default_test");
         coll.drop();
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         classTeardown();
     }
 
     @Test
-    public void testOK() throws ChiliLogException, ParseException
-    {
+    public void testOK() throws ChiliLogException, ParseException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("default_test");
         repoInfo.setDisplayName("Default Test 1");
@@ -97,7 +92,8 @@ public class DefaultEntryParserTest
         sb.append("hello");
 
         // Save OK
-        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(), sb.toString());
+        RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(),
+                sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -112,7 +108,7 @@ public class DefaultEntryParserTest
         cal.setTimeZone(TimeZone.getTimeZone("GMT"));
         cal.set(2010, 10, 29, 19, 41, 46);
         cal.set(Calendar.MILLISECOND, 0);
-        
+
         assertNotNull(dbObject);
         assertEquals(cal.getTime(), dbObject.get(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
         assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));

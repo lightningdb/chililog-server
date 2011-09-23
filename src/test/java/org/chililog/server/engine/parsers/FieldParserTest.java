@@ -39,13 +39,10 @@ import org.chililog.server.engine.parsers.LongIntegerFieldParser;
 import org.chililog.server.engine.parsers.StringFieldParser;
 import org.junit.Test;
 
-
-public class FieldParserTest
-{
+public class FieldParserTest {
 
     @Test
-    public void testParseString() throws Exception
-    {
+    public void testParseString() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -60,8 +57,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseInteger() throws Exception
-    {
+    public void testParseInteger() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -73,43 +69,35 @@ public class FieldParserTest
         assertEquals(123, p.parse("123"));
         assertEquals(123, p.parse(" 123 "));
 
-        try
-        {
+        try {
             p.parse("123.45");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("123adb");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
@@ -126,8 +114,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseIntegerNumberFormat() throws Exception
-    {
+    public void testParseIntegerNumberFormat() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -145,23 +132,19 @@ public class FieldParserTest
         assertEquals(123, p.parse("123.11"));
         assertEquals(123, p.parse("123.99"));
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -182,8 +165,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseLong() throws Exception
-    {
+    public void testParseLong() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -195,43 +177,35 @@ public class FieldParserTest
         assertEquals(123L, p.parse("123"));
         assertEquals(123L, p.parse(" 123 "));
 
-        try
-        {
+        try {
             p.parse("123.45");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("123adb");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
@@ -248,8 +222,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseLongNumberFormat() throws Exception
-    {
+    public void testParseLongNumberFormat() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -267,23 +240,19 @@ public class FieldParserTest
         assertEquals(123L, p.parse("123.45"));
         assertEquals(123L, p.parse("123.99"));
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -304,8 +273,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseDouble() throws Exception
-    {
+    public void testParseDouble() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -319,33 +287,27 @@ public class FieldParserTest
         assertEquals(123.45, p.parse("123.45"));
         assertEquals(123.99, p.parse("123.99"));
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("123adb");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -362,8 +324,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseDoubleNumberFormat() throws Exception
-    {
+    public void testParseDoubleNumberFormat() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -381,23 +342,19 @@ public class FieldParserTest
         assertEquals(123.45, p.parse("123.45"));
         assertEquals(123.99, p.parse("123.99"));
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -418,8 +375,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseBoolean() throws Exception
-    {
+    public void testParseBoolean() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -437,8 +393,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseBooleanFormat() throws Exception
-    {
+    public void testParseBooleanFormat() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -458,8 +413,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseDate() throws Exception
-    {
+    public void testParseDate() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
@@ -471,46 +425,37 @@ public class FieldParserTest
 
         assertEquals(new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime(), p.parse("2011-01-02 03:04:05"));
         assertEquals(new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime(), p.parse("2011-1-2 3:4:5"));
-        assertEquals(new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime(),
-                p.parse("2011-1-2 3:4:5 this is not parsed"));
+        assertEquals(new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime(), p.parse("2011-1-2 3:4:5 this is not parsed"));
 
-        try
-        {
+        try {
             p.parse("xx 2011-1-2 3:4:5 zzz");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("2011-01-02");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -522,53 +467,47 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseDateFormat() throws Exception
-    {
+    public void testParseDateFormat() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
         repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Date);
         repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSS");
-        
+
         DateFieldParser p = new DateFieldParser(repoFieldInfo);
 
         Date d = new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime();
         d.setTime(d.getTime() + 123);
         assertEquals(d, p.parse("2011-01-02 03:04:05,123"));
 
-        try
-        {
+        try {
             p.parse("2011-01-02");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse("");
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
-        try
-        {
+        try {
             p.parse(null);
             fail();
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
         // Default values
-        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME, "2011-01-02 03:04:05,123");
+        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME,
+                "2011-01-02 03:04:05,123");
         p = new DateFieldParser(repoFieldInfo);
 
         d = new GregorianCalendar(2011, 0, 2, 3, 4, 5).getTime();
@@ -579,14 +518,14 @@ public class FieldParserTest
     }
 
     @Test
-    public void testParseDateFormatTimezone() throws Exception
-    {
+    public void testParseDateFormatTimezone() throws Exception {
         RepositoryFieldConfigBO repoFieldInfo = new RepositoryFieldConfigBO();
         repoFieldInfo.setName("field1");
         repoFieldInfo.setDisplayName("Field Number 1");
         repoFieldInfo.setDescription("description");
         repoFieldInfo.setDataType(RepositoryFieldConfigBO.DataType.Date);
-        repoFieldInfo.getProperties().put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSSZ");
+        repoFieldInfo.getProperties()
+                .put(RepositoryFieldConfigBO.DATE_FORMAT_PROPERTY_NAME, "yyyy-MM-dd HH:mm:ss,SSSZ");
 
         DateFieldParser p = new DateFieldParser(repoFieldInfo);
 
@@ -608,8 +547,7 @@ public class FieldParserTest
     }
 
     @Test
-    public void testPreParsingExamples()
-    {
+    public void testPreParsingExamples() {
         // Strip white spaces
         Pattern p = Pattern.compile("[\\s]*([A-Z]+)[\\s]*");
         Matcher m = p.matcher("ABC");
@@ -636,6 +574,5 @@ public class FieldParserTest
         assertFalse(m.find());
 
     }
-    
 
 }

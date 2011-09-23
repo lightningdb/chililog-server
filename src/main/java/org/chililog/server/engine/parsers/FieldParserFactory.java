@@ -23,15 +23,13 @@ import java.text.ParseException;
 import org.apache.commons.lang.NotImplementedException;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 
-
 /**
  * Factory to instance field parsers
  * 
  * @author vibul
  * 
  */
-public class FieldParserFactory
-{
+public class FieldParserFactory {
     /**
      * Instances the correct field parser for the field. The parser will convert strings into strongly typed field
      * values.
@@ -41,10 +39,8 @@ public class FieldParserFactory
      * @return Field parser
      * @throws ParseException
      */
-    public static FieldParser getParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
-    {
-        switch (repoFieldInfo.getDataType())
-        {
+    public static FieldParser getParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException {
+        switch (repoFieldInfo.getDataType()) {
             case String:
                 return new StringFieldParser(repoFieldInfo);
             case Integer:

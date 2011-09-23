@@ -28,7 +28,6 @@ import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 
-
 /**
  * <p>
  * Default parser that does not extract any fields. Just create a {@link RepositoryEntryBO} with keywords.
@@ -37,8 +36,7 @@ import org.chililog.server.data.RepositoryEntryBO.Severity;
  * @author vibul
  * 
  */
-public class DefaultEntryParser extends EntryParser
-{
+public class DefaultEntryParser extends EntryParser {
     private static Log4JLogger _logger = Log4JLogger.getLogger(DefaultEntryParser.class);
 
     /**
@@ -52,8 +50,8 @@ public class DefaultEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public DefaultEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
-    {
+    public DefaultEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
+            throws ChiliLogException {
         super(repoInfo, repoParserInfo);
         return;
     }
@@ -76,16 +74,14 @@ public class DefaultEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
-    {
-        try
-        {
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message) {
+        try {
             this.setLastParseError(null);
             checkParseArguments(timestamp, source, host, severity, message);
 
             Severity sev = Severity.parse(severity);
             ArrayList<String> keywords = parseKeywords(source, host, sev, message);
-            
+
             RepositoryEntryBO entry = new RepositoryEntryBO();
             entry.setTimestamp(parseTimestamp(timestamp));
             entry.setSavedTimestamp(new Date());
@@ -96,8 +92,7 @@ public class DefaultEntryParser extends EntryParser
             entry.setMessage(message);
             return entry;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;

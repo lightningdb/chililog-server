@@ -21,13 +21,11 @@ package org.chililog.server.common;
 import org.chililog.server.common.Log4JLogger;
 import org.junit.Test;
 
-public class Log4JLoggerTest
-{
+public class Log4JLoggerTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(Log4JLoggerTest.class);
 
     @Test
-    public void testOK()
-    {
+    public void testOK() {
         _logger.debug("debug");
         _logger.trace("trace");
         _logger.info("info");
@@ -37,8 +35,7 @@ public class Log4JLoggerTest
     }
 
     @Test
-    public void testNull()
-    {
+    public void testNull() {
         // Should be no NullPointerExceptoin
         _logger.debug(null);
         _logger.trace(null);
@@ -49,8 +46,7 @@ public class Log4JLoggerTest
     }
 
     @Test
-    public void testStringFormat()
-    {
+    public void testStringFormat() {
         _logger.debug("%s", "debug");
         _logger.trace("%s", "trace");
         _logger.info("%s", "info");
@@ -60,8 +56,7 @@ public class Log4JLoggerTest
     }
 
     @Test
-    public void testStringFormatError()
-    {
+    public void testStringFormatError() {
         // There should be no java.util.MissingFormatArgumentException.
         _logger.debug("%s %s", "debug");
         _logger.trace("%s %s", "trace");

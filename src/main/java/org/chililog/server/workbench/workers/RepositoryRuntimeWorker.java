@@ -62,8 +62,7 @@ import com.mongodb.DBObject;
  * Runtime information refers to the current status of an instance of a repository.
  * </p>
  */
-public class RepositoryRuntimeWorker extends Worker
-{
+public class RepositoryRuntimeWorker extends Worker {
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
     public static final String ONLINE_OPERATION = "online";
     public static final String READONLY_OPERATION = "readonly";
@@ -92,8 +91,7 @@ public class RepositoryRuntimeWorker extends Worker
     /**
      * Constructor
      */
-    public RepositoryRuntimeWorker(HttpRequest request)
-    {
+    public RepositoryRuntimeWorker(HttpRequest request) {
         super(request);
         return;
     }
@@ -102,18 +100,15 @@ public class RepositoryRuntimeWorker extends Worker
      * Can only create and delete sessions
      */
     @Override
-    public HttpMethod[] getSupportedMethods()
-    {
-        return new HttpMethod[]
-        { HttpMethod.GET, HttpMethod.POST };
+    public HttpMethod[] getSupportedMethods() {
+        return new HttpMethod[] { HttpMethod.GET, HttpMethod.POST };
     }
 
     /**
      * Let's validate if the user is able to access these functions
      */
     @Override
-    protected ApiResult validateAuthenticatedUserRole()
-    {
+    protected ApiResult validateAuthenticatedUserRole() {
         // Do checks when we execute
         return new ApiResult();
     }
@@ -124,85 +119,69 @@ public class RepositoryRuntimeWorker extends Worker
      * @throws Exception
      */
     @Override
-    public ApiResult processPost(Object requestContent) throws Exception
-    {
-        try
-        {
+    public ApiResult processPost(Object requestContent) throws Exception {
+        try {
             UserBO user = this.getAuthenticatedUser();
             String action = this.getUriQueryStringParameter(ACTION_URI_QUERYSTRING_PARAMETER_NAME, false);
             Object responseContent = null;
 
-            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
-            {
+            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0) {
                 // Start/Stop/Reload all
                 // Only available to system administrators
 
-                if (!user.isSystemAdministrator())
-                {
+                if (!user.isSystemAdministrator()) {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                if (action.equalsIgnoreCase(ONLINE_OPERATION))
-                {
+                if (action.equalsIgnoreCase(ONLINE_OPERATION)) {
                     RepositoryService.getInstance().bringAllRepositoriesOnline();
                 }
-                else if (action.equalsIgnoreCase(OFFLINE_OPERATION))
-                {
+                else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
                     RepositoryService.getInstance().takeAllRepositoriesOffline();
                 }
-                else
-                {
+                else {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
 
                 Repository[] list = RepositoryService.getInstance().getRepositories();
-                if (list != null && list.length > 0)
-                {
+                if (list != null && list.length > 0) {
                     ArrayList<RepositoryStatusAO> aoList = new ArrayList<RepositoryStatusAO>();
-                    for (Repository repo : list)
-                    {
+                    for (Repository repo : list) {
                         aoList.add(new RepositoryStatusAO(repo));
                     }
 
-                    if (!aoList.isEmpty())
-                    {
+                    if (!aoList.isEmpty()) {
                         responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
             }
-            else
-            {
+            else {
                 // Online/ReadOnly/Offline specific one
                 // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 ObjectId objectId = parseDocumentObjectID(id);
                 Repository repo = RepositoryService.getInstance().getRepository(objectId);
 
-                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoConfig().getAdministratorRoleName()))
-                {
+                if (!user.isSystemAdministrator() && !user.hasRole(repo.getRepoConfig().getAdministratorRoleName())) {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.NOT_AUTHORIZED_ERROR));
                 }
 
-                if (action.equalsIgnoreCase(ONLINE_OPERATION))
-                {
+                if (action.equalsIgnoreCase(ONLINE_OPERATION)) {
                     repo = RepositoryService.getInstance().bringRepositoryOnline(repo.getRepoConfig().getDocumentID());
                     responseContent = new RepositoryStatusAO(repo);
                 }
-                else if (action.equalsIgnoreCase(READONLY_OPERATION))
-                {
+                else if (action.equalsIgnoreCase(READONLY_OPERATION)) {
                     repo = RepositoryService.getInstance().makeRepositoryReadOnly(repo.getRepoConfig().getDocumentID());
                     responseContent = new RepositoryStatusAO(repo);
                 }
-                else if (action.equalsIgnoreCase(OFFLINE_OPERATION))
-                {
+                else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
                     RepositoryService.getInstance().takeRepositoryOffline(repo.getRepoConfig().getDocumentID());
                     repo = RepositoryService.getInstance().getRepository(objectId);
                     responseContent = new RepositoryStatusAO(repo);
                 }
-                else
-                {
+                else {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
             }
@@ -210,8 +189,7 @@ public class RepositoryRuntimeWorker extends Worker
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -223,10 +201,8 @@ public class RepositoryRuntimeWorker extends Worker
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public ApiResult processGet() throws Exception
-    {
-        try
-        {
+    public ApiResult processGet() throws Exception {
+        try {
             UserBO user = this.getAuthenticatedUser();
             List<String> allowedRepositories = Arrays.asList(this.getAuthenticatedUserAllowedRepository());
 
@@ -235,58 +211,47 @@ public class RepositoryRuntimeWorker extends Worker
 
             // Get info on all repositories
             // HTTP GET /api/repositories
-            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0)
-            {
+            if (this.getUriPathParameters() == null || this.getUriPathParameters().length == 0) {
                 Repository[] list = RepositoryService.getInstance().getRepositories();
-                if (list != null && list.length > 0)
-                {
+                if (list != null && list.length > 0) {
                     ArrayList<RepositoryStatusAO> aoList = new ArrayList<RepositoryStatusAO>();
-                    for (Repository repo : list)
-                    {
+                    for (Repository repo : list) {
                         if (user.isSystemAdministrator()
-                                || allowedRepositories.contains(repo.getRepoConfig().getName()))
-                        {
+                                || allowedRepositories.contains(repo.getRepoConfig().getName())) {
                             aoList.add(new RepositoryStatusAO(repo));
                         }
                     }
 
-                    if (!aoList.isEmpty())
-                    {
+                    if (!aoList.isEmpty()) {
                         responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
             }
-            else if (this.getUriPathParameters().length == 1)
-            {
+            else if (this.getUriPathParameters().length == 1) {
                 // Get info on specified repository
                 // HTTP GET /api/repositories/{id}
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 ObjectId objectId = parseDocumentObjectID(id);
                 Repository repo = RepositoryService.getInstance().getRepository(objectId);
-                if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoConfig().getName()))
-                {
+                if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoConfig().getName())) {
                     responseContent = new RepositoryStatusAO(repo);
                 }
-                else
-                {
+                else {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
                 }
             }
-            else if (this.getUriPathParameters().length == 2)
-            {
+            else if (this.getUriPathParameters().length == 2) {
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 ObjectId objectId = parseDocumentObjectID(id);
                 Repository repo = RepositoryService.getInstance().getRepository(objectId);
-                if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoConfig().getName()))
-                {
+                if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoConfig().getName())) {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
                 }
-                else if (repo.getStatus() == Status.OFFLINE)
-                {
+                else if (repo.getStatus() == Status.OFFLINE) {
                     // Cannot search if repository is offline
                     throw new ChiliLogException(Strings.REPOSITORY_OFFLINE_ERROR, id);
                 }
@@ -304,43 +269,35 @@ public class RepositoryRuntimeWorker extends Worker
 
                 // Get controller and execute query
                 RepositoryEntryController controller = RepositoryEntryController.getInstance(repo.getRepoConfig());
-                if (queryType == QueryType.FIND)
-                {
+                if (queryType == QueryType.FIND) {
                     ArrayList<DBObject> list = controller.executeFindQuery(db, criteria);
 
-                    if (list != null && !list.isEmpty())
-                    {
+                    if (list != null && !list.isEmpty()) {
                         MongoJsonSerializer.serialize(new BasicDBObject("find", list), json);
                     }
                 }
-                else if (queryType == QueryType.COUNT)
-                {
+                else if (queryType == QueryType.COUNT) {
                     int count = controller.executeCountQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("count", count), json);
                 }
-                else if (queryType == QueryType.DISTINCT)
-                {
+                else if (queryType == QueryType.DISTINCT) {
                     List l = controller.executeDistinctQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("distinct", l), json);
                 }
-                else if (queryType == QueryType.GROUP)
-                {
+                else if (queryType == QueryType.GROUP) {
                     DBObject groupObject = controller.executeGroupQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("group", groupObject), json);
                 }
-                else
-                {
+                else {
                     throw new OperationNotSupportedException("Unsupported query type: " + queryType.toString());
                 }
 
                 // If there is no json, skip this and a 204 No Content will be returned
-                if (json.length() > 0)
-                {
+                if (json.length() > 0) {
                     responseContent = json.toString().getBytes(Worker.JSON_CHARSET);
                     ApiResult result = new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
 
-                    if (criteria.getDoPageCount())
-                    {
+                    if (criteria.getDoPageCount()) {
                         result.getHeaders().put(PAGE_COUNT_HEADER, new Integer(criteria.getPageCount()).toString());
                     }
                     return result;
@@ -350,8 +307,7 @@ public class RepositoryRuntimeWorker extends Worker
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -364,14 +320,11 @@ public class RepositoryRuntimeWorker extends Worker
      * @return ObjectID
      * @throws ChiliLogException
      */
-    private ObjectId parseDocumentObjectID(String id) throws ChiliLogException
-    {
-        try
-        {
+    private ObjectId parseDocumentObjectID(String id) throws ChiliLogException {
+        try {
             return new ObjectId(id);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
         }
     }
@@ -382,8 +335,7 @@ public class RepositoryRuntimeWorker extends Worker
      * @returns query criteria
      * @throws ChiliLogException
      */
-    private RepositoryEntryListCriteria loadCriteria() throws ChiliLogException
-    {
+    private RepositoryEntryListCriteria loadCriteria() throws ChiliLogException {
         String s;
 
         RepositoryEntryListCriteria criteria = new RepositoryEntryListCriteria();
@@ -391,63 +343,54 @@ public class RepositoryRuntimeWorker extends Worker
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_FIELDS_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setFields(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setConditions(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORD_USAGE_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setKeywordUsage(Enum.valueOf(RepositoryEntryListCriteria.KeywordUsage.class, s));
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_KEYWORDS_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setKeywords(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setConditions(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_ORDER_BY_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setOrderBy(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_INITIAL_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setInitial(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_HEADER_NAME, ENTRY_QUERY_REDUCE_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setReduceFunction(s);
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_FINALIZE_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             criteria.setFinalizeFunction(s);
         }
 

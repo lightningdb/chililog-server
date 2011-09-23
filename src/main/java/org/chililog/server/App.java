@@ -48,8 +48,7 @@ import org.jboss.netty.logging.Log4JLoggerFactory;
  * <li>User web app to view data</li>
  * 
  */
-public class App
-{
+public class App {
     static Log4JLogger _logger = Log4JLogger.getLogger(App.class);
     private static final String STOP_ME_FILENAME = "STOP_ME";
 
@@ -59,10 +58,8 @@ public class App
      * @param args
      *            Command Line arguments
      */
-    public static void main(String[] args)
-    {
-        try
-        {
+    public static void main(String[] args) {
+        try {
             start(args);
 
             addShutdownPoller();
@@ -76,8 +73,7 @@ public class App
             // Finish
             return;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error(e, "Error starting CHILILOG Server");
             e.printStackTrace();
             System.exit(1);
@@ -93,8 +89,7 @@ public class App
      *            Startup command line args
      * @throws Exception
      */
-    public static void start(String args[]) throws Exception
-    {
+    public static void start(String args[]) throws Exception {
         // Turn on netty logging
         InternalLoggerFactory.setDefaultFactory(new Log4JLoggerFactory());
 
@@ -123,8 +118,7 @@ public class App
      *            Parameters for shutdown. Not used. Only present to that this method can be called from procrun.
      * @throws Exception
      */
-    public static void stop(String args[]) throws Exception
-    {
+    public static void stop(String args[]) throws Exception {
         _logger.info("CHILILOG Server shutting down.");
 
         WorkbenchService.getInstance().stop();
@@ -141,33 +135,25 @@ public class App
     /**
      * Polls for the shutdown file - and shuts down if one is found
      */
-    static void addShutdownPoller()
-    {
+    static void addShutdownPoller() {
         final File file = new File(".", STOP_ME_FILENAME);
-        if (file.exists())
-        {
+        if (file.exists()) {
             file.delete();
         }
 
         final Timer timer = new Timer("ChiliLog Server Shutdown Timer", true);
-        timer.scheduleAtFixedRate(new TimerTask()
-        {
+        timer.scheduleAtFixedRate(new TimerTask() {
             @Override
-            public void run()
-            {
-                if (file.exists())
-                {
-                    try
-                    {
+            public void run() {
+                if (file.exists()) {
+                    try {
                         stop(null);
                         timer.cancel();
                     }
-                    catch (Exception e)
-                    {
+                    catch (Exception e) {
                         _logger.error(e, "Shutdown error: " + e.getMessage());
                     }
-                    finally
-                    {
+                    finally {
                         Runtime.getRuntime().exit(0);
                     }
                 }
@@ -180,15 +166,12 @@ public class App
      * 
      * @throws Exception
      */
-    static void writeShutdownFile() throws Exception
-    {
+    static void writeShutdownFile() throws Exception {
         Writer out = new OutputStreamWriter(new FileOutputStream(new File(".", STOP_ME_FILENAME)));
-        try
-        {
+        try {
             out.write("shutdown");
         }
-        finally
-        {
+        finally {
             out.close();
         }
     }

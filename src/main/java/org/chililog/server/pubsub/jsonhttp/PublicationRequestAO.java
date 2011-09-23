@@ -21,8 +21,7 @@ package org.chililog.server.pubsub.jsonhttp;
 /**
  * Publication Request API JSON binding object. Encapsulates the data for publishing log entries
  */
-public class PublicationRequestAO
-{
+public class PublicationRequestAO {
     private String _messageType = "PublicationRequest";
     private String _messageID = "";
     private String _repositoryName;
@@ -33,86 +32,73 @@ public class PublicationRequestAO
     /**
      * Basic constructor
      */
-    public PublicationRequestAO()
-    {
+    public PublicationRequestAO() {
         return;
     }
 
     /**
      * Returns the type of message: "PublicationRequest"
      */
-    public String getMessageType()
-    {
+    public String getMessageType() {
         return _messageType;
     }
 
-    public void setMessageType(String messageType)
-    {
+    public void setMessageType(String messageType) {
         _messageType = messageType;
     }
 
     /**
      * Returns the message id as allocated by the caller.
      */
-    public String getMessageID()
-    {
+    public String getMessageID() {
         return _messageID;
     }
 
-    public void setMessageID(String messageID)
-    {
+    public void setMessageID(String messageID) {
         _messageID = messageID;
     }
 
     /**
      * Returns the name of the repository into which the log entries will be published
      */
-    public String getRepositoryName()
-    {
+    public String getRepositoryName() {
         return _repositoryName;
     }
 
-    public void setRepositoryName(String repositoryName)
-    {
+    public void setRepositoryName(String repositoryName) {
         _repositoryName = repositoryName;
     }
 
     /**
      * Returns the username for authentication
      */
-    public String getUsername()
-    {
+    public String getUsername() {
         return _username;
     }
 
-    public void setUsername(String username)
-    {
+    public void setUsername(String username) {
         _username = username;
     }
 
     /**
      * Returns the password for authentication
      */
-    public String getPassword()
-    {
+    public String getPassword() {
         return _password;
     }
 
-    public void setPassword(String password)
-    {
+    public void setPassword(String password) {
         _password = password;
     }
 
     /**
      * Returns the log entries to save
      */
-    public LogEntryAO[] getLogEntries()
-    {
+    public LogEntryAO[] getLogEntries() {
         return _logEntries;
     }
 
-    public void setLogEntries(LogEntryAO[] logEntries)
-    {
+    public void setLogEntries(LogEntryAO[] logEntries) {
         _logEntries = logEntries;
     }
 

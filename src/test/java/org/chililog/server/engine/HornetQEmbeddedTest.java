@@ -45,8 +45,7 @@ import org.junit.Test;
  * @author vibul
  * 
  */
-public class HornetQEmbeddedTest
-{
+public class HornetQEmbeddedTest {
     private static Logger _logger = Logger.getLogger(HornetQEmbeddedTest.class);
 
     /**
@@ -55,8 +54,7 @@ public class HornetQEmbeddedTest
      * @throws Exception
      */
     @Test
-    public void testPubSub() throws Exception
-    {
+    public void testPubSub() throws Exception {
         HornetQServer hornetqServer;
 
         // *******************************
@@ -80,8 +78,7 @@ public class HornetQEmbeddedTest
 
         ClientSession coreSession = null;
         ClientSession session = null;
-        try
-        {
+        try {
             // *******************************
             // Create Q
             // *******************************
@@ -145,7 +142,7 @@ public class HornetQEmbeddedTest
             // Make sure that there are no more messages
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
-            
+
             // *******************************
             // Subscriber #2
             // *******************************
@@ -161,17 +158,14 @@ public class HornetQEmbeddedTest
             // Make sure that there are no more messages
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
-            
+
         }
-        finally
-        {
+        finally {
             // Step 9. Be sure to close our resources!
-            if (coreSession != null)
-            {
+            if (coreSession != null) {
                 coreSession.close();
             }
-            if (session != null)
-            {
+            if (session != null) {
                 session.close();
             }
             hornetqServer.stop();

@@ -47,8 +47,7 @@ import com.mongodb.DB;
 /**
  * Worker to process publication requests
  */
-public class PublicationWorker
-{
+public class PublicationWorker {
     private static Log4JLogger _logger = Log4JLogger.getLogger(PublicationWorker.class);
 
     private MqProducerSessionPool _sessionPool;
@@ -65,8 +64,7 @@ public class PublicationWorker
      * @param sessionPool
      *            MQ Session Pool to use to get producer for writing to an address
      */
-    public PublicationWorker(MqProducerSessionPool sessionPool)
-    {
+    public PublicationWorker(MqProducerSessionPool sessionPool) {
         _sessionPool = sessionPool;
     }
 
@@ -79,14 +77,11 @@ public class PublicationWorker
      *            Publishing response in JSON format
      * @return true if successful; false if error
      */
-    public boolean process(String request, StringBuilder response)
-    {
+    public boolean process(String request, StringBuilder response) {
         Pooled p = null;
         String messageId = null;
-        try
-        {
-            if (StringUtils.isBlank(request))
-            {
+        try {
+            if (StringUtils.isBlank(request)) {
                 throw new IllegalArgumentException("Request content is blank.");
             }
 
@@ -101,8 +96,7 @@ public class PublicationWorker
             SimpleString repoAddress = SimpleString.toSimpleString(RepositoryConfigBO.buildPubSubAddress(requestAO
                     .getRepositoryName()));
             p = _sessionPool.getPooled();
-            for (LogEntryAO logEntry : requestAO.getLogEntries())
-            {
+            for (LogEntryAO logEntry : requestAO.getLogEntries()) {
                 ClientMessage message = p.session.createMessage(Message.TEXT_TYPE, false);
                 message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, logEntry.getTimestamp());
                 message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, logEntry.getSource());
@@ -120,17 +114,13 @@ public class PublicationWorker
             // Finish
             return true;
         }
-        catch (Exception ex)
-        {
-            if (p != null)
-            {
-                try
-                {
+        catch (Exception ex) {
+            if (p != null) {
+                try {
                     _sessionPool.addPooled();
                     p.session.close();
                 }
-                catch (Exception ex2)
-                {
+                catch (Exception ex2) {
                     _logger.error(ex2, "Error closing pooled connection");
                 }
             }
@@ -148,15 +138,13 @@ public class PublicationWorker
      * @param publicationAO
      * @throws ChiliLogException
      */
-    public void authenticate(PublicationRequestAO publicationAO) throws ChiliLogException
-    {
+    public void authenticate(PublicationRequestAO publicationAO) throws ChiliLogException {
         String repoName = publicationAO.getRepositoryName();
 
         // Check cache
         String key = String.format("%s_%s_%s", repoName, publicationAO.getUsername(), publicationAO.getPassword());
         Date expiry = _authenticationCache.get(key);
-        if (expiry != null && expiry.after(new Date()))
-        {
+        if (expiry != null && expiry.after(new Date())) {
             // Validate
             return;
         }
@@ -170,21 +158,18 @@ public class PublicationWorker
         // Make sure user exists and password is valid
         UserBO user = UserController.getInstance().getByUsername(db, publicationAO.getUsername());
         boolean passwordOK = false;
-        if (publicationAO.getPassword().startsWith("token:"))
-        {
+        if (publicationAO.getPassword().startsWith("token:")) {
             // Password is a token so we need to check the token
             // Must have come from the workbench
             String jsonToken = publicationAO.getPassword().substring(6);
             AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
             passwordOK = token.getUserID().equals(user.getDocumentID().toString());
         }
-        else
-        {
+        else {
             // Make sure user exists and password is valid
             passwordOK = user.validatePassword(publicationAO.getPassword());
-        }        
-        if (!passwordOK)
-        {
+        }
+        if (!passwordOK) {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }
 
@@ -192,8 +177,7 @@ public class PublicationWorker
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
         String publicationRole = UserBO.createRepositoryPublisherRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole) && !user.isSystemAdministrator())
-        {
+        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole) && !user.isSystemAdministrator()) {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }
 

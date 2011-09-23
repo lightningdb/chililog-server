@@ -21,7 +21,6 @@ package org.chililog.server.pubsub;
 import org.chililog.server.common.AppProperties;
 import org.chililog.server.pubsub.jsonhttp.JsonHttpService;
 
-
 /**
  * <p>
  * The PubSubService controls all non-HornetQ PubSub services
@@ -39,13 +38,11 @@ import org.chililog.server.pubsub.jsonhttp.JsonHttpService;
  * @author vibul
  * 
  */
-public class PubSubService
-{
+public class PubSubService {
     /**
      * Returns the singleton instance for this class
      */
-    public static PubSubService getInstance()
-    {
+    public static PubSubService getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -55,8 +52,7 @@ public class PubSubService
      * 
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final PubSubService INSTANCE = new PubSubService();
     }
 
@@ -70,20 +66,17 @@ public class PubSubService
      * 
      * @throws Exception
      */
-    private PubSubService()
-    {
+    private PubSubService() {
         return;
     }
 
     /**
      * Start all pubsub services
      */
-    public void start()
-    {
+    public void start() {
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (appProperties.getPubSubJsonHttpProtocolEnabled())
-        {
+        if (appProperties.getPubSubJsonHttpProtocolEnabled()) {
             JsonHttpService.getInstance().start();
         }
     }
@@ -91,12 +84,10 @@ public class PubSubService
     /**
      * Stop all pubsub services
      */
-    public void stop()
-    {
+    public void stop() {
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (appProperties.getPubSubJsonHttpProtocolEnabled())
-        {
+        if (appProperties.getPubSubJsonHttpProtocolEnabled()) {
             JsonHttpService.getInstance().stop();
         }
     }

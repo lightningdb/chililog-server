@@ -24,87 +24,73 @@ package org.chililog.server.data;
  * @author vibul
  * 
  */
-public class UserListCriteria extends ListCriteria
-{
+public class UserListCriteria extends ListCriteria {
     private String _usernamePattern = null;
     private String _emailAddressPattern = null;
     private String _role = null;
     private String _rolePattern = null;
     private UserBO.Status _status = null;
-    
+
     /**
      * Basic constructor
      */
-    public UserListCriteria()
-    {
+    public UserListCriteria() {
         return;
     }
 
-    public String getUsernamePattern()
-    {
+    public String getUsernamePattern() {
         return _usernamePattern;
     }
 
     /**
-     * Search for all users matching this user name regular expression pattern 
+     * Search for all users matching this user name regular expression pattern
      */
-    public void setUsernamePattern(String usernamePattern)
-    {
+    public void setUsernamePattern(String usernamePattern) {
         _usernamePattern = usernamePattern;
     }
 
-        
-    public String getEmailAddressPattern()
-    {
+    public String getEmailAddressPattern() {
         return _emailAddressPattern;
     }
 
     /**
-     * Search for all users with matching email address 
+     * Search for all users with matching email address
      */
-    public void setEmailAddressPattern(String emailAddressPattern)
-    {
+    public void setEmailAddressPattern(String emailAddressPattern) {
         _emailAddressPattern = emailAddressPattern;
     }
 
-    public String getRole()
-    {
+    public String getRole() {
         return _role;
     }
 
     /**
-     * Search for all users in the specified role 
+     * Search for all users in the specified role
      */
-    public void setRole(String role)
-    {
+    public void setRole(String role) {
         _role = role;
     }
 
-    public UserBO.Status getStatus()
-    {
+    public UserBO.Status getStatus() {
         return _status;
     }
 
     /**
      * Search for all users with the specified status
      */
-    public void setStatus(UserBO.Status status)
-    {
+    public void setStatus(UserBO.Status status) {
         _status = status;
     }
-    
-    public String getRolePattern()
-    {
+
+    public String getRolePattern() {
         return _rolePattern;
     }
 
     /**
      * Search for users with roles matching the specified regular expression pattern
      */
-    public void setRolePattern(String rolePattern)
-    {
+    public void setRolePattern(String rolePattern) {
         _rolePattern = rolePattern;
     }
 
-    
 }

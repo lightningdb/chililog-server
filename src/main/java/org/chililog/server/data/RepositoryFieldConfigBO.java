@@ -35,8 +35,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryFieldConfigBO extends BO implements Serializable
-{
+public class RepositoryFieldConfigBO extends BO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // Properties stored in mongoDB
@@ -97,8 +96,7 @@ public class RepositoryFieldConfigBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryFieldConfigBO()
-    {
+    public RepositoryFieldConfigBO() {
         return;
     }
 
@@ -111,8 +109,7 @@ public class RepositoryFieldConfigBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    RepositoryFieldConfigBO(DBObject dbObject) throws ChiliLogException
-    {
+    RepositoryFieldConfigBO(DBObject dbObject) throws ChiliLogException {
         super(dbObject);
         _name = MongoUtils.getString(dbObject, NAME_FIELD_NAME, true);
         _displayName = MongoUtils.getString(dbObject, DISPLAY_NAME_FIELD_NAME, false);
@@ -130,8 +127,7 @@ public class RepositoryFieldConfigBO extends BO implements Serializable
      *            mongoDB database object that can be used for saving
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
-    {
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException {
         MongoUtils.setString(dbObject, NAME_FIELD_NAME, _name, true);
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
         MongoUtils.setString(dbObject, DESCRIPTION_FIELD_NAME, _description, false);
@@ -142,68 +138,59 @@ public class RepositoryFieldConfigBO extends BO implements Serializable
     /**
      * Returns the unique name for this field.
      */
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
     /**
-     * Returns the unique name for this field for saving in a DbObject. This name is used for storing the field in mongoDB.
+     * Returns the unique name for this field for saving in a DbObject. This name is used for storing the field in
+     * mongoDB.
      */
-    public String getDbObjectName()
-    {
+    public String getDbObjectName() {
         return "fld_" + _name;
     }
-    
+
     /**
      * Returns the user friendly display name for this field. This is used when display the field on the UI.
      */
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
     /**
      * Returns a description of this field
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         return _description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         _description = description;
     }
 
     /**
      * Returns the <code>DataType</code> for this field
      */
-    public DataType getDataType()
-    {
+    public DataType getDataType() {
         return _dataType;
     }
 
-    public void setDataType(DataType dataType)
-    {
+    public void setDataType(DataType dataType) {
         _dataType = dataType;
     }
 
     /**
      * Returns a list of parser specific properties for this repository field
      */
-    public Hashtable<String, String> getProperties()
-    {
+    public Hashtable<String, String> getProperties() {
         return _properties;
     }
 
@@ -213,8 +200,7 @@ public class RepositoryFieldConfigBO extends BO implements Serializable
      * @author vibul
      * 
      */
-    public enum DataType
-    {
+    public enum DataType {
         /**
          * <p>
          * The field is saved into mongoDB as a string.

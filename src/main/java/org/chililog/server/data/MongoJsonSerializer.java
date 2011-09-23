@@ -49,11 +49,11 @@ import com.mongodb.DBRefBase;
  * Modified to support:
  * <ul>
  * <li>ObjectId - output as string rather than object like: <code>"_id" : { "$oid" : "4d8002fcf24599f624357467"}</code></li>
- * <li>Date - output as string rather than object like: <code>"entry_timestamp" : { "$date" : "2011-03-16T00:23:24Z"}</code>.</li>
+ * <li>Date - output as string rather than object like:
+ * <code>"entry_timestamp" : { "$date" : "2011-03-16T00:23:24Z"}</code>.</li>
  * </p>
  */
-public class MongoJsonSerializer
-{
+public class MongoJsonSerializer {
     /**
      * Serializes an object into it's JSON form
      * 
@@ -61,18 +61,15 @@ public class MongoJsonSerializer
      *            object to serialize
      * @return String containing JSON form of the object
      */
-    public static String serialize(Object o)
-    {
+    public static String serialize(Object o) {
         StringBuilder buf = new StringBuilder();
         serialize(o, buf);
         return buf.toString();
     }
 
-    static void string(StringBuilder a, String s)
-    {
+    static void string(StringBuilder a, String s) {
         a.append("\"");
-        for (int i = 0; i < s.length(); ++i)
-        {
+        for (int i = 0; i < s.length(); ++i) {
             char c = s.charAt(i);
             if (c == '\\')
                 a.append("\\\\");
@@ -95,37 +92,31 @@ public class MongoJsonSerializer
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static void serialize(Object o, StringBuilder buf)
-    {
+    public static void serialize(Object o, StringBuilder buf) {
 
         o = Bytes.applyEncodingHooks(o);
 
-        if (o == null)
-        {
+        if (o == null) {
             buf.append(" null ");
             return;
         }
 
-        if (o instanceof Number)
-        {
+        if (o instanceof Number) {
             buf.append(o);
             return;
         }
 
-        if (o instanceof String)
-        {
+        if (o instanceof String) {
             string(buf, o.toString());
             return;
         }
 
-        if (o instanceof Iterable)
-        {
+        if (o instanceof Iterable) {
 
             boolean first = true;
             buf.append("[ ");
 
-            for (Object n : (Iterable) o)
-            {
+            for (Object n : (Iterable) o) {
                 if (first)
                     first = false;
                 else
@@ -138,23 +129,20 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o instanceof ObjectId)
-        {
-            //serialize(new BasicDBObject("$oid", o.toString()), buf);
+        if (o instanceof ObjectId) {
+            // serialize(new BasicDBObject("$oid", o.toString()), buf);
             string(buf, o.toString());
             return;
         }
 
-        if (o instanceof DBObject)
-        {
+        if (o instanceof DBObject) {
 
             boolean first = true;
             buf.append("{ ");
 
             DBObject dbo = (DBObject) o;
 
-            for (String name : dbo.keySet())
-            {
+            for (String name : dbo.keySet()) {
                 if (first)
                     first = false;
                 else
@@ -169,16 +157,14 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o instanceof Map)
-        {
+        if (o instanceof Map) {
 
             boolean first = true;
             buf.append("{ ");
 
             Map m = (Map) o;
 
-            for (Map.Entry entry : (Set<Map.Entry>) m.entrySet())
-            {
+            for (Map.Entry entry : (Set<Map.Entry>) m.entrySet()) {
                 if (first)
                     first = false;
                 else
@@ -193,36 +179,31 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o instanceof Date)
-        {
+        if (o instanceof Date) {
             Date d = (Date) o;
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             format.setCalendar(new GregorianCalendar(new SimpleTimeZone(0, "GMT")));
-            //serialize(new BasicDBObject("$date", format.format(d)), buf);
+            // serialize(new BasicDBObject("$date", format.format(d)), buf);
             string(buf, format.format(d));
             return;
         }
 
-        if (o instanceof DBRefBase)
-        {
+        if (o instanceof DBRefBase) {
             buf.append(o);
             return;
         }
 
-        if (o instanceof Boolean)
-        {
+        if (o instanceof Boolean) {
             buf.append(o);
             return;
         }
 
-        if (o instanceof byte[] || o instanceof Binary)
-        {
+        if (o instanceof byte[] || o instanceof Binary) {
             buf.append("<Binary Data>");
             return;
         }
 
-        if (o instanceof Pattern)
-        {
+        if (o instanceof Pattern) {
             DBObject externalForm = new BasicDBObject();
             externalForm.put("$regex", o.toString());
             externalForm.put("$options", Bytes.regexFlags(((Pattern) o).flags()));
@@ -230,12 +211,10 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o.getClass().isArray())
-        {
+        if (o.getClass().isArray()) {
             buf.append("[ ");
 
-            for (int i = 0; i < Array.getLength(o); i++)
-            {
+            for (int i = 0; i < Array.getLength(o); i++) {
                 if (i > 0)
                     buf.append(" , ");
                 serialize(Array.get(o, i), buf);
@@ -245,15 +224,13 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o instanceof BSONTimestamp)
-        {
+        if (o instanceof BSONTimestamp) {
             BSONTimestamp t = (BSONTimestamp) o;
             buf.append(t.getTime()).append("|").append(t.getInc());
             return;
         }
 
-        if (o instanceof CodeWScope)
-        {
+        if (o instanceof CodeWScope) {
             CodeWScope c = (CodeWScope) o;
 
             BasicDBObject temp = new BasicDBObject();
@@ -263,8 +240,7 @@ public class MongoJsonSerializer
             return;
         }
 
-        if (o instanceof Code)
-        {
+        if (o instanceof Code) {
             string(buf, ((Code) o).getCode());
             return;
         }

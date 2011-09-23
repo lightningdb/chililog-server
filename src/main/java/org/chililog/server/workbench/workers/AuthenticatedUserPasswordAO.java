@@ -26,8 +26,7 @@ package org.chililog.server.workbench.workers;
  * @author vibul
  * 
  */
-public class AuthenticatedUserPasswordAO extends AO
-{
+public class AuthenticatedUserPasswordAO extends AO {
     private String _documentID;
     private String _oldPassword;
     private String _newPassword;
@@ -36,50 +35,40 @@ public class AuthenticatedUserPasswordAO extends AO
     /**
      * Basic constructor
      */
-    public AuthenticatedUserPasswordAO()
-    {
+    public AuthenticatedUserPasswordAO() {
         return;
     }
 
-    public String getDocumentID()
-    {
+    public String getDocumentID() {
         return _documentID;
     }
 
-    public void setDocumentID(String documentID)
-    {
+    public void setDocumentID(String documentID) {
         _documentID = documentID;
     }
 
-    public String getOldPassword()
-    {
+    public String getOldPassword() {
         return _oldPassword;
     }
 
-    public void setOldPassword(String oldPassword)
-    {
+    public void setOldPassword(String oldPassword) {
         _oldPassword = oldPassword;
     }
 
-    public String getNewPassword()
-    {
+    public String getNewPassword() {
         return _newPassword;
     }
 
-    public void setNewPassword(String newPassword)
-    {
+    public void setNewPassword(String newPassword) {
         _newPassword = newPassword;
     }
 
-    public String getConfirmNewPassword()
-    {
+    public String getConfirmNewPassword() {
         return _confirmNewPassword;
     }
 
-    public void setConfirmNewPassword(String confirmNewPassword)
-    {
+    public void setConfirmNewPassword(String confirmNewPassword) {
         _confirmNewPassword = confirmNewPassword;
     }
 
-  
 }

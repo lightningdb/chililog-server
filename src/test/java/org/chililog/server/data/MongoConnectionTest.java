@@ -48,34 +48,29 @@ import com.mongodb.DB;
  * @author vibul
  * 
  */
-public class MongoConnectionTest
-{
+public class MongoConnectionTest {
     @Test
-    public void testOK() throws Exception
-    {
+    public void testOK() throws Exception {
         DB db = MongoConnection.getInstance().getConnection();
         assertNotNull(db);
         assertEquals(db.getName(), "chililog");
-        assertTrue(db.isAuthenticated());        
+        assertTrue(db.isAuthenticated());
     }
-    
+
     @Test(expected = ChiliLogException.class)
-    public void testBadDbName() throws Exception
-    {
+    public void testBadDbName() throws Exception {
         MongoConnection.getInstance().getConnection("baddbname", "1", "2");
     }
 
     @Test(expected = ChiliLogException.class)
-    public void testBadUserName() throws Exception
-    {
+    public void testBadUserName() throws Exception {
         // If we don't reload mongo, we get "can't call authenticate twice on the same DBObject" exception
         MongoConnection.getInstance().loadMongo();
         MongoConnection.getInstance().getConnection("chililog", "1", "2");
     }
 
     @Test(expected = ChiliLogException.class)
-    public void testBadPassword() throws Exception
-    {
+    public void testBadPassword() throws Exception {
         MongoConnection.getInstance().loadMongo();
         MongoConnection.getInstance().getConnection("chililog", "chililog", "2");
     }

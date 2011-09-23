@@ -60,16 +60,14 @@ import org.apache.commons.lang.WordUtils;
  * @author vibul
  * @since 1.0
  */
-public class BuildProperties
-{
+public class BuildProperties {
     private static Log4JLogger _logger = Log4JLogger.getLogger(BuildProperties.class);
     private static final String BUILDINFO_PROPERTY_FILE_NAME = "buildinfo.properties";
 
     /**
      * Returns the singleton instance for this class
      */
-    public static BuildProperties getInstance()
-    {
+    public static BuildProperties getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -79,8 +77,7 @@ public class BuildProperties
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final BuildProperties INSTANCE = new BuildProperties();
     }
 
@@ -94,14 +91,11 @@ public class BuildProperties
      * so might as well terminate here.
      * </p>
      */
-    private BuildProperties()
-    {
-        try
-        {
+    private BuildProperties() {
+        try {
             loadProperties();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -121,8 +115,7 @@ public class BuildProperties
      * 
      * @throws Exception
      */
-    public void loadProperties() throws Exception
-    {
+    public void loadProperties() throws Exception {
         Properties properties = readPropertiesFile();
         parseProperties(properties);
     }
@@ -140,18 +133,15 @@ public class BuildProperties
      * @throws IOException
      * @throws FileNotFoundException
      */
-    static Properties readPropertiesFile() throws FileNotFoundException, IOException
-    {
+    static Properties readPropertiesFile() throws FileNotFoundException, IOException {
         FileInputStream fis = null;
 
-        try
-        {
+        try {
             Properties properties = new Properties();
 
             // Load default from class path
             InputStream is = BuildProperties.class.getClassLoader().getResourceAsStream(BUILDINFO_PROPERTY_FILE_NAME);
-            if (is == null)
-            {
+            if (is == null) {
                 throw new FileNotFoundException("'buildinfo.properties' file not found in classpath");
             }
             properties.load(is);
@@ -159,10 +149,8 @@ public class BuildProperties
 
             return properties;
         }
-        finally
-        {
-            if (fis != null)
-            {
+        finally {
+            if (fis != null) {
                 fis.close();
             }
         }
@@ -181,34 +169,28 @@ public class BuildProperties
      *            Properties to parse
      * @throws Exception
      */
-    private void parseProperties(Properties properties) throws Exception
-    {
+    private void parseProperties(Properties properties) throws Exception {
         Class<BuildProperties> cls = BuildProperties.class;
         Field[] ff = cls.getDeclaredFields();
-        for (Field f : ff)
-        {
+        for (Field f : ff) {
             // Look for field names like APP_NAME
             String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
+            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$")) {
                 continue;
             }
 
             // Build cache field (_appName) and method (loadAppName) methods
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
+            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[] { '_' });
             baseName = baseName.replace("_", "");
             String cacheMethodName = "load" + baseName;
             String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
 
             // If field not exist, then skip
             Field cacheField = null;
-            try
-            {
+            try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
             }
-            catch (NoSuchFieldException e)
-            {
+            catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -224,8 +206,7 @@ public class BuildProperties
     /**
      * Returns this application's name - ChiliLog Server.
      */
-    public String getAppName()
-    {
+    public String getAppName() {
         return _appName;
     }
 
@@ -233,16 +214,14 @@ public class BuildProperties
 
     private String _appName = null;
 
-    static String loadAppName(Properties properties)
-    {
+    static String loadAppName(Properties properties) {
         return loadString(properties, APP_NAME, "ChiliLog Server");
     }
 
     /**
      * Returns this application's version
      */
-    public String getAppVersion()
-    {
+    public String getAppVersion() {
         return _appVersion;
     }
 
@@ -250,16 +229,14 @@ public class BuildProperties
 
     private String _appVersion = null;
 
-    static String loadAppVersion(Properties properties)
-    {
+    static String loadAppVersion(Properties properties) {
         return loadString(properties, APP_VERSION);
     }
 
     /**
      * Returns the date and time when this application build was performed
      */
-    public String getBuildTimestamp()
-    {
+    public String getBuildTimestamp() {
         return _buildTimestamp;
     }
 
@@ -267,16 +244,14 @@ public class BuildProperties
 
     private String _buildTimestamp = null;
 
-    static String loadBuildTimestamp(Properties properties)
-    {
+    static String loadBuildTimestamp(Properties properties) {
         return loadString(properties, BUILD_TIMESTAMP);
     }
 
     /**
      * Returns the name of machine on which this application build was performed
      */
-    public String getBuildMachineName()
-    {
+    public String getBuildMachineName() {
         return _buildMachineName;
     }
 
@@ -284,16 +259,14 @@ public class BuildProperties
 
     private String _buildMachineName = null;
 
-    static String loadBuildMachineName(Properties properties)
-    {
+    static String loadBuildMachineName(Properties properties) {
         return loadString(properties, BUILD_MACHINE_NAME);
     }
 
     /**
      * Returns the user account with which this application build was performed
      */
-    public String getBuildUserName()
-    {
+    public String getBuildUserName() {
         return _buildUserName;
     }
 
@@ -301,8 +274,7 @@ public class BuildProperties
 
     private String _buildUserName = null;
 
-    static String loadBuildUserName(Properties properties)
-    {
+    static String loadBuildUserName(Properties properties) {
         return loadString(properties, BUILD_USER_NAME);
     }
 
@@ -322,11 +294,9 @@ public class BuildProperties
      * @throws IllegalArgumentException
      *             if the value of the named properties is blank
      */
-    private static String loadString(Properties properties, String name)
-    {
+    private static String loadString(Properties properties, String name) {
         String s = properties.getProperty(name);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             throw new IllegalArgumentException(String.format("The property '%s' in '%s' is blank.'", name,
                     BUILDINFO_PROPERTY_FILE_NAME));
         }
@@ -345,11 +315,9 @@ public class BuildProperties
      * @return Value of the property named <code>name</code>. If whitespace, empty or null, then return the
      *         <code>defaultValue</code>
      */
-    private static String loadString(Properties properties, String name, String defaultValue)
-    {
+    private static String loadString(Properties properties, String name, String defaultValue) {
         String s = properties.getProperty(name);
-        if (StringUtils.isBlank(s))
-        {
+        if (StringUtils.isBlank(s)) {
             return defaultValue;
         }
         return s;
@@ -358,48 +326,40 @@ public class BuildProperties
     /**
      * Returns a string representation of the parsed properties
      */
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
 
         Class<BuildProperties> cls = BuildProperties.class;
-        for (Field f : cls.getDeclaredFields())
-        {
+        for (Field f : cls.getDeclaredFields()) {
             // Look for field names like APP_NAME
             String propertyNameFieldName = f.getName();
-            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$"))
-            {
+            if (!propertyNameFieldName.matches("^[A-Z0-9_]+$")) {
                 continue;
             }
 
             // Build cache field (_appName) and method (loadAppName) methods
-            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[]
-            { '_' });
+            String baseName = WordUtils.capitalizeFully(propertyNameFieldName, new char[] { '_' });
             baseName = baseName.replace("_", "");
             String cacheFieldName = "_" + StringUtils.uncapitalize(baseName);
 
             // If field not exist, then skip
             Field cacheField = null;
-            try
-            {
+            try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
             }
-            catch (NoSuchFieldException e)
-            {
+            catch (NoSuchFieldException e) {
                 continue;
             }
 
             // Get the value
-            try
-            {
+            try {
                 Object o = cacheField.get(this);
                 sb.append(f.get(null));
                 sb.append(" = ");
                 sb.append(o == null ? "<not set>" : o.toString());
                 sb.append("\n");
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 sb.append("ERROR: Cannot load value for: " + propertyNameFieldName);
             }
 

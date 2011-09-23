@@ -30,7 +30,6 @@ import org.chililog.server.workbench.workers.AuthenticationAO.ExpiryType;
 import org.chililog.server.workbench.workers.Worker.ContentIOStyle;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 
-
 /**
  * <p>
  * Encapsulates the result of invoking an API worker.
@@ -42,8 +41,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
  * @author vibul
  * 
  */
-public class ApiResult
-{
+public class ApiResult {
     private HttpResponseStatus _responseStatus = HttpResponseStatus.OK;
 
     private String _responseContentType = Worker.JSON_CONTENT_TYPE;
@@ -57,8 +55,7 @@ public class ApiResult
     /**
      * Basic constructor
      */
-    public ApiResult()
-    {
+    public ApiResult() {
         return;
     }
 
@@ -70,8 +67,7 @@ public class ApiResult
      * @param ex
      *            Exception describing the error
      */
-    public ApiResult(HttpResponseStatus status, Throwable ex)
-    {
+    public ApiResult(HttpResponseStatus status, Throwable ex) {
         _responseStatus = status;
         setResponseContentToJson(new ErrorAO(ex));
     }
@@ -88,41 +84,34 @@ public class ApiResult
      * @param content
      *            Object to convert into JSON format.
      */
-    public ApiResult(AuthenticationTokenAO authenticationToken, String contentType, Object content)
-    {
+    public ApiResult(AuthenticationTokenAO authenticationToken, String contentType, Object content) {
         BuildProperties buildProperties = BuildProperties.getInstance();
 
         _responseStatus = (content == null ? HttpResponseStatus.NO_CONTENT : HttpResponseStatus.OK);
         _responseContentType = contentType;
 
         // For an sliding expiry token, we want to update the expiry time
-        if (authenticationToken.getExpiryType() == ExpiryType.Sliding)
-        {
+        if (authenticationToken.getExpiryType() == ExpiryType.Sliding) {
             authenticationToken.updateExpiresOn();
         }
         _headers.put(Worker.AUTHENTICATION_TOKEN_HEADER, authenticationToken.toString());
         _headers.put(Worker.AUTHENTICATION_SERVER_VERSION, buildProperties.getAppVersion());
         _headers.put(Worker.AUTHENTICATION_SERVER_BUILD_TIMESTAMP, buildProperties.getBuildTimestamp());
 
-        if (content != null)
-        {
-            if (content instanceof byte[])
-            {
+        if (content != null) {
+            if (content instanceof byte[]) {
                 _responseContent = content;
                 _responseContentIOStyle = ContentIOStyle.ByteArray;
             }
-            else if (content instanceof File)
-            {
+            else if (content instanceof File) {
                 _responseContent = content;
                 _responseContentIOStyle = ContentIOStyle.File;
             }
-            else if (contentType != null && contentType.equals(Worker.JSON_CONTENT_TYPE))
-            {
+            else if (contentType != null && contentType.equals(Worker.JSON_CONTENT_TYPE)) {
                 // Try to turn it into JSON
                 setResponseContentToJson(content);
             }
-            else
-            {
+            else {
                 throw new UnsupportedOperationException("Cannot handled content of type "
                         + content.getClass().getName());
             }
@@ -132,34 +121,29 @@ public class ApiResult
     /**
      * Determines if the call is successful or not
      */
-    public boolean isSuccess()
-    {
+    public boolean isSuccess() {
         return _responseStatus == HttpResponseStatus.OK;
     }
 
     /**
      * The HTTP Response status to return to the caller
      */
-    public HttpResponseStatus getResponseStatus()
-    {
+    public HttpResponseStatus getResponseStatus() {
         return _responseStatus;
     }
 
-    public void setHttpResponseStatus(HttpResponseStatus httpResponseStatus)
-    {
+    public void setHttpResponseStatus(HttpResponseStatus httpResponseStatus) {
         _responseStatus = httpResponseStatus;
     }
 
     /**
      * The MIME type to return to the caller. Defaults to <code>text/json</code>
      */
-    public String getResponseContentType()
-    {
+    public String getResponseContentType() {
         return _responseContentType;
     }
 
-    public void setResponseContentType(String responseContentType)
-    {
+    public void setResponseContentType(String responseContentType) {
         _responseContentType = responseContentType;
     }
 
@@ -175,13 +159,11 @@ public class ApiResult
      * If <code>File</code>, <code>getResponseContent()</code> will return a <code>java.io.File</code>.
      * </p>
      */
-    public ContentIOStyle getResponseContentIOStyle()
-    {
+    public ContentIOStyle getResponseContentIOStyle() {
         return _responseContentIOStyle;
     }
 
-    public void setResponseContentIOStyle(ContentIOStyle responseContentIOStyle)
-    {
+    public void setResponseContentIOStyle(ContentIOStyle responseContentIOStyle) {
         _responseContentIOStyle = responseContentIOStyle;
     }
 
@@ -193,13 +175,11 @@ public class ApiResult
      * The data type of the return object is either: <code>byte[]</code> or <code>java.io.File</code>
      * </p>
      */
-    public Object getResponseContent()
-    {
+    public Object getResponseContent() {
         return _responseContent;
     }
 
-    public void setResponseContent(Object responseContent)
-    {
+    public void setResponseContent(Object responseContent) {
         _responseContent = responseContent;
     }
 
@@ -210,19 +190,15 @@ public class ApiResult
      *            Object to translate into JSON and then return to the caller
      * @throws UnsupportedEncodingException
      */
-    public void setResponseContentToJson(Object contentToJsonify)
-    {
-        try
-        {
+    public void setResponseContentToJson(Object contentToJsonify) {
+        try {
             _responseContentType = Worker.JSON_CONTENT_TYPE;
             _responseContentIOStyle = ContentIOStyle.ByteArray;
 
-            if (contentToJsonify == null)
-            {
+            if (contentToJsonify == null) {
                 _responseContent = null;
             }
-            else
-            {
+            else {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(baos, true, Worker.JSON_CHARSET);
                 JsonTranslator.getInstance().toJson(contentToJsonify, ps);
@@ -230,8 +206,7 @@ public class ApiResult
                 _responseContent = baos.toByteArray();
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // We should not get UnsupportedEncodingException ... but you never know.
             // Just throw again
             throw new RuntimeException(ex.getMessage(), ex);
@@ -241,8 +216,7 @@ public class ApiResult
     /**
      * Headers that will be returned to the caller
      */
-    public HashMap<String, String> getHeaders()
-    {
+    public HashMap<String, String> getHeaders() {
         return _headers;
     }
 

@@ -26,57 +26,51 @@ import org.junit.Test;
 
 /**
  * JUnit test cases for <code>ChiliLogException</code>
+ * 
  * @author vibul
- *
+ * 
  */
-public class ChiliLogExceptionTest
-{
+public class ChiliLogExceptionTest {
     private static Log4JLogger _logger = Log4JLogger.getLogger(ChiliLogExceptionTest.class);
 
     @Test
-    public void testNoSubstitutes()
-    {
-        ChiliLogException ex = new ChiliLogException("Test"); 
+    public void testNoSubstitutes() {
+        ChiliLogException ex = new ChiliLogException("Test");
         assertEquals("Test12", ex.getMessage());
         assertEquals("Test", ex.getErrorCode());
     }
-    
+
     @Test
-    public void testSubstitutes()
-    {
-        ChiliLogException ex = new ChiliLogException("TestPlaceholder", "hello"); 
+    public void testSubstitutes() {
+        ChiliLogException ex = new ChiliLogException("TestPlaceholder", "hello");
         assertEquals("Test hello", ex.getMessage());
         assertEquals("TestPlaceholder", ex.getErrorCode());
     }
 
     @Test
-    public void testNoCode()
-    {
-        ChiliLogException ex = new ChiliLogException("This is a message with no matching code"); 
+    public void testNoCode() {
+        ChiliLogException ex = new ChiliLogException("This is a message with no matching code");
         assertEquals("This is a message with no matching code", ex.getMessage());
         assertEquals("This is a message with no matching code", ex.getErrorCode());
     }
-    
+
     @Test
-    public void testWrapping()
-    {
-        try
-        {
+    public void testWrapping() {
+        try {
             throw new NullPointerException("inner exception");
         }
-        catch (Exception innerEx)
-        {
+        catch (Exception innerEx) {
             _logger.error(innerEx.toString());
 
-            ChiliLogException ex = new ChiliLogException(innerEx, "Test"); 
+            ChiliLogException ex = new ChiliLogException(innerEx, "Test");
             assertEquals("Test12", ex.getMessage());
             assertEquals("Test", ex.getErrorCode());
             assertEquals(ex.getCause().getClass().getName(), NullPointerException.class.getName());
             assertEquals(ex.getCause().getMessage(), "inner exception");
-            
+
             _logger.error(ex.toString());
             _logger.error(ex.getStackTraceAsString());
         }
-        
+
     }
 }

@@ -50,8 +50,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class InternalLog4JAppender extends AppenderSkeleton
-{
+public class InternalLog4JAppender extends AppenderSkeleton {
     private TextTokenizer _tokenizer;
     private String _host;
     private DB _db;
@@ -69,42 +68,34 @@ public class InternalLog4JAppender extends AppenderSkeleton
      * 
      * @throws ChiliLogException
      */
-    public InternalLog4JAppender() throws ChiliLogException
-    {
+    public InternalLog4JAppender() throws ChiliLogException {
         _tokenizer = TextTokenizer.getInstance();
         _db = MongoConnection.getInstance().getConnection();
         _coll = _db.getCollection(MONGODB_COLLECTION_NAME);
 
-        try
-        {
+        try {
             InetAddress addr = InetAddress.getLocalHost();
             _host = addr.getHostName();
-            if (StringUtils.isBlank(_host))
-            {
+            if (StringUtils.isBlank(_host)) {
                 _host = addr.getHostAddress();
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _host = "unknown";
         }
 
         return;
     }
 
-    public boolean requiresLayout()
-    {
+    public boolean requiresLayout() {
         return false;
     }
 
     @Override
-    protected void append(LoggingEvent event)
-    {
-        try
-        {
+    protected void append(LoggingEvent event) {
+        try {
             // If not message, then there's nothing to record
-            if (event.getMessage() == null)
-            {
+            if (event.getMessage() == null) {
                 return;
             }
 
@@ -117,11 +108,9 @@ public class InternalLog4JAppender extends AppenderSkeleton
             // Message Field
             StringBuilder sb = new StringBuilder(event.getMessage().toString());
             String[] s = event.getThrowableStrRep();
-            if (s != null)
-            {
+            if (s != null) {
                 int len = s.length;
-                for (int i = 0; i < len; i++)
-                {
+                for (int i = 0; i < len; i++) {
                     sb.append(s[i]);
                     sb.append(Layout.LINE_SEP);
                 }
@@ -130,20 +119,16 @@ public class InternalLog4JAppender extends AppenderSkeleton
             // Severity
             Severity severity = Severity.Information;
             Level level = event.getLevel();
-            if (level == Level.DEBUG || level == Level.TRACE)
-            {
+            if (level == Level.DEBUG || level == Level.TRACE) {
                 severity = Severity.Debug;
             }
-            else if (level == Level.WARN)
-            {
+            else if (level == Level.WARN) {
                 severity = Severity.Warning;
             }
-            else if (level == Level.ERROR)
-            {
+            else if (level == Level.ERROR) {
                 severity = Severity.Error;
             }
-            else if (level == Level.FATAL)
-            {
+            else if (level == Level.FATAL) {
                 severity = Severity.Emergency;
             }
 
@@ -164,15 +149,13 @@ public class InternalLog4JAppender extends AppenderSkeleton
 
             return;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             // ignore it and print to standard error
             ex.printStackTrace();
         }
     }
 
-    public void close()
-    {
+    public void close() {
         // TODO Auto-generated method stub
 
     }

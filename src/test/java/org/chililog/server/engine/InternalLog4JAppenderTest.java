@@ -46,22 +46,19 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class InternalLog4JAppenderTest
-{
+public class InternalLog4JAppenderTest {
     private DB _db;
     private String _machineName;
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         // Database
         _db = MongoConnection.getInstance().getConnection();
         assertNotNull(_db);
 
         // Clean up old test data if any exists
         DBCollection coll = _db.getCollection(InternalLog4JAppender.MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             DBObject query = new BasicDBObject();
             coll.remove(query);
         }
@@ -76,8 +73,7 @@ public class InternalLog4JAppenderTest
      * @throws Exception
      */
     @Test
-    public void testDirect() throws Exception
-    {
+    public void testDirect() throws Exception {
         InternalLog4JAppender appender = new InternalLog4JAppender();
         Date now = new Date();
         String msg = "debug message";
@@ -112,8 +108,7 @@ public class InternalLog4JAppenderTest
      * @throws ChiliLogException
      */
     @Test
-    public void testViaLogger() throws ChiliLogException
-    {
+    public void testViaLogger() throws ChiliLogException {
         String msg = "debug message";
 
         Logger logger = Logger.getLogger(InternalLog4JAppenderTest.class);
@@ -141,8 +136,7 @@ public class InternalLog4JAppenderTest
     }
 
     @Test
-    public void testNull() throws ChiliLogException, InterruptedException
-    {
+    public void testNull() throws ChiliLogException, InterruptedException {
         // Have to put in unique logger name otherwise we duplicate adding appenders
         Logger logger = Logger.getLogger(InternalLog4JAppenderTest.class.getName() + "_TestNull");
         logger.addAppender(new InternalLog4JAppender());

@@ -26,15 +26,13 @@ import java.util.Hashtable;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 
-
 /**
  * Parses an integer field.
  * 
  * @author vibul
  * 
  */
-public class IntegerFieldParser extends FieldParser
-{
+public class IntegerFieldParser extends FieldParser {
     private Integer _defaultValue = null;
     private NumberFormat _numberFormatter = null;
 
@@ -45,27 +43,22 @@ public class IntegerFieldParser extends FieldParser
      *            Field meta data
      * @throws ParseException
      */
-    public IntegerFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException
-    {
+    public IntegerFieldParser(RepositoryFieldConfigBO repoFieldInfo) throws ParseException {
         super(repoFieldInfo);
 
         Hashtable<String, String> properties = repoFieldInfo.getProperties();
 
         String d = properties.get(RepositoryFieldConfigBO.DEFAULT_VALUE_PROPERTY_NAME);
         String s = properties.get(RepositoryFieldConfigBO.NUMBER_FORMAT_PROPERTY_NAME);
-        if (!StringUtils.isBlank(s))
-        {
+        if (!StringUtils.isBlank(s)) {
             _numberFormatter = new DecimalFormat(s);
         }
 
-        if (!StringUtils.isBlank(d))
-        {
-            if (_numberFormatter == null)
-            {
+        if (!StringUtils.isBlank(d)) {
+            if (_numberFormatter == null) {
                 _defaultValue = Integer.parseInt(d);
             }
-            else
-            {
+            else {
                 _defaultValue = _numberFormatter.parse(d).intValue();
             }
         }
@@ -75,8 +68,7 @@ public class IntegerFieldParser extends FieldParser
      * Parses an integer.
      */
     @Override
-    public Object parse(String value) throws ParseException
-    {
+    public Object parse(String value) throws ParseException {
         return parseInteger(value);
     }
 
@@ -97,50 +89,38 @@ public class IntegerFieldParser extends FieldParser
      * @return integer value.
      * @throws ParseException
      */
-    private Integer parseInteger(String value) throws ParseException
-    {
-        try
-        {
+    private Integer parseInteger(String value) throws ParseException {
+        try {
             value = preparse(value);
-            
-            if (!StringUtils.isBlank(value))
-            {
+
+            if (!StringUtils.isBlank(value)) {
                 value = value.trim();
             }
-            if (_numberFormatter == null)
-            {
+            if (_numberFormatter == null) {
                 return Integer.parseInt(value);
             }
-            else
-            {
+            else {
                 return _numberFormatter.parse(value).intValue();
             }
         }
-        catch (ParseException ex)
-        {
-            if (_defaultValue != null)
-            {
+        catch (ParseException ex) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex;
         }
-        catch (NumberFormatException ex2)
-        {
-            if (_defaultValue != null)
-            {
+        catch (NumberFormatException ex2) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex2;
         }
-        catch (NullPointerException ex3)
-        {
-            if (_defaultValue != null)
-            {
+        catch (NullPointerException ex3) {
+            if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex3;
         }
     }
-
 
 }

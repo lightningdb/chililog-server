@@ -24,7 +24,6 @@ import java.io.StringWriter;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.ChiliLogException;
 
-
 /**
  * <p>
  * Error API Object is returned to the caller in the event of an error or exception during processing.
@@ -33,8 +32,7 @@ import org.chililog.server.common.ChiliLogException;
  * @author vibul
  * 
  */
-public class ErrorAO extends AO
-{
+public class ErrorAO extends AO {
     private String _errorCode;
 
     private String _message;
@@ -44,8 +42,7 @@ public class ErrorAO extends AO
     /**
      * Basic constructor
      */
-    public ErrorAO()
-    {
+    public ErrorAO() {
         return;
     }
 
@@ -57,8 +54,7 @@ public class ErrorAO extends AO
      * @param stackTrace
      *            Stack trace
      */
-    public ErrorAO(String message, String stackTrace)
-    {
+    public ErrorAO(String message, String stackTrace) {
         _message = message;
         _stackTrace = stackTrace;
     }
@@ -66,20 +62,16 @@ public class ErrorAO extends AO
     /**
      * Basic constructor
      */
-    public ErrorAO(Throwable ex)
-    {
+    public ErrorAO(Throwable ex) {
         _message = ex.getMessage();
-        if (StringUtils.isBlank(_message)) 
-        {
+        if (StringUtils.isBlank(_message)) {
             _message = ex.toString();
         }
 
-        if (ex instanceof ChiliLogException)
-        {
+        if (ex instanceof ChiliLogException) {
             _errorCode = "ChiliLogException:" + ((ChiliLogException) ex).getErrorCode();
         }
-        else
-        {
+        else {
             _errorCode = ex.getClass().getName();
         }
 
@@ -95,39 +87,33 @@ public class ErrorAO extends AO
     /**
      * The error code if one exists
      */
-    public String getErrorCode()
-    {
+    public String getErrorCode() {
         return _errorCode;
     }
 
-    public void setErrorCode(String errorCode)
-    {
+    public void setErrorCode(String errorCode) {
         _errorCode = errorCode;
     }
 
     /**
      * Human readable error message that can be displayed to the user
      */
-    public String getMessage()
-    {
+    public String getMessage() {
         return _message;
     }
 
-    public void setMessage(String message)
-    {
+    public void setMessage(String message) {
         _message = message;
     }
 
     /**
      * Stack trace to help debugging
      */
-    public String getStackTrace()
-    {
+    public String getStackTrace() {
         return _stackTrace;
     }
 
-    public void setStackTrace(String stackTrace)
-    {
+    public void setStackTrace(String stackTrace) {
         _stackTrace = stackTrace;
     }
 

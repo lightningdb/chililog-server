@@ -51,8 +51,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonEntryParser extends EntryParser
-{
+public class JsonEntryParser extends EntryParser {
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonEntryParser.class);
 
     private Pattern _datePattern = null;
@@ -105,36 +104,30 @@ public class JsonEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public JsonEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
-    {
+    public JsonEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
+            throws ChiliLogException {
         super(repoInfo, repoParserInfo);
 
-        try
-        {
+        try {
             Hashtable<String, String> properties = repoParserInfo.getProperties();
             String s = properties.get(DATE_PATTERN_PROPERTY_NAME);
-            if (!StringUtils.isBlank(s))
-            {
+            if (!StringUtils.isBlank(s)) {
                 _datePattern = Pattern.compile(s);
             }
 
             _dateFormat = properties.get(DATE_FORMAT_PROPERTY_NAME);
 
             s = properties.get(LONG_NUMBER_PATTERN_PROPERTY_NAME);
-            if (!StringUtils.isBlank(s))
-            {
+            if (!StringUtils.isBlank(s)) {
                 _longNumberPattern = Pattern.compile(s);
             }
 
         }
-        catch (Exception ex)
-        {
-            if (ex instanceof ChiliLogException)
-            {
+        catch (Exception ex) {
+            if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
             }
-            else
-            {
+            else {
                 throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
                         repoInfo.getName(), ex.getMessage());
             }
@@ -161,23 +154,18 @@ public class JsonEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
-    {
-        try
-        {
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message) {
+        try {
             this.setLastParseError(null);
             checkParseArguments(timestamp, source, host, severity, message);
 
             MongoJsonParser parser = new MongoJsonParser(message, _datePattern, _dateFormat, _longNumberPattern);
             DBObject fieldsDBObject = new BasicDBObject();
-            try
-            {
+            try {
                 fieldsDBObject = (DBObject) parser.parse();
             }
-            catch (Exception ex)
-            {
-                switch (this.getRepoParserInfo().getParseFieldErrorHandling())
-                {
+            catch (Exception ex) {
+                switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                     case SkipField:
                     case SkipEntry:
                         throw new ChiliLogException(ex, Strings.PARSER_JSON_ERROR_SKIP_ENTRY, this.getRepoName(),
@@ -197,8 +185,7 @@ public class JsonEntryParser extends EntryParser
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message,
                     fieldsDBObject);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing JSON entry: " + message);
             return null;

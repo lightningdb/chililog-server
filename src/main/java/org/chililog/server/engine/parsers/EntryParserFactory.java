@@ -26,15 +26,13 @@ import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.engine.Strings;
 
-
 /**
  * Factory to instance entry parsers
  * 
  * @author vibul
  * 
  */
-public class EntryParserFactory
-{
+public class EntryParserFactory {
     private static final String _delimitedEntryParserClassName = DelimitedEntryParser.class.getName();
     private static final String _jsonEntryParserClassName = JsonEntryParser.class.getName();
     private static final String _regexEntryParserClassName = RegexEntryParser.class.getName();
@@ -50,36 +48,28 @@ public class EntryParserFactory
      * @throws ChiliLogException
      */
     public static EntryParser getParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
-            throws ChiliLogException
-    {
-        if (repoParserInfo == null)
-        {
+            throws ChiliLogException {
+        if (repoParserInfo == null) {
             throw new NullArgumentException("repoParserInfo");
         }
 
-        try
-        {
+        try {
             String className = repoParserInfo.getClassName();
-            if (className.equals(_delimitedEntryParserClassName))
-            {
+            if (className.equals(_delimitedEntryParserClassName)) {
                 return new DelimitedEntryParser(repoInfo, repoParserInfo);
             }
-            else if (className.equals(_regexEntryParserClassName))
-            {
+            else if (className.equals(_regexEntryParserClassName)) {
                 return new RegexEntryParser(repoInfo, repoParserInfo);
             }
-            else if (className.equals(_jsonEntryParserClassName))
-            {
+            else if (className.equals(_jsonEntryParserClassName)) {
                 return new JsonEntryParser(repoInfo, repoParserInfo);
             }
 
             // Use reflection to instance it
             Class<?> cls = ClassUtils.getClass(className);
-            return (EntryParser) ConstructorUtils.invokeConstructor(cls, new Object[]
-            { repoInfo, repoParserInfo });
+            return (EntryParser) ConstructorUtils.invokeConstructor(cls, new Object[] { repoInfo, repoParserInfo });
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.PARSER_FACTORY_ERROR, repoParserInfo.getName(), repoInfo.getName(),
                     ex.getMessage());
         }
@@ -91,8 +81,7 @@ public class EntryParserFactory
      * @return Entry parser
      * @throws ChiliLogException
      */
-    public static EntryParser getDefaultParser(RepositoryConfigBO repoInfo) throws ChiliLogException
-    {
+    public static EntryParser getDefaultParser(RepositoryConfigBO repoInfo) throws ChiliLogException {
         RepositoryParserConfigBO parserInfo = new RepositoryParserConfigBO();
         parserInfo.setName("Default");
         return new DefaultEntryParser(repoInfo, parserInfo);

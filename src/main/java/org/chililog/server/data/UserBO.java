@@ -41,8 +41,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class UserBO extends BO implements Serializable
-{
+public class UserBO extends BO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public static final String SYSTEM_ADMINISTRATOR_ROLE_NAME = "system.administrator";
@@ -86,8 +85,7 @@ public class UserBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public UserBO()
-    {
+    public UserBO() {
         return;
     }
 
@@ -98,8 +96,7 @@ public class UserBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public UserBO(DBObject dbObject) throws ChiliLogException
-    {
+    public UserBO(DBObject dbObject) throws ChiliLogException {
         super(dbObject);
         _username = MongoUtils.getString(dbObject, USERNAME_FIELD_NAME, true);
         _password = MongoUtils.getString(dbObject, PASSWORD_FIELD_NAME, false);
@@ -118,8 +115,7 @@ public class UserBO extends BO implements Serializable
      * @throws ChiliLogException
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
-    {
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException {
         MongoUtils.setString(dbObject, USERNAME_FIELD_NAME, _username, true);
         MongoUtils.setString(dbObject, PASSWORD_FIELD_NAME, _password, true);
         MongoUtils.setStringArrayList(dbObject, ROLES_FIELD_NAME, _roles, false);
@@ -127,8 +123,7 @@ public class UserBO extends BO implements Serializable
         MongoUtils.setString(dbObject, DISPLAY_NAME_FIELD_NAME, _displayName, false);
         MongoUtils.setString(dbObject, EMAIL_ADDRESS_FIELD_NAME, _emailAddress, false);
 
-        if (!StringUtils.isBlank(_emailAddress) && !_emailAddressPattern.matcher(_emailAddress).matches())
-        {
+        if (!StringUtils.isBlank(_emailAddress) && !_emailAddressPattern.matcher(_emailAddress).matches()) {
             throw new ChiliLogException(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, _emailAddress);
         }
     }
@@ -136,8 +131,7 @@ public class UserBO extends BO implements Serializable
     /**
      * Returns the username (or unique code) for this user
      */
-    public String getUsername()
-    {
+    public String getUsername() {
         return _username;
     }
 
@@ -146,16 +140,14 @@ public class UserBO extends BO implements Serializable
      * 
      * @param username
      */
-    public void setUsername(String username)
-    {
+    public void setUsername(String username) {
         _username = username;
     }
 
     /**
      * Returns a hashed password
      */
-    public String getPassword()
-    {
+    public String getPassword() {
         return _password;
     }
 
@@ -169,14 +161,11 @@ public class UserBO extends BO implements Serializable
      * @throws ChiliLogException
      *             if there is an error during hashing
      */
-    public void setPassword(String password, boolean isPlainText) throws ChiliLogException
-    {
-        if (isPlainText)
-        {
+    public void setPassword(String password, boolean isPlainText) throws ChiliLogException {
+        if (isPlainText) {
             _password = CryptoUtils.createSHA512Hash(password, null);
         }
-        else
-        {
+        else {
             _password = password;
         }
     }
@@ -190,8 +179,7 @@ public class UserBO extends BO implements Serializable
      * @throws ChiliLogException
      *             if there was an error during password verification
      */
-    public boolean validatePassword(String plainTextPassword) throws ChiliLogException
-    {
+    public boolean validatePassword(String plainTextPassword) throws ChiliLogException {
         return CryptoUtils.verifyHash(plainTextPassword, _password);
     }
 
@@ -201,10 +189,8 @@ public class UserBO extends BO implements Serializable
      * @param role
      *            name of role
      */
-    public void addRole(String role)
-    {
-        if (!hasRole(role))
-        {
+    public void addRole(String role) {
+        if (!hasRole(role)) {
             _roles.add(role);
         }
     }
@@ -214,16 +200,14 @@ public class UserBO extends BO implements Serializable
      * 
      * @param role
      */
-    public void removeRole(String role)
-    {
+    public void removeRole(String role) {
         _roles.remove(role);
     }
 
     /**
      * Removes the user from all roles
      */
-    public void removeAllRoles()
-    {
+    public void removeAllRoles() {
         _roles.clear();
     }
 
@@ -234,8 +218,7 @@ public class UserBO extends BO implements Serializable
      *            Name of role to check
      * @return true if the user has the role, false if not
      */
-    public boolean hasRole(String role)
-    {
+    public boolean hasRole(String role) {
         return _roles.contains(role);
     }
 
@@ -243,16 +226,14 @@ public class UserBO extends BO implements Serializable
      * Returns an array of roles to which the user belongs. Modifying the array will NOT modify the user's role. Use
      * <code>addRole</code> and <code>removeRole</code> instead.
      */
-    public String[] getRoles()
-    {
+    public String[] getRoles() {
         return _roles.toArray(new String[] {});
     }
 
     /**
      * Returns the status of this user account
      */
-    public Status getStatus()
-    {
+    public Status getStatus() {
         return _status;
     }
 
@@ -261,45 +242,39 @@ public class UserBO extends BO implements Serializable
      * 
      * @param status
      */
-    public void setStatus(Status status)
-    {
+    public void setStatus(Status status) {
         _status = status;
     }
 
     /**
      * Returns the name of the user to display on the UI
      */
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
     /**
      * Sets the name of the user to display on the UI
      */
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
     /**
      * Returns the email address of the user
      */
-    public String getEmailAddress()
-    {
+    public String getEmailAddress() {
         return _emailAddress;
     }
 
-    public void setEmailAddress(String emailAddress)
-    {
+    public void setEmailAddress(String emailAddress) {
         _emailAddress = emailAddress;
     }
 
     /**
      * Returns if the user is a system administrator or not
      */
-    public boolean isSystemAdministrator()
-    {
+    public boolean isSystemAdministrator() {
         return hasRole(SYSTEM_ADMINISTRATOR_ROLE_NAME);
     }
 
@@ -311,8 +286,7 @@ public class UserBO extends BO implements Serializable
      *            name of the repository
      * @return Role name that grants the user permission to administer the named repository
      */
-    public static String createRepositoryAdministratorRoleName(String repositoryName)
-    {
+    public static String createRepositoryAdministratorRoleName(String repositoryName) {
         return String.format(REPOSITORY_ADMINISTRATOR_ROLE_TEMPLATE, repositoryName);
     }
 
@@ -324,8 +298,7 @@ public class UserBO extends BO implements Serializable
      *            name of the repository
      * @return Role name that grants the user permission to access the named repository from the workbench.
      */
-    public static String createRepositoryWorkbenchRoleName(String repositoryName)
-    {
+    public static String createRepositoryWorkbenchRoleName(String repositoryName) {
         return String.format(REPOSITORY_WORKBENCH_ROLE_TEMPLATE, repositoryName);
     }
 
@@ -336,8 +309,7 @@ public class UserBO extends BO implements Serializable
      *            name of the repository
      * @return Role name that grants the user permission to publish log entries to this repository.
      */
-    public static String createRepositoryPublisherRoleName(String repositoryName)
-    {
+    public static String createRepositoryPublisherRoleName(String repositoryName) {
         return String.format(REPOSITORY_PUBLISHER_ROLE_TEMPLATE, repositoryName);
     }
 
@@ -348,8 +320,7 @@ public class UserBO extends BO implements Serializable
      *            name of the repository
      * @return Role name that grants the user permission subscribe to log entries from this repository
      */
-    public static String createRepositorySubscriberRoleName(String repositoryName)
-    {
+    public static String createRepositorySubscriberRoleName(String repositoryName) {
         return String.format(REPOSITORY_SUBSCRIBER_ROLE_TEMPLATE, repositoryName);
     }
 
@@ -366,21 +337,17 @@ public class UserBO extends BO implements Serializable
      *            Role name. For example repo.xxx.administrator
      * @return The repository name (xxx in the above example). Null if not repository access.
      */
-    public static String extractRepositoryNameFromRole(String role)
-    {
-        if (StringUtils.isBlank(role))
-        {
+    public static String extractRepositoryNameFromRole(String role) {
+        if (StringUtils.isBlank(role)) {
             return null;
         }
 
-        if (!role.startsWith(REPOSITORY_ROLE_PREFIX))
-        {
+        if (!role.startsWith(REPOSITORY_ROLE_PREFIX)) {
             return null;
         }
 
         if (role.endsWith(REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX) || role.endsWith(REPOSITORY_WORKBENCH_ROLE_SUFFIX)
-                || role.endsWith(REPOSITORY_PUBLISHER_ROLE_SUFFIX) || role.endsWith(REPOSITORY_SUBSCRIBER_ROLE_SUFFIX))
-        {
+                || role.endsWith(REPOSITORY_PUBLISHER_ROLE_SUFFIX) || role.endsWith(REPOSITORY_SUBSCRIBER_ROLE_SUFFIX)) {
             return role.substring(5, role.lastIndexOf('.'));
         }
 
@@ -393,8 +360,7 @@ public class UserBO extends BO implements Serializable
      * @author vibul
      * 
      */
-    public static enum Status
-    {
+    public static enum Status {
         /**
          * User can login
          */

@@ -35,10 +35,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
  * @author vibul
  * 
  */
-public class JAASCallbackHandler implements CallbackHandler
-{
-    public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException
-    {
+public class JAASCallbackHandler implements CallbackHandler {
+    public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException {
         // do nothing, authentication is done
         // by passing credentials directly to the LoginModule via the subject property
     }

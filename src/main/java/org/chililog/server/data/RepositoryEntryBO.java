@@ -38,8 +38,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class RepositoryEntryBO extends BO implements Serializable
-{
+public class RepositoryEntryBO extends BO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Date _timestamp;
@@ -61,8 +60,7 @@ public class RepositoryEntryBO extends BO implements Serializable
     /**
      * Basic constructor
      */
-    public RepositoryEntryBO()
-    {
+    public RepositoryEntryBO() {
         return;
     }
 
@@ -73,8 +71,7 @@ public class RepositoryEntryBO extends BO implements Serializable
      *            database object as retrieved from mongoDB
      * @throws ChiliLogException
      */
-    public RepositoryEntryBO(DBObject dbObject) throws ChiliLogException
-    {
+    public RepositoryEntryBO(DBObject dbObject) throws ChiliLogException {
         super(dbObject);
         _timestamp = MongoUtils.getDate(dbObject, TIMESTAMP_FIELD_NAME, true);
         _savedTimestamp = MongoUtils.getDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, true);
@@ -112,8 +109,7 @@ public class RepositoryEntryBO extends BO implements Serializable
                              Severity severity,
                              ArrayList<String> keywords,
                              String message,
-                             DBObject parsedFields) throws ChiliLogException
-    {
+                             DBObject parsedFields) throws ChiliLogException {
         super(parsedFields);
         _timestamp = timestamp;
         _savedTimestamp = new Date();
@@ -132,8 +128,7 @@ public class RepositoryEntryBO extends BO implements Serializable
      *            mongoDB database object that can be used for saving
      */
     @Override
-    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException
-    {
+    protected void savePropertiesToDBObject(DBObject dbObject) throws ChiliLogException {
         MongoUtils.setDate(dbObject, TIMESTAMP_FIELD_NAME, _timestamp, true);
         MongoUtils.setDate(dbObject, SAVED_TIMESTAMP_FIELD_NAME, _savedTimestamp, true);
         MongoUtils.setString(dbObject, SOURCE_FIELD_NAME, _source, true);
@@ -148,39 +143,33 @@ public class RepositoryEntryBO extends BO implements Serializable
      * Returns the date on which the log entry was created at the source; i.e. timestamp for the event that generated
      * the log entry
      */
-    public Date getTimestamp()
-    {
+    public Date getTimestamp() {
         return _timestamp;
     }
 
-    public void setTimestamp(Date timestamp)
-    {
+    public void setTimestamp(Date timestamp) {
         _timestamp = timestamp;
     }
 
     /**
      * Returns the date on which the entry was save into the ChiliLog repository
      */
-    public Date getSavedTimestamp()
-    {
+    public Date getSavedTimestamp() {
         return _savedTimestamp;
     }
 
-    public void setSavedTimestamp(Date timestamp)
-    {
+    public void setSavedTimestamp(Date timestamp) {
         _savedTimestamp = timestamp;
     }
 
     /**
      * Returns the name of the application or service that created this log entry
      */
-    public String getSource()
-    {
+    public String getSource() {
         return _source;
     }
 
-    public void setSource(String source)
-    {
+    public void setSource(String source) {
         _source = source;
     }
 
@@ -188,60 +177,51 @@ public class RepositoryEntryBO extends BO implements Serializable
      * Identifies the device on which the source application or service is running. Should be full qualified domain
      * name, static IP address, host name or dynamic IP address (in this order of preference).
      */
-    public String getHost()
-    {
+    public String getHost() {
         return _host;
     }
 
-    public void setHost(String host)
-    {
+    public void setHost(String host) {
         _host = host;
     }
 
     /**
      * Returns the classification of the importance of the entry
      */
-    public Severity getSeverity()
-    {
+    public Severity getSeverity() {
         return _severity;
     }
 
-    public void setSeverity(Severity severity)
-    {
+    public void setSeverity(Severity severity) {
         _severity = severity;
     }
 
     /**
      * Free-form message that provides information about the event that triggered this entry
      */
-    public String getMessage()
-    {
+    public String getMessage() {
         return _message;
     }
 
-    public void setMessage(String message)
-    {
+    public void setMessage(String message) {
         _message = message;
     }
 
     /**
      * Returns the list of keywords for this message
      */
-    public ArrayList<String> getKeywords()
-    {
+    public ArrayList<String> getKeywords() {
         return _keywords;
     }
 
-    public void setKeywords(ArrayList<String> keywords)
-    {
+    public void setKeywords(ArrayList<String> keywords) {
         _keywords = keywords;
     }
 
     /**
      * Severity codes taken from syslog format. See http://tools.ietf.org/html/rfc5424.
      */
-    public enum Severity
-    {
+    public enum Severity {
         /**
          * Emergency: system is unusable
          */
@@ -284,30 +264,25 @@ public class RepositoryEntryBO extends BO implements Serializable
 
         private static Severity[] lookup = null;
 
-        static
-        {
+        static {
             EnumSet<Severity> es = EnumSet.allOf(Severity.class);
             lookup = new Severity[es.size()];
-            for (Severity s : es)
-            {
+            for (Severity s : es) {
                 lookup[(int) s.code] = s;
             }
         }
 
         private long code;
 
-        private Severity(long code)
-        {
+        private Severity(long code) {
             this.code = code;
         }
 
-        public Long toCode()
-        {
+        public Long toCode() {
             return code;
         }
 
-        public static Severity fromString(String s)
-        {
+        public static Severity fromString(String s) {
             return Enum.valueOf(Severity.class, s);
         }
 
@@ -318,71 +293,55 @@ public class RepositoryEntryBO extends BO implements Serializable
          *            String of code "0-7" or description "Error".
          * @return Severity
          */
-        public static Severity parse(String codeOrDescription)
-        {
-            if (StringUtils.isBlank(codeOrDescription))
-            {
+        public static Severity parse(String codeOrDescription) {
+            if (StringUtils.isBlank(codeOrDescription)) {
                 return Severity.Information;
             }
 
-            try
-            {
-                if (codeOrDescription.length() > 1)
-                {
+            try {
+                if (codeOrDescription.length() > 1) {
                     return Enum.valueOf(Severity.class, codeOrDescription);
                 }
-                
+
                 // It should be quicker if we don't parse
-                if (codeOrDescription.equals("0"))
-                {
+                if (codeOrDescription.equals("0")) {
                     return lookup[0];
                 }
-                if (codeOrDescription.equals("1"))
-                {
+                if (codeOrDescription.equals("1")) {
                     return lookup[1];
                 }
-                if (codeOrDescription.equals("2"))
-                {
+                if (codeOrDescription.equals("2")) {
                     return lookup[2];
                 }
-                if (codeOrDescription.equals("3"))
-                {
+                if (codeOrDescription.equals("3")) {
                     return lookup[3];
                 }
-                if (codeOrDescription.equals("4"))
-                {
+                if (codeOrDescription.equals("4")) {
                     return lookup[4];
                 }
-                if (codeOrDescription.equals("5"))
-                {
+                if (codeOrDescription.equals("5")) {
                     return lookup[5];
                 }
-                if (codeOrDescription.equals("6"))
-                {
+                if (codeOrDescription.equals("6")) {
                     return lookup[6];
                 }
-                if (codeOrDescription.equals("7"))
-                {
+                if (codeOrDescription.equals("7")) {
                     return lookup[7];
                 }
-                
+
                 return Severity.Information;
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // Just return info and ignore the error
                 return Severity.Information;
             }
         }
 
-        public static Severity fromCode(long code)
-        {
-            try
-            {
+        public static Severity fromCode(long code) {
+            try {
                 return lookup[(int) code];
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 // Just return info and ignore the error
                 return Severity.Information;
             }

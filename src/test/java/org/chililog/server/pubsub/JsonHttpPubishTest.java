@@ -54,8 +54,7 @@ import com.mongodb.DBObject;
  * @author vibul
  * 
  */
-public class JsonHttpPubishTest
-{
+public class JsonHttpPubishTest {
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
 
@@ -63,8 +62,7 @@ public class JsonHttpPubishTest
     private static final String MONGODB_COLLECTION_NAME = "repo_json_http_publish_test";
 
     @BeforeClass
-    public static void classSetup() throws Exception
-    {
+    public static void classSetup() throws Exception {
         // Create repo
         _repoInfo = new RepositoryConfigBO();
         _repoInfo.setName(REPOSITORY_NAME);
@@ -93,8 +91,7 @@ public class JsonHttpPubishTest
 
         // Clean up old test data if any exists
         coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
 
@@ -128,19 +125,16 @@ public class JsonHttpPubishTest
     }
 
     @Before
-    public void testSetup() throws Exception
-    {
+    public void testSetup() throws Exception {
         // Drop collection for each test
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
     }
 
     @AfterClass
-    public static void classTeardown() throws Exception
-    {
+    public static void classTeardown() throws Exception {
         // Stop it all
         JsonHttpService.getInstance().stop();
         RepositoryService.getInstance().stop();
@@ -148,24 +142,23 @@ public class JsonHttpPubishTest
 
         // Drop collection
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
-        if (coll != null)
-        {
+        if (coll != null) {
             coll.drop();
         }
-        
+
         // Drop users
         coll = _db.getCollection(UserController.MONGODB_COLLECTION_NAME);
         Pattern pattern = Pattern.compile("^JsonHttpPublishTestUser[\\w]*$");
         DBObject query = new BasicDBObject();
         query.put("username", pattern);
         coll.remove(query);
-        
+
         // Clean old repository info
         coll = _db.getCollection(RepositoryConfigController.MONGODB_COLLECTION_NAME);
         pattern = Pattern.compile("^" + REPOSITORY_NAME + "$");
         query = new BasicDBObject();
         query.put("name", pattern);
-        coll.remove(query);        
+        coll.remove(query);
     }
 
     /**
@@ -178,8 +171,7 @@ public class JsonHttpPubishTest
      * @throws Exception
      *             if error
      */
-    public static void sendPublicshRequest(String msgID, int entryCount) throws Exception
-    {
+    public static void sendPublicshRequest(String msgID, int entryCount) throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -196,8 +188,7 @@ public class JsonHttpPubishTest
 
         LogEntryAO[] logEntries = new LogEntryAO[entryCount];
 
-        for (int i = 0; i < entryCount; i++)
-        {
+        for (int i = 0; i < entryCount; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
@@ -222,8 +213,7 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testOneLogEntry() throws Exception
-    {
+    public void testOneLogEntry() throws Exception {
         sendPublicshRequest("testOneLogEntry", 1);
 
         // Wait a moment for log entry to be processed
@@ -240,8 +230,7 @@ public class JsonHttpPubishTest
      * @throws Exception
      */
     @Test
-    public void testSubsequentRequests() throws Exception
-    {
+    public void testSubsequentRequests() throws Exception {
         sendPublicshRequest("testSubsequentRequests", 1);
         sendPublicshRequest("testSubsequentRequests", 2);
         sendPublicshRequest("testSubsequentRequests", 3);
@@ -255,8 +244,7 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testManyLogEntries() throws Exception
-    {
+    public void testManyLogEntries() throws Exception {
         sendPublicshRequest("testManyLogEntries", 100);
 
         // Wait a moment for log entry to be processed
@@ -268,11 +256,9 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testMultipleConnections() throws Exception
-    {
+    public void testMultipleConnections() throws Exception {
         // 20 threads each adding 2 log entries = 40 log entries in total
-        for (int i = 0; i < 20; i++)
-        {
+        for (int i = 0; i < 20; i++) {
             PublishThread runnable = new PublishThread();
             Thread thread = new Thread(runnable);
             thread.start();
@@ -288,8 +274,7 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testBadUsername() throws Exception
-    {
+    public void testBadUsername() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -328,8 +313,7 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testBadPassword() throws Exception
-    {
+    public void testBadPassword() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -368,8 +352,7 @@ public class JsonHttpPubishTest
     }
 
     @Test
-    public void testBadRole() throws Exception
-    {
+    public void testBadRole() throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -413,19 +396,15 @@ public class JsonHttpPubishTest
      * @author vibul
      * 
      */
-    public static class PublishThread implements Runnable
-    {
+    public static class PublishThread implements Runnable {
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishThread.class);
 
-        public void run()
-        {
-            try
-            {
+        public void run() {
+            try {
                 _logger.debug("HTTP thread " + Thread.currentThread().getName() + " started");
                 sendPublicshRequest("PublishThread " + Thread.currentThread().getName(), 2);
             }
-            catch (Exception ex)
-            {
+            catch (Exception ex) {
                 ex.printStackTrace();
             }
         }

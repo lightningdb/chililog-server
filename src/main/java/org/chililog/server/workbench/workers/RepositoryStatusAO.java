@@ -21,7 +21,6 @@ package org.chililog.server.workbench.workers;
 import org.chililog.server.data.RepositoryConfigBO.Status;
 import org.chililog.server.engine.Repository;
 
-
 /**
  * <p>
  * Repository Runtime Info API Object details the status of an instance of a repository
@@ -30,8 +29,7 @@ import org.chililog.server.engine.Repository;
  * @author vibul
  * 
  */
-public class RepositoryStatusAO extends AO
-{
+public class RepositoryStatusAO extends AO {
     private String _documentID;
 
     private Long _documentVersion;
@@ -45,8 +43,7 @@ public class RepositoryStatusAO extends AO
     /**
      * Basic constructor
      */
-    public RepositoryStatusAO()
-    {
+    public RepositoryStatusAO() {
         return;
     }
 
@@ -56,8 +53,7 @@ public class RepositoryStatusAO extends AO
      * @param repo
      *            Repository
      */
-    public RepositoryStatusAO(Repository repo)
-    {
+    public RepositoryStatusAO(Repository repo) {
         _documentID = repo.getRepoConfig().getDocumentID().toString();
         _documentVersion = repo.getRepoConfig().getDocumentVersion();
         _name = repo.getRepoConfig().getName();
@@ -65,62 +61,52 @@ public class RepositoryStatusAO extends AO
         _status = repo.getStatus();
     }
 
-    public String getDocumentID()
-    {
+    public String getDocumentID() {
         return _documentID;
     }
 
-    public void setDocumentID(String documentID)
-    {
+    public void setDocumentID(String documentID) {
         _documentID = documentID;
     }
 
-    public Long getDocumentVersion()
-    {
+    public Long getDocumentVersion() {
         return _documentVersion;
     }
 
-    public void setDocumentVersion(Long documentVersion)
-    {
+    public void setDocumentVersion(Long documentVersion) {
         _documentVersion = documentVersion;
     }
 
     /**
      * Returns the repository's name
      */
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
     /**
      * Returns the repository's display name
      */
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
     /**
      * Returns the repository status
      */
-    public Status getStatus()
-    {
+    public Status getStatus() {
         return _status;
     }
 
-    public void setStatus(Status status)
-    {
+    public void setStatus(Status status) {
         _status = status;
     }
 

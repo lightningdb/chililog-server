@@ -49,8 +49,7 @@ import com.mongodb.DB;
  * @author vibul
  * 
  */
-public class JAASLoginModule implements LoginModule
-{
+public class JAASLoginModule implements LoginModule {
     private Subject _subject;
     private String _systemUsername;
     private String _systemPassword;
@@ -58,28 +57,24 @@ public class JAASLoginModule implements LoginModule
     /**
      * Basic constructor
      */
-    public JAASLoginModule()
-    {
+    public JAASLoginModule() {
         _systemUsername = AppProperties.getInstance().getMqSystemUsername();
         _systemPassword = AppProperties.getInstance().getMqSystemPassword();
         return;
     }
 
-    public boolean abort() throws LoginException
-    {
+    public boolean abort() throws LoginException {
         return true;
     }
 
-    public boolean commit() throws LoginException
-    {
+    public boolean commit() throws LoginException {
         return true;
     }
 
     public void initialize(final Subject subject,
                            final CallbackHandler callbackHandler,
                            final Map<String, ?> sharedState,
-                           final Map<String, ?> options)
-    {
+                           final Map<String, ?> options) {
         _subject = subject;
     }
 
@@ -92,10 +87,8 @@ public class JAASLoginModule implements LoginModule
      * 
      * @return Returns true if this method succeeded, or false if this LoginModule should be ignored.
      */
-    public boolean login() throws LoginException
-    {
-        try
-        {
+    public boolean login() throws LoginException {
+        try {
             //
             // This code is from org.hornetq.spi.core.security.JAASSecurityManager.getAuthenticatedSubject();
             // It is how HornetQ uses JAAS to authenticate
@@ -111,8 +104,7 @@ public class JAASLoginModule implements LoginModule
             // Get the user name
             Iterator<Principal> iterator = _subject.getPrincipals().iterator();
             String username = iterator.next().getName();
-            if (StringUtils.isBlank(username))
-            {
+            if (StringUtils.isBlank(username)) {
                 throw new FailedLoginException("Username is requried.");
             }
 
@@ -120,14 +112,12 @@ public class JAASLoginModule implements LoginModule
             Iterator<char[]> iterator2 = _subject.getPrivateCredentials(char[].class).iterator();
             char[] passwordChars = iterator2.next();
             String password = new String(passwordChars);
-            if (StringUtils.isBlank(password))
-            {
+            if (StringUtils.isBlank(password)) {
                 throw new FailedLoginException("Password is requried.");
             }
 
             // Check if system user
-            if (username.equals(_systemUsername) && password.equals(_systemPassword))
-            {
+            if (username.equals(_systemUsername) && password.equals(_systemPassword)) {
                 Group roles = new SimpleGroup("Roles");
                 roles.addMember(new SimplePrincipal(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));
                 _subject.getPrincipals().add(roles);
@@ -137,19 +127,16 @@ public class JAASLoginModule implements LoginModule
             // Let's validate non-system user
             DB db = MongoConnection.getInstance().getConnection();
             UserBO user = UserController.getInstance().tryGetByUsername(db, username);
-            if (user == null)
-            {
+            if (user == null) {
                 throw new FailedLoginException("Invalid username or password.");
             }
-            if (StringUtils.isBlank(password) || !user.validatePassword(password))
-            {
+            if (StringUtils.isBlank(password) || !user.validatePassword(password)) {
                 throw new FailedLoginException("Invalid username or password.");
             }
 
             // Add role
             Group roles = new SimpleGroup("Roles");
-            for (String role : user.getRoles())
-            {
+            for (String role : user.getRoles()) {
                 roles.addMember(new SimplePrincipal(role));
             }
             _subject.getPrincipals().add(roles);
@@ -157,8 +144,7 @@ public class JAASLoginModule implements LoginModule
             // OK
             return true;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             throw new LoginException(ex.getMessage());
         }
     }
@@ -166,16 +152,14 @@ public class JAASLoginModule implements LoginModule
     /**
      * There is nothing special to do to log out. We don't have sessions to clear.
      */
-    public boolean logout() throws LoginException
-    {
+    public boolean logout() throws LoginException {
         return true;
     }
 
     /**
      * @return Returns the current subject of authentication
      */
-    public Subject getSubject()
-    {
+    public Subject getSubject() {
         return _subject;
     }
 
@@ -185,39 +169,32 @@ public class JAASLoginModule implements LoginModule
      * @author vibul
      * 
      */
-    public class SimpleGroup implements Group
-    {
+    public class SimpleGroup implements Group {
         private final String _name;
 
         private final Set<Principal> _members = new HashSet<Principal>();
 
-        public SimpleGroup(final String name)
-        {
+        public SimpleGroup(final String name) {
             this._name = name;
         }
 
-        public boolean addMember(final Principal principal)
-        {
+        public boolean addMember(final Principal principal) {
             return _members.add(principal);
         }
 
-        public boolean isMember(final Principal principal)
-        {
+        public boolean isMember(final Principal principal) {
             return _members.contains(principal);
         }
 
-        public Enumeration<? extends Principal> members()
-        {
+        public Enumeration<? extends Principal> members() {
             return Collections.enumeration(_members);
         }
 
-        public boolean removeMember(final Principal principal)
-        {
+        public boolean removeMember(final Principal principal) {
             return _members.remove(principal);
         }
 
-        public String getName()
-        {
+        public String getName() {
             return _name;
         }
     }
@@ -228,14 +205,12 @@ public class JAASLoginModule implements LoginModule
      * @author vibul
      * 
      */
-    public static class SimplePrincipal implements Principal, java.io.Serializable
-    {
+    public static class SimplePrincipal implements Principal, java.io.Serializable {
         private static final long serialVersionUID = 1L;
 
         private final String _name;
 
-        public SimplePrincipal(final String name)
-        {
+        public SimplePrincipal(final String name) {
             this._name = name;
         }
 
@@ -245,39 +220,32 @@ public class JAASLoginModule implements LoginModule
          * @return true if name equals another.getName();
          */
         @Override
-        public boolean equals(final Object another)
-        {
-            if (!(another instanceof Principal))
-            {
+        public boolean equals(final Object another) {
+            if (!(another instanceof Principal)) {
                 return false;
             }
             String anotherName = ((Principal) another).getName();
             boolean equals = false;
-            if (_name == null)
-            {
+            if (_name == null) {
                 equals = anotherName == null;
             }
-            else
-            {
+            else {
                 equals = _name.equals(anotherName);
             }
             return equals;
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return _name == null ? 0 : _name.hashCode();
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return _name;
         }
 
-        public String getName()
-        {
+        public String getName() {
             return _name;
         }
     }

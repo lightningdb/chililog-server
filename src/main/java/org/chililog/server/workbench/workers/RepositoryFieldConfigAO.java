@@ -25,7 +25,6 @@ import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.data.RepositoryFieldConfigBO;
 import org.chililog.server.data.RepositoryFieldConfigBO.DataType;
 
-
 /**
  * <p>
  * Repository Field API Object
@@ -34,8 +33,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO.DataType;
  * @author vibul
  * 
  */
-public class RepositoryFieldConfigAO extends AO
-{
+public class RepositoryFieldConfigAO extends AO {
     private String _name;
     private String _displayName;
     private String _description;
@@ -45,8 +43,7 @@ public class RepositoryFieldConfigAO extends AO
     /**
      * Basic constructor
      */
-    public RepositoryFieldConfigAO()
-    {
+    public RepositoryFieldConfigAO() {
         return;
     }
 
@@ -56,22 +53,18 @@ public class RepositoryFieldConfigAO extends AO
      * @param repoFieldConfig
      *            Repository info business object
      */
-    public RepositoryFieldConfigAO(RepositoryFieldConfigBO repoFieldConfig)
-    {
+    public RepositoryFieldConfigAO(RepositoryFieldConfigBO repoFieldConfig) {
         _name = repoFieldConfig.getName();
         _displayName = repoFieldConfig.getDisplayName();
         _description = repoFieldConfig.getDescription();
         _dataType = repoFieldConfig.getDataType();
 
-        if (repoFieldConfig.getProperties() == null || repoFieldConfig.getProperties().isEmpty())
-        {
+        if (repoFieldConfig.getProperties() == null || repoFieldConfig.getProperties().isEmpty()) {
             _properties = null;
         }
-        else
-        {
+        else {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
-            for (Entry<String, String> e : repoFieldConfig.getProperties().entrySet())
-            {
+            for (Entry<String, String> e : repoFieldConfig.getProperties().entrySet()) {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));
             }
             _properties = propertyList.toArray(new RepositoryPropertyConfigAO[] {});
@@ -87,18 +80,15 @@ public class RepositoryFieldConfigAO extends AO
      *            business object to update
      * @throws ChiliLogException
      */
-    public void toBO(RepositoryFieldConfigBO repoFieldConfig) throws ChiliLogException
-    {
+    public void toBO(RepositoryFieldConfigBO repoFieldConfig) throws ChiliLogException {
         repoFieldConfig.setName(checkRequiredField("Field Name", _name));
         repoFieldConfig.setDisplayName(_displayName);
         repoFieldConfig.setDescription(_description);
         repoFieldConfig.setDataType(_dataType);
 
         repoFieldConfig.getProperties().clear();
-        if (_properties != null && _properties.length > 0)
-        {
-            for (RepositoryPropertyConfigAO property : _properties)
-            {
+        if (_properties != null && _properties.length > 0) {
+            for (RepositoryPropertyConfigAO property : _properties) {
                 repoFieldConfig.getProperties().put(property.getKey(), property.getValue());
             }
         }
@@ -106,53 +96,43 @@ public class RepositoryFieldConfigAO extends AO
         return;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return _name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         _name = name;
     }
 
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return _displayName;
     }
 
-    public void setDisplayName(String displayName)
-    {
+    public void setDisplayName(String displayName) {
         _displayName = displayName;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return _description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         _description = description;
     }
 
-    public DataType getDataType()
-    {
+    public DataType getDataType() {
         return _dataType;
     }
 
-    public void setDataType(DataType dataType)
-    {
+    public void setDataType(DataType dataType) {
         _dataType = dataType;
     }
 
-    public RepositoryPropertyConfigAO[] getProperties()
-    {
+    public RepositoryPropertyConfigAO[] getProperties() {
         return _properties;
     }
 
-    public void setProperties(RepositoryPropertyConfigAO[] properties)
-    {
+    public void setProperties(RepositoryPropertyConfigAO[] properties) {
         _properties = properties;
     }
 }

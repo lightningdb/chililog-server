@@ -56,7 +56,6 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.stream.ChunkedFile;
 import org.jboss.netty.util.CharsetUtil;
 
-
 /**
  * <p>
  * Static file service serves static files stored on the file system.
@@ -109,52 +108,44 @@ import org.jboss.netty.util.CharsetUtil;
  * This code is based on the Netty HTTP File Server sample (http://www.jboss.org/netty/documentation.html).
  * </p>
  */
-public class StaticFileRequestHandler extends WorkbenchRequestHandler
-{
+public class StaticFileRequestHandler extends WorkbenchRequestHandler {
     private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileRequestHandler.class);
 
     /**
      * Process the message
      */
     @Override
-    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception
-    {
+    public void processMessage(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         HttpRequest request = (HttpRequest) e.getMessage();
 
         // We don't handle 100 Continue because we only allow GET method.
-        if (request.getMethod() != HttpMethod.GET)
-        {
+        if (request.getMethod() != HttpMethod.GET) {
             sendError(ctx, e, METHOD_NOT_ALLOWED, null);
             return;
         }
 
         // Check
         final String filePath = convertUriToPhysicalFilePath(request.getUri());
-        if (filePath == null)
-        {
+        if (filePath == null) {
             sendError(ctx, e, FORBIDDEN, null);
             return;
         }
         File file = new File(filePath);
-        if (file.isHidden() || !file.exists())
-        {
+        if (file.isHidden() || !file.exists()) {
             sendError(ctx, e, NOT_FOUND, String.format("%s not exist", file.getCanonicalPath()));
             return;
         }
-        if (!file.isFile())
-        {
+        if (!file.isFile()) {
             sendError(ctx, e, FORBIDDEN, String.format("%s not a file", file.getCanonicalPath()));
             return;
         }
 
         // Cache Validation
         String ifModifiedSince = request.getHeader(HttpHeaders.Names.IF_MODIFIED_SINCE);
-        if (!StringUtils.isBlank(ifModifiedSince))
-        {
+        if (!StringUtils.isBlank(ifModifiedSince)) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
-            if (ifModifiedSinceDate.getTime() == file.lastModified())
-            {
+            if (ifModifiedSinceDate.getTime() == file.lastModified()) {
                 sendNotModified(ctx, e);
                 return;
             }
@@ -162,12 +153,10 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
 
         // Open file for sending back
         RandomAccessFile raf;
-        try
-        {
+        try {
             raf = new RandomAccessFile(file, "r");
         }
-        catch (FileNotFoundException fnfe)
-        {
+        catch (FileNotFoundException fnfe) {
             sendError(ctx, e, NOT_FOUND, null);
             return;
         }
@@ -189,8 +178,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
         // Write the content.
         Channel ch = e.getChannel();
         ChannelFuture writeFuture;
-        if (doCompression)
-        {
+        if (doCompression) {
             // Cannot use ChunkedFile or zero-copy if we want to do compression
             // Must read file contents and set it as the contents
             byte[] buffer = new byte[(int) fileLength];
@@ -200,8 +188,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
             response.setContent(ChannelBuffers.copiedBuffer(buffer));
             writeFuture = ch.write(response);
         }
-        else if (AppProperties.getInstance().getWorkbenchSslEnabled())
-        {
+        else if (AppProperties.getInstance().getWorkbenchSslEnabled()) {
             // Cannot use zero-copy with HTTPS
 
             // Write the initial line and the header.
@@ -210,8 +197,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
             // Write chunks
             writeFuture = ch.write(new ChunkedFile(raf, 0, fileLength, 8192));
         }
-        else
-        {
+        else {
             // Now that we are using Execution Handlers, we cannot do zero-copy.
             // Do as per with compression (which is what most browser will ask for)
             byte[] buffer = new byte[(int) fileLength];
@@ -222,34 +208,18 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
             writeFuture = ch.write(response);
 
             /*
-            // No encryption - use zero-copy.
-            // However zero-copy does not seem to work with compression
-            // Only use zero-copy for large files like movies and music
-
-            // Write the initial line and the header.
-            ch.write(response);
-
-            // Zero-copy
-            final FileRegion region = new DefaultFileRegion(raf.getChannel(), 0, fileLength);
-            writeFuture = ch.write(region);
-            writeFuture.addListener(new ChannelFutureProgressListener()
-            {
-                public void operationComplete(ChannelFuture future)
-                {
-                    region.releaseExternalResources();
-                }
-
-                public void operationProgressed(ChannelFuture future, long amount, long current, long total)
-                {
-                    _logger.debug("Zero-Coping file %s: %d / %d (+%d) bytes", filePath, current, total, amount);
-                }
-            });
-            */
+             * // No encryption - use zero-copy. // However zero-copy does not seem to work with compression // Only use
+             * zero-copy for large files like movies and music // Write the initial line and the header.
+             * ch.write(response); // Zero-copy final FileRegion region = new DefaultFileRegion(raf.getChannel(), 0,
+             * fileLength); writeFuture = ch.write(region); writeFuture.addListener(new ChannelFutureProgressListener()
+             * { public void operationComplete(ChannelFuture future) { region.releaseExternalResources(); } public void
+             * operationProgressed(ChannelFuture future, long amount, long current, long total) {
+             * _logger.debug("Zero-Coping file %s: %d / %d (+%d) bytes", filePath, current, total, amount); } });
+             */
         }
 
         // Decide whether to close the connection or not.
-        if (!isKeepAlive(request))
-        {
+        if (!isKeepAlive(request)) {
             // Close the connection when the whole content is written out.
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
@@ -262,34 +232,28 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @return
      * @throws UnsupportedEncodingException
      */
-    private String convertUriToPhysicalFilePath(String uri) throws UnsupportedEncodingException
-    {
+    private String convertUriToPhysicalFilePath(String uri) throws UnsupportedEncodingException {
         // Decode the path.
-        try
-        {
+        try {
             uri = URLDecoder.decode(uri, "UTF-8");
         }
-        catch (UnsupportedEncodingException e)
-        {
+        catch (UnsupportedEncodingException e) {
             uri = URLDecoder.decode(uri, "ISO-8859-1");
         }
 
         // Remove the initial /static/ or /workbench/ prefix
         int idx = uri.indexOf('/', 1);
-        if (idx < 0)
-        {
+        if (idx < 0) {
             return null;
         }
         uri = uri.substring(idx);
-        if (StringUtils.isBlank(uri))
-        {
+        if (StringUtils.isBlank(uri)) {
             return null;
         }
 
         // Remove query string if any
         idx = uri.indexOf('?');
-        if (idx > 0)
-        {
+        if (idx > 0) {
             uri = uri.substring(0, idx);
         }
 
@@ -299,8 +263,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
         // Simplistic dumb security check.
         // You will have to do something serious in the production environment.
         if (uri.contains(File.separator + ".") || uri.contains("." + File.separator) || uri.startsWith(".")
-                || uri.endsWith("."))
-        {
+                || uri.endsWith(".")) {
             return null;
         }
 
@@ -320,8 +283,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param moreInfo
      *            More details of the error to log
      */
-    private void sendError(ChannelHandlerContext ctx, MessageEvent e, HttpResponseStatus status, String moreInfo)
-    {
+    private void sendError(ChannelHandlerContext ctx, MessageEvent e, HttpResponseStatus status, String moreInfo) {
         writeLogEntry(e, status, moreInfo);
 
         toogleCompression(ctx, false);
@@ -345,8 +307,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param e
      *            Message Event
      */
-    private void sendNotModified(ChannelHandlerContext ctx, MessageEvent e)
-    {
+    private void sendNotModified(ChannelHandlerContext ctx, MessageEvent e) {
         writeLogEntry(e, HttpResponseStatus.NOT_MODIFIED, null);
 
         toogleCompression(ctx, false);
@@ -367,19 +328,16 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      *            Path to the file
      * @return true if compression on the file should be performed, false if not
      */
-    private boolean checkDoCompression(String filePath, long fileLength)
-    {
+    private boolean checkDoCompression(String filePath, long fileLength) {
         // If < 4096 bytes, compression makes the file bigger and/or CPU used vs time saved is small
         // If > 1 MB, don't compress. Just chunk download because it takes too much memory to read everything in
-        if (fileLength < 4096 || fileLength > 1048576)
-        {
+        if (fileLength < 4096 || fileLength > 1048576) {
             return false;
         }
 
         String s = filePath.toLowerCase();
         if (s.endsWith(".html") || s.endsWith(".js") || s.endsWith(".css") || s.endsWith(".txt") || s.endsWith(".json")
-                || s.endsWith(".xml"))
-        {
+                || s.endsWith(".xml")) {
             return true;
         }
         return false;
@@ -393,44 +351,48 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param file
      *            file to extract content type
      */
-    private void setContentTypeHeader(HttpResponse response, File file)
-    {
+    private void setContentTypeHeader(HttpResponse response, File file) {
         String mimeType = null;
         String filePath = file.getPath();
-        
+
         int idx = filePath.lastIndexOf('.');
-        if (idx == -1)
-        {
+        if (idx == -1) {
             mimeType = "application/octet-stream";
         }
-        else
-        {
+        else {
             String fileExtension = filePath.substring(idx).toLowerCase();
-            
+
             // Try common types first
-            if (fileExtension.equals(".html")) 
-            { mimeType = "text/html"; }
-            else  if (fileExtension.equals(".css"))
-            { mimeType = "text/css"; }
-            else  if (fileExtension.equals(".js"))
-            { mimeType = "application/javascript"; }
-            else  if (fileExtension.equals(".gif"))
-            { mimeType = "image/gif"; }
-            else  if (fileExtension.equals(".png"))
-            { mimeType = "image/png"; }
-            else  if (fileExtension.equals(".txt"))
-            { mimeType = "text/plain"; }
-            else  if (fileExtension.equals(".xml"))
-            { mimeType = "application/xml"; }
-            else  if (fileExtension.equals(".json"))
-            { mimeType = "application/json"; }
-            else
-            {
+            if (fileExtension.equals(".html")) {
+                mimeType = "text/html";
+            }
+            else if (fileExtension.equals(".css")) {
+                mimeType = "text/css";
+            }
+            else if (fileExtension.equals(".js")) {
+                mimeType = "application/javascript";
+            }
+            else if (fileExtension.equals(".gif")) {
+                mimeType = "image/gif";
+            }
+            else if (fileExtension.equals(".png")) {
+                mimeType = "image/png";
+            }
+            else if (fileExtension.equals(".txt")) {
+                mimeType = "text/plain";
+            }
+            else if (fileExtension.equals(".xml")) {
+                mimeType = "application/xml";
+            }
+            else if (fileExtension.equals(".json")) {
+                mimeType = "application/json";
+            }
+            else {
                 MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
                 mimeType = mimeTypesMap.getContentType(file.getPath());
             }
         }
-                
+
         response.setHeader(HttpHeaders.Names.CONTENT_TYPE, mimeType);
     }
 
@@ -442,8 +404,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param file
      *            file to extract content type
      */
-    private void setDateHeader(HttpResponse response)
-    {
+    private void setDateHeader(HttpResponse response) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -459,8 +420,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param file
      *            file to extract content type
      */
-    private void setDateAndCacheHeaders(HttpResponse response, File filetoCache)
-    {
+    private void setDateAndCacheHeaders(HttpResponse response, File filetoCache) {
         SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
         dateFormatter.setTimeZone(TimeZone.getTimeZone(HTTP_DATE_GMT_TIMEZONE));
 
@@ -486,11 +446,9 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param doCompression
      *            True to turn compression on, False to turn it off
      */
-    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression)
-    {
+    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression) {
         ChannelHandler deflater = ctx.getPipeline().get("deflater");
-        if (deflater instanceof ConditionalHttpContentCompressor)
-        {
+        if (deflater instanceof ConditionalHttpContentCompressor) {
             ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
         }
     }
@@ -501,8 +459,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler
      * @param e
      *            Message Event
      */
-    private void writeLogEntry(MessageEvent e, HttpResponseStatus status, String moreInfo)
-    {
+    private void writeLogEntry(MessageEvent e, HttpResponseStatus status, String moreInfo) {
         HttpRequest request = (HttpRequest) e.getMessage();
         _logger.info("GET %s REMOTE_IP=%s STATUS=%s %s", request.getUri(), e.getRemoteAddress().toString(), status,
                 moreInfo == null ? StringUtils.EMPTY : moreInfo);

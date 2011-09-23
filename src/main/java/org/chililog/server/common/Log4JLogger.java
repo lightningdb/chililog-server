@@ -32,8 +32,7 @@ import org.apache.log4j.Logger;
  * @author vibul
  * 
  */
-public class Log4JLogger
-{
+public class Log4JLogger {
     private final Logger _inner;
 
     /**
@@ -43,8 +42,7 @@ public class Log4JLogger
      *            Class in which the logger is going to be used. Class name will be used for the log category.
      * @return Instance of the logger for the specific class that is to be used.
      */
-    public static Log4JLogger getLogger(Class<?> clazz)
-    {
+    public static Log4JLogger getLogger(Class<?> clazz) {
         return new Log4JLogger(clazz);
     }
 
@@ -54,16 +52,14 @@ public class Log4JLogger
      * @param clazz
      *            Class in which the logger is going to be used. Class name will be used for the log category.
      */
-    private Log4JLogger(Class<?> clazz)
-    {
+    private Log4JLogger(Class<?> clazz) {
         _inner = Logger.getLogger(clazz);
     }
 
     /**
      * Returns if trace is enabled
      */
-    public boolean isTraceEnabled()
-    {
+    public boolean isTraceEnabled() {
         return _inner.isTraceEnabled();
     }
 
@@ -75,17 +71,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void trace(String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isTraceEnabled())
-            {
+    public void trace(String format, Object... args) {
+        try {
+            if (_inner.isTraceEnabled()) {
                 _inner.trace(String.format(format, args));
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.trace(format);
         }
     }
@@ -100,17 +92,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void trace(Throwable t, String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isTraceEnabled())
-            {
+    public void trace(Throwable t, String format, Object... args) {
+        try {
+            if (_inner.isTraceEnabled()) {
                 _inner.trace(String.format(format, args), t);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.trace(t);
         }
     }
@@ -118,11 +106,10 @@ public class Log4JLogger
     /**
      * Returns if debug is enabled
      */
-    public boolean isDebugEnabled()
-    {
+    public boolean isDebugEnabled() {
         return _inner.isDebugEnabled();
     }
-    
+
     /**
      * Write a message with a priority of DEBUG
      * 
@@ -131,17 +118,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void debug(String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isDebugEnabled())
-            {
+    public void debug(String format, Object... args) {
+        try {
+            if (_inner.isDebugEnabled()) {
                 _inner.debug(String.format(format, args));
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.debug(format);
         }
     }
@@ -156,17 +139,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void debug(Throwable t, String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isDebugEnabled())
-            {
+    public void debug(Throwable t, String format, Object... args) {
+        try {
+            if (_inner.isDebugEnabled()) {
                 _inner.debug(String.format(format, args), t);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.debug(t);
         }
     }
@@ -174,11 +153,10 @@ public class Log4JLogger
     /**
      * Returns if info is enabled
      */
-    public boolean isInfoEnabled()
-    {
+    public boolean isInfoEnabled() {
         return _inner.isInfoEnabled();
     }
-    
+
     /**
      * Write a message with a priority of INFO
      * 
@@ -187,17 +165,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void info(String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isInfoEnabled())
-            {
+    public void info(String format, Object... args) {
+        try {
+            if (_inner.isInfoEnabled()) {
                 _inner.info(String.format(format, args));
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.info(format);
         }
     }
@@ -212,17 +186,13 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void info(Throwable t, String format, Object... args)
-    {
-        try
-        {
-            if (_inner.isInfoEnabled())
-            {
+    public void info(Throwable t, String format, Object... args) {
+        try {
+            if (_inner.isInfoEnabled()) {
                 _inner.info(String.format(format, args), t);
             }
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.info(t);
         }
     }
@@ -235,14 +205,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void warn(String format, Object... args)
-    {
-        try
-        {
+    public void warn(String format, Object... args) {
+        try {
             _inner.warn(String.format(format, args));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.warn(format);
         }
     }
@@ -257,14 +224,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void warn(Throwable t, String format, Object... args)
-    {
-        try
-        {
+    public void warn(Throwable t, String format, Object... args) {
+        try {
             _inner.warn(String.format(format, args), t);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.warn(t);
         }
     }
@@ -277,14 +241,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void error(String format, Object... args)
-    {
-        try
-        {
+    public void error(String format, Object... args) {
+        try {
             _inner.error(String.format(format, args));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.error(format);
         }
     }
@@ -299,14 +260,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void error(Throwable t, String format, Object... args)
-    {
-        try
-        {
+    public void error(Throwable t, String format, Object... args) {
+        try {
             _inner.error(String.format(format, args), t);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.error(t);
         }
     }
@@ -319,14 +277,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void fatal(String format, Object... args)
-    {
-        try
-        {
+    public void fatal(String format, Object... args) {
+        try {
             _inner.fatal(String.format(format, args));
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.fatal(format);
         }
     }
@@ -341,14 +296,11 @@ public class Log4JLogger
      * @param args
      *            placeholder substitutes
      */
-    public void fatal(Throwable t, String format, Object... args)
-    {
-        try
-        {
+    public void fatal(Throwable t, String format, Object... args) {
+        try {
             _inner.fatal(String.format(format, args), t);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             _inner.fatal(t);
         }
     }

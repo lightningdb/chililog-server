@@ -28,7 +28,6 @@ import org.hornetq.api.core.HornetQException;
 import org.hornetq.api.core.client.ClientProducer;
 import org.hornetq.api.core.client.ClientSession;
 
-
 /**
  * <p>
  * Pool of HornetQ producers used for publishing messages. This assumes that MqService has started.
@@ -48,22 +47,18 @@ import org.hornetq.api.core.client.ClientSession;
  * // Get a session from the pool
  * MqProducerSessionPool p = pool.getPooled();
  * 
- * try
- * {
+ * try {
  *     // Do some work
  * 
  *     // Returning a session to the pool
  *     pool.returnPooled(p);
  * }
- * catch (Exception ex)
- * {
+ * catch (Exception ex) {
  *     // In the event of an error, close the session and add a new item to the pool
- *     try
- *     {
+ *     try {
  *         p.session.close();
  *     }
- *     catch (HornetQException e)
- *     {
+ *     catch (HornetQException e) {
  *     }
  *     pool.addPooled();
  *     throw ex;
@@ -81,8 +76,7 @@ import org.hornetq.api.core.client.ClientSession;
  * 
  * @author vibul
  */
-public class MqProducerSessionPool
-{
+public class MqProducerSessionPool {
     static Log4JLogger _logger = Log4JLogger.getLogger(MqProducerSessionPool.class);
 
     protected ArrayBlockingQueue<Pooled> _pool = null;
@@ -99,19 +93,15 @@ public class MqProducerSessionPool
      *            number of session to pool
      * @throws Exception
      */
-    public MqProducerSessionPool(int poolSize)
-    {
-        try
-        {
+    public MqProducerSessionPool(int poolSize) {
+        try {
             _pool = new ArrayBlockingQueue<Pooled>(poolSize);
-            for (int i = 0; i < poolSize; i++)
-            {
+            for (int i = 0; i < poolSize; i++) {
                 addPooled();
             }
             return;
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error("Error loading Publisher Session Pool: " + e.getMessage(), e);
             System.exit(1);
 
@@ -121,13 +111,11 @@ public class MqProducerSessionPool
     /**
      * A pooled session and its associated producer
      */
-    public static class Pooled
-    {
+    public static class Pooled {
         public ClientSession session;
         public ClientProducer producer;
 
-        private Pooled(ClientSession session, ClientProducer producer)
-        {
+        private Pooled(ClientSession session, ClientProducer producer) {
             this.session = session;
             this.producer = producer;
         }
@@ -138,8 +126,7 @@ public class MqProducerSessionPool
      * 
      * @throws Exception
      */
-    public void addPooled() throws Exception
-    {
+    public void addPooled() throws Exception {
         ClientSession session = MqService.getInstance().getNonTransactionalSystemClientSession();
         ClientProducer producer = session.createProducer();
         session.start();
@@ -155,11 +142,9 @@ public class MqProducerSessionPool
      * @throws ChiliLogException
      *             if no session are available after a 1 second wait
      */
-    public Pooled getPooled() throws Exception
-    {
+    public Pooled getPooled() throws Exception {
         Pooled pooled = _pool.poll(1, TimeUnit.SECONDS);
-        if (pooled == null)
-        {
+        if (pooled == null) {
             throw new ChiliLogException(Strings.GET_POOLED_PUBLISHER_SESSION_TIMEOUT_ERROR);
         }
         return pooled;
@@ -171,29 +156,23 @@ public class MqProducerSessionPool
      * @param pooled
      *            pooled item retrieved using getPooled()
      */
-    public void returnPooled(Pooled pooled)
-    {
+    public void returnPooled(Pooled pooled) {
         _pool.add(pooled);
     }
 
     /**
      * Used during shutdown to close all sessions
      */
-    public void cleanup()
-    {
-        if (_pool == null)
-        {
+    public void cleanup() {
+        if (_pool == null) {
             return;
         }
 
-        for (Pooled pooled : _pool)
-        {
-            try
-            {
+        for (Pooled pooled : _pool) {
+            try {
                 pooled.session.close();
             }
-            catch (HornetQException e)
-            {
+            catch (HornetQException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -202,8 +181,7 @@ public class MqProducerSessionPool
     /**
      * Returns the number of connections in the pool
      */
-    public int size()
-    {
+    public int size() {
         return _pool.size();
     }
 

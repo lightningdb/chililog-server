@@ -25,8 +25,7 @@ import org.chililog.server.data.RepositoryEntryBO.Severity;
  * 
  * @author vibul
  */
-public class LogEntryAO
-{
+public class LogEntryAO {
     private String _timestamp;
     private String _source;
     private String _host;
@@ -36,62 +35,52 @@ public class LogEntryAO
     /**
      * Returns the timestamp at which the log entry was made
      */
-    public String getTimestamp()
-    {
+    public String getTimestamp() {
         return _timestamp;
     }
 
-    public void setTimestamp(String timestamp)
-    {
+    public void setTimestamp(String timestamp) {
         _timestamp = timestamp;
     }
 
     /**
      * Returns the name of the application or device that generated the log entry
      */
-    public String getSource()
-    {
+    public String getSource() {
         return _source;
     }
 
-    public void setSource(String source)
-    {
+    public void setSource(String source) {
         _source = source;
     }
 
     /**
      * Returns the hostname or ip address of the device that generated the log entry
      */
-    public String getHost()
-    {
+    public String getHost() {
         return _host;
     }
 
-    public void setHost(String host)
-    {
+    public void setHost(String host) {
         _host = host;
     }
 
     /**
      * Returns the severity. Can be a number 0 to 7 or a text description of the serverity. See {@link Severity}.
      */
-    public String getSeverity()
-    {
+    public String getSeverity() {
         return _severity;
     }
 
-    public void setSeverity(String severity)
-    {
+    public void setSeverity(String severity) {
         _severity = severity;
     }
 
-    public String getMessage()
-    {
+    public String getMessage() {
         return _message;
     }
 
-    public void setMessage(String message)
-    {
+    public void setMessage(String message) {
         _message = message;
     }
 

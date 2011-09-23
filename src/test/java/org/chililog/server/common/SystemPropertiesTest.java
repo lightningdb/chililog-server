@@ -27,38 +27,33 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * Test cases for <code>SystemProperties</code>
  * 
  * @author vibul
  * 
  */
-public class SystemPropertiesTest
-{	
-	private static Logger _logger = Logger.getLogger(SystemPropertiesTest.class);
+public class SystemPropertiesTest {
+    private static Logger _logger = Logger.getLogger(SystemPropertiesTest.class);
 
-	@Before
-	@After
-	public void testCleanup() throws Exception
-	{
-		// Reload properties
-		SystemProperties.getInstance().loadProperties();
-	}
-	
+    @Before
+    @After
+    public void testCleanup() throws Exception {
+        // Reload properties
+        SystemProperties.getInstance().loadProperties();
+    }
+
     @Test
-    public void testAppName()
-    {
+    public void testAppName() {
         String s = SystemProperties.getInstance().getJavaHome();
         assertNotNull(s);
-    }	
-	
-	@Test
-	public void testToString()
-	{
-		String s = SystemProperties.getInstance().toString();
-		assertTrue(StringUtils.isNotBlank(s));
-		_logger.debug("\n" + s);
-	}
-	
+    }
+
+    @Test
+    public void testToString() {
+        String s = SystemProperties.getInstance().toString();
+        assertTrue(StringUtils.isNotBlank(s));
+        _logger.debug("\n" + s);
+    }
+
 }

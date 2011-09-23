@@ -46,8 +46,7 @@ import com.mongodb.BasicDBObject;
  * @author vibul
  * 
  */
-public class RegexEntryParser extends EntryParser
-{
+public class RegexEntryParser extends EntryParser {
     private static Log4JLogger _logger = Log4JLogger.getLogger(RegexEntryParser.class);
     private Pattern _pattern;
     private ArrayList<RegexFieldInfo> _fields = new ArrayList<RegexFieldInfo>();
@@ -80,38 +79,32 @@ public class RegexEntryParser extends EntryParser
      *            Parser information that we need
      * @throws ChiliLogException
      */
-    public RegexEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo) throws ChiliLogException
-    {
+    public RegexEntryParser(RepositoryConfigBO repoInfo, RepositoryParserConfigBO repoParserInfo)
+            throws ChiliLogException {
         super(repoInfo, repoParserInfo);
 
-        try
-        {
+        try {
             Hashtable<String, String> properties = repoParserInfo.getProperties();
             String patternString = properties.get(PATTERN_PROPERTY_NAME);
-            if (!StringUtils.isBlank(patternString))
-            {
+            if (!StringUtils.isBlank(patternString)) {
                 _pattern = Pattern.compile(patternString);
             }
 
             // Parse our field value so that we don't have to keep on doing it
-            for (RepositoryFieldConfigBO f : repoParserInfo.getFields())
-            {
+            for (RepositoryFieldConfigBO f : repoParserInfo.getFields()) {
                 String fieldPatternString = f.getProperties().get(PATTERN_FIELD_PROPERTY_NAME);
                 String groupString = f.getProperties().get(GROUP_FIELD_PROPERTY_NAME);
                 Integer group = Integer.parseInt(groupString);
                 _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
             }
         }
-        catch (Exception ex)
-        {
-            if (ex instanceof ChiliLogException)
-            {
+        catch (Exception ex) {
+            if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
             }
-            else
-            {
-                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(), repoInfo.getName(),
-                        ex.getMessage());
+            else {
+                throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
+                        repoInfo.getName(), ex.getMessage());
             }
         }
 
@@ -136,50 +129,40 @@ public class RegexEntryParser extends EntryParser
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message)
-    {
-        try
-        {
+    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message) {
+        try {
             this.setLastParseError(null);
             checkParseArguments(timestamp, source, host, severity, message);
 
             BasicDBObject parsedFields = new BasicDBObject();
             Matcher entryMatcher = null;
             boolean entryMatches = false;
-            if (_pattern != null)
-            {
+            if (_pattern != null) {
                 entryMatcher = _pattern.matcher(message);
                 entryMatches = entryMatcher.matches();
             }
 
-            for (RegexFieldInfo regexField : _fields)
-            {
+            for (RegexFieldInfo regexField : _fields) {
                 String fieldName = regexField.getRepoFieldInfo().getDbObjectName();
                 String fieldStringValue = null;
                 Object fieldValue = null;
-                try
-                {
+                try {
                     Matcher fieldMatcher = null;
-                    if (regexField.getPattern() != null)
-                    {
+                    if (regexField.getPattern() != null) {
                         fieldMatcher = regexField.getPattern().matcher(message);
-                        if (fieldMatcher.matches())
-                        {
+                        if (fieldMatcher.matches()) {
                             fieldStringValue = fieldMatcher.group(regexField.getGroup());
                         }
                     }
-                    else if (entryMatches)
-                    {
+                    else if (entryMatches) {
                         fieldStringValue = entryMatcher.group(regexField.getGroup());
                     }
 
                     fieldValue = regexField.getParser().parse(fieldStringValue);
                     parsedFields.put(fieldName, fieldValue);
                 }
-                catch (Exception ex)
-                {
-                    switch (this.getRepoParserInfo().getParseFieldErrorHandling())
-                    {
+                catch (Exception ex) {
+                    switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                         case SkipField:
                             String msg = StringsProperties.getInstance().getString(
                                     Strings.PARSER_FIELD_ERROR_SKIP_FIELD);
@@ -204,8 +187,7 @@ public class RegexEntryParser extends EntryParser
 
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message, parsedFields);
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;
@@ -215,8 +197,7 @@ public class RegexEntryParser extends EntryParser
     /**
      * Encapsulates a regular expression field
      */
-    private static class RegexFieldInfo
-    {
+    private static class RegexFieldInfo {
         public Pattern _pattern;
         public int _group;
         private RepositoryFieldConfigBO _repoFieldInfo;
@@ -233,10 +214,8 @@ public class RegexEntryParser extends EntryParser
          *            meta data
          * @throws ParseException
          */
-        public RegexFieldInfo(String pattern, int group, RepositoryFieldConfigBO repoFieldInfo) throws ParseException
-        {
-            if (!StringUtils.isBlank(pattern))
-            {
+        public RegexFieldInfo(String pattern, int group, RepositoryFieldConfigBO repoFieldInfo) throws ParseException {
+            if (!StringUtils.isBlank(pattern)) {
                 _pattern = Pattern.compile(pattern);
             }
             _group = group;
@@ -247,32 +226,28 @@ public class RegexEntryParser extends EntryParser
         /**
          * Returns the optional field specific pattern. If null, then use the repository entry pattern
          */
-        public Pattern getPattern()
-        {
+        public Pattern getPattern() {
             return _pattern;
         }
 
         /**
          * Returns the group number within the matching pattern containing the string value of this field
          */
-        public int getGroup()
-        {
+        public int getGroup() {
             return _group;
         }
 
         /**
          * Returns the field meta data
          */
-        public RepositoryFieldConfigBO getRepoFieldInfo()
-        {
+        public RepositoryFieldConfigBO getRepoFieldInfo() {
             return _repoFieldInfo;
         }
 
         /**
          * Returns the field value parser
          */
-        public FieldParser getParser()
-        {
+        public FieldParser getParser() {
             return _parser;
         }
 

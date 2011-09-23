@@ -10,8 +10,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
  * 
  * @author <a href="http://www.pedantique.org/">Carl Bystr&ouml;m</a>
  */
-public interface WebSocketCallback
-{
+public interface WebSocketCallback {
     /**
      * Called when the client is connected to the server
      * 

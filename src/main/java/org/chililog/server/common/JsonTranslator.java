@@ -39,17 +39,15 @@ import com.google.gson.GsonBuilder;
  * @author vibul
  * 
  */
-public class JsonTranslator
-{
+public class JsonTranslator {
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
-    
+
     private Gson _gson = null;
 
     /**
      * Returns the singleton instance for this class
      */
-    public static JsonTranslator getInstance()
-    {
+    public static JsonTranslator getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
@@ -59,8 +57,7 @@ public class JsonTranslator
      * 
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
-    private static class SingletonHolder
-    {
+    private static class SingletonHolder {
         public static final JsonTranslator INSTANCE = new JsonTranslator();
     }
 
@@ -74,13 +71,10 @@ public class JsonTranslator
      * so might as well terminate here.
      * </p>
      */
-    private JsonTranslator()
-    {
-        try
-        {
+    private JsonTranslator() {
+        try {
             GsonBuilder builder = new GsonBuilder();
-            if (AppProperties.getInstance().getJsonPretty())
-            {
+            if (AppProperties.getInstance().getJsonPretty()) {
                 builder.setPrettyPrinting();
             }
             builder.setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -88,8 +82,7 @@ public class JsonTranslator
             builder.disableHtmlEscaping();
             _gson = builder.create();
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             _logger.error("Error initializing JSON translator: " + e.getMessage(), e);
             System.exit(1);
         }
@@ -102,8 +95,7 @@ public class JsonTranslator
      *            Object to serialize
      * @return String serialization of the java object in JSON format.
      */
-    public String toJson(Object o)
-    {
+    public String toJson(Object o) {
         return _gson.toJson(o);
     }
 
@@ -115,8 +107,7 @@ public class JsonTranslator
      * @param appender
      *            Appender into which the JSON form of the object will be written
      */
-    public void toJson(Object o, Appendable appender)
-    {
+    public void toJson(Object o, Appendable appender) {
         _gson.toJson(o, appender);
     }
 
@@ -131,13 +122,11 @@ public class JsonTranslator
      *            the class of T
      * @return an object of type T from the string. null if json is null or empty string.
      */
-    public <T> T fromJson(String json, Class<T> classOfT)
-    {
-        if (StringUtils.isBlank(json))
-        {
+    public <T> T fromJson(String json, Class<T> classOfT) {
+        if (StringUtils.isBlank(json)) {
             return null;
         }
-        
+
         // Have to trim because of bug with trailing white space
         // http://groups.google.com/group/google-gson/browse_thread/thread/6f12cf80b12a85b8
         return _gson.fromJson(json.trim(), classOfT);
@@ -154,8 +143,7 @@ public class JsonTranslator
      *            the class of T
      * @return an object of type T from the reader
      */
-    public <T> T fromJson(Reader json, Class<T> classOfT)
-    {
+    public <T> T fromJson(Reader json, Class<T> classOfT) {
         return _gson.fromJson(json, classOfT);
     }
 
@@ -165,12 +153,10 @@ public class JsonTranslator
      * @author vibul
      * 
      */
-    public static class ChiliLogFieldNamingStrategy implements FieldNamingStrategy
-    {
+    public static class ChiliLogFieldNamingStrategy implements FieldNamingStrategy {
 
         @Override
-        public String translateName(Field field)
-        {
+        public String translateName(Field field) {
             StringBuilder sb = new StringBuilder(field.getName());
             sb.replace(0, 2, sb.substring(1, 2).toUpperCase());
             return sb.toString();

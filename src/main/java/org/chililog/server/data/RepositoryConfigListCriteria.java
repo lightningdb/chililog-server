@@ -24,44 +24,37 @@ package org.chililog.server.data;
  * @author vibul
  * 
  */
-public class RepositoryConfigListCriteria extends ListCriteria
-{
+public class RepositoryConfigListCriteria extends ListCriteria {
     private String _namePattern = null;
     private String[] _nameRestrictions = null;
 
     /**
      * Basic constructor
      */
-    public RepositoryConfigListCriteria()
-    {
+    public RepositoryConfigListCriteria() {
         return;
     }
 
-    public String getNamePattern()
-    {
+    public String getNamePattern() {
         return _namePattern;
     }
 
     /**
      * Search for all repositories matching this name regular expression pattern
      */
-    public void setNamePattern(String usernamePattern)
-    {
+    public void setNamePattern(String usernamePattern) {
         _namePattern = usernamePattern;
     }
 
-    public String[] getNameRestrictions()
-    {
+    public String[] getNameRestrictions() {
         return _nameRestrictions;
     }
 
     /**
      * Sets the list of repositories to which the resultset will be limited
      */
-    public void setNameRestrictions(String[] nameRestrictions)
-    {
+    public void setNameRestrictions(String[] nameRestrictions) {
         _nameRestrictions = nameRestrictions;
     }
 
-    
 }

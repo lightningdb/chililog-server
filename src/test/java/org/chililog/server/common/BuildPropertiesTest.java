@@ -30,63 +30,54 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
 /**
  * JUnit test cases for <code>BuildProperties</code>
  * 
  * @author vibul
  * 
  */
-public class BuildPropertiesTest
-{
+public class BuildPropertiesTest {
     private static Logger _logger = Logger.getLogger(BuildPropertiesTest.class);
 
     @BeforeClass
-    public static void testClassInit() throws Exception
-    {
+    public static void testClassInit() throws Exception {
         // Reload properties
         SystemProperties.getInstance().loadProperties();
     }
 
     @Before
     @After
-    public void testCleanup() throws Exception
-    {
+    public void testCleanup() throws Exception {
         // Reload properties so that we start with default
         SystemProperties.getInstance().loadProperties();
     }
 
     @Test
-    public void testAppName()
-    {
+    public void testAppName() {
         String s = BuildProperties.getInstance().getAppName();
         assertTrue(s.equalsIgnoreCase("ChiliLog Server"));
     }
 
     @Test
-    public void testBuildTimestamp()
-    {
+    public void testBuildTimestamp() {
         String s = BuildProperties.getInstance().getBuildTimestamp();
         assertTrue(StringUtils.isNotBlank(s));
     }
 
     @Test
-    public void testBuildMachineName() throws UnknownHostException
-    {
+    public void testBuildMachineName() throws UnknownHostException {
         String s = BuildProperties.getInstance().getBuildMachineName();
         assertEquals(java.net.InetAddress.getLocalHost().getHostName(), s);
     }
 
     @Test
-    public void testBuildUserName() throws UnknownHostException
-    {
+    public void testBuildUserName() throws UnknownHostException {
         String s = BuildProperties.getInstance().getBuildUserName();
         assertEquals(System.getProperty("user.name"), s);
     }
-    
+
     @Test
-    public void testToString()
-    {
+    public void testToString() {
         String s = BuildProperties.getInstance().toString();
         assertTrue(StringUtils.isNotBlank(s));
         _logger.debug("\n" + s);
