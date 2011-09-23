@@ -18,24 +18,15 @@
 
 package org.chililog.server.pubsub.websocket;
 
-import org.jboss.netty.buffer.ChannelBuffers;
-
 /**
- * Web Socket Frame for closing the connection
+ * Versions of the web socket protocol that we support
  * 
  * @author vibul
  */
-public class CloseWebSocketFrame extends WebSocketFrame {
+public enum WebSocketVersion {
+    UNKNOWN,
 
-    @Override
-    public WebSocketFrameType getType() {
-        return WebSocketFrameType.CLOSE;
-    }
+    HYBI00,
 
-    /**
-     * Creates a new empty binary frame.
-     */
-    public CloseWebSocketFrame() {
-        this.setBinaryData(ChannelBuffers.EMPTY_BUFFER);
-    }
+    HYBI08
 }

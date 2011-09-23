@@ -32,7 +32,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.pubsub.websocket.CloseWebSocketFrame;
 import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketFrame;
-import org.chililog.server.pubsub.websocket.WebSocketHandshaker;
+import org.chililog.server.pubsub.websocket.WebSocketServerHandshaker;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
@@ -65,7 +65,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     private SubscriptionWorker _subscriptionWorker = null;
 
-    private WebSocketHandshaker _handshaker = null;
+    private WebSocketServerHandshaker _handshaker = null;
 
     /**
      * Handles incoming HTTP data
@@ -109,7 +109,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             // Web socket handshake
             if (req.getUri().equals(WEBSOCKET_PATH)) {
                 String wsURL = "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
-                _handshaker = new WebSocketHandshaker(wsURL);
+                _handshaker = new WebSocketServerHandshaker(wsURL);
                 _handshaker.executeOpeningHandshake(ctx, req);
                 return;
             }

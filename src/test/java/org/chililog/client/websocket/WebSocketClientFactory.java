@@ -1,13 +1,13 @@
 
 package org.chililog.client.websocket;
 
+import org.chililog.server.pubsub.websocket.WebSocketVersion;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
-import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 
 import java.net.URI;
 import java.util.concurrent.Executors;
@@ -34,7 +34,7 @@ public class WebSocketClientFactory {
      *            Callback interface to receive events
      * @return A WebSocket client. Call {@link WebSocketClient#connect()} to connect.
      */
-    public WebSocketClient newClient(final URI url, final WebSocketCallback callback) {
+    public WebSocketClient newClient(final URI url, final WebSocketVersion version, final WebSocketCallback callback) {
         ClientBootstrap bootstrap = new ClientBootstrap(socketChannelFactory);
 
         String protocol = url.getScheme();
@@ -42,13 +42,13 @@ public class WebSocketClientFactory {
             throw new IllegalArgumentException("Unsupported protocol: " + protocol);
         }
 
-        final WebSocketClientHandler clientHandler = new WebSocketClientHandler(bootstrap, url, callback);
+        final WebSocketClientHandler clientHandler = new WebSocketClientHandler(bootstrap, url, version, callback);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
 
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline pipeline = Channels.pipeline();
-                pipeline.addLast("decoder", new HttpResponseDecoder());
+                pipeline.addLast("decoder", new WebSocketHttpResponseDecoder());
                 pipeline.addLast("encoder", new HttpRequestEncoder());
                 pipeline.addLast("ws-handler", clientHandler);
                 return pipeline;

@@ -1,6 +1,12 @@
 
 package org.chililog.client.websocket;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
+
+import org.chililog.server.pubsub.websocket.WebSocketClientHandshaker;
+import org.chililog.server.pubsub.websocket.WebSocketFrame;
+import org.chililog.server.pubsub.websocket.WebSocketVersion;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -9,22 +15,8 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
-import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
-import org.jboss.netty.handler.codec.http.HttpResponseStatus;
-import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameDecoder;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrameEncoder;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
-import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 import org.jboss.netty.util.CharsetUtil;
-
-import java.net.InetSocketAddress;
-import java.net.URI;
 
 /**
  * Copied from https://github.com/cgbystrom/netty-tools
@@ -39,54 +31,33 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
     private ClientBootstrap bootstrap;
     private URI url;
     private WebSocketCallback callback;
-    private boolean handshakeCompleted = false;
     private Channel channel;
+    private WebSocketClientHandshaker handshaker = null;
+    private WebSocketVersion version;
 
-    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketCallback callback) {
+    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketVersion version, WebSocketCallback callback) {
         this.bootstrap = bootstrap;
         this.url = url;
+        this.version = version;
         this.callback = callback;
     }
 
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-        String path = url.getPath();
-        if (url.getQuery() != null && url.getQuery().length() > 0) {
-            path = url.getPath() + "?" + url.getQuery();
-        }
-        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path);
-        request.addHeader(Names.UPGRADE, Values.WEBSOCKET);
-        request.addHeader(Names.CONNECTION, Values.UPGRADE);
-        request.addHeader(Names.HOST, url.getHost());
-        request.addHeader(Names.ORIGIN, "http://" + url.getHost());
-
-        e.getChannel().write(request);
-        ctx.getPipeline().replace("encoder", "ws-encoder", new WebSocketFrameEncoder());
         channel = e.getChannel();
+        this.handshaker = new WebSocketClientHandshaker(url, version);
+        handshaker.beginOpeningHandshake(ctx, channel);
     }
 
     @Override
     public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         callback.onDisconnect(this);
-        handshakeCompleted = false;
     }
 
     @Override
     public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        if (!handshakeCompleted) {
-            HttpResponse response = (HttpResponse) e.getMessage();
-            final HttpResponseStatus status = new HttpResponseStatus(101, "Web Socket Protocol Handshake");
-
-            final boolean validStatus = response.getStatus().equals(status);
-            final boolean validUpgrade = response.getHeader(Names.UPGRADE).equals(Values.WEBSOCKET);
-            final boolean validConnection = response.getHeader(Names.CONNECTION).equals(Values.UPGRADE);
-
-            if (!validStatus || !validUpgrade || !validConnection) {
-                throw new WebSocketException("Invalid handshake response");
-            }
-
-            handshakeCompleted = true;
-            ctx.getPipeline().replace("decoder", "ws-decoder", new WebSocketFrameDecoder());
+        if (!handshaker.isOpeningHandshakeCompleted()) {
+            handshaker.endOpeningHandshake(ctx, (HttpResponse) e.getMessage());
             callback.onConnect(this);
             return;
         }
@@ -97,7 +68,7 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
                     + response.getContent().toString(CharsetUtil.UTF_8) + ")");
         }
 
-        DefaultWebSocketFrame frame = (DefaultWebSocketFrame) e.getMessage();
+        WebSocketFrame frame = (WebSocketFrame) e.getMessage();
         callback.onMessage(this, frame);
     }
 

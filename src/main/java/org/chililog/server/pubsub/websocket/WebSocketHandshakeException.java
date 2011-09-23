@@ -18,24 +18,20 @@
 
 package org.chililog.server.pubsub.websocket;
 
-import org.jboss.netty.buffer.ChannelBuffers;
-
 /**
- * Web Socket Frame for closing the connection
+ * Exception during handshaking process
  * 
  * @author vibul
  */
-public class CloseWebSocketFrame extends WebSocketFrame {
+public class WebSocketHandshakeException extends Exception {
 
-    @Override
-    public WebSocketFrameType getType() {
-        return WebSocketFrameType.CLOSE;
+    private static final long serialVersionUID = 1L;
+
+    public WebSocketHandshakeException(String s) {
+        super(s);
     }
 
-    /**
-     * Creates a new empty binary frame.
-     */
-    public CloseWebSocketFrame() {
-        this.setBinaryData(ChannelBuffers.EMPTY_BUFFER);
+    public WebSocketHandshakeException(String s, Throwable throwable) {
+        super(s, throwable);
     }
 }

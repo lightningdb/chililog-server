@@ -1,4 +1,20 @@
-// Copyright 2010 Cinch Logic Pty Ltd.
+//
+// Copyright 2011 Cinch Logic Pty Ltd.
+//
+// http://www.chililog.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package org.chililog.server.pubsub;
 
@@ -26,8 +42,9 @@ import org.chililog.server.pubsub.jsonhttp.PublicationRequestAO;
 import org.chililog.server.pubsub.jsonhttp.PublicationResponseAO;
 import org.chililog.server.pubsub.jsonhttp.SubscriptionRequestAO;
 import org.chililog.server.pubsub.jsonhttp.SubscriptionResponseAO;
-import org.jboss.netty.handler.codec.http.websocket.DefaultWebSocketFrame;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
+import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
+import org.chililog.server.pubsub.websocket.WebSocketFrame;
+import org.chililog.server.pubsub.websocket.WebSocketVersion;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -51,6 +68,8 @@ public class JsonWebSocketTest {
 
     private static final String REPOSITORY_NAME = "json_ws_test";
     private static final String MONGODB_COLLECTION_NAME = "repo_json_ws_test";
+
+    private static WebSocketVersion _wsVersion = WebSocketVersion.HYBI00;
 
     @BeforeClass
     public static void classSetup() throws Exception {
@@ -191,7 +210,7 @@ public class JsonWebSocketTest {
         // Send request
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -211,7 +230,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -235,7 +255,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -259,7 +280,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -303,7 +325,8 @@ public class JsonWebSocketTest {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
         subcriberClient.connect().awaitUninterruptibly();
         Thread.sleep(500);
         assertTrue(callbackHandler.connected);
@@ -315,7 +338,7 @@ public class JsonWebSocketTest {
         request.setRepositoryName(REPOSITORY_NAME);
 
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        subcriberClient.send(new DefaultWebSocketFrame(requestJson));
+        subcriberClient.send(new TextWebSocketFrame(requestJson));
         Thread.sleep(500);
 
         assertEquals(1, callbackHandler.messagesReceived.size());
@@ -361,7 +384,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -373,7 +397,7 @@ public class JsonWebSocketTest {
         String requestJson = JsonTranslator.getInstance().toJson(
                 "this is a string so that it cannot be recognised as a message");
 
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -394,7 +418,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -426,7 +451,7 @@ public class JsonWebSocketTest {
         String requestJson = JsonTranslator.getInstance().toJson(request);
         requestJson = requestJson.replace("MessageID", "MessageID: \"big stuff up to json syntax\" ");
 
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -455,7 +480,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -486,7 +512,7 @@ public class JsonWebSocketTest {
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
 
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -516,7 +542,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -545,7 +572,7 @@ public class JsonWebSocketTest {
         // Send request
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -569,7 +596,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -598,7 +626,7 @@ public class JsonWebSocketTest {
         // Send request
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -622,7 +650,8 @@ public class JsonWebSocketTest {
         PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -651,7 +680,7 @@ public class JsonWebSocketTest {
         // Send request
         callbackHandler.messageReceived = null;
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -675,7 +704,8 @@ public class JsonWebSocketTest {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -691,7 +721,7 @@ public class JsonWebSocketTest {
 
         // Send request
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -715,7 +745,8 @@ public class JsonWebSocketTest {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -731,7 +762,7 @@ public class JsonWebSocketTest {
 
         // Send request
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -755,7 +786,8 @@ public class JsonWebSocketTest {
         SubscribeCallbackHandler callbackHandler = new SubscribeCallbackHandler();
         WebSocketClientFactory factory = new WebSocketClientFactory();
 
-        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+        WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                callbackHandler);
 
         // Connect
         client.connect().awaitUninterruptibly();
@@ -771,7 +803,7 @@ public class JsonWebSocketTest {
 
         // Send request
         String requestJson = JsonTranslator.getInstance().toJson(request);
-        client.send(new DefaultWebSocketFrame(requestJson));
+        client.send(new TextWebSocketFrame(requestJson));
 
         // Wait for it to be processed
         Thread.sleep(1000);
@@ -807,7 +839,8 @@ public class JsonWebSocketTest {
                 PublishCallbackHandler callbackHandler = new PublishCallbackHandler();
                 WebSocketClientFactory factory = new WebSocketClientFactory();
 
-                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), callbackHandler);
+                WebSocketClient client = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                        callbackHandler);
 
                 // Connect
                 client.connect().awaitUninterruptibly();
@@ -853,8 +886,9 @@ public class JsonWebSocketTest {
 
         @Override
         public void onMessage(WebSocketClient client, WebSocketFrame frame) {
-            _logger.debug("Publish WebSocket Received Message:" + frame.getTextData());
-            messageReceived = frame.getTextData();
+            TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
+            _logger.debug("Publish WebSocket Received Message:" + textFrame.getText());
+            messageReceived = textFrame.getText();
         }
 
         @Override
@@ -895,8 +929,9 @@ public class JsonWebSocketTest {
 
         @Override
         public void onMessage(WebSocketClient client, WebSocketFrame frame) {
-            _logger.debug("Subscribe WebSocket Received Message:" + frame.getTextData());
-            messagesReceived.add(frame.getTextData());
+            TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
+            _logger.debug("Publish WebSocket Received Message:" + textFrame.getText());
+            messagesReceived.add(textFrame.getText());
         }
 
         @Override

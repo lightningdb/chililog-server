@@ -1,3 +1,20 @@
+//
+// Copyright 2011 Cinch Logic Pty Ltd.
+//
+// http://www.chililog.com
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
 
 package org.chililog.server.pubsub.websocket;
 
@@ -30,27 +47,27 @@ import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
 
 /**
+ * Opening and closing handshake for servers
  * 
  * @author vibul
- * 
  */
-public class WebSocketHandshaker {
+public class WebSocketServerHandshaker {
 
-    private static Log4JLogger _logger = Log4JLogger.getLogger(WebSocketHandshaker.class);
+    private static Log4JLogger _logger = Log4JLogger.getLogger(WebSocketServerHandshaker.class);
 
-    private String webSocketLocation;
+    private String webSocketURL;
 
     private WebSocketVersion version = WebSocketVersion.UNKNOWN;
 
     /**
      * Constructor specifying the destination web socket location
      * 
-     * @param webSocketLocation
+     * @param webSocketURL
      *            URL for web socket communications. e.g "ws://myhost.com/mypath". Subsequent web socket frames will be
      *            sent to this URL.
      */
-    public WebSocketHandshaker(String webSocketLocation) {
-        this.webSocketLocation = webSocketLocation;
+    public WebSocketServerHandshaker(String webSocketURL) {
+        this.webSocketURL = webSocketURL;
         return;
     }
 
@@ -160,7 +177,7 @@ public class WebSocketHandshaker {
         if (isHixie76) {
             // New handshake method with a challenge:
             res.addHeader(SEC_WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
-            res.addHeader(SEC_WEBSOCKET_LOCATION, this.webSocketLocation);
+            res.addHeader(SEC_WEBSOCKET_LOCATION, this.webSocketURL);
             String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
             if (protocol != null) {
                 res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
@@ -181,7 +198,7 @@ public class WebSocketHandshaker {
         } else {
             // Old Hixie 75 handshake method with no challenge:
             res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
-            res.addHeader(WEBSOCKET_LOCATION, this.webSocketLocation);
+            res.addHeader(WEBSOCKET_LOCATION, this.webSocketURL);
             String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
             if (protocol != null) {
                 res.addHeader(WEBSOCKET_PROTOCOL, protocol);
@@ -212,17 +229,5 @@ public class WebSocketHandshaker {
         ctx.getChannel().write(frame);
     }
 
-    /**
-     * Web socket version that we are supporting
-     * 
-     * @author vibul
-     */
-    public enum WebSocketVersion {
-        UNKNOWN,
-
-        HYBI00,
-
-        HYBI08
-    }
 
 }

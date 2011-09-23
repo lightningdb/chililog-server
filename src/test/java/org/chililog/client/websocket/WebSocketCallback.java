@@ -1,7 +1,7 @@
 
 package org.chililog.client.websocket;
 
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
+import org.chililog.server.pubsub.websocket.WebSocketFrame;
 
 /**
  * Copied from https://github.com/cgbystrom/netty-tools
