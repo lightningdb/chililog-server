@@ -50,6 +50,8 @@ public class WebSocketClientHandshaker {
     private boolean openningHandshakeCompleted = false;
 
     private byte[] version00ExpectedServerResponse = null;
+    
+    private String protocol = null;
 
     /**
      * Constructor specifying the destination web socket location and version to initiate
@@ -61,6 +63,23 @@ public class WebSocketClientHandshaker {
      *            Version of web socket specification to use to connect to the server
      */
     public WebSocketClientHandshaker(URI webSocketURL, WebSocketVersion version) {
+        this.webSocketURL = webSocketURL;
+        this.version = version;
+        return;
+    }
+
+    /**
+     * Constructor specifying the destination web socket location and version to initiate
+     * 
+     * @param webSocketURL
+     *            URL for web socket communications. e.g "ws://myhost.com/mypath". Subsequent web socket frames will be
+     *            sent to this URL.
+     * @param version
+     *            Version of web socket specification to use to connect to the server
+     * @param protocol
+     *            Protocol to use. e.g "chat"
+     */
+    public WebSocketClientHandshaker(URI webSocketURL, WebSocketVersion version, String protocol) {
         this.webSocketURL = webSocketURL;
         this.version = version;
         return;
@@ -189,6 +208,9 @@ public class WebSocketClientHandshaker {
         request.addHeader(Names.ORIGIN, "http://" + this.webSocketURL.getHost());
         request.addHeader(Names.SEC_WEBSOCKET_KEY1, key1);
         request.addHeader(Names.SEC_WEBSOCKET_KEY2, key2);
+        if (protocol != null && !protocol.equals("")) {
+            request.addHeader(Names.SEC_WEBSOCKET_PROTOCOL, protocol);
+        }
         request.setContent(ChannelBuffers.copiedBuffer(key3));
 
         channel.write(request);

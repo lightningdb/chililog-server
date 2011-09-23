@@ -173,7 +173,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
 
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
-            _handshaker.executeClosingHandshake(ctx, frame);
+            _handshaker.executeClosingHandshake(ctx, (CloseWebSocketFrame)frame);
             return;
         }
 

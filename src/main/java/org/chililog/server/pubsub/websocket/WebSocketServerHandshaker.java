@@ -45,6 +45,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Names;
 import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
+import org.jboss.netty.util.CharsetUtil;
 
 /**
  * Opening and closing handshake for servers
@@ -59,6 +60,21 @@ public class WebSocketServerHandshaker {
 
     private WebSocketVersion version = WebSocketVersion.UNKNOWN;
 
+    public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
+    public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
+    public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
+    public static final String SEC_WEBSOCKET_08_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+
+    private static final MessageDigest SHA_1;
+
+    static {
+        try {
+            SHA_1 = MessageDigest.getInstance("SHA1");
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("SHA-1 not supported on this platform");
+        }
+    }
+
     /**
      * Constructor specifying the destination web socket location
      * 
@@ -72,7 +88,7 @@ public class WebSocketServerHandshaker {
     }
 
     /**
-     * Performs the opening handshake to establish ws location and version
+     * Performs the opening handshake
      * 
      * @param ctx
      *            Context
@@ -81,23 +97,49 @@ public class WebSocketServerHandshaker {
      * @throws NoSuchAlgorithmException
      */
     public void executeOpeningHandshake(ChannelHandlerContext ctx, HttpRequest req) throws NoSuchAlgorithmException {
-        if (isHybi10WebSocketRequest(req)) {
-            // upgradeResponse08(req, res);
+
+        String version = req.getHeader(SEC_WEBSOCKET_VERSION);
+        if (version != null) {
+            if (version.equals("8")) {
+                executeOpeningHandshake08(ctx, req);
+            } else {
+                unsupportedWebSocketVersion(ctx, req);
+            }
         } else {
             executeOpeningHandshake00(ctx, req);
         }
     }
 
-    public void executeClosingHandshake(ChannelHandlerContext ctx, WebSocketFrame frame) {
+    /**
+     * Return that we need do not support the web socket version
+     * 
+     * @param ctx
+     *            Context
+     * @param req
+     *            HTTP Request
+     */
+    private void unsupportedWebSocketVersion(ChannelHandlerContext ctx, HttpRequest req) {
+        HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101, "Switching Protocols"));
+        res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
+        res.setHeader(SEC_WEBSOCKET_VERSION, "8");
+        ctx.getChannel().write(res);
+        return;
+    }
+
+    /**
+     * Performs the closing handshake
+     * 
+     * @param ctx
+     *            Contenxt
+     * @param frame
+     *            Closing Frame that was received
+     */
+    public void executeClosingHandshake(ChannelHandlerContext ctx, CloseWebSocketFrame frame) {
         if (this.version == WebSocketVersion.HYBI08) {
-            // upgradeResponse08(req, res);
+            executeClosingHandshake08(ctx, frame);
         } else {
             executeClosingHandshake00(ctx, frame);
         }
-    }
-
-    private boolean isHybi10WebSocketRequest(HttpRequest req) {
-        return req.containsHeader("Sec-WebSocket-Version");
     }
 
     /**
@@ -105,6 +147,89 @@ public class WebSocketServerHandshaker {
      */
     public WebSocketVersion getVersion() {
         return this.version;
+    }
+
+    /**
+     * <p>
+     * Handle the web socket handshake for the web socket specification <a
+     * href="http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-08">HyBi version 8 to 10</a>. Version 8, 9
+     * and 10 share the same wire protocol.
+     * </p>
+     * 
+     * <p>
+     * Browser request to the server:
+     * </p>
+     * 
+     * <pre>
+     * GET /chat HTTP/1.1
+     * Host: server.example.com
+     * Upgrade: websocket
+     * Connection: Upgrade
+     * Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+     * Sec-WebSocket-Origin: http://example.com
+     * Sec-WebSocket-Protocol: chat, superchat
+     * Sec-WebSocket-Version: 8
+     * </pre>
+     * 
+     * <p>
+     * Server response:
+     * </p>
+     * 
+     * <pre>
+     * HTTP/1.1 101 Switching Protocols
+     * Upgrade: websocket
+     * Connection: Upgrade
+     * Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+     * Sec-WebSocket-Protocol: chat
+     * </pre>
+     * 
+     * @param ctx
+     *            Channel context
+     * @param req
+     *            HTTP request
+     * @throws NoSuchAlgorithmException
+     */
+    private void executeOpeningHandshake08(ChannelHandlerContext ctx, HttpRequest req) throws NoSuchAlgorithmException {
+        _logger.debug("Channel %s web socket version 08 handshake", ctx.getChannel().getId());
+        HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101, "Switching Protocols"));
+
+        String key = req.getHeader(SEC_WEBSOCKET_KEY);
+        if (key == null) {
+            res.setStatus(HttpResponseStatus.BAD_REQUEST);
+            return;
+        }
+        String acceptSeed = key + SEC_WEBSOCKET_08_ACCEPT_GUID;
+        byte[] sha1 = SHA_1.digest(acceptSeed.getBytes(CharsetUtil.US_ASCII));
+        String accept = Base64.encode(sha1);
+
+        res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
+        res.addHeader(Names.UPGRADE, WEBSOCKET.toLowerCase());
+        res.addHeader(CONNECTION, Names.UPGRADE);
+        res.addHeader(SEC_WEBSOCKET_ACCEPT, accept);
+        String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
+        if (protocol != null) {
+            res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
+        }
+
+        ctx.getChannel().write(res);
+
+        // Upgrade the connection and send the handshake response.
+        ChannelPipeline p = ctx.getChannel().getPipeline();
+        p.remove("aggregator");
+        p.replace("decoder", "wsdecoder", new WebSocket08FrameDecoder());
+        p.replace("encoder", "wsencoder", new WebSocket08FrameEncoder());
+    }
+
+    /**
+     * Echo back the closing frame
+     * 
+     * @param ctx
+     *            Channel context
+     * @param frame
+     *            Web Socket frame that was received
+     */
+    private void executeClosingHandshake08(ChannelHandlerContext ctx, CloseWebSocketFrame frame) {
+        ctx.getChannel().write(frame);
     }
 
     /**
@@ -155,7 +280,6 @@ public class WebSocketServerHandshaker {
      */
     private void executeOpeningHandshake00(ChannelHandlerContext ctx, HttpRequest req) throws NoSuchAlgorithmException {
         _logger.debug("Channel %s web socket version 00 handshake", ctx.getChannel().getId());
-
         this.version = WebSocketVersion.HYBI00;
 
         // Serve the WebSocket handshake request.
@@ -224,10 +348,8 @@ public class WebSocketServerHandshaker {
      * @param frame
      *            Web Socket frame that was received
      */
-    private void executeClosingHandshake00(ChannelHandlerContext ctx, WebSocketFrame frame) {
-        _logger.debug("Channel %s got web socket closing frame. Echoing it back.", ctx.getChannel().getId());
+    private void executeClosingHandshake00(ChannelHandlerContext ctx, CloseWebSocketFrame frame) {
         ctx.getChannel().write(frame);
     }
-
 
 }
