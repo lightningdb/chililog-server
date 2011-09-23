@@ -35,6 +35,7 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.jboss.netty.util.CharsetUtil;
 
 /**
  * Performs client side opening and closing handshakes
@@ -43,13 +44,19 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
  */
 public class WebSocketClientHandshaker {
 
+    public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
+    public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
+    public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
+    public static final String SEC_WEBSOCKET_08_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+
     private URI webSocketURL;
 
     private WebSocketVersion version = WebSocketVersion.UNKNOWN;
 
     private boolean openningHandshakeCompleted = false;
 
-    private byte[] version00ExpectedServerResponse = null;
+    private String expectedChallengeResponseString = null;
+    private byte[] expectedChallengeResponseBytes = null;
     
     private String protocol = null;
 
@@ -95,7 +102,7 @@ public class WebSocketClientHandshaker {
      */
     public void beginOpeningHandshake(ChannelHandlerContext ctx, Channel channel) {
         if (this.version == WebSocketVersion.HYBI08) {
-            // upgradeResponse08(req, res);
+            beginOpeningHandshake08(ctx, channel);
         } else {
             beginOpeningHandshake00(ctx, channel);
         }
@@ -113,7 +120,7 @@ public class WebSocketClientHandshaker {
     public void endOpeningHandshake(ChannelHandlerContext ctx, HttpResponse response)
             throws WebSocketHandshakeException {
         if (this.version == WebSocketVersion.HYBI08) {
-            // upgradeResponse08(req, res);
+            endOpeningHandshake08(ctx, response);
         } else {
             endOpeningHandshake00(ctx, response);
         }
@@ -132,6 +139,106 @@ public class WebSocketClientHandshaker {
      */
     public boolean isOpeningHandshakeCompleted() {
         return openningHandshakeCompleted;
+    }
+    
+    /**
+     * <p>
+     * Sends the opening request to the server:
+     * </p>
+     * 
+     * <pre>
+     * GET /chat HTTP/1.1
+     * Host: server.example.com
+     * Upgrade: websocket
+     * Connection: Upgrade
+     * Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+     * Sec-WebSocket-Origin: http://example.com
+     * Sec-WebSocket-Protocol: chat, superchat
+     * Sec-WebSocket-Version: 8
+     * </pre>
+     * 
+     * @param ctx
+     *            Channel context
+     * @param channel
+     *            Channel into which we can write our request
+     */
+    private void beginOpeningHandshake08(ChannelHandlerContext ctx, Channel channel) {
+        // Get path
+        String path = this.webSocketURL.getPath();
+        if (this.webSocketURL.getQuery() != null && this.webSocketURL.getQuery().length() > 0) {
+            path = this.webSocketURL.getPath() + "?" + this.webSocketURL.getQuery();
+        }
+        
+        // Get 16 bit nonce and base 64 encode it
+        byte[] nonce = createRandomBytes(16);
+        String key = Base64.encode(nonce);
+        
+        String acceptSeed = key + SEC_WEBSOCKET_08_ACCEPT_GUID;
+        byte[] sha1 = sha1(acceptSeed.getBytes(CharsetUtil.US_ASCII));
+        this.expectedChallengeResponseString = Base64.encode(sha1);
+
+        // Format request
+        HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path);
+        request.addHeader(Names.UPGRADE, Values.WEBSOCKET.toLowerCase());
+        request.addHeader(Names.CONNECTION, Values.UPGRADE);
+        request.addHeader(SEC_WEBSOCKET_KEY, key);
+        request.addHeader(Names.HOST, this.webSocketURL.getHost());
+        request.addHeader(Names.ORIGIN, "http://" + this.webSocketURL.getHost());
+        if (protocol != null && !protocol.equals("")) {
+            request.addHeader(Names.SEC_WEBSOCKET_PROTOCOL, protocol);
+        }
+        request.addHeader(SEC_WEBSOCKET_VERSION, "8");
+
+        channel.write(request);
+
+        ctx.getPipeline().replace("encoder", "ws-encoder", new WebSocket08FrameEncoder());
+    }
+    
+    /**
+     * <p>
+     * Process server response:
+     * </p>
+     * 
+     * <pre>
+     * HTTP/1.1 101 Switching Protocols
+     * Upgrade: websocket
+     * Connection: Upgrade
+     * Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+     * Sec-WebSocket-Protocol: chat
+     * </pre>
+     * 
+     * @param ctx
+     *            Channel context
+     * @param response
+     *            HTTP response returned from the server for the request sent by beginOpeningHandshake00().
+     * @throws WebSocketHandshakeException
+     */
+    private void endOpeningHandshake08(ChannelHandlerContext ctx, HttpResponse response) throws WebSocketHandshakeException{
+        final HttpResponseStatus status = new HttpResponseStatus(101, "Switching Protocols");
+
+        if (!response.getStatus().equals(status)) {
+            throw new WebSocketHandshakeException("Invalid handshake response status: " + response.getStatus());
+        }
+
+        String upgrade = response.getHeader(Names.UPGRADE); 
+        if (upgrade == null || !upgrade.equals(Values.WEBSOCKET.toLowerCase())) {
+            throw new WebSocketHandshakeException("Invalid handshake response upgrade: "
+                    + response.getHeader(Names.UPGRADE));
+        }
+
+        String connection = response.getHeader(Names.CONNECTION); 
+        if (connection == null || !connection.equals(Values.UPGRADE)) {
+            throw new WebSocketHandshakeException("Invalid handshake response connection: "
+                    + response.getHeader(Names.CONNECTION));
+        }
+        
+        String accept = response.getHeader(SEC_WEBSOCKET_ACCEPT);
+        if (accept == null || !accept.equals(this.expectedChallengeResponseString)) {
+            throw new WebSocketHandshakeException("Invalid challenge");
+        }
+
+        ctx.getPipeline().replace("decoder", "ws-decoder", new WebSocket08FrameDecoder());
+        return;
     }
 
     /**
@@ -179,7 +286,7 @@ public class WebSocketClientHandshaker {
         key1 = insertSpaces(key1, spaces1);
         key2 = insertSpaces(key2, spaces2);
 
-        byte[] key3 = createRandomBytes();
+        byte[] key3 = createRandomBytes(8);
 
         ByteBuffer buffer = ByteBuffer.allocate(4);
         buffer.putInt(number1);
@@ -192,7 +299,7 @@ public class WebSocketClientHandshaker {
         System.arraycopy(number1Array, 0, challenge, 0, 4);
         System.arraycopy(number2Array, 0, challenge, 4, 4);
         System.arraycopy(key3, 0, challenge, 8, 8);
-        this.version00ExpectedServerResponse = md5(challenge);
+        this.expectedChallengeResponseBytes = md5(challenge);
 
         // Get path
         String path = this.webSocketURL.getPath();
@@ -248,18 +355,20 @@ public class WebSocketClientHandshaker {
             throw new WebSocketHandshakeException("Invalid handshake response status: " + response.getStatus());
         }
 
-        if (!response.getHeader(Names.UPGRADE).equals(Values.WEBSOCKET)) {
+        String upgrade = response.getHeader(Names.UPGRADE); 
+        if (upgrade == null || !upgrade.equals(Values.WEBSOCKET)) {
             throw new WebSocketHandshakeException("Invalid handshake response upgrade: "
                     + response.getHeader(Names.UPGRADE));
         }
 
-        if (!response.getHeader(Names.CONNECTION).equals(Values.UPGRADE)) {
+        String connection = response.getHeader(Names.CONNECTION); 
+        if (connection == null || !connection.equals(Values.UPGRADE)) {
             throw new WebSocketHandshakeException("Invalid handshake response connection: "
                     + response.getHeader(Names.CONNECTION));
         }
 
         byte[] challenge =  response.getContent().array();
-        if (!Arrays.equals(challenge, version00ExpectedServerResponse)) {
+        if (!Arrays.equals(challenge, expectedChallengeResponseBytes)) {
             throw new WebSocketHandshakeException("Invalid challenge");
         }
 
@@ -301,10 +410,10 @@ public class WebSocketClientHandshaker {
         return key;
     }
 
-    private byte[] createRandomBytes() {
-        byte[] bytes = new byte[8];
+    private byte[] createRandomBytes(int size) {
+        byte[] bytes = new byte[size];
 
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < size; i++) {
             bytes[i] = (byte) rand(0, 255);
         }
 
@@ -320,6 +429,15 @@ public class WebSocketClientHandshaker {
         }
     }
 
+    private byte[] sha1(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            return md.digest(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("SHA-1 not supported on this platform");
+        }
+    }
+    
     private int rand(int min, int max) {
         int rand = (int) (Math.random() * max + min);
         return rand;

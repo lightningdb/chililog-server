@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.pubsub.websocket.CloseWebSocketFrame;
+import org.chililog.server.pubsub.websocket.PingWebSocketFrame;
+import org.chililog.server.pubsub.websocket.PongWebSocketFrame;
 import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketServerHandshaker;
@@ -174,6 +176,10 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
             _handshaker.executeClosingHandshake(ctx, (CloseWebSocketFrame)frame);
+            return;
+        } else if (frame instanceof PingWebSocketFrame) {
+            _logger.debug("PingPong");
+            ctx.getChannel().write(new PongWebSocketFrame(frame.getBinaryData()));
             return;
         }
 

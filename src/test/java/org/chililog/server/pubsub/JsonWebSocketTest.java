@@ -69,7 +69,7 @@ public class JsonWebSocketTest {
     private static final String REPOSITORY_NAME = "json_ws_test";
     private static final String MONGODB_COLLECTION_NAME = "repo_json_ws_test";
 
-    private static WebSocketVersion _wsVersion = WebSocketVersion.HYBI00;
+    private static WebSocketVersion _wsVersion = WebSocketVersion.HYBI08;
 
     @BeforeClass
     public static void classSetup() throws Exception {
