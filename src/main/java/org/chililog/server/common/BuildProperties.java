@@ -61,6 +61,7 @@ import org.apache.commons.lang.WordUtils;
  * @since 1.0
  */
 public class BuildProperties {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(BuildProperties.class);
     private static final String BUILDINFO_PROPERTY_FILE_NAME = "buildinfo.properties";
 
@@ -78,6 +79,7 @@ public class BuildProperties {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final BuildProperties INSTANCE = new BuildProperties();
     }
 
@@ -94,8 +96,7 @@ public class BuildProperties {
     private BuildProperties() {
         try {
             loadProperties();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -148,8 +149,7 @@ public class BuildProperties {
             is.close();
 
             return properties;
-        }
-        finally {
+        } finally {
             if (fis != null) {
                 fis.close();
             }
@@ -189,8 +189,7 @@ public class BuildProperties {
             Field cacheField = null;
             try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -346,8 +345,7 @@ public class BuildProperties {
             Field cacheField = null;
             try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -358,8 +356,7 @@ public class BuildProperties {
                 sb.append(" = ");
                 sb.append(o == null ? "<not set>" : o.toString());
                 sb.append("\n");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 sb.append("ERROR: Cannot load value for: " + propertyNameFieldName);
             }
 

@@ -35,6 +35,7 @@ import com.mongodb.BasicDBObject;
  * 
  */
 public class RepositoryEntryListCriteria extends ListCriteria {
+
     private Date _from = null;
     private Date _to = null;
     private String _fields = null;
@@ -176,8 +177,7 @@ public class RepositoryEntryListCriteria extends ListCriteria {
 
         if (StringUtils.isBlank(_conditions)) {
             o = new BasicDBObject();
-        }
-        else {
+        } else {
             MongoJsonParser parser = new MongoJsonParser(_conditions, DATE_PATTERN, DATE_FORMAT, LONG_NUMBER_PATTERN);
             o = (BasicDBObject) parser.parse();
         }

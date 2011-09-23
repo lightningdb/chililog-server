@@ -52,6 +52,7 @@ import com.mongodb.DB;
  * 
  */
 public class RepositoryService {
+
     static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryService.class);
 
     /**
@@ -73,6 +74,7 @@ public class RepositoryService {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final RepositoryService INSTANCE = new RepositoryService();
     }
 
@@ -98,8 +100,7 @@ public class RepositoryService {
         for (RepositoryConfigBO repoConfig : repoConfigList) {
             if (repoConfig.getStartupStatus() == Status.ONLINE) {
                 bringRepositoryOnline(repoConfig);
-            }
-            else if (repoConfig.getStartupStatus() == Status.READONLY) {
+            } else if (repoConfig.getStartupStatus() == Status.READONLY) {
                 makeRepositoryReadOnly(repoConfig);
             }
         }
@@ -128,8 +129,7 @@ public class RepositoryService {
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
             if (repo == null) {
                 bringRepositoryOnline(repoConfig);
-            }
-            else if (repo.getStatus() == Status.READONLY) {
+            } else if (repo.getStatus() == Status.READONLY) {
                 // Reload readonly repositories so that it gets the latest definition
                 takeRepositoryOffline(repo);
                 makeRepositoryReadOnly(repoConfig);
@@ -150,8 +150,7 @@ public class RepositoryService {
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
             if (repo == null) {
                 makeRepositoryReadOnly(repoConfig);
-            }
-            else if (repo.getStatus() == Status.ONLINE) {
+            } else if (repo.getStatus() == Status.ONLINE) {
                 repo.makeReadonly();
             }
         }
@@ -187,8 +186,7 @@ public class RepositoryService {
             if (repo.getStatus() == Status.ONLINE) {
                 // Repository is already online
                 return repo;
-            }
-            else if (repo.getStatus() == Status.READONLY) {
+            } else if (repo.getStatus() == Status.READONLY) {
                 // Remove the repository so we can bring online with the latest definition
                 _activeRepositories.remove(repo);
             }
@@ -229,8 +227,7 @@ public class RepositoryService {
                 // Make repository readonly
                 repo.makeReadonly();
                 return repo;
-            }
-            else if (repo.getStatus() == Status.READONLY) {
+            } else if (repo.getStatus() == Status.READONLY) {
                 // Repo already readonly so just return it
                 return repo;
             }
@@ -354,8 +351,7 @@ public class RepositoryService {
             Repository repo = getActiveRepository(repoConfig.getDocumentID());
             if (repo == null) {
                 list.add(new Repository(repoConfig));
-            }
-            else {
+            } else {
                 // Online so send that one
                 list.add(repo);
             }

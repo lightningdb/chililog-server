@@ -11,6 +11,7 @@ import java.io.IOException;
  * @author <a href="http://www.pedantique.org/">Carl Bystr&ouml;m</a>
  */
 public class WebSocketException extends IOException {
+
     /**
      * 
      */

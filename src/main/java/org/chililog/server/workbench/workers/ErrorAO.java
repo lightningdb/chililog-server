@@ -33,6 +33,7 @@ import org.chililog.server.common.ChiliLogException;
  * 
  */
 public class ErrorAO extends AO {
+
     private String _errorCode;
 
     private String _message;
@@ -70,8 +71,7 @@ public class ErrorAO extends AO {
 
         if (ex instanceof ChiliLogException) {
             _errorCode = "ChiliLogException:" + ((ChiliLogException) ex).getErrorCode();
-        }
-        else {
+        } else {
             _errorCode = ex.getClass().getName();
         }
 

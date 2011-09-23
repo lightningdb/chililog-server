@@ -38,6 +38,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryParserConfigBO extends BO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private String _name;

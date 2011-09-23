@@ -51,6 +51,7 @@ import com.mongodb.BasicDBObject;
  * 
  */
 public class DelimitedEntryParser extends EntryParser {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(DelimitedEntryParser.class);
     private String _delimiter;
     private ArrayList<DelimitedFieldInfo> _fields = new ArrayList<DelimitedFieldInfo>();
@@ -94,12 +95,10 @@ public class DelimitedEntryParser extends EntryParser {
                 Integer i = Integer.parseInt(s) - 1;
                 _fields.add(new DelimitedFieldInfo(i, f));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
-            }
-            else {
+            } else {
                 throw new ChiliLogException(ex, Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
                         repoInfo.getName(), ex.getMessage());
             }
@@ -142,8 +141,7 @@ public class DelimitedEntryParser extends EntryParser {
                     fieldStringValue = ss[delimitedField.getArrayIndex()];
                     fieldValue = delimitedField.getParser().parse(fieldStringValue);
                     parsedFields.put(fieldName, fieldValue);
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                         case SkipField:
                             String msg = StringsProperties.getInstance().getString(
@@ -168,8 +166,7 @@ public class DelimitedEntryParser extends EntryParser {
             ArrayList<String> keywords = parseKeywords(source, host, sev, message);
 
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message, parsedFields);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;
@@ -180,6 +177,7 @@ public class DelimitedEntryParser extends EntryParser {
      * Encapsulates a delimited field
      */
     private static class DelimitedFieldInfo {
+
         private int _arrayIndex;
         private RepositoryFieldConfigBO _repoFieldInfo;
         private FieldParser _parser;

@@ -55,6 +55,7 @@ import org.chililog.server.data.RepositoryConfigBO.Status;
  * 
  */
 public class Repository {
+
     static Log4JLogger _logger = Log4JLogger.getLogger(Repository.class);
     private RepositoryConfigBO _repoConfig;
     private ArrayList<RepositoryStorageWorker> _storageWorkers = new ArrayList<RepositoryStorageWorker>();
@@ -158,8 +159,7 @@ public class Repository {
             _logger.info("Repository '%s' now online.", _repoConfig.getName());
             _hasStarted = true;
             return;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.ONLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
@@ -182,8 +182,7 @@ public class Repository {
                 worker.start();
                 _storageWorkers.add(worker);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.START_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
@@ -212,8 +211,7 @@ public class Repository {
             _status = Status.READONLY;
             _logger.info("Repository '%s' now Read Only.", _repoConfig.getName());
             return;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.READONLY_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
@@ -242,8 +240,7 @@ public class Repository {
             _status = Status.OFFLINE;
             _logger.info("Repository '%s' taken Offline.", _repoConfig.getName());
             return;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.OFFLINE_REPOSITORY_ERROR, _repoConfig.getPubSubAddress(),
                     _repoConfig.getName(), ex.getMessage());
         }
@@ -259,8 +256,7 @@ public class Repository {
                 worker.stopRunning();
                 _storageWorkers.remove(0);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.STOP_REPOSITORY_STORAGE_WORKER_ERROR, _repoConfig.getName(),
                     ex.getMessage());
         }
@@ -286,8 +282,7 @@ public class Repository {
     protected void finalize() throws Throwable {
         try {
             takeOffline();
-        }
-        finally {
+        } finally {
             super.finalize();
         }
     }

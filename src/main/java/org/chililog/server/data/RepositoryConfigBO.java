@@ -65,6 +65,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryConfigBO extends BO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private static Pattern _namePattern = Pattern.compile("^[a-z0-9_]+$");

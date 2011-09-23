@@ -5,6 +5,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
 public class BinaryWebSocketFrame extends WebSocketFrame {
+
     @Override
     public WebSocketFrameType getType() {
         return WebSocketFrameType.BINARY;

@@ -63,6 +63,7 @@ import com.mongodb.DBObject;
  * </p>
  */
 public class RepositoryRuntimeWorker extends Worker {
+
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
     public static final String ONLINE_OPERATION = "online";
     public static final String READONLY_OPERATION = "readonly";
@@ -136,11 +137,9 @@ public class RepositoryRuntimeWorker extends Worker {
 
                 if (action.equalsIgnoreCase(ONLINE_OPERATION)) {
                     RepositoryService.getInstance().bringAllRepositoriesOnline();
-                }
-                else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
+                } else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
                     RepositoryService.getInstance().takeAllRepositoriesOffline();
-                }
-                else {
+                } else {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
 
@@ -155,8 +154,7 @@ public class RepositoryRuntimeWorker extends Worker {
                         responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
-            }
-            else {
+            } else {
                 // Online/ReadOnly/Offline specific one
                 // Only available to system administrators and repo admin
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
@@ -171,25 +169,21 @@ public class RepositoryRuntimeWorker extends Worker {
                 if (action.equalsIgnoreCase(ONLINE_OPERATION)) {
                     repo = RepositoryService.getInstance().bringRepositoryOnline(repo.getRepoConfig().getDocumentID());
                     responseContent = new RepositoryStatusAO(repo);
-                }
-                else if (action.equalsIgnoreCase(READONLY_OPERATION)) {
+                } else if (action.equalsIgnoreCase(READONLY_OPERATION)) {
                     repo = RepositoryService.getInstance().makeRepositoryReadOnly(repo.getRepoConfig().getDocumentID());
                     responseContent = new RepositoryStatusAO(repo);
-                }
-                else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
+                } else if (action.equalsIgnoreCase(OFFLINE_OPERATION)) {
                     RepositoryService.getInstance().takeRepositoryOffline(repo.getRepoConfig().getDocumentID());
                     repo = RepositoryService.getInstance().getRepository(objectId);
                     responseContent = new RepositoryStatusAO(repo);
-                }
-                else {
+                } else {
                     throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
                 }
             }
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -226,8 +220,7 @@ public class RepositoryRuntimeWorker extends Worker {
                         responseContent = aoList.toArray(new RepositoryStatusAO[] {});
                     }
                 }
-            }
-            else if (this.getUriPathParameters().length == 1) {
+            } else if (this.getUriPathParameters().length == 1) {
                 // Get info on specified repository
                 // HTTP GET /api/repositories/{id}
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
@@ -235,13 +228,11 @@ public class RepositoryRuntimeWorker extends Worker {
                 Repository repo = RepositoryService.getInstance().getRepository(objectId);
                 if (user.isSystemAdministrator() || allowedRepositories.contains(repo.getRepoConfig().getName())) {
                     responseContent = new RepositoryStatusAO(repo);
-                }
-                else {
+                } else {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
                 }
-            }
-            else if (this.getUriPathParameters().length == 2) {
+            } else if (this.getUriPathParameters().length == 2) {
                 // HTTP GET /api/repositories/{id}/entries?query_type=find
                 // Get entries for a specific repository
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
@@ -250,8 +241,7 @@ public class RepositoryRuntimeWorker extends Worker {
                 if (!user.isSystemAdministrator() && !allowedRepositories.contains(repo.getRepoConfig().getName())) {
                     // Assume not found
                     throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
-                }
-                else if (repo.getStatus() == Status.OFFLINE) {
+                } else if (repo.getStatus() == Status.OFFLINE) {
                     // Cannot search if repository is offline
                     throw new ChiliLogException(Strings.REPOSITORY_OFFLINE_ERROR, id);
                 }
@@ -275,20 +265,16 @@ public class RepositoryRuntimeWorker extends Worker {
                     if (list != null && !list.isEmpty()) {
                         MongoJsonSerializer.serialize(new BasicDBObject("find", list), json);
                     }
-                }
-                else if (queryType == QueryType.COUNT) {
+                } else if (queryType == QueryType.COUNT) {
                     int count = controller.executeCountQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("count", count), json);
-                }
-                else if (queryType == QueryType.DISTINCT) {
+                } else if (queryType == QueryType.DISTINCT) {
                     List l = controller.executeDistinctQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("distinct", l), json);
-                }
-                else if (queryType == QueryType.GROUP) {
+                } else if (queryType == QueryType.GROUP) {
                     DBObject groupObject = controller.executeGroupQuery(db, criteria);
                     MongoJsonSerializer.serialize(new BasicDBObject("group", groupObject), json);
-                }
-                else {
+                } else {
                     throw new OperationNotSupportedException("Unsupported query type: " + queryType.toString());
                 }
 
@@ -306,8 +292,7 @@ public class RepositoryRuntimeWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -323,8 +308,7 @@ public class RepositoryRuntimeWorker extends Worker {
     private ObjectId parseDocumentObjectID(String id) throws ChiliLogException {
         try {
             return new ObjectId(id);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(Strings.REPOSITORY_NOT_FOUND_ERROR, id);
         }
     }

@@ -37,6 +37,7 @@ import com.mongodb.ServerAddress;
  * 
  */
 public class MongoConnection {
+
     private static Logger _logger = Logger.getLogger(MongoConnection.class);
     private Mongo _mongo = null;
 
@@ -54,6 +55,7 @@ public class MongoConnection {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final MongoConnection INSTANCE = new MongoConnection();
     }
 
@@ -70,8 +72,7 @@ public class MongoConnection {
     private MongoConnection() {
         try {
             loadMongo();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error("Error connecting to mongoDB: " + e.getMessage(), e);
             System.exit(1);
         }
@@ -135,8 +136,7 @@ public class MongoConnection {
                 }
             }
             return db;
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_CONNECTION_ERROR, ex.getMessage());
         }
     }

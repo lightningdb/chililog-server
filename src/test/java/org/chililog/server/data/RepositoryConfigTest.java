@@ -56,6 +56,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryConfigTest {
+
     private static DB _db;
 
     @BeforeClass
@@ -347,8 +348,7 @@ public class RepositoryConfigTest {
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_FIELD_NAME_ERROR, ex.getErrorCode());
         }
     }
@@ -375,8 +375,7 @@ public class RepositoryConfigTest {
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_PARSER_NAME_ERROR, ex.getErrorCode());
         }
     }
@@ -393,8 +392,7 @@ public class RepositoryConfigTest {
             RepositoryConfigController.getInstance().save(_db, repoConfig2);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_DUPLICATE_NAME_ERROR, ex.getErrorCode());
         }
     }
@@ -407,8 +405,7 @@ public class RepositoryConfigTest {
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_NAME_FORMAT_ERROR, ex.getErrorCode());
         }
     }
@@ -423,8 +420,7 @@ public class RepositoryConfigTest {
             RepositoryConfigController.getInstance().save(_db, repoConfig);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.REPO_INFO_PAGE_FILE_SIZE_ERROR, ex.getErrorCode());
         }
     }

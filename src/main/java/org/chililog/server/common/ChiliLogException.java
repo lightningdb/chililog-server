@@ -32,6 +32,7 @@ import java.io.PrintStream;
  * 
  */
 public class ChiliLogException extends Exception {
+
     private static final long serialVersionUID = 1L;
     private String _errorCode = null;
 
@@ -101,8 +102,7 @@ public class ChiliLogException extends Exception {
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             this.printStackTrace(ps);
             return baos.toString("UTF-8");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return this.toString();
         }
     }

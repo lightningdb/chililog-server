@@ -36,6 +36,7 @@ import org.chililog.server.data.UserBO;
  * 
  */
 public class RepositoryConfigAO extends AO {
+
     private String _documentID;
     private Long _documentVersion;
     private String _name;
@@ -93,8 +94,7 @@ public class RepositoryConfigAO extends AO {
 
         if (repoConfig.getParsers() == null || repoConfig.getParsers().isEmpty()) {
             _parsers = null;
-        }
-        else {
+        } else {
             ArrayList<RepositoryParserConfigAO> parserList = new ArrayList<RepositoryParserConfigAO>();
             for (RepositoryParserConfigBO parserInfo : repoConfig.getParsers()) {
                 parserList.add(new RepositoryParserConfigAO(parserInfo));
@@ -110,8 +110,7 @@ public class RepositoryConfigAO extends AO {
             for (UserBO user : users) {
                 if (user.isSystemAdministrator()) {
                     userList.add(String.format("%s=%s", user.getUsername(), UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME));
-                }
-                else {
+                } else {
                     String[] roles = user.getRoles();
                     for (String role : roles) {
                         if (publisherRole.equals(role) || subscriberRole.equals(role) || workbenchRole.equals(role)) {

@@ -67,6 +67,7 @@ import org.hornetq.spi.core.security.JAASSecurityManager;
  * 
  */
 public class MqService {
+
     static Log4JLogger _logger = Log4JLogger.getLogger(MqService.class);
     private HornetQServer _hornetqServer;
 
@@ -89,6 +90,7 @@ public class MqService {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final MqService INSTANCE = new MqService();
     }
 
@@ -107,8 +109,7 @@ public class MqService {
             _systemUsername = AppProperties.getInstance().getMqSystemUsername();
             _systemPassword = AppProperties.getInstance().getMqSystemPassword();
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error("Error loading MQ Connection Manager: " + e.getMessage(), e);
             System.exit(1);
 
@@ -356,8 +357,7 @@ public class MqService {
             if (clientSession != null) {
                 clientSession.close();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // Log and ignore errors on closing a connection
             _logger.error(ex, Strings.CLOSE_MQ_SESSION_ERROR, ex.getMessage());
         }
@@ -479,8 +479,7 @@ public class MqService {
         QueueControl qc = getQueueControl(queueAddress, queueName);
         if (qc == null) {
             doCreate = true;
-        }
-        else if (qc.isDurable() != isDurable) {
+        } else if (qc.isDurable() != isDurable) {
             // Queue exist but properties are different so we have to delete/create
             hqControl.destroyQueue(queueName);
             doCreate = true;

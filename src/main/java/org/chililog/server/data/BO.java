@@ -34,6 +34,7 @@ import com.mongodb.DBObject;
  * 
  */
 public abstract class BO {
+
     private DBObject _dbObject = null;
 
     public static final String DOCUMENT_ID_FIELD_NAME = "_id";
@@ -90,8 +91,7 @@ public abstract class BO {
     public ObjectId getDocumentID() {
         if (isExistingRecord()) {
             return (ObjectId) _dbObject.get(DOCUMENT_ID_FIELD_NAME);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -103,8 +103,7 @@ public abstract class BO {
     public long getDocumentVersion() {
         if (isExistingRecord()) {
             return (Long) (_dbObject.get(DOCUMENT_VERSION_FIELD_NAME));
-        }
-        else {
+        } else {
             return -1;
         }
     }

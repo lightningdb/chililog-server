@@ -55,6 +55,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class JsonHttpPubishTest {
+
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
 
@@ -397,14 +398,14 @@ public class JsonHttpPubishTest {
      * 
      */
     public static class PublishThread implements Runnable {
+
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishThread.class);
 
         public void run() {
             try {
                 _logger.debug("HTTP thread " + Thread.currentThread().getName() + " started");
                 sendPublicshRequest("PublishThread " + Thread.currentThread().getName(), 2);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }

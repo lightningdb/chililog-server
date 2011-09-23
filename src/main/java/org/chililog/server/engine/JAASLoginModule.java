@@ -50,6 +50,7 @@ import com.mongodb.DB;
  * 
  */
 public class JAASLoginModule implements LoginModule {
+
     private Subject _subject;
     private String _systemUsername;
     private String _systemPassword;
@@ -143,8 +144,7 @@ public class JAASLoginModule implements LoginModule {
 
             // OK
             return true;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new LoginException(ex.getMessage());
         }
     }
@@ -170,6 +170,7 @@ public class JAASLoginModule implements LoginModule {
      * 
      */
     public class SimpleGroup implements Group {
+
         private final String _name;
 
         private final Set<Principal> _members = new HashSet<Principal>();
@@ -206,6 +207,7 @@ public class JAASLoginModule implements LoginModule {
      * 
      */
     public static class SimplePrincipal implements Principal, java.io.Serializable {
+
         private static final long serialVersionUID = 1L;
 
         private final String _name;
@@ -228,8 +230,7 @@ public class JAASLoginModule implements LoginModule {
             boolean equals = false;
             if (_name == null) {
                 equals = anotherName == null;
-            }
-            else {
+            } else {
                 equals = _name.equals(anotherName);
             }
             return equals;

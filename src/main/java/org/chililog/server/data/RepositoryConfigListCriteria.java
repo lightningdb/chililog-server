@@ -25,6 +25,7 @@ package org.chililog.server.data;
  * 
  */
 public class RepositoryConfigListCriteria extends ListCriteria {
+
     private String _namePattern = null;
     private String[] _nameRestrictions = null;
 

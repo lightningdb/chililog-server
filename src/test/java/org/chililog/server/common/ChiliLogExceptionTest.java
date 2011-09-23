@@ -31,6 +31,7 @@ import org.junit.Test;
  * 
  */
 public class ChiliLogExceptionTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(ChiliLogExceptionTest.class);
 
     @Test
@@ -58,8 +59,7 @@ public class ChiliLogExceptionTest {
     public void testWrapping() {
         try {
             throw new NullPointerException("inner exception");
-        }
-        catch (Exception innerEx) {
+        } catch (Exception innerEx) {
             _logger.error(innerEx.toString());
 
             ChiliLogException ex = new ChiliLogException(innerEx, "Test");

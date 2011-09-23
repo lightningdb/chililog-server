@@ -25,6 +25,7 @@ package org.chililog.server.data;
  * 
  */
 public abstract class ListCriteria {
+
     private int _recordsPerPage = Integer.MAX_VALUE;
     private int _startPage = 1;
     private boolean _doPageCount = false;

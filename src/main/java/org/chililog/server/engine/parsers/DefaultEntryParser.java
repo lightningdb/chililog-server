@@ -37,6 +37,7 @@ import org.chililog.server.data.RepositoryEntryBO.Severity;
  * 
  */
 public class DefaultEntryParser extends EntryParser {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(DefaultEntryParser.class);
 
     /**
@@ -91,8 +92,7 @@ public class DefaultEntryParser extends EntryParser {
             entry.setKeywords(keywords);
             entry.setMessage(message);
             return entry;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;

@@ -31,6 +31,7 @@ import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.util.Version;
 
 public class TextTokenizer {
+
     /**
      * Returns the singleton instance for this class
      */
@@ -45,6 +46,7 @@ public class TextTokenizer {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final TextTokenizer INSTANCE = new TextTokenizer();
     }
 
@@ -104,8 +106,7 @@ public class TextTokenizer {
             // Check if we want to split
             if (Character.isDigit(termBuffer[0])) {
                 doSplit = false;
-            }
-            else {
+            } else {
                 for (int j = 0; j < length; j++) {
                     char c = termBuffer[j];
                     if (!Character.isLetterOrDigit(c) && c != '.' && c != '@') {
@@ -124,8 +125,7 @@ public class TextTokenizer {
                             return tokens;
                         }
                         sb.setLength(0);
-                    }
-                    else {
+                    } else {
                         sb.append(c);
                     }
                 }
@@ -134,8 +134,7 @@ public class TextTokenizer {
                 if (!addToken(tokens, lookup, sb.toString(), maxKeywords)) {
                     return tokens;
                 }
-            }
-            else {
+            } else {
                 // No splitting, just add term
                 if (!addToken(tokens, lookup, termAttribute.term(), maxKeywords)) {
                     return tokens;

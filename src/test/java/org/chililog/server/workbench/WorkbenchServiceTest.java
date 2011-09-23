@@ -58,6 +58,7 @@ import org.junit.Test;
  * 
  */
 public class WorkbenchServiceTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchServiceTest.class);
 
     private static String _workbenchStaticFilesDirectory = null;
@@ -169,8 +170,7 @@ public class WorkbenchServiceTest {
             }
             if (name == null) {
                 _logger.debug("*** Intial Call, Response code: %s", value);
-            }
-            else {
+            } else {
                 headers.put(name, value);
                 _logger.debug("%s = %s", name, value);
             }
@@ -220,8 +220,7 @@ public class WorkbenchServiceTest {
             if (name == null) {
                 responseCode = value;
                 _logger.debug("*** Cache Call, Response code: %s", value);
-            }
-            else {
+            } else {
                 headers2.put(name, value);
                 _logger.debug("%s = %s", name, value);
             }
@@ -290,8 +289,7 @@ public class WorkbenchServiceTest {
                 if (name == null) {
                     responseCode = value;
                     _logger.debug("*** Intial Call, Response code: %s", value);
-                }
-                else {
+                } else {
                     headers.put(name, value);
                     _logger.debug("%s = %s", name, value);
                 }

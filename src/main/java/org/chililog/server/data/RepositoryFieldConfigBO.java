@@ -36,6 +36,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryFieldConfigBO extends BO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     // Properties stored in mongoDB

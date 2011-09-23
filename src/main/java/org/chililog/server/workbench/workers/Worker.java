@@ -58,6 +58,7 @@ import org.jboss.netty.handler.codec.http.QueryStringDecoder;
  * </p>
  */
 public abstract class Worker {
+
     private HttpRequest _request = null;
     private Map<String, List<String>> _uriQueryStringParameters;
     private String[] _uriPathParameters = null;
@@ -389,8 +390,7 @@ public abstract class Worker {
             _authenticatedUser = UserController.getInstance().get(MongoConnection.getInstance().getConnection(),
                     new ObjectId(_authenticationToken.getUserID()));
 
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
         return new ApiResult();
@@ -426,8 +426,7 @@ public abstract class Worker {
                 }
                 _uriPathParameters = l.toArray(new String[] {});
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
 
@@ -451,8 +450,7 @@ public abstract class Worker {
                     throw new ChiliLogException(Strings.URI_PATH_PARAMETER_ERROR, "ID", _request.getUri());
                 }
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
 

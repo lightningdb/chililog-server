@@ -30,6 +30,7 @@ import javax.security.auth.login.LoginException;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class Client extends Stomp implements MessageReceiver {
+
     private Thread _listener;
     private OutputStream _output;
     private InputStream _input;
@@ -72,8 +73,7 @@ public class Client extends Stomp implements MessageReceiver {
             }
             if (error != null)
                 throw new LoginException(error);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
         }
     }
 
@@ -89,18 +89,15 @@ public class Client extends Stomp implements MessageReceiver {
         Thread.yield();
         try {
             _input.close();
-        }
-        catch (IOException e) {/* We ignore these. */
+        } catch (IOException e) {/* We ignore these. */
         }
         try {
             _output.close();
-        }
-        catch (IOException e) {/* We ignore these. */
+        } catch (IOException e) {/* We ignore these. */
         }
         try {
             _socket.close();
-        }
-        catch (IOException e) {/* We ignore these. */
+        } catch (IOException e) {/* We ignore these. */
         }
         _connected = false;
     }
@@ -111,8 +108,7 @@ public class Client extends Stomp implements MessageReceiver {
     public void transmit(Command c, Map h, String b) {
         try {
             Transmitter.transmit(c, h, b, _output);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             receive(Command.ERROR, null, e.getMessage());
         }
     }

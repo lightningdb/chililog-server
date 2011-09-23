@@ -39,6 +39,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
  * 
  */
 public class TestUtils {
+
     /**
      * Builds a HTTP connection ready for sending to server
      * 
@@ -114,8 +115,7 @@ public class TestUtils {
         try {
             if (httpConn.getInputStream() == null) {
                 return null;
-            }
-            else {
+            } else {
                 StringBuilder sb = new StringBuilder();
                 BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
                 String str;
@@ -126,8 +126,7 @@ public class TestUtils {
 
                 return sb.toString();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return getResponseErrorContent(httpConn);
         }
     }
@@ -142,8 +141,7 @@ public class TestUtils {
     public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException {
         if (httpConn.getErrorStream() == null) {
             return null;
-        }
-        else {
+        } else {
             StringBuilder sb = new StringBuilder();
             BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
             String str;
@@ -174,8 +172,7 @@ public class TestUtils {
             }
             if (name == null) {
                 responseCode = value;
-            }
-            else {
+            } else {
                 headers.put(name, value);
             }
         }

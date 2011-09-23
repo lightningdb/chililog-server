@@ -12,6 +12,7 @@ import org.jboss.netty.util.CharsetUtil;
  * 
  */
 public class TextWebSocketFrame extends WebSocketFrame {
+
     @Override
     public WebSocketFrameType getType() {
         return WebSocketFrameType.TEXT;

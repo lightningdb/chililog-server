@@ -47,6 +47,7 @@ import org.apache.commons.lang.NullArgumentException;
  * 
  */
 public class CryptoUtils {
+
     private static final byte[] AES_ENCRYPTION_STRING_SALT = new byte[] { 3, 56, 23, 120, 34, 92 };
     private static final byte[] AES_ENCRYPTION_INTIALIZATION_VECTOR = new byte[] { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05,
             0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f };
@@ -69,8 +70,7 @@ public class CryptoUtils {
             }
 
             return sb.toString();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to MD5 hash: " + ex.getMessage());
         }
     }
@@ -101,8 +101,7 @@ public class CryptoUtils {
             random.nextBytes(salt);
 
             return createSHA512Hash(plainTextValue, salt, true);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to hash passwords. " + ex.getMessage());
         }
     }
@@ -179,8 +178,7 @@ public class CryptoUtils {
             // Convert hash to string
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(hashWithSaltBytes);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to hash passwords. " + ex.getMessage());
         }
     }
@@ -257,8 +255,7 @@ public class CryptoUtils {
             // If the computed hash matches the specified hash,
             // the plain text value must be correct.
             return (hashValue.equals(expectedHashString));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to verify passwords. " + ex.getMessage());
         }
     }
@@ -297,8 +294,7 @@ public class CryptoUtils {
             // Convert hash to string
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(cipherText);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -331,8 +327,7 @@ public class CryptoUtils {
             byte[] plainTextBytes = cipher.doFinal(encryptedTextBytes);
 
             return new String(plainTextBytes, "UTF-8");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }
@@ -359,8 +354,7 @@ public class CryptoUtils {
     public static String encryptTripleDES(String plainText, String password) throws ChiliLogException {
         try {
             return encryptTripleDES(plainText, password.getBytes("UTF-8"));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -404,8 +398,7 @@ public class CryptoUtils {
             // Convert hash to string
             Base64 encoder = new Base64(1000, new byte[] {}, false);
             return encoder.encodeToString(cipherText);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to encrypt. " + ex.getMessage());
         }
     }
@@ -425,8 +418,7 @@ public class CryptoUtils {
     public static String decryptTripleDES(String encryptedText, String password) throws ChiliLogException {
         try {
             return decryptTripleDES(encryptedText, password.getBytes("UTF-8"));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }
@@ -462,8 +454,7 @@ public class CryptoUtils {
             final byte[] plainTextBytes = decipher.doFinal(encryptedTextBytes);
 
             return new String(plainTextBytes, "UTF-8");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, "Error attempting to decrpt. " + ex.getMessage());
         }
     }

@@ -45,6 +45,7 @@ import org.apache.commons.lang.StringUtils;
  * @since 1.0
  */
 public class StringsProperties {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(StringsProperties.class);
     private static final String PROPERTY_FILE_NAME = "strings.properties";
 
@@ -64,6 +65,7 @@ public class StringsProperties {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final StringsProperties INSTANCE = new StringsProperties();
     }
 
@@ -80,8 +82,7 @@ public class StringsProperties {
     private StringsProperties() {
         try {
             _properties = readPropertiesFile();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -116,8 +117,7 @@ public class StringsProperties {
             is.close();
 
             return properties;
-        }
-        finally {
+        } finally {
             if (fis != null) {
                 fis.close();
             }

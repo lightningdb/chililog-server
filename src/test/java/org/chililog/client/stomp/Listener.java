@@ -11,5 +11,6 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public interface Listener {
+
     public void message(Map headers, String body);
 }

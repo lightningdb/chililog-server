@@ -54,6 +54,7 @@ import org.jboss.netty.util.CharsetUtil;
  * @author vibul
  */
 public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpRequestHandler.class);
 
     private static final String PUBLISH_PATH = "/publish";
@@ -79,11 +80,9 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
         Object msg = e.getMessage();
         if (msg instanceof HttpRequest) {
             handleHttpRequest(ctx, e, (HttpRequest) msg);
-        }
-        else if (msg instanceof WebSocketFrame) {
+        } else if (msg instanceof WebSocketFrame) {
             handleWebSocketFrame(ctx, (WebSocketFrame) msg);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException("Message of type '" + msg.getClass().getName()
                     + "' is not supported.");
         }
@@ -114,8 +113,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
                 _handshaker.executeOpeningHandshake(ctx, req);
                 return;
             }
-        }
-        else if (req.getMethod() == POST && req.getUri().equals(PUBLISH_PATH)) {
+        } else if (req.getMethod() == POST && req.getUri().equals(PUBLISH_PATH)) {
             // Get request content
             ChannelBuffer content = req.getContent();
             if (!content.readable()) {
@@ -199,8 +197,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             StringBuilder sb = new StringBuilder();
             worker.process(requestJson, sb);
             responseJson = sb.toString();
-        }
-        else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0) {
+        } else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0) {
             // If existing subscription exists, stop it first
             if (_subscriptionWorker != null) {
                 _subscriptionWorker.stop();
@@ -211,8 +208,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             StringBuilder sb = new StringBuilder();
             _subscriptionWorker.process(requestJson, sb);
             responseJson = sb.toString();
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException("Unsupported request: " + requestJson);
         }
 
@@ -262,8 +258,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
         try {
             _logger.debug(e.getCause(), "Error handling PubSub JSON HTTP Request");
             e.getChannel().close();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.debug(ex, "Error closing channel in exception");
         }
     }

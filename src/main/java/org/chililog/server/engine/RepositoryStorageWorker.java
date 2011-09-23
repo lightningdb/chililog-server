@@ -51,6 +51,7 @@ import com.mongodb.DB;
  * 
  */
 public class RepositoryStorageWorker extends Thread {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(RepositoryStorageWorker.class);
     private Repository _repo = null;
     private String _deadLetterAddress = null;
@@ -115,8 +116,7 @@ public class RepositoryStorageWorker extends Thread {
         for (RepositoryParserConfigBO repoParserInfo : repo.getRepoConfig().getParsers()) {
             if (repoParserInfo.getAppliesTo() == AppliesTo.All) {
                 _catchAllParser = EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo);
-            }
-            else if (repoParserInfo.getAppliesTo() != AppliesTo.None) {
+            } else if (repoParserInfo.getAppliesTo() != AppliesTo.None) {
                 _filteredParsers.add(EntryParserFactory.getParser(repo.getRepoConfig(), repoParserInfo));
             }
         }
@@ -196,8 +196,7 @@ public class RepositoryStorageWorker extends Thread {
 
                             addToDeadLetterQueue(session, dlqProducer, message, entryParser.getLastParseError());
                         }
-                    }
-                    catch (Exception ex) {
+                    } catch (Exception ex) {
                         // This exception really should only be for mongoDB write errors
 
                         // Rollback and try delivery again (just in case we have bad DB connection or other)
@@ -224,14 +223,12 @@ public class RepositoryStorageWorker extends Thread {
             // We are done
             _logger.info("RepositoryStorageWorker '%s' stopped", this.getName());
             return;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // Just log and terminate
             // TODO Repository or some class should have a periodic check to make sure this thread is started again in
             // the event of an exception stopping the thread
             _logger.error(ex, "RepositoryStorageWorker '%s' error. %s", this.getName(), ex.getMessage());
-        }
-        finally {
+        } finally {
             _isRunning = false;
             MqService.getInstance().closeClientSession(session);
         }
@@ -281,8 +278,7 @@ public class RepositoryStorageWorker extends Thread {
             message.getBodyBuffer().writeString(textEntry);
             dlqProducer.send(message);
             session.commit();
-        }
-        catch (Exception ex2) {
+        } catch (Exception ex2) {
             // Just log can continue
             _logger.error(ex2, "RepositoryStorageWorker '%s' could not add message to dead letter queue error. %s",
                     this.getName(), ex2.getMessage());

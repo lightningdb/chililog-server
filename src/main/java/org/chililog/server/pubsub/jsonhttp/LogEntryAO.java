@@ -26,6 +26,7 @@ import org.chililog.server.data.RepositoryEntryBO.Severity;
  * @author vibul
  */
 public class LogEntryAO {
+
     private String _timestamp;
     private String _source;
     private String _host;

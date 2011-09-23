@@ -52,6 +52,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class DefaultEntryParserTest {
+
     private static DB _db;
 
     @BeforeClass

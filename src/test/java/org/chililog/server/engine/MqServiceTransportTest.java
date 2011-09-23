@@ -64,6 +64,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class MqServiceTransportTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(MqServiceTransportTest.class);
 
     private static DB _db;
@@ -169,8 +170,7 @@ public class MqServiceTransportTest {
             QueueQuery q = coreSession.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
-        }
-        finally {
+        } finally {
             if (coreSession != null) {
                 coreSession.close();
             }
@@ -210,8 +210,7 @@ public class MqServiceTransportTest {
                 ClientConsumer messageConsumer = session.createConsumer(queueName);
                 messageConsumer.toString();
                 fail("Exception expected for failed read");
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // HornetQException[errorCode=105 message=Unable to validate user: MqTransportTestUser_Writer for check
                 // type
                 // CONSUME for address HornetQIntegrationTest]
@@ -256,8 +255,7 @@ public class MqServiceTransportTest {
             // Should have no more messages
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
-        }
-        finally {
+        } finally {
             if (session != null) {
                 session.close();
             }
@@ -300,8 +298,7 @@ public class MqServiceTransportTest {
             QueueQuery q = coreSession.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
-        }
-        finally {
+        } finally {
             if (coreSession != null) {
                 coreSession.close();
             }
@@ -375,8 +372,7 @@ public class MqServiceTransportTest {
             c.subscribe(queueAddress, msgListener);
             Thread.sleep(1000);
             assertEquals(msg, msgListener.getLastMessageBody());
-        }
-        finally {
+        } finally {
             if (session != null) {
                 session.close();
             }
@@ -409,8 +405,7 @@ public class MqServiceTransportTest {
             QueueQuery q = coreSession.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
-        }
-        finally {
+        } finally {
             if (coreSession != null) {
                 coreSession.close();
             }
@@ -479,8 +474,7 @@ public class MqServiceTransportTest {
             // Should have no more messages
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
-        }
-        finally {
+        } finally {
             if (session != null) {
                 session.close();
             }
@@ -512,8 +506,7 @@ public class MqServiceTransportTest {
             QueueQuery q = coreSession.queueQuery(new SimpleString(queueAddress));
             assertNotNull(q);
             assertEquals(queueAddress, q.getAddress().toString());
-        }
-        finally {
+        } finally {
             if (coreSession != null) {
                 coreSession.close();
             }
@@ -561,8 +554,7 @@ public class MqServiceTransportTest {
             c.subscribe(queueAddress, msgListener);
             Thread.sleep(1000);
             assertEquals(msg, msgListener.getLastMessageBody());
-        }
-        finally {
+        } finally {
             if (session != null) {
                 session.close();
             }

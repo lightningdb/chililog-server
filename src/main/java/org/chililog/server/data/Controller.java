@@ -35,6 +35,7 @@ import com.mongodb.WriteConcern;
  * 
  */
 public abstract class Controller {
+
     /**
      * Basic constructor
      */
@@ -86,13 +87,11 @@ public abstract class Controller {
                 query.put(BO.DOCUMENT_VERSION_FIELD_NAME, recordVersion);
 
                 coll.update(query, obj, false, false, this.getDBWriteConern());
-            }
-            else {
+            } else {
                 obj.put(BO.DOCUMENT_VERSION_FIELD_NAME, (long) 1);
                 coll.insert(obj);
             }
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_SAVE_ERROR, ex.getMessage());
         }
     }
@@ -122,8 +121,7 @@ public abstract class Controller {
                 obj.put(BO.DOCUMENT_ID_FIELD_NAME, businessObject.getDocumentID());
                 coll.remove(obj);
             }
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_REMOVE_ERROR, ex.getMessage());
         }
     }

@@ -54,6 +54,7 @@ import com.mongodb.DBObject;
  * More tests regarding MqManager and transactions
  */
 public class MqServiceTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(MqServiceTest.class);
 
     private static DB _db;
@@ -296,8 +297,7 @@ public class MqServiceTest {
         try {
             MqService.getInstance().getTransactionalClientSession(PUBLISHER_USERNAME, "badpassword");
             fail("Exception expected: message=Unable to validate user: MqManagerTest.publisher");
-        }
-        catch (HornetQException ex) {
+        } catch (HornetQException ex) {
             assertEquals(105, ex.getCode());
             assertTrue(ex.getMessage().contains("Unable to validate user"));
         }
@@ -305,8 +305,7 @@ public class MqServiceTest {
         try {
             MqService.getInstance().getTransactionalClientSession(SUBSCRIBER_USERNAME, "badpassword");
             fail("Exception expected: message=Unable to validate user: MqManagerTest.subscriber");
-        }
-        catch (HornetQException ex) {
+        } catch (HornetQException ex) {
             assertEquals(105, ex.getCode());
             assertTrue(ex.getMessage().contains("Unable to validate user"));
         }

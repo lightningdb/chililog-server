@@ -43,6 +43,7 @@ import org.jboss.netty.handler.codec.http.HttpContentCompressor;
  * </pre>
  */
 public class ConditionalHttpContentCompressor extends HttpContentCompressor {
+
     private boolean _doCompression = true;
 
     /**
@@ -70,8 +71,7 @@ public class ConditionalHttpContentCompressor extends HttpContentCompressor {
     public void writeRequested(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
         if (_doCompression) {
             super.writeRequested(ctx, e);
-        }
-        else {
+        } else {
             ctx.sendDownstream(e);
         }
     }

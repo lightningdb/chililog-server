@@ -27,6 +27,7 @@ package org.chililog.server.workbench.workers;
  * 
  */
 public class RepositoryPropertyConfigAO extends AO {
+
     private String _key;
     private String _value;
 

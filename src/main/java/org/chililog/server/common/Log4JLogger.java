@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
  * 
  */
 public class Log4JLogger {
+
     private final Logger _inner;
 
     /**
@@ -76,8 +77,7 @@ public class Log4JLogger {
             if (_inner.isTraceEnabled()) {
                 _inner.trace(String.format(format, args));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.trace(format);
         }
     }
@@ -97,8 +97,7 @@ public class Log4JLogger {
             if (_inner.isTraceEnabled()) {
                 _inner.trace(String.format(format, args), t);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.trace(t);
         }
     }
@@ -123,8 +122,7 @@ public class Log4JLogger {
             if (_inner.isDebugEnabled()) {
                 _inner.debug(String.format(format, args));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.debug(format);
         }
     }
@@ -144,8 +142,7 @@ public class Log4JLogger {
             if (_inner.isDebugEnabled()) {
                 _inner.debug(String.format(format, args), t);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.debug(t);
         }
     }
@@ -170,8 +167,7 @@ public class Log4JLogger {
             if (_inner.isInfoEnabled()) {
                 _inner.info(String.format(format, args));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.info(format);
         }
     }
@@ -191,8 +187,7 @@ public class Log4JLogger {
             if (_inner.isInfoEnabled()) {
                 _inner.info(String.format(format, args), t);
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.info(t);
         }
     }
@@ -208,8 +203,7 @@ public class Log4JLogger {
     public void warn(String format, Object... args) {
         try {
             _inner.warn(String.format(format, args));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.warn(format);
         }
     }
@@ -227,8 +221,7 @@ public class Log4JLogger {
     public void warn(Throwable t, String format, Object... args) {
         try {
             _inner.warn(String.format(format, args), t);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.warn(t);
         }
     }
@@ -244,8 +237,7 @@ public class Log4JLogger {
     public void error(String format, Object... args) {
         try {
             _inner.error(String.format(format, args));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.error(format);
         }
     }
@@ -263,8 +255,7 @@ public class Log4JLogger {
     public void error(Throwable t, String format, Object... args) {
         try {
             _inner.error(String.format(format, args), t);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.error(t);
         }
     }
@@ -280,8 +271,7 @@ public class Log4JLogger {
     public void fatal(String format, Object... args) {
         try {
             _inner.fatal(String.format(format, args));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.fatal(format);
         }
     }
@@ -299,8 +289,7 @@ public class Log4JLogger {
     public void fatal(Throwable t, String format, Object... args) {
         try {
             _inner.fatal(String.format(format, args), t);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _inner.fatal(t);
         }
     }

@@ -34,6 +34,7 @@ import org.junit.Test;
  * 
  */
 public class SystemPropertiesTest {
+
     private static Logger _logger = Logger.getLogger(SystemPropertiesTest.class);
 
     @Before

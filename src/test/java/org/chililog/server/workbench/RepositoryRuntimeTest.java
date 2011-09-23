@@ -64,6 +64,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryRuntimeTest {
+
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;
@@ -626,8 +627,7 @@ public class RepositoryRuntimeTest {
         for (RepositoryStatusAO r : getListResponseAO) {
             if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.OFFLINE, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -671,8 +671,7 @@ public class RepositoryRuntimeTest {
         for (RepositoryStatusAO r : getListResponseAO) {
             if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.READONLY, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -760,8 +759,7 @@ public class RepositoryRuntimeTest {
         for (RepositoryStatusAO r : getListResponseAO) {
             if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.OFFLINE, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -809,8 +807,7 @@ public class RepositoryRuntimeTest {
         for (RepositoryStatusAO r : getListResponseAO) {
             if (r.getDocumentID().equals(_repoInfoId)) {
                 assertEquals(Status.READONLY, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.ONLINE, r.getStatus());
             }
         }
@@ -929,8 +926,7 @@ public class RepositoryRuntimeTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -963,8 +959,7 @@ public class RepositoryRuntimeTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 

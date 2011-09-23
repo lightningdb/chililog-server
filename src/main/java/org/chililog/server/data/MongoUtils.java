@@ -37,6 +37,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class MongoUtils {
+
     /**
      * Loads a string field from the mongoDB object
      * 

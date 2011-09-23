@@ -34,6 +34,7 @@ import org.chililog.server.common.Log4JLogger;
  * </p>
  */
 public class JsonHttpSslContextManager {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpSslContextManager.class);
     private static final String PROTOCOL = "TLS";
     private SSLContext _serverContext;
@@ -53,6 +54,7 @@ public class JsonHttpSslContextManager {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final JsonHttpSslContextManager INSTANCE = new JsonHttpSslContextManager();
     }
 
@@ -81,8 +83,7 @@ public class JsonHttpSslContextManager {
                 // Initialise the SSLContext to work with our key managers.
                 serverContext = SSLContext.getInstance(PROTOCOL);
                 serverContext.init(kmf.getKeyManagers(), null, null);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new Error("Failed to initialize the server-side SSLContext", e);
             }
             _serverContext = serverContext;
@@ -92,14 +93,12 @@ public class JsonHttpSslContextManager {
             try {
                 clientContext = SSLContext.getInstance(PROTOCOL);
                 clientContext.init(null, JsonHttpSSLTrustManager.getInstance().getTrustManagers(), null);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new Error("Failed to initialize the client-side SSLContext", e);
             }
             _clientContext = clientContext;
             return;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.error("Error initializing SslContextManager. " + ex.getMessage(), ex);
             System.exit(1);
 

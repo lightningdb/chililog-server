@@ -33,6 +33,7 @@ import org.chililog.server.data.UserBO.Status;
  * 
  */
 public class UserAO extends AO {
+
     private String _documentID;
     private Long _documentVersion;
     private String _username;
@@ -80,8 +81,7 @@ public class UserAO extends AO {
         if (!StringUtils.isBlank(_emailAddress)) {
             try {
                 _gravatarMD5Hash = CryptoUtils.createMD5Hash(_emailAddress.trim().toLowerCase());
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // ignore
             }
         }
@@ -112,8 +112,7 @@ public class UserAO extends AO {
             if (!StringUtils.isBlank(_password)) {
                 userBO.setPassword(_password, true);
             }
-        }
-        else {
+        } else {
             userBO.setPassword(_password, true);
         }
 

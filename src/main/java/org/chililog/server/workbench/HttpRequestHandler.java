@@ -56,6 +56,7 @@ import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
  * </p>
  */
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
     private WorkbenchRequestHandler _workbenchRequestHandler = null;
@@ -81,26 +82,20 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             uri = uri.toLowerCase();
             if (uri.startsWith("/api/")) {
                 _workbenchRequestHandler = new ApiRequestHandler();
-            }
-            else if (uri.equalsIgnoreCase("/workbench") || uri.equalsIgnoreCase("/workbench/")) {
+            } else if (uri.equalsIgnoreCase("/workbench") || uri.equalsIgnoreCase("/workbench/")) {
                 redirectToWorkBenchIndexHtml(e);
                 return;
-            }
-            else if (uri.startsWith("/static") || uri.startsWith("/workbench")) {
+            } else if (uri.startsWith("/static") || uri.startsWith("/workbench")) {
                 _workbenchRequestHandler = new StaticFileRequestHandler();
-            }
-            else if (uri.startsWith("/echo")) {
+            } else if (uri.startsWith("/echo")) {
                 _workbenchRequestHandler = new EchoRequestHandler();
-            }
-            else {
+            } else {
                 send404NotFound(e);
                 return;
             }
-        }
-        else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame) {
+        } else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame) {
             // If this is HTTP chunk or web socket frame, then use existing _workbenchRequestHandler
-        }
-        else {
+        } else {
             throw new NotImplementedException("Message Type " + msg.getClass().getName());
         }
 
@@ -135,8 +130,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
             _logger.debug(e.getCause(), "ERROR: Unhandled exception: " + e.getCause().getMessage()
                     + ". Closing channel " + ctx.getChannel().getId());
             e.getChannel().close();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.debug(ex, "ERROR trying to close socket because we got an unhandled exception");
         }
     }

@@ -25,6 +25,7 @@ package org.chililog.server.data;
  * 
  */
 public class UserListCriteria extends ListCriteria {
+
     private String _usernamePattern = null;
     private String _emailAddressPattern = null;
     private String _role = null;

@@ -156,8 +156,7 @@ public class MongoJsonParser {
                         if (m.matches()) {
                             try {
                                 value = Long.parseLong(m.group(1));
-                            }
-                            catch (Exception ex) {
+                            } catch (Exception ex) {
                                 throw new JSONParseException(s, pos);
                             }
                         }
@@ -172,8 +171,7 @@ public class MongoJsonParser {
                                     dateString = dateString.substring(0, dateString.length() - 1) + "GMT";
                                 }
                                 value = _dateFormat.parse(dateString);
-                            }
-                            catch (Exception ex) {
+                            } catch (Exception ex) {
                                 throw new JSONParseException(ex, s, pos);
                             }
                         }
@@ -231,8 +229,7 @@ public class MongoJsonParser {
     protected Object parseObject(String name) {
         if (name != null) {
             _callback.objectStart(name);
-        }
-        else {
+        } else {
             _callback.objectStart();
         }
 
@@ -247,8 +244,7 @@ public class MongoJsonParser {
 
             if ((current = get()) == ',') {
                 read(',');
-            }
-            else {
+            } else {
                 break;
             }
         }
@@ -260,23 +256,17 @@ public class MongoJsonParser {
     protected void doCallback(String name, Object value) {
         if (value == null) {
             _callback.gotNull(name);
-        }
-        else if (value instanceof String) {
+        } else if (value instanceof String) {
             _callback.gotString(name, (String) value);
-        }
-        else if (value instanceof Boolean) {
+        } else if (value instanceof Boolean) {
             _callback.gotBoolean(name, (Boolean) value);
-        }
-        else if (value instanceof Integer) {
+        } else if (value instanceof Integer) {
             _callback.gotInt(name, (Integer) value);
-        }
-        else if (value instanceof Long) {
+        } else if (value instanceof Long) {
             _callback.gotLong(name, (Long) value);
-        }
-        else if (value instanceof Double) {
+        } else if (value instanceof Double) {
             _callback.gotDouble(name, (Double) value);
-        }
-        else if (value instanceof Date) {
+        } else if (value instanceof Date) {
             _callback.gotDate(name, ((Date) value).getTime());
         }
     }
@@ -315,8 +305,7 @@ public class MongoJsonParser {
                 && ((s.charAt(pos) >= '0' && s.charAt(pos) <= '9') || (s.charAt(pos) >= 'A' && s.charAt(pos) <= 'F') || (s
                         .charAt(pos) >= 'a' && s.charAt(pos) <= 'f'))) {
             pos++;
-        }
-        else {
+        } else {
             throw new JSONParseException(s, pos);
         }
     }
@@ -574,8 +563,7 @@ public class MongoJsonParser {
     protected Object parseArray(String name) {
         if (name != null) {
             _callback.arrayStart(name);
-        }
-        else {
+        } else {
             _callback.arrayStart();
         }
 
@@ -590,11 +578,9 @@ public class MongoJsonParser {
 
             if ((current = get()) == ',') {
                 read(',');
-            }
-            else if (current == ']') {
+            } else if (current == ']') {
                 break;
-            }
-            else {
+            } else {
                 throw new JSONParseException(s, pos);
             }
         }

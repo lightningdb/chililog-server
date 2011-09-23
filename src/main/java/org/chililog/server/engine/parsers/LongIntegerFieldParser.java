@@ -33,6 +33,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class LongIntegerFieldParser extends FieldParser {
+
     private Long _defaultValue = null;
     private NumberFormat _numberFormatter = null;
 
@@ -57,8 +58,7 @@ public class LongIntegerFieldParser extends FieldParser {
         if (!StringUtils.isBlank(d)) {
             if (_numberFormatter == null) {
                 _defaultValue = Long.parseLong(d);
-            }
-            else {
+            } else {
                 _defaultValue = _numberFormatter.parse(d).longValue();
             }
         }
@@ -98,24 +98,20 @@ public class LongIntegerFieldParser extends FieldParser {
             }
             if (_numberFormatter == null) {
                 return Long.parseLong(value);
-            }
-            else {
+            } else {
                 return _numberFormatter.parse(value).longValue();
             }
-        }
-        catch (ParseException ex) {
+        } catch (ParseException ex) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex;
-        }
-        catch (NumberFormatException ex2) {
+        } catch (NumberFormatException ex2) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex2;
-        }
-        catch (NullPointerException ex3) {
+        } catch (NullPointerException ex3) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }

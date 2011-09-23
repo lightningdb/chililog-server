@@ -11,6 +11,7 @@ import java.util.Map;
  */
 @SuppressWarnings({ "rawtypes" })
 public interface Authenticatable extends MessageReceiver {
+
     public void error(Map headers, String b);
 
     public Object token();

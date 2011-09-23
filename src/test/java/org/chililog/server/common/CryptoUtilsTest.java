@@ -26,6 +26,7 @@ import org.chililog.server.common.CryptoUtils;
 import org.junit.Test;
 
 public class CryptoUtilsTest {
+
     private static Logger _logger = Logger.getLogger(CryptoUtilsTest.class);
 
     @Test

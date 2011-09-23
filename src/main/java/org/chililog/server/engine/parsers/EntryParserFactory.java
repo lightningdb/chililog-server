@@ -33,6 +33,7 @@ import org.chililog.server.engine.Strings;
  * 
  */
 public class EntryParserFactory {
+
     private static final String _delimitedEntryParserClassName = DelimitedEntryParser.class.getName();
     private static final String _jsonEntryParserClassName = JsonEntryParser.class.getName();
     private static final String _regexEntryParserClassName = RegexEntryParser.class.getName();
@@ -57,19 +58,16 @@ public class EntryParserFactory {
             String className = repoParserInfo.getClassName();
             if (className.equals(_delimitedEntryParserClassName)) {
                 return new DelimitedEntryParser(repoInfo, repoParserInfo);
-            }
-            else if (className.equals(_regexEntryParserClassName)) {
+            } else if (className.equals(_regexEntryParserClassName)) {
                 return new RegexEntryParser(repoInfo, repoParserInfo);
-            }
-            else if (className.equals(_jsonEntryParserClassName)) {
+            } else if (className.equals(_jsonEntryParserClassName)) {
                 return new JsonEntryParser(repoInfo, repoParserInfo);
             }
 
             // Use reflection to instance it
             Class<?> cls = ClassUtils.getClass(className);
             return (EntryParser) ConstructorUtils.invokeConstructor(cls, new Object[] { repoInfo, repoParserInfo });
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.PARSER_FACTORY_ERROR, repoParserInfo.getName(), repoInfo.getName(),
                     ex.getMessage());
         }

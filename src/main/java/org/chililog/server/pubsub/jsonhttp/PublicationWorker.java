@@ -48,6 +48,7 @@ import com.mongodb.DB;
  * Worker to process publication requests
  */
 public class PublicationWorker {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(PublicationWorker.class);
 
     private MqProducerSessionPool _sessionPool;
@@ -113,14 +114,12 @@ public class PublicationWorker {
 
             // Finish
             return true;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (p != null) {
                 try {
                     _sessionPool.addPooled();
                     p.session.close();
-                }
-                catch (Exception ex2) {
+                } catch (Exception ex2) {
                     _logger.error(ex2, "Error closing pooled connection");
                 }
             }
@@ -164,8 +163,7 @@ public class PublicationWorker {
             String jsonToken = publicationAO.getPassword().substring(6);
             AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
             passwordOK = token.getUserID().equals(user.getDocumentID().toString());
-        }
-        else {
+        } else {
             // Make sure user exists and password is valid
             passwordOK = user.validatePassword(publicationAO.getPassword());
         }

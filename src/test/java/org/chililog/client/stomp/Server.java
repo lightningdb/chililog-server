@@ -42,6 +42,7 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 public class Server {
+
     private Queue _message_queue;
     private Map _transactions;
     private Map _listeners;
@@ -121,6 +122,7 @@ public class Server {
      * connection. When shut down, stops receiving connections and shuts down all existing client connections.
      */
     private class ConnectionListener extends Thread {
+
         private int _port;
         private Server _server;
         private ServerSocket _serve_sock;
@@ -141,19 +143,15 @@ public class Server {
                         Thread handler = new SocketHandler(sock, _server);
                         handler.start();
                         _handlers.add(handler);
-                    }
-                    catch (IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace(System.err);
                     }
                 }
-            }
-            catch (SocketException e) {
+            } catch (SocketException e) {
                 // This gets thrown when the accept() is interrupted
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace(System.err);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace(System.err);
             }
             for (Iterator i = _handlers.iterator(); i.hasNext();) {
@@ -161,8 +159,7 @@ public class Server {
                     Thread t = (Thread) i.next();
                     t.interrupt();
                     Thread.yield();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                 }
             }
         }
@@ -174,8 +171,7 @@ public class Server {
             this.interrupt();
             try {
                 _serve_sock.close();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
             }
         }
 
@@ -239,6 +235,7 @@ public class Server {
      * communications between the server and the client for which it is responsible.
      */
     protected class SocketHandler extends Receiver implements Listener, Authenticatable {
+
         private InputStream _input;
         private OutputStream _output;
         private Socket _socket;
@@ -284,19 +281,16 @@ public class Server {
             try {
                 _socket.shutdownInput();
                 _input.close();
-            }
-            catch (IOException e) { /* Who cares? */
+            } catch (IOException e) { /* Who cares? */
             }
             try {
                 _socket.shutdownOutput();
                 _output.close();
-            }
-            catch (IOException e) { /* Who cares? */
+            } catch (IOException e) { /* Who cares? */
             }
             try {
                 _socket.close();
-            }
-            catch (IOException e) { /* Who cares? */
+            } catch (IOException e) { /* Who cares? */
             }
         }
 
@@ -319,12 +313,10 @@ public class Server {
                     headers.put("session", String.valueOf(this.hashCode()));
                     transmit(Command.CONNECTED, headers, null);
                     _authenticated = true;
-                }
-                catch (javax.security.auth.login.LoginException e) {
+                } catch (javax.security.auth.login.LoginException e) {
                     transmit(Command.ERROR, null, "Login failed: " + e.getMessage());
                 }
-            }
-            else {
+            } else {
                 if (!_authenticated) {
                     transmit(Command.ERROR, null, "Not CONNECTed, or not authorized");
                     return;
@@ -343,12 +335,10 @@ public class Server {
                     this.interrupt();
                     Thread.yield();
                     close();
-                }
-                else if (c == Command.ERROR) {
+                } else if (c == Command.ERROR) {
                     // Then there was an error in the client message. Pass it back.
                     error(h, b);
-                }
-                else {
+                } else {
                     _server.receive(c, h, b, this);
                 }
             }
@@ -381,8 +371,7 @@ public class Server {
         private void transmit(Command c, Map h, String b) {
             try {
                 Transmitter.transmit(c, h, b, _output);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 this.interrupt();
                 Thread.yield();
                 close();
@@ -424,27 +413,23 @@ public class Server {
                         Message m = (Message) i.next();
                         try {
                             receive(m.command(), m.headers(), m.body(), y);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             // Don't allow listener code to break us
                         }
                     }
                 }
 
-            }
-            else if (c == Command.ABORT) {
+            } else if (c == Command.ABORT) {
                 synchronized (_transactions) {
                     _transactions.remove(y);
                 }
 
-            }
-            else if (_transactions.get(y) != null) {
+            } else if (_transactions.get(y) != null) {
                 synchronized (_transactions) {
                     ((List) _transactions.get(y)).add(new Message(c, h, b));
                 }
 
-            }
-            else {
+            } else {
                 if (h == null)
                     h = new HashMap();
                 String destination = (String) h.get("destination");
@@ -458,15 +443,13 @@ public class Server {
                                     Listener sh = (Listener) i.next();
                                     try {
                                         sh.message(h, b);
-                                    }
-                                    catch (Exception e) {
+                                    } catch (Exception e) {
                                         // Don't allow listener code to break us
                                     }
                                 }
                             }
                         }
-                    }
-                    else {
+                    } else {
                         Map error_headers = new HashMap();
                         error_headers.put("message:", "authorization refused");
                         error_headers.put("type:", "send");
@@ -475,8 +458,7 @@ public class Server {
                                 + "\n-----\nAuthentication token refused for this channel");
                     }
 
-                }
-                else if (c == Command.SUBSCRIBE) {
+                } else if (c == Command.SUBSCRIBE) {
                     if (y instanceof IntraVMClient || _authenticator.authorizeSubscribe(y.token(), destination)) {
                         synchronized (_listeners) {
                             List l = (List) _listeners.get(destination);
@@ -487,8 +469,7 @@ public class Server {
                             if (!l.contains(y))
                                 l.add(y);
                         }
-                    }
-                    else {
+                    } else {
                         Map error_headers = new HashMap();
                         error_headers.put("message:", "authorization refused");
                         error_headers.put("type:", "subscription");
@@ -497,23 +478,20 @@ public class Server {
                                 + "\n-----\nAuthentication token refused for this channel");
                     }
 
-                }
-                else if (c == Command.UNSUBSCRIBE) {
+                } else if (c == Command.UNSUBSCRIBE) {
                     synchronized (_listeners) {
                         List l = (List) _listeners.get(destination);
                         if (l != null)
                             l.remove(y);
                     }
 
-                }
-                else if (c == Command.BEGIN) {
+                } else if (c == Command.BEGIN) {
                     synchronized (_transactions) {
                         List trans = new ArrayList();
                         _transactions.put(y, trans);
                     }
 
-                }
-                else if (c == Command.DISCONNECT) {
+                } else if (c == Command.DISCONNECT) {
                     synchronized (_listeners) {
                         for (Iterator i = _listeners.values().iterator(); i.hasNext();) {
                             List l = (List) i.next();
@@ -530,8 +508,7 @@ public class Server {
                     y.receive(Command.RECEIPT, headers, null);
                 }
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Don't allow listener code to break us
         }
     }
@@ -561,8 +538,7 @@ public class Server {
         System.out.println(Version.VERSION);
         try {
             new Server(port);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Failed to start server");
             e.printStackTrace(System.err);
         }

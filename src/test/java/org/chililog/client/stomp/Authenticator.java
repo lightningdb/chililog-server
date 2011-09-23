@@ -7,6 +7,7 @@ package org.chililog.client.stomp;
 import javax.security.auth.login.LoginException;
 
 public interface Authenticator {
+
     /**
      * Validates a user.
      * 

@@ -49,6 +49,7 @@ import org.jboss.netty.logging.Log4JLoggerFactory;
  * 
  */
 public class App {
+
     static Log4JLogger _logger = Log4JLogger.getLogger(App.class);
     private static final String STOP_ME_FILENAME = "STOP_ME";
 
@@ -72,8 +73,7 @@ public class App {
 
             // Finish
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error(e, "Error starting CHILILOG Server");
             e.printStackTrace();
             System.exit(1);
@@ -143,17 +143,16 @@ public class App {
 
         final Timer timer = new Timer("ChiliLog Server Shutdown Timer", true);
         timer.scheduleAtFixedRate(new TimerTask() {
+
             @Override
             public void run() {
                 if (file.exists()) {
                     try {
                         stop(null);
                         timer.cancel();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         _logger.error(e, "Shutdown error: " + e.getMessage());
-                    }
-                    finally {
+                    } finally {
                         Runtime.getRuntime().exit(0);
                     }
                 }
@@ -170,8 +169,7 @@ public class App {
         Writer out = new OutputStreamWriter(new FileOutputStream(new File(".", STOP_ME_FILENAME)));
         try {
             out.write("shutdown");
-        }
-        finally {
+        } finally {
             out.close();
         }
     }

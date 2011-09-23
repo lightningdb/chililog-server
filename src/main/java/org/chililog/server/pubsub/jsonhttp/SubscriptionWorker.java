@@ -48,6 +48,7 @@ import com.mongodb.DB;
  * Worker to process subscription requests
  */
 public class SubscriptionWorker {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(SubscriptionWorker.class);
 
     private Channel _channel = null;
@@ -111,8 +112,7 @@ public class SubscriptionWorker {
 
             // Finish
             return true;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.error(ex, "Error processing message: %s", request);
 
             SubscriptionResponseAO responseAO = new SubscriptionResponseAO(messageID, ex);
@@ -132,8 +132,7 @@ public class SubscriptionWorker {
             if (_session != null) {
                 _session.close();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.error(ex, "Error stopping subscription");
         }
     }
@@ -162,8 +161,7 @@ public class SubscriptionWorker {
             String jsonToken = subscriptionAO.getPassword().substring(6);
             AuthenticationTokenAO token = AuthenticationTokenAO.fromString(jsonToken);
             passwordOK = token.getUserID().equals(user.getDocumentID().toString());
-        }
-        else {
+        } else {
             // Make sure user exists and password is valid
             passwordOK = user.validatePassword(subscriptionAO.getPassword());
         }
@@ -184,6 +182,7 @@ public class SubscriptionWorker {
      * Class to handle incoming log messages
      */
     public static class MqMessageHandler implements MessageHandler {
+
         private static Log4JLogger _logger = Log4JLogger.getLogger(MqMessageHandler.class);
         private String _messageID = null;
         private Channel _channel = null;
@@ -221,8 +220,7 @@ public class SubscriptionWorker {
                 _channel.write(new TextWebSocketFrame(responseJson));
 
                 return;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 _logger.error(ex, "Error forwarding subscription message JSON HTTP web socket client");
             }
         }

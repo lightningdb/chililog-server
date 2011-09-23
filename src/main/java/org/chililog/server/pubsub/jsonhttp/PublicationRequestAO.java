@@ -22,6 +22,7 @@ package org.chililog.server.pubsub.jsonhttp;
  * Publication Request API JSON binding object. Encapsulates the data for publishing log entries
  */
 public class PublicationRequestAO {
+
     private String _messageType = "PublicationRequest";
     private String _messageID = "";
     private String _repositoryName;

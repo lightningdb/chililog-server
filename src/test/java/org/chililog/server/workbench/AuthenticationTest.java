@@ -56,6 +56,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class AuthenticationTest {
+
     private static DB _db;
 
     @BeforeClass
@@ -624,8 +625,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -665,8 +665,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -706,8 +705,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -747,8 +745,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -788,8 +785,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -829,8 +825,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -870,8 +865,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -926,8 +920,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 
@@ -960,8 +953,7 @@ public class AuthenticationTest {
         try {
             conn.getInputStream();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             responseContent = ApiUtils.getResponseErrorContent((HttpURLConnection) conn);
         }
 

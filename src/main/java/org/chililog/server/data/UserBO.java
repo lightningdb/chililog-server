@@ -42,6 +42,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class UserBO extends BO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     public static final String SYSTEM_ADMINISTRATOR_ROLE_NAME = "system.administrator";
@@ -164,8 +165,7 @@ public class UserBO extends BO implements Serializable {
     public void setPassword(String password, boolean isPlainText) throws ChiliLogException {
         if (isPlainText) {
             _password = CryptoUtils.createSHA512Hash(password, null);
-        }
-        else {
+        } else {
             _password = password;
         }
     }

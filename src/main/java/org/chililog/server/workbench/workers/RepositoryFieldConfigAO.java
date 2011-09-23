@@ -34,6 +34,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO.DataType;
  * 
  */
 public class RepositoryFieldConfigAO extends AO {
+
     private String _name;
     private String _displayName;
     private String _description;
@@ -61,8 +62,7 @@ public class RepositoryFieldConfigAO extends AO {
 
         if (repoFieldConfig.getProperties() == null || repoFieldConfig.getProperties().isEmpty()) {
             _properties = null;
-        }
-        else {
+        } else {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
             for (Entry<String, String> e : repoFieldConfig.getProperties().entrySet()) {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));

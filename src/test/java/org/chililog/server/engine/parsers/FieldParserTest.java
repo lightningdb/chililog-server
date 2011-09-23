@@ -72,32 +72,28 @@ public class FieldParserTest {
         try {
             p.parse("123.45");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse("123adb");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
@@ -135,16 +131,14 @@ public class FieldParserTest {
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -180,32 +174,28 @@ public class FieldParserTest {
         try {
             p.parse("123.45");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse("123adb");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
@@ -243,16 +233,14 @@ public class FieldParserTest {
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -290,24 +278,21 @@ public class FieldParserTest {
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse("123adb");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NumberFormatException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -345,16 +330,14 @@ public class FieldParserTest {
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -430,32 +413,28 @@ public class FieldParserTest {
         try {
             p.parse("xx 2011-1-2 3:4:5 zzz");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse("2011-01-02");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 
@@ -484,24 +463,21 @@ public class FieldParserTest {
         try {
             p.parse("2011-01-02");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse("");
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ParseException.class, ex.getClass());
         }
 
         try {
             p.parse(null);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(NullPointerException.class, ex.getClass());
         }
 

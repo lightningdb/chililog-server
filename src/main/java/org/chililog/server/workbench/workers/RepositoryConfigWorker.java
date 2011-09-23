@@ -55,6 +55,7 @@ import com.mongodb.DB;
  * </p>
  */
 public class RepositoryConfigWorker extends Worker {
+
     public static final String NAME_URI_QUERYSTRING_PARAMETER_NAME = "name";
 
     private static UserBO[] _userListCache = null;
@@ -98,8 +99,7 @@ public class RepositoryConfigWorker extends Worker {
 
             // Do checks for PUT and GET when we execute
             return new ApiResult();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
     }
@@ -128,8 +128,7 @@ public class RepositoryConfigWorker extends Worker {
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO,
                     getAllUsers(db)));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -152,8 +151,7 @@ public class RepositoryConfigWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), null, null);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -191,8 +189,7 @@ public class RepositoryConfigWorker extends Worker {
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new RepositoryConfigAO(repoConfigBO,
                     getAllUsers(db)));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -234,8 +231,7 @@ public class RepositoryConfigWorker extends Worker {
                     }
                     return result;
                 }
-            }
-            else {
+            } else {
                 // Get specific repository - only allowed for system admin and those who have permission
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 RepositoryConfigBO repoConfigBO = RepositoryConfigController.getInstance().get(db, new ObjectId(id));
@@ -251,8 +247,7 @@ public class RepositoryConfigWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }

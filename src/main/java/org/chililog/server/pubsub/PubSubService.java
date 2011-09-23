@@ -39,6 +39,7 @@ import org.chililog.server.pubsub.jsonhttp.JsonHttpService;
  * 
  */
 public class PubSubService {
+
     /**
      * Returns the singleton instance for this class
      */
@@ -53,6 +54,7 @@ public class PubSubService {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final PubSubService INSTANCE = new PubSubService();
     }
 

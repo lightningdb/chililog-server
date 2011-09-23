@@ -45,6 +45,7 @@ import org.chililog.server.workbench.workers.AuthenticationAO.ExpiryType;
  * 
  */
 public class AuthenticationTokenAO {
+
     private String _id;
 
     private String _userID;
@@ -163,8 +164,7 @@ public class AuthenticationTokenAO {
             sb.append(CryptoUtils.createSHA512Hash(json, appProperties.getWorkbenchApiAuthenticationHashSalt(), false));
 
             return sb.toString();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new RuntimeException("Error creating authentication token.", ex);
         }
     }

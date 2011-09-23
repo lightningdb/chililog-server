@@ -40,6 +40,7 @@ import com.google.gson.GsonBuilder;
  * 
  */
 public class JsonTranslator {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(HttpRequestHandler.class);
 
     private Gson _gson = null;
@@ -58,6 +59,7 @@ public class JsonTranslator {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final JsonTranslator INSTANCE = new JsonTranslator();
     }
 
@@ -81,8 +83,7 @@ public class JsonTranslator {
             builder.setFieldNamingStrategy(new ChiliLogFieldNamingStrategy());
             builder.disableHtmlEscaping();
             _gson = builder.create();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error("Error initializing JSON translator: " + e.getMessage(), e);
             System.exit(1);
         }

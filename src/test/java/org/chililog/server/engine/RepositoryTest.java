@@ -64,6 +64,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryTest {
+
     private static DB _db;
     private static RepositoryConfigBO _repoConfig;
 
@@ -253,8 +254,7 @@ public class RepositoryTest {
         try {
             repo.setRepoConfig(_repoConfig);
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ChiliLogException.class, ex.getClass());
         }
 
@@ -337,8 +337,7 @@ public class RepositoryTest {
         try {
             repo.bringOnline();
             fail();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             assertEquals(ChiliLogException.class, ex.getClass());
         }
 
@@ -397,8 +396,7 @@ public class RepositoryTest {
             ;
             producer.send(message);
             producerSession.commit();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
             // repo.junit_test]
             assertEquals(HornetQException.class, ex.getClass());
@@ -436,8 +434,7 @@ public class RepositoryTest {
             ;
             producer.send(message);
             producerSession.commit();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // HornetQException[errorCode=105 message=User: junit_test doesn't have permission='SEND' on address
             // repo.junit_test]
             assertEquals(HornetQException.class, ex.getClass());
@@ -538,11 +535,9 @@ public class RepositoryTest {
         for (Repository r : repos) {
             if (r.getRepoConfig().getStartupStatus() == Status.ONLINE) {
                 assertEquals(Status.ONLINE, r.getStatus());
-            }
-            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
+            } else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
                 assertEquals(Status.READONLY, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
         }
@@ -553,11 +548,9 @@ public class RepositoryTest {
         for (Repository r : repos2) {
             if (r.getRepoConfig().getStartupStatus() == Status.ONLINE) {
                 assertEquals(Status.ONLINE, r.getStatus());
-            }
-            else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
+            } else if (r.getRepoConfig().getStartupStatus() == Status.READONLY) {
                 assertEquals(Status.READONLY, r.getStatus());
-            }
-            else {
+            } else {
                 assertEquals(Status.OFFLINE, r.getStatus());
             }
         }

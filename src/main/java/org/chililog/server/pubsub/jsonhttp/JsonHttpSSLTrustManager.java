@@ -43,6 +43,7 @@ import org.chililog.server.common.Log4JLogger;
  * 
  */
 public class JsonHttpSSLTrustManager {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpSSLTrustManager.class);
 
     /*
@@ -67,6 +68,7 @@ public class JsonHttpSSLTrustManager {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final JsonHttpSSLTrustManager INSTANCE = new JsonHttpSSLTrustManager();
     }
 
@@ -100,8 +102,7 @@ public class JsonHttpSSLTrustManager {
              * Find some other way to initialize, or else we have to fail the constructor.
              */
             throw new Exception("X509TrustManager not found.");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.error("Error initializing SSLTrustManager. " + ex.getMessage(), ex);
             System.exit(1);
 

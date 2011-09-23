@@ -99,6 +99,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
  * </pre>
  */
 public class ApiRequestHandler extends WorkbenchRequestHandler {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(ApiRequestHandler.class);
 
     /**
@@ -158,45 +159,38 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
                     if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.ByteArray) {
                         // Store in memory
                         _requestContentStream = new ByteArrayOutputStream();
-                    }
-                    else if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.File) {
+                    } else if (_apiWorker.getRequestContentIOStyle() == ContentIOStyle.File) {
                         // Store as file on the file system
                         File _requestContentFile = File.createTempFile("ApiService_", ".dat");
                         _requestContentStream = new BufferedOutputStream(new FileOutputStream(_requestContentFile));
-                    }
-                    else {
+                    } else {
                         throw new UnsupportedOperationException("ContentIOStyle "
                                 + _apiWorker.getRequestContentIOStyle().toString());
                     }
 
                     return;
-                }
-                else {
+                } else {
                     // No chunks. Process it.
                     writeResponse(ctx, e, invokeApiWorker(false));
                     return;
                 }
-            }
-            else {
+            } else {
                 HttpChunk chunk = (HttpChunk) e.getMessage();
                 if (chunk.isLast()) {
                     // No more chunks. Process it.
                     _readingChunks = false;
                     writeResponse(ctx, e, invokeApiWorker(true));
                     return;
-                }
-                else {
+                } else {
                     _requestContentStream.write(chunk.getContent().array());
                     return;
                 }
             }
 
             // Don't code here. Unreachable code
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             writeResponse(ctx, e, ex);
-        }
-        finally {
+        } finally {
             cleanup();
         }
     }
@@ -235,8 +229,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             _apiWorker = (Worker) ConstructorUtils.invokeConstructor(apiClass, _request);
 
             return _apiWorker.validate();
-        }
-        catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             return new ApiResult(HttpResponseStatus.NOT_FOUND, new ChiliLogException(ex, Strings.API_NOT_FOUND_ERROR,
                     className, _request.getUri()));
         }
@@ -259,25 +252,21 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             if (requestContentIOStyle == ContentIOStyle.ByteArray) {
                 // byte[]
                 requestContent = ((ByteArrayOutputStream) _requestContentStream).toByteArray();
-            }
-            else if (requestContentIOStyle == ContentIOStyle.File) {
+            } else if (requestContentIOStyle == ContentIOStyle.File) {
                 // File
                 _requestContentStream.close();
                 requestContent = _requestContentFile;
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
             }
-        }
-        else {
+        } else {
             // Not chunked so our request data is stored in the request content
             ChannelBuffer content = _request.getContent();
             if (content.readable()) {
                 if (requestContentIOStyle == ContentIOStyle.ByteArray) {
                     // byte[]
                     requestContent = content.array();
-                }
-                else if (requestContentIOStyle == ContentIOStyle.File) {
+                } else if (requestContentIOStyle == ContentIOStyle.File) {
                     // File
                     _requestContentFile = File.createTempFile("ApiService_", ".dat");
                     _requestContentStream = new FileOutputStream(_requestContentFile);
@@ -285,8 +274,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
                     _requestContentStream.close();
 
                     requestContent = _requestContentFile;
-                }
-                else {
+                } else {
                     throw new UnsupportedOperationException("ContentIOStyle " + requestContentIOStyle.toString());
                 }
             }
@@ -301,17 +289,13 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
         HttpMethod requestMethod = _request.getMethod();
         if (requestMethod == HttpMethod.GET) {
             return _apiWorker.processGet();
-        }
-        else if (requestMethod == HttpMethod.DELETE) {
+        } else if (requestMethod == HttpMethod.DELETE) {
             return _apiWorker.processDelete();
-        }
-        else if (requestMethod == HttpMethod.POST) {
+        } else if (requestMethod == HttpMethod.POST) {
             return _apiWorker.processPost(requestContent);
-        }
-        else if (requestMethod == HttpMethod.PUT) {
+        } else if (requestMethod == HttpMethod.PUT) {
             return _apiWorker.processPut(requestContent);
-        }
-        else {
+        } else {
             throw new UnsupportedOperationException("HTTP method " + requestMethod.toString() + " not supproted.");
         }
     }
@@ -348,8 +332,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
                 byte[] content = (byte[]) result.getResponseContent();
                 toogleCompression(ctx, content.length > 4096); // Compress if > 4K
                 response.setContent(ChannelBuffers.copiedBuffer(content));
-            }
-            else {
+            } else {
                 throw new NotImplementedException("ContentIOStyle " + result.getResponseContentIOStyle().toString());
             }
         }
@@ -431,8 +414,7 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             if (_requestContentFile != null && _requestContentFile.exists()) {
                 _requestContentFile.delete();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             _logger.error(ex, "Error cleaning up.");
         }
     }
@@ -496,15 +478,13 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             if (requestContent != null) {
                 if (requestContent instanceof byte[]) {
                     sb.append("\r\nCONTENT: " + new String((byte[]) requestContent, "UTF-8"));
-                }
-                else if (requestContent instanceof File) {
+                } else if (requestContent instanceof File) {
                     sb.append("\r\nCONTENT: stored in file");
                 }
             }
 
             _logger.debug(sb.toString());
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             // Ignore
             ex.toString();
         }
@@ -535,15 +515,13 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             if (responseContent != null) {
                 if (responseContent instanceof byte[] && contentType.contains("UTF-8")) {
                     sb.append("\r\nCONTENT: " + new String((byte[]) responseContent, "UTF-8"));
-                }
-                else if (responseContent instanceof File) {
+                } else if (responseContent instanceof File) {
                     sb.append("\r\nCONTENT: stored in file");
                 }
             }
 
             _logger.debug(sb.toString());
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
             // Ignore
             ex.toString();
         }

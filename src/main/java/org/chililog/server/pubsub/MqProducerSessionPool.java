@@ -52,13 +52,11 @@ import org.hornetq.api.core.client.ClientSession;
  * 
  *     // Returning a session to the pool
  *     pool.returnPooled(p);
- * }
- * catch (Exception ex) {
+ * } catch (Exception ex) {
  *     // In the event of an error, close the session and add a new item to the pool
  *     try {
  *         p.session.close();
- *     }
- *     catch (HornetQException e) {
+ *     } catch (HornetQException e) {
  *     }
  *     pool.addPooled();
  *     throw ex;
@@ -77,6 +75,7 @@ import org.hornetq.api.core.client.ClientSession;
  * @author vibul
  */
 public class MqProducerSessionPool {
+
     static Log4JLogger _logger = Log4JLogger.getLogger(MqProducerSessionPool.class);
 
     protected ArrayBlockingQueue<Pooled> _pool = null;
@@ -100,8 +99,7 @@ public class MqProducerSessionPool {
                 addPooled();
             }
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error("Error loading Publisher Session Pool: " + e.getMessage(), e);
             System.exit(1);
 
@@ -112,6 +110,7 @@ public class MqProducerSessionPool {
      * A pooled session and its associated producer
      */
     public static class Pooled {
+
         public ClientSession session;
         public ClientProducer producer;
 
@@ -171,8 +170,7 @@ public class MqProducerSessionPool {
         for (Pooled pooled : _pool) {
             try {
                 pooled.session.close();
-            }
-            catch (HornetQException e) {
+            } catch (HornetQException e) {
                 throw new RuntimeException(e);
             }
         }

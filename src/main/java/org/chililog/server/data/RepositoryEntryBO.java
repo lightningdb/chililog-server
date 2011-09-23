@@ -39,6 +39,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryEntryBO extends BO implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private Date _timestamp;
@@ -330,8 +331,7 @@ public class RepositoryEntryBO extends BO implements Serializable {
                 }
 
                 return Severity.Information;
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // Just return info and ignore the error
                 return Severity.Information;
             }
@@ -340,8 +340,7 @@ public class RepositoryEntryBO extends BO implements Serializable {
         public static Severity fromCode(long code) {
             try {
                 return lookup[(int) code];
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 // Just return info and ignore the error
                 return Severity.Information;
             }

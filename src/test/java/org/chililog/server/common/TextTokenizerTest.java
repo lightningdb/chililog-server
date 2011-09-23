@@ -39,6 +39,7 @@ import org.chililog.server.common.TextTokenizer;
 import org.junit.Test;
 
 public class TextTokenizerTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(TextTokenizerTest.class);
 
     @Test

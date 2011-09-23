@@ -45,6 +45,7 @@ import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
  * </p>
  */
 public abstract class EntryParser {
+
     public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     public static final String TIMESTAMP_TIMEZONE = "GMT";
 
@@ -101,8 +102,7 @@ public abstract class EntryParser {
                     _hostCSV[i] = _hostCSV[i].trim();
                 }
             }
-        }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
+        } else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
             if (!StringUtils.isBlank(_repoParserInfo.getAppliesToSourceFilter())) {
                 _sourcePattern = Pattern.compile(_repoParserInfo.getAppliesToSourceFilter());
             }
@@ -164,8 +164,7 @@ public abstract class EntryParser {
     public boolean isApplicable(String source, String host) {
         if (_repoParserInfo.getAppliesTo() == AppliesTo.All) {
             return true;
-        }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV) {
+        } else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredCSV) {
             if (!StringUtils.isBlank(source) && _sourceCSV != null) {
                 for (String s : _sourceCSV) {
                     if (s.equalsIgnoreCase(source)) {
@@ -180,8 +179,7 @@ public abstract class EntryParser {
                     }
                 }
             }
-        }
-        else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
+        } else if (_repoParserInfo.getAppliesTo() == AppliesTo.AllowFilteredRegularExpression) {
             if (!StringUtils.isBlank(source) && _sourcePattern != null) {
                 return _sourcePattern.matcher(source).matches();
             }

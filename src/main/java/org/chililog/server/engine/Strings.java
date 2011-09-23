@@ -25,6 +25,7 @@ package org.chililog.server.engine;
  * 
  */
 public class Strings {
+
     public static final String PREFIX = "Engine.";
     public static final String ONLINE_REPOSITORY_ERROR = PREFIX + "RepositoryOnlineError";
     public static final String REPOSITORY_ALREADY_ONLINE_ERROR = PREFIX + "RepositoryAlreadyOnlineError";

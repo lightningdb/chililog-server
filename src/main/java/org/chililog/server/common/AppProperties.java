@@ -68,6 +68,7 @@ import org.apache.commons.lang.WordUtils;
  * @since 1.0
  */
 public class AppProperties {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(AppProperties.class);
     private static final String APP_PROPERTY_FILE_NAME = "app.properties";
 
@@ -85,6 +86,7 @@ public class AppProperties {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final AppProperties INSTANCE = new AppProperties();
     }
 
@@ -101,8 +103,7 @@ public class AppProperties {
     private AppProperties() {
         try {
             loadProperties();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error(e, "Error loading application properties: " + e.getMessage());
             System.exit(1);
         }
@@ -156,8 +157,7 @@ public class AppProperties {
             is.close();
 
             return properties;
-        }
-        finally {
+        } finally {
             if (fis != null) {
                 fis.close();
             }
@@ -197,8 +197,7 @@ public class AppProperties {
             Field cacheField = null;
             try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -993,8 +992,7 @@ public class AppProperties {
     static byte[] loadWorkbenchApiAuthenticationHashSalt(Properties properties) {
         try {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes("UTF-8");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_HASH_SALT).getBytes();
         }
     }
@@ -1013,8 +1011,7 @@ public class AppProperties {
     static byte[] loadWorkbenchApiAuthenticationEncryptionPassword(Properties properties) {
         try {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes("UTF-8");
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return loadString(properties, WORKBENCH_API_AUTHENTICATION_ENCRYPTION_PASSWORD).getBytes();
         }
     }
@@ -1182,8 +1179,7 @@ public class AppProperties {
             Field cacheField = null;
             try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 continue;
             }
 
@@ -1194,8 +1190,7 @@ public class AppProperties {
                 sb.append(" = ");
                 sb.append(o == null ? "<not set>" : o.toString());
                 sb.append("\n");
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 sb.append("ERROR: Cannot load value for: " + propertyNameFieldName);
             }
 

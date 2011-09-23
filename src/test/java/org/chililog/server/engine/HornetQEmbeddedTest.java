@@ -46,6 +46,7 @@ import org.junit.Test;
  * 
  */
 public class HornetQEmbeddedTest {
+
     private static Logger _logger = Logger.getLogger(HornetQEmbeddedTest.class);
 
     /**
@@ -159,8 +160,7 @@ public class HornetQEmbeddedTest {
             messageReceived = messageConsumer.receive(1000);
             assertNull(messageReceived);
 
-        }
-        finally {
+        } finally {
             // Step 9. Be sure to close our resources!
             if (coreSession != null) {
                 coreSession.close();

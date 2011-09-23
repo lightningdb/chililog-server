@@ -34,6 +34,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class DateFieldParser extends FieldParser {
+
     private Date _defaultValue = null;
     private String _dateFormat = null;
     private TimeZone _dateTimezone = null;
@@ -108,8 +109,7 @@ public class DateFieldParser extends FieldParser {
                 value = value.trim();
             }
             return dateFormatter.parse(value);
-        }
-        catch (ParseException ex) {
+        } catch (ParseException ex) {
             if (_defaultValue != null) {
                 return (Date) _defaultValue;
             }

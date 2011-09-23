@@ -47,6 +47,7 @@ import com.mongodb.BasicDBObject;
  * 
  */
 public class RegexEntryParser extends EntryParser {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(RegexEntryParser.class);
     private Pattern _pattern;
     private ArrayList<RegexFieldInfo> _fields = new ArrayList<RegexFieldInfo>();
@@ -97,12 +98,10 @@ public class RegexEntryParser extends EntryParser {
                 Integer group = Integer.parseInt(groupString);
                 _fields.add(new RegexFieldInfo(fieldPatternString, group, f));
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
-            }
-            else {
+            } else {
                 throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
                         repoInfo.getName(), ex.getMessage());
             }
@@ -153,15 +152,13 @@ public class RegexEntryParser extends EntryParser {
                         if (fieldMatcher.matches()) {
                             fieldStringValue = fieldMatcher.group(regexField.getGroup());
                         }
-                    }
-                    else if (entryMatches) {
+                    } else if (entryMatches) {
                         fieldStringValue = entryMatcher.group(regexField.getGroup());
                     }
 
                     fieldValue = regexField.getParser().parse(fieldStringValue);
                     parsedFields.put(fieldName, fieldValue);
-                }
-                catch (Exception ex) {
+                } catch (Exception ex) {
                     switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                         case SkipField:
                             String msg = StringsProperties.getInstance().getString(
@@ -186,8 +183,7 @@ public class RegexEntryParser extends EntryParser {
             ArrayList<String> keywords = parseKeywords(source, host, sev, message);
 
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message, parsedFields);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing text entry: " + message);
             return null;
@@ -198,6 +194,7 @@ public class RegexEntryParser extends EntryParser {
      * Encapsulates a regular expression field
      */
     private static class RegexFieldInfo {
+
         public Pattern _pattern;
         public int _group;
         private RepositoryFieldConfigBO _repoFieldInfo;

@@ -31,6 +31,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class StringFieldParser extends FieldParser {
+
     private String _defaultValue = null;
 
     public StringFieldParser(RepositoryFieldConfigBO repoFieldInfo) {

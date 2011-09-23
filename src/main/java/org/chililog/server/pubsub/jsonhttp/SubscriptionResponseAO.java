@@ -25,6 +25,7 @@ import java.io.PrintStream;
  * Subscription Response API JSON binding object. Encapsulates the data for subscription log entries
  */
 public class SubscriptionResponseAO {
+
     private String _messageType = "SubscriptionResponse";
     private String _messageID = "";
     private LogEntryAO _logEntry = null;
@@ -80,8 +81,7 @@ public class SubscriptionResponseAO {
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             ex.printStackTrace(ps);
             _errorStackTrace = baos.toString("UTF-8");
-        }
-        catch (Exception ex2) {
+        } catch (Exception ex2) {
             _errorStackTrace = ex.toString();
         }
     }

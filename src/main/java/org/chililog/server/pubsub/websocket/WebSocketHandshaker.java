@@ -35,6 +35,7 @@ import org.jboss.netty.handler.codec.http.HttpHeaders.Values;
  * 
  */
 public class WebSocketHandshaker {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(WebSocketHandshaker.class);
 
     private String webSocketLocation;
@@ -65,8 +66,7 @@ public class WebSocketHandshaker {
     public void executeOpeningHandshake(ChannelHandlerContext ctx, HttpRequest req) throws NoSuchAlgorithmException {
         if (isHybi10WebSocketRequest(req)) {
             // upgradeResponse08(req, res);
-        }
-        else {
+        } else {
             executeOpeningHandshake00(ctx, req);
         }
     }
@@ -74,8 +74,7 @@ public class WebSocketHandshaker {
     public void executeClosingHandshake(ChannelHandlerContext ctx, WebSocketFrame frame) {
         if (this.version == WebSocketVersion.HYBI08) {
             // upgradeResponse08(req, res);
-        }
-        else {
+        } else {
             executeClosingHandshake00(ctx, frame);
         }
     }
@@ -179,8 +178,7 @@ public class WebSocketHandshaker {
             input.writeLong(c);
             ChannelBuffer output = ChannelBuffers.wrappedBuffer(MessageDigest.getInstance("MD5").digest(input.array()));
             res.setContent(output);
-        }
-        else {
+        } else {
             // Old Hixie 75 handshake method with no challenge:
             res.addHeader(WEBSOCKET_ORIGIN, req.getHeader(ORIGIN));
             res.addHeader(WEBSOCKET_LOCATION, this.webSocketLocation);

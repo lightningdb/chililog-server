@@ -39,6 +39,7 @@ import com.mongodb.MongoException;
  * 
  */
 public class UserController extends Controller {
+
     public static final String MONGODB_COLLECTION_NAME = "users";
 
     /**
@@ -55,6 +56,7 @@ public class UserController extends Controller {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final UserController INSTANCE = new UserController();
     }
 
@@ -122,8 +124,7 @@ public class UserController extends Controller {
                 return null;
             }
             return new UserBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -175,8 +176,7 @@ public class UserController extends Controller {
                 return null;
             }
             return new UserBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -228,8 +228,7 @@ public class UserController extends Controller {
                 return null;
             }
             return new UserBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }

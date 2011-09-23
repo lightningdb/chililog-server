@@ -47,6 +47,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class InternalLog4JAppenderTest {
+
     private DB _db;
     private String _machineName;
 

@@ -20,6 +20,7 @@ import java.util.*;
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class Stomp {
+
     /**
      * A map of channel => listener pairs. String => Listener.
      */
@@ -496,8 +497,7 @@ public abstract class Stomp {
                 _receipts.wait(timeout);
             if (_receipts.contains(receipt_id)) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -531,49 +531,41 @@ public abstract class Stomp {
                         Listener l = (Listener) i.next();
                         try {
                             l.message(h, b);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             // Don't let listeners screw us over by throwing exceptions
                         }
                     }
-                }
-                else {
+                } else {
                     _queue.push(new Message(c, h, b));
                 }
             }
 
-        }
-        else if (c == Command.CONNECTED) {
+        } else if (c == Command.CONNECTED) {
             _connected = true;
 
-        }
-        else if (c == Command.RECEIPT) {
+        } else if (c == Command.RECEIPT) {
             _receipts.add(h.get("receipt-id"));
             synchronized (_receipts) {
                 _receipts.notify();
             }
 
-        }
-        else if (c == Command.ERROR) {
+        } else if (c == Command.ERROR) {
             if (_error_listeners.size() > 0) {
                 synchronized (_error_listeners) {
                     for (Iterator i = _error_listeners.iterator(); i.hasNext();) {
                         try {
                             ((Listener) i.next()).message(h, b);
-                        }
-                        catch (Exception e) {
+                        } catch (Exception e) {
                             // Don't let listeners screw us over by throwing exceptions
                         }
                     }
                 }
-            }
-            else {
+            } else {
                 synchronized (_errors) {
                     _errors.add(b);
                 }
             }
-        }
-        else {
+        } else {
             // FIXME
         }
     }

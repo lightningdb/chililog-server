@@ -22,6 +22,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.junit.Test;
 
 public class Log4JLoggerTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(Log4JLoggerTest.class);
 
     @Test

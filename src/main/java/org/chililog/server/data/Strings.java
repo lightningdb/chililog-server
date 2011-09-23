@@ -25,6 +25,7 @@ package org.chililog.server.data;
  * 
  */
 public class Strings {
+
     public static final String PREFIX = "Data.";
     public static final String MONGODB_AUTHENTICATION_ERROR = PREFIX + "MongoDB.AuthenticationError";
     public static final String MONGODB_CONNECTION_ERROR = PREFIX + "MongoDB.ConnectionError";

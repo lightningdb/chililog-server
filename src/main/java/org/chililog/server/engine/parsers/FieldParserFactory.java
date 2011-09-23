@@ -30,6 +30,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class FieldParserFactory {
+
     /**
      * Instances the correct field parser for the field. The parser will convert strings into strongly typed field
      * values.

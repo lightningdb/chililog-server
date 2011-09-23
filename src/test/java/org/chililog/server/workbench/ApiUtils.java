@@ -38,6 +38,7 @@ import org.chililog.server.workbench.workers.AuthenticationAO.ExpiryType;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 
 public class ApiUtils {
+
     /**
      * Builds a HTTP connection ready for sending to server
      * 
@@ -101,8 +102,7 @@ public class ApiUtils {
         try {
             if (httpConn.getInputStream() == null) {
                 return null;
-            }
-            else {
+            } else {
                 StringBuilder sb = new StringBuilder();
                 BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getInputStream()));
                 String str;
@@ -113,8 +113,7 @@ public class ApiUtils {
 
                 return sb.toString();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return getResponseErrorContent(httpConn);
         }
     }
@@ -129,8 +128,7 @@ public class ApiUtils {
     public static String getResponseErrorContent(HttpURLConnection httpConn) throws IOException {
         if (httpConn.getErrorStream() == null) {
             return null;
-        }
-        else {
+        } else {
             StringBuilder sb = new StringBuilder();
             BufferedReader in = new BufferedReader(new InputStreamReader(httpConn.getErrorStream()));
             String str;
@@ -161,8 +159,7 @@ public class ApiUtils {
             }
             if (name == null) {
                 responseCode = value;
-            }
-            else {
+            } else {
                 headers.put(name, value);
             }
         }

@@ -48,6 +48,7 @@ import com.mongodb.DB;
  * </p>
  */
 public class UsersWorker extends Worker {
+
     public static final String USERNAME_URI_QUERYSTRING_PARAMETER_NAME = "username";
     public static final String EMAIL_ADDRESS_URI_QUERYSTRING_PARAMETER_NAME = "email";
     public static final String ROLE_URI_QUERYSTRING_PARAMETER_NAME = "role";
@@ -91,8 +92,7 @@ public class UsersWorker extends Worker {
 
             // Allow GET
             return new ApiResult();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.UNAUTHORIZED, ex);
         }
 
@@ -120,8 +120,7 @@ public class UsersWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -144,8 +143,7 @@ public class UsersWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), null, null);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -174,8 +172,7 @@ public class UsersWorker extends Worker {
 
             // Return response
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new UserAO(userBO));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -224,15 +221,13 @@ public class UsersWorker extends Worker {
                     }
                     return result;
                 }
-            }
-            else {
+            } else {
                 // Get specific user
                 String id = this.getUriPathParameters()[ID_URI_PATH_PARAMETER_INDEX];
                 responseContent = new UserAO(UserController.getInstance().get(db, new ObjectId(id)), isSysAdmin);
             }
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, responseContent);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }

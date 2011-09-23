@@ -14,6 +14,7 @@ import org.chililog.server.common.Log4JLogger;
  */
 @SuppressWarnings({ "rawtypes", "unchecked", "unused" })
 public class Receiver extends Thread {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(Receiver.class);
 
     private MessageReceiver _receiver;
@@ -34,8 +35,7 @@ public class Receiver extends Thread {
         try {
             _stream = input;
             _input = new BufferedReader(new InputStreamReader(input, Command.ENCODING));
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             // No, no, no. Stupid Java.
         }
     }
@@ -72,51 +72,43 @@ public class Receiver extends Thread {
 
                             try {
                                 _receiver.receive(c, headers, body.toString());
-                            }
-                            catch (Exception e) {
+                            } catch (Exception e) {
                                 // We ignore these errors; we don't want client code
                                 // crashing our listener.
                             }
-                        }
-                        catch (Error e) {
+                        } catch (Error e) {
                             try {
                                 while (_input.read() != 0)
                                     ;
-                            }
-                            catch (Exception ex) {
+                            } catch (Exception ex) {
                             }
                             try {
                                 _receiver.receive(Command.ERROR, null, e.getMessage() + "\n");
-                            }
-                            catch (Exception ex) {
+                            } catch (Exception ex) {
                                 // We ignore these errors; we don't want client code
                                 // crashing our listener.
                             }
                         }
                     }
-                }
-                else {
+                } else {
                     if (_receiver.isClosed()) {
                         _receiver.disconnect();
                         return;
                     }
                     try {
                         Thread.sleep(200);
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         interrupt();
                     }
                 }
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             // What do we do with IO Exceptions? Report it to the receiver, and
             // exit the thread.
             System.err.println("Stomp exiting because of exception");
             e.printStackTrace(System.err);
             _receiver.receive(Command.ERROR, null, e.getMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.err.println("Stomp exiting because of exception");
             e.printStackTrace(System.err);
             _receiver.receive(Command.ERROR, null, e.getMessage());

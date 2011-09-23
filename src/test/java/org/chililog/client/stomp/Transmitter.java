@@ -15,6 +15,7 @@ import org.chililog.server.common.Log4JLogger;
  */
 @SuppressWarnings("rawtypes")
 class Transmitter {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(Transmitter.class);
 
     public static void transmit(Command c, Map h, String b, java.io.OutputStream out) throws IOException {

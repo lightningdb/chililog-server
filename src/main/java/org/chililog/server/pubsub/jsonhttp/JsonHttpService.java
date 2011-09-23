@@ -85,6 +85,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
  * 
  */
 public class JsonHttpService {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpService.class);
     private static final ChannelGroup _allChannels = new DefaultChannelGroup("PubSubJsonHttpWebServerManager");
     private ChannelFactory _channelFactory = null;
@@ -104,6 +105,7 @@ public class JsonHttpService {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final JsonHttpService INSTANCE = new JsonHttpService();
     }
 
@@ -154,8 +156,7 @@ public class JsonHttpService {
             if (StringUtils.isBlank(h)) {
                 if (hosts.length == 1) {
                     h = "0.0.0.0";
-                }
-                else {
+                } else {
                     continue;
                 }
             }

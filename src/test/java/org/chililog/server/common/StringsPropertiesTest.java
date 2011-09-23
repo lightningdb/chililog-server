@@ -30,6 +30,7 @@ import org.junit.Test;
  * 
  */
 public class StringsPropertiesTest {
+
     @Test
     public void testOK() {
         String s = StringsProperties.getInstance().getString("Test");

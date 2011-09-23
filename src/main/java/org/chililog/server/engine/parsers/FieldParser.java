@@ -33,6 +33,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public abstract class FieldParser {
+
     private RepositoryFieldConfigBO _repoFieldInfo;
     private Pattern _preparsePattern = null;
     private int _preparsePatternGroup = 1;

@@ -45,6 +45,7 @@ import com.mongodb.DB;
  * </p>
  */
 public class AuthenticationWorker extends Worker {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(AuthenticationWorker.class);
 
     public static final String ACTION_URI_QUERYSTRING_PARAMETER_NAME = "action";
@@ -125,8 +126,7 @@ public class AuthenticationWorker extends Worker {
                 }
 
                 user = this.getAuthenticatedUser();
-            }
-            else {
+            } else {
                 // Check request data
                 if (StringUtils.isBlank(requestApiObject.getUsername())) {
                     return new ApiResult(HttpResponseStatus.BAD_REQUEST, new ChiliLogException(
@@ -168,12 +168,10 @@ public class AuthenticationWorker extends Worker {
                 if (user.getStatus() == Status.DISABLED) {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_ACCOUNT_DISABLED_ERROR));
-                }
-                else if (user.getStatus() == Status.LOCKED) {
+                } else if (user.getStatus() == Status.LOCKED) {
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_ACCOUNT_LOCKED_ERROR));
-                }
-                else {
+                } else {
                     // Catch all just in-case
                     return new ApiResult(HttpResponseStatus.UNAUTHORIZED, new ChiliLogException(
                             Strings.AUTHENTICAITON_BAD_USERNAME_PASSWORD_ERROR));
@@ -186,8 +184,7 @@ public class AuthenticationWorker extends Worker {
                 if (role.equals(UserBO.SYSTEM_ADMINISTRATOR_ROLE_NAME)) {
                     allowed = true;
                     break;
-                }
-                else if (role.startsWith(UserBO.REPOSITORY_ROLE_PREFIX)) {
+                } else if (role.startsWith(UserBO.REPOSITORY_ROLE_PREFIX)) {
                     if (role.endsWith(UserBO.REPOSITORY_ADMINISTRATOR_ROLE_SUFFIX)
                             || role.endsWith(UserBO.REPOSITORY_WORKBENCH_ROLE_SUFFIX)) {
                         allowed = true;
@@ -213,8 +210,7 @@ public class AuthenticationWorker extends Worker {
 
             // Return response
             return new ApiResult(token, JSON_CONTENT_TYPE, new AuthenticatedUserAO(user));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }
@@ -242,8 +238,7 @@ public class AuthenticationWorker extends Worker {
 
                 // Update profile details
                 requestApiObject.toBO(user);
-            }
-            else if (action.equalsIgnoreCase(CHANGE_PASSWORD_OPERATION)) {
+            } else if (action.equalsIgnoreCase(CHANGE_PASSWORD_OPERATION)) {
                 AuthenticatedUserPasswordAO requestApiObject = JsonTranslator.getInstance().fromJson(
                         bytesToString((byte[]) requestContent), AuthenticatedUserPasswordAO.class);
 
@@ -269,8 +264,7 @@ public class AuthenticationWorker extends Worker {
 
                 // Update
                 user.setPassword(requestApiObject.getNewPassword(), true);
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException(String.format("Action '%s' not supported.", action));
             }
 
@@ -280,8 +274,7 @@ public class AuthenticationWorker extends Worker {
 
             // Return updated user details
             return new ApiResult(this.getAuthenticationToken(), JSON_CONTENT_TYPE, new AuthenticatedUserAO(user));
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return new ApiResult(HttpResponseStatus.BAD_REQUEST, ex);
         }
     }

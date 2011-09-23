@@ -33,6 +33,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class IntegerFieldParser extends FieldParser {
+
     private Integer _defaultValue = null;
     private NumberFormat _numberFormatter = null;
 
@@ -57,8 +58,7 @@ public class IntegerFieldParser extends FieldParser {
         if (!StringUtils.isBlank(d)) {
             if (_numberFormatter == null) {
                 _defaultValue = Integer.parseInt(d);
-            }
-            else {
+            } else {
                 _defaultValue = _numberFormatter.parse(d).intValue();
             }
         }
@@ -98,24 +98,20 @@ public class IntegerFieldParser extends FieldParser {
             }
             if (_numberFormatter == null) {
                 return Integer.parseInt(value);
-            }
-            else {
+            } else {
                 return _numberFormatter.parse(value).intValue();
             }
-        }
-        catch (ParseException ex) {
+        } catch (ParseException ex) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex;
-        }
-        catch (NumberFormatException ex2) {
+        } catch (NumberFormatException ex2) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }
             throw ex2;
-        }
-        catch (NullPointerException ex3) {
+        } catch (NullPointerException ex3) {
             if (_defaultValue != null) {
                 return _defaultValue;
             }

@@ -25,6 +25,7 @@ import java.io.PrintStream;
  * Publication Response API JSON binding object. Encapsulates the data for publishing log entries
  */
 public class PublicationResponseAO {
+
     private String _messageType = "PublicationResponse";
     private String _messageID = "";
     private boolean _success = true;
@@ -66,8 +67,7 @@ public class PublicationResponseAO {
             PrintStream ps = new PrintStream(baos, true, "UTF-8");
             ex.printStackTrace(ps);
             _errorStackTrace = baos.toString("UTF-8");
-        }
-        catch (Exception ex2) {
+        } catch (Exception ex2) {
             _errorStackTrace = ex.toString();
         }
     }

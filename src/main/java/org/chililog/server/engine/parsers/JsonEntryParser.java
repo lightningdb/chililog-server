@@ -52,6 +52,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class JsonEntryParser extends EntryParser {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonEntryParser.class);
 
     private Pattern _datePattern = null;
@@ -122,12 +123,10 @@ public class JsonEntryParser extends EntryParser {
                 _longNumberPattern = Pattern.compile(s);
             }
 
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             if (ex instanceof ChiliLogException) {
                 throw (ChiliLogException) ex;
-            }
-            else {
+            } else {
                 throw new ChiliLogException(Strings.PARSER_INITIALIZATION_ERROR, repoParserInfo.getName(),
                         repoInfo.getName(), ex.getMessage());
             }
@@ -163,8 +162,7 @@ public class JsonEntryParser extends EntryParser {
             DBObject fieldsDBObject = new BasicDBObject();
             try {
                 fieldsDBObject = (DBObject) parser.parse();
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 switch (this.getRepoParserInfo().getParseFieldErrorHandling()) {
                     case SkipField:
                     case SkipEntry:
@@ -184,8 +182,7 @@ public class JsonEntryParser extends EntryParser {
 
             return new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords, message,
                     fieldsDBObject);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             this.setLastParseError(ex);
             _logger.error(ex, "Error parsing JSON entry: " + message);
             return null;

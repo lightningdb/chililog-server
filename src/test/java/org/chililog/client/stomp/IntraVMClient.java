@@ -15,6 +15,7 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public class IntraVMClient extends Stomp implements Listener, Authenticatable {
+
     private Server _server;
 
     protected IntraVMClient(Server server) {

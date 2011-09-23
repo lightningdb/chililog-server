@@ -46,6 +46,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class UserTest {
+
     private static DB _db;
 
     @BeforeClass
@@ -200,8 +201,7 @@ public class UserTest {
             UserController.getInstance().save(_db, user2);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.USER_DUPLICATE_USERNAME_ERROR, ex.getErrorCode());
         }
     }
@@ -216,8 +216,7 @@ public class UserTest {
             UserController.getInstance().save(_db, user);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.MONGODB_MISSING_REQURIED_FIELD_ERROR, ex.getErrorCode());
         }
     }
@@ -239,8 +238,7 @@ public class UserTest {
             UserController.getInstance().save(_db, user2);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.USER_DUPLICATE_EMAIL_ADDRESS_ERROR, ex.getErrorCode());
         }
     }
@@ -256,8 +254,7 @@ public class UserTest {
             UserController.getInstance().save(_db, user);
 
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.USER_EMAIL_ADDRESS_FORMAT_ERROR, ex.getErrorCode());
         }
     }

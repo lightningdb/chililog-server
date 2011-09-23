@@ -36,6 +36,7 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
  * </p>
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
+
     /**
      * Constructor
      */

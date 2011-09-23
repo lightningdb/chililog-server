@@ -109,6 +109,7 @@ import org.jboss.netty.util.CharsetUtil;
  * </p>
  */
 public class StaticFileRequestHandler extends WorkbenchRequestHandler {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(StaticFileRequestHandler.class);
 
     /**
@@ -155,8 +156,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         RandomAccessFile raf;
         try {
             raf = new RandomAccessFile(file, "r");
-        }
-        catch (FileNotFoundException fnfe) {
+        } catch (FileNotFoundException fnfe) {
             sendError(ctx, e, NOT_FOUND, null);
             return;
         }
@@ -187,8 +187,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
 
             response.setContent(ChannelBuffers.copiedBuffer(buffer));
             writeFuture = ch.write(response);
-        }
-        else if (AppProperties.getInstance().getWorkbenchSslEnabled()) {
+        } else if (AppProperties.getInstance().getWorkbenchSslEnabled()) {
             // Cannot use zero-copy with HTTPS
 
             // Write the initial line and the header.
@@ -196,8 +195,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
 
             // Write chunks
             writeFuture = ch.write(new ChunkedFile(raf, 0, fileLength, 8192));
-        }
-        else {
+        } else {
             // Now that we are using Execution Handlers, we cannot do zero-copy.
             // Do as per with compression (which is what most browser will ask for)
             byte[] buffer = new byte[(int) fileLength];
@@ -236,8 +234,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         // Decode the path.
         try {
             uri = URLDecoder.decode(uri, "UTF-8");
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             uri = URLDecoder.decode(uri, "ISO-8859-1");
         }
 
@@ -358,36 +355,27 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         int idx = filePath.lastIndexOf('.');
         if (idx == -1) {
             mimeType = "application/octet-stream";
-        }
-        else {
+        } else {
             String fileExtension = filePath.substring(idx).toLowerCase();
 
             // Try common types first
             if (fileExtension.equals(".html")) {
                 mimeType = "text/html";
-            }
-            else if (fileExtension.equals(".css")) {
+            } else if (fileExtension.equals(".css")) {
                 mimeType = "text/css";
-            }
-            else if (fileExtension.equals(".js")) {
+            } else if (fileExtension.equals(".js")) {
                 mimeType = "application/javascript";
-            }
-            else if (fileExtension.equals(".gif")) {
+            } else if (fileExtension.equals(".gif")) {
                 mimeType = "image/gif";
-            }
-            else if (fileExtension.equals(".png")) {
+            } else if (fileExtension.equals(".png")) {
                 mimeType = "image/png";
-            }
-            else if (fileExtension.equals(".txt")) {
+            } else if (fileExtension.equals(".txt")) {
                 mimeType = "text/plain";
-            }
-            else if (fileExtension.equals(".xml")) {
+            } else if (fileExtension.equals(".xml")) {
                 mimeType = "application/xml";
-            }
-            else if (fileExtension.equals(".json")) {
+            } else if (fileExtension.equals(".json")) {
                 mimeType = "application/json";
-            }
-            else {
+            } else {
                 MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
                 mimeType = mimeTypesMap.getContentType(file.getPath());
             }

@@ -35,6 +35,7 @@ import java.net.URI;
  * @author <a href="http://www.pedantique.org/">Carl Bystr&ouml;m</a>
  */
 public class WebSocketClientHandler extends SimpleChannelUpstreamHandler implements WebSocketClient {
+
     private ClientBootstrap bootstrap;
     private URI url;
     private WebSocketCallback callback;

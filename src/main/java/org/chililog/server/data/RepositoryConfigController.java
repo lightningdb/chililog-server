@@ -40,6 +40,7 @@ import com.mongodb.MongoException;
  * 
  */
 public class RepositoryConfigController extends Controller {
+
     public static final String MONGODB_COLLECTION_NAME = "repo";
 
     /**
@@ -56,6 +57,7 @@ public class RepositoryConfigController extends Controller {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final RepositoryConfigController INSTANCE = new RepositoryConfigController();
     }
 
@@ -123,8 +125,7 @@ public class RepositoryConfigController extends Controller {
                 return null;
             }
             return new RepositoryConfigBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -176,8 +177,7 @@ public class RepositoryConfigController extends Controller {
                 return null;
             }
             return new RepositoryConfigBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }

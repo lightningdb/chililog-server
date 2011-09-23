@@ -42,6 +42,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
  * 
  */
 public class ApiResult {
+
     private HttpResponseStatus _responseStatus = HttpResponseStatus.OK;
 
     private String _responseContentType = Worker.JSON_CONTENT_TYPE;
@@ -102,16 +103,13 @@ public class ApiResult {
             if (content instanceof byte[]) {
                 _responseContent = content;
                 _responseContentIOStyle = ContentIOStyle.ByteArray;
-            }
-            else if (content instanceof File) {
+            } else if (content instanceof File) {
                 _responseContent = content;
                 _responseContentIOStyle = ContentIOStyle.File;
-            }
-            else if (contentType != null && contentType.equals(Worker.JSON_CONTENT_TYPE)) {
+            } else if (contentType != null && contentType.equals(Worker.JSON_CONTENT_TYPE)) {
                 // Try to turn it into JSON
                 setResponseContentToJson(content);
-            }
-            else {
+            } else {
                 throw new UnsupportedOperationException("Cannot handled content of type "
                         + content.getClass().getName());
             }
@@ -197,16 +195,14 @@ public class ApiResult {
 
             if (contentToJsonify == null) {
                 _responseContent = null;
-            }
-            else {
+            } else {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 PrintStream ps = new PrintStream(baos, true, Worker.JSON_CHARSET);
                 JsonTranslator.getInstance().toJson(contentToJsonify, ps);
                 ps.close();
                 _responseContent = baos.toByteArray();
             }
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             // We should not get UnsupportedEncodingException ... but you never know.
             // Just throw again
             throw new RuntimeException(ex.getMessage(), ex);

@@ -45,6 +45,7 @@ public class WebSocketClientFactory {
         final WebSocketClientHandler clientHandler = new WebSocketClientHandler(bootstrap, url, callback);
 
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+
             public ChannelPipeline getPipeline() throws Exception {
                 ChannelPipeline pipeline = Channels.pipeline();
                 pipeline.addLast("decoder", new HttpResponseDecoder());

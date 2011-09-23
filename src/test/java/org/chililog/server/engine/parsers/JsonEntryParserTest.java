@@ -53,6 +53,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class JsonEntryParserTest {
+
     private static DB _db;
 
     @BeforeClass

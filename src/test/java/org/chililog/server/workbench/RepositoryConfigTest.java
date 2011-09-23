@@ -65,6 +65,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class RepositoryConfigTest {
+
     private static DB _db;
     private static String _systemAdminAuthToken;
     private static String _repoAdminAuthToken;

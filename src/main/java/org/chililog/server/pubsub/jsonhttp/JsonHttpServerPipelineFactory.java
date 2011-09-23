@@ -36,6 +36,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * </p>
  */
 public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
+
     /**
      * Constructor
      */

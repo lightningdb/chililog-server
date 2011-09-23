@@ -30,6 +30,7 @@ import org.chililog.server.engine.Repository;
  * 
  */
 public class RepositoryStatusAO extends AO {
+
     private String _documentID;
 
     private Long _documentVersion;

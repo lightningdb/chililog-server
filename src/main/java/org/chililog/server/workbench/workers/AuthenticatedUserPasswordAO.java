@@ -27,6 +27,7 @@ package org.chililog.server.workbench.workers;
  * 
  */
 public class AuthenticatedUserPasswordAO extends AO {
+
     private String _documentID;
     private String _oldPassword;
     private String _newPassword;

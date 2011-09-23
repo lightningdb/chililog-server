@@ -54,6 +54,7 @@ import com.mongodb.DBRefBase;
  * </p>
  */
 public class MongoJsonSerializer {
+
     /**
      * Serializes an object into it's JSON form
      * 

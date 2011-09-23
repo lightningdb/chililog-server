@@ -38,6 +38,7 @@ import org.junit.Test;
  * 
  */
 public class AppPropertiesTest {
+
     private static Logger _logger = Logger.getLogger(AppPropertiesTest.class);
 
     @BeforeClass

@@ -22,6 +22,7 @@ package org.chililog.server.pubsub.jsonhttp;
  * Subscription Request API JSON binding object. Encapsulates the data for subscribing to log entries in a repository
  */
 public class SubscriptionRequestAO {
+
     private String _messageType = "SubscriptionRequest";
     private String _messageID = "";
     private String _repositoryName;

@@ -25,6 +25,7 @@ import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.Configuration;
 
 public class JAASConfiguration extends Configuration {
+
     private String _loginModuleClassName;
 
     /**

@@ -11,6 +11,7 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public interface MessageReceiver {
+
     public void receive(Command c, Map h, String b);
 
     public void disconnect();

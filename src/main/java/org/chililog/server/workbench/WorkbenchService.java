@@ -96,6 +96,7 @@ import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
  * 
  */
 public class WorkbenchService {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(WorkbenchService.class);
     private static final ChannelGroup _allChannels = new DefaultChannelGroup("WorkbenchWebServerManager");
     private ChannelFactory _channelFactory = null;
@@ -114,6 +115,7 @@ public class WorkbenchService {
      * See http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final WorkbenchService INSTANCE = new WorkbenchService();
     }
 
@@ -165,8 +167,7 @@ public class WorkbenchService {
             if (StringUtils.isBlank(h)) {
                 if (hosts.length == 1) {
                     h = "0.0.0.0";
-                }
-                else {
+                } else {
                     continue;
                 }
             }

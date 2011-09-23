@@ -45,16 +45,14 @@ public class WebSocket00FrameEncoder extends OneToOneEncoder {
                 encoded.writeBytes(data, data.readerIndex(), data.readableBytes());
                 encoded.writeByte((byte) 0xFF);
                 return encoded;
-            }
-            else if (frame.getType() == WebSocketFrameType.CLOSE) {
+            } else if (frame.getType() == WebSocketFrameType.CLOSE) {
                 // Close frame
                 ChannelBuffer data = frame.getBinaryData();
                 ChannelBuffer encoded = channel.getConfig().getBufferFactory().getBuffer(data.order(), 2);
                 encoded.writeByte((byte) 0xFF);
                 encoded.writeByte((byte) 0x00);
                 return encoded;
-            }
-            else {
+            } else {
                 // Binary frame
                 ChannelBuffer data = frame.getBinaryData();
                 int dataLen = data.readableBytes();
@@ -72,19 +70,16 @@ public class WebSocket00FrameEncoder extends OneToOneEncoder {
                     if (b2 == 0) {
                         if (b3 == 0) {
                             encoded.writeByte(b4);
-                        }
-                        else {
+                        } else {
                             encoded.writeByte(b3 | 0x80);
                             encoded.writeByte(b4);
                         }
-                    }
-                    else {
+                    } else {
                         encoded.writeByte(b2 | 0x80);
                         encoded.writeByte(b3 | 0x80);
                         encoded.writeByte(b4);
                     }
-                }
-                else {
+                } else {
                     encoded.writeByte(b1 | 0x80);
                     encoded.writeByte(b2 | 0x80);
                     encoded.writeByte(b3 | 0x80);

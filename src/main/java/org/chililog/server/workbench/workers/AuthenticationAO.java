@@ -27,6 +27,7 @@ package org.chililog.server.workbench.workers;
  * 
  */
 public class AuthenticationAO {
+
     private String _username;
 
     private String _password;

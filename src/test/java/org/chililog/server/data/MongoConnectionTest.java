@@ -49,6 +49,7 @@ import com.mongodb.DB;
  * 
  */
 public class MongoConnectionTest {
+
     @Test
     public void testOK() throws Exception {
         DB db = MongoConnection.getInstance().getConnection();

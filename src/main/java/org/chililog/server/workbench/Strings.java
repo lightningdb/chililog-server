@@ -25,6 +25,7 @@ package org.chililog.server.workbench;
  * 
  */
 public class Strings {
+
     public static final String PREFIX = "Workbench.";
     public static final String API_NOT_FOUND_ERROR = PREFIX + "ApiNotFoundError";
     public static final String URI_PATH_PARAMETER_ERROR = PREFIX + "UriPathParameterError";

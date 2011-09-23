@@ -53,6 +53,7 @@ import org.apache.commons.lang.WordUtils;
  * @since 1.0
  */
 public class SystemProperties {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(SystemProperties.class);
 
     /**
@@ -69,6 +70,7 @@ public class SystemProperties {
      * @see http://en.wikipedia.org/wiki/Singleton_pattern
      */
     private static class SingletonHolder {
+
         public static final SystemProperties INSTANCE = new SystemProperties();
     }
 
@@ -85,8 +87,7 @@ public class SystemProperties {
     private SystemProperties() {
         try {
             loadProperties();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             _logger.error(e, "Error loading system properties: " + e.getMessage());
             System.exit(1);
         }
@@ -123,8 +124,7 @@ public class SystemProperties {
             Field cacheField = null;
             try {
                 cacheField = cls.getDeclaredField(cacheFieldName);
-            }
-            catch (NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 continue;
             }
 

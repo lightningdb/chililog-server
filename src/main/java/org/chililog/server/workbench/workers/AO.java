@@ -30,6 +30,7 @@ import org.chililog.server.workbench.Strings;
  * 
  */
 public abstract class AO {
+
     /**
      * Performs optimistic locking checks
      * 

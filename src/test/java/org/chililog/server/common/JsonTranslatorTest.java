@@ -11,6 +11,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.junit.Test;
 
 public class JsonTranslatorTest {
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonTranslatorTest.class);
 
     @Test
@@ -44,6 +45,7 @@ public class JsonTranslatorTest {
      * Inner classes have to be static before GSON can deserialize
      */
     public static class TestClass {
+
         private String _stringWithBigName = "hello";
         private boolean _boolean = false;
         private int _integer = 1000;

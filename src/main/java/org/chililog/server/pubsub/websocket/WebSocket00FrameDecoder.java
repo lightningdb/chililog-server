@@ -67,8 +67,7 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
         if ((type & 0x80) == 0x80) {
             // If the MSB on type is set, decode the frame length
             return decodeBinaryFrame(type, buffer);
-        }
-        else {
+        } else {
             // Decode a 0xff terminated UTF-8 string
             return decodeTextFrame(type, buffer);
         }
@@ -109,8 +108,7 @@ public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
             if (rbytes > maxFrameSize) {
                 // Frame length exceeded the maximum
                 throw new TooLongFrameException();
-            }
-            else {
+            } else {
                 // Wait until more data is received
                 return null;
             }

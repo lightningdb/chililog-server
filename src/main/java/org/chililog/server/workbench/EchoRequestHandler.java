@@ -55,6 +55,7 @@ import org.jboss.netty.util.CharsetUtil;
  * </p>
  */
 public class EchoRequestHandler extends WorkbenchRequestHandler {
+
     private HttpRequest _request;
 
     private boolean _readingChunks = false;
@@ -104,16 +105,14 @@ public class EchoRequestHandler extends WorkbenchRequestHandler {
 
             if (request.isChunked()) {
                 _readingChunks = true;
-            }
-            else {
+            } else {
                 ChannelBuffer content = request.getContent();
                 if (content.readable()) {
                     buf.append("CONTENT: " + content.toString(CharsetUtil.UTF_8) + "\r\n");
                 }
                 writeResponse(e);
             }
-        }
-        else {
+        } else {
             HttpChunk chunk = (HttpChunk) e.getMessage();
             if (chunk.isLast()) {
                 _readingChunks = false;
@@ -131,8 +130,7 @@ public class EchoRequestHandler extends WorkbenchRequestHandler {
                 }
 
                 writeResponse(e);
-            }
-            else {
+            } else {
                 buf.append("CHUNK: " + chunk.getContent().toString(CharsetUtil.UTF_8) + "\r\n");
             }
         }

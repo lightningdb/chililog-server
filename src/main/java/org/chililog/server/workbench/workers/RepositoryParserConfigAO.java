@@ -36,6 +36,7 @@ import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling
  * 
  */
 public class RepositoryParserConfigAO extends AO {
+
     private String _name;
     private AppliesTo _appliesTo = AppliesTo.None;
     private String _appliesToSourceFilter;
@@ -71,8 +72,7 @@ public class RepositoryParserConfigAO extends AO {
 
         if (repoParserConfig.getFields() == null || repoParserConfig.getFields().isEmpty()) {
             _fields = null;
-        }
-        else {
+        } else {
             ArrayList<RepositoryFieldConfigAO> fieldList = new ArrayList<RepositoryFieldConfigAO>();
             for (RepositoryFieldConfigBO fieldInfo : repoParserConfig.getFields()) {
                 fieldList.add(new RepositoryFieldConfigAO(fieldInfo));
@@ -82,8 +82,7 @@ public class RepositoryParserConfigAO extends AO {
 
         if (repoParserConfig.getProperties() == null || repoParserConfig.getProperties().isEmpty()) {
             _properties = null;
-        }
-        else {
+        } else {
             ArrayList<RepositoryPropertyConfigAO> propertyList = new ArrayList<RepositoryPropertyConfigAO>();
             for (Entry<String, String> e : repoParserConfig.getProperties().entrySet()) {
                 propertyList.add(new RepositoryPropertyConfigAO(e.getKey(), e.getValue()));

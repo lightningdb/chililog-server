@@ -11,6 +11,7 @@ import java.util.Map;
  */
 @SuppressWarnings("rawtypes")
 public class Message {
+
     private Command _command;
     private Map _headers;
     private String _body;

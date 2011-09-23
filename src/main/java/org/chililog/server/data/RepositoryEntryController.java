@@ -41,6 +41,7 @@ import com.mongodb.MongoException;
  * 
  */
 public class RepositoryEntryController extends Controller {
+
     private RepositoryConfigBO _repoInfo = null;
     private String _mongoDBCollectionName = null;
 
@@ -129,8 +130,7 @@ public class RepositoryEntryController extends Controller {
                 return null;
             }
             return new RepositoryEntryBO(dbo);
-        }
-        catch (MongoException ex) {
+        } catch (MongoException ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -196,8 +196,7 @@ public class RepositoryEntryController extends Controller {
             }
 
             return list;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -225,8 +224,7 @@ public class RepositoryEntryController extends Controller {
             DBObject conditions = criteria.getConditionsDbObject();
 
             return coll.find(conditions).count();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -266,8 +264,7 @@ public class RepositoryEntryController extends Controller {
             DBObject conditions = criteria.getConditionsDbObject();
 
             return coll.distinct(fieldName, conditions);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }
@@ -299,8 +296,7 @@ public class RepositoryEntryController extends Controller {
 
             return coll
                     .group(fields, conditions, initial, criteria.getReduceFunction(), criteria.getFinalizeFunction());
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw new ChiliLogException(ex, Strings.MONGODB_QUERY_ERROR, ex.getMessage());
         }
     }

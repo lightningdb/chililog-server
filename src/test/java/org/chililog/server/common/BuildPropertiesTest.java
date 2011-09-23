@@ -37,6 +37,7 @@ import org.junit.Test;
  * 
  */
 public class BuildPropertiesTest {
+
     private static Logger _logger = Logger.getLogger(BuildPropertiesTest.class);
 
     @BeforeClass

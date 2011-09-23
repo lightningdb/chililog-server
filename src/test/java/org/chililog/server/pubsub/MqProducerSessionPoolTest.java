@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class MqProducerSessionPoolTest {
+
     @BeforeClass
     public static void classSetup() throws Exception {
         MqService.getInstance().start();
@@ -53,8 +54,7 @@ public class MqProducerSessionPoolTest {
         try {
             p = pool.getPooled();
             fail("Exception expected");
-        }
-        catch (ChiliLogException ex) {
+        } catch (ChiliLogException ex) {
             assertEquals(Strings.GET_POOLED_PUBLISHER_SESSION_TIMEOUT_ERROR, ex.getErrorCode());
         }
     }

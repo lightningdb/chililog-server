@@ -45,6 +45,7 @@ import com.mongodb.DBObject;
  * 
  */
 public class JsonWebSocketTest {
+
     private static DB _db;
     private static RepositoryConfigBO _repoInfo;
 
@@ -796,6 +797,7 @@ public class JsonWebSocketTest {
      * 
      */
     public static class PublishThread implements Runnable {
+
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishThread.class);
 
         public void run() {
@@ -814,8 +816,7 @@ public class JsonWebSocketTest {
 
                 // Publish
                 sendPublicshRequest(client, callbackHandler, "PublishThread" + Thread.currentThread().getName(), 2);
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -828,6 +829,7 @@ public class JsonWebSocketTest {
      * 
      */
     public static class PublishCallbackHandler implements WebSocketCallback {
+
         private static Log4JLogger _logger = Log4JLogger.getLogger(PublishCallbackHandler.class);
 
         public boolean connected = false;
@@ -869,6 +871,7 @@ public class JsonWebSocketTest {
      * 
      */
     public static class SubscribeCallbackHandler implements WebSocketCallback {
+
         private static Log4JLogger _logger = Log4JLogger.getLogger(SubscribeCallbackHandler.class);
 
         public boolean connected = false;

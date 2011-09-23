@@ -32,6 +32,7 @@ import org.chililog.server.data.RepositoryFieldConfigBO;
  * 
  */
 public class BooleanFieldParser extends FieldParser {
+
     private Boolean _defaultValue = null;
     private Pattern _truePattern = null;
 
