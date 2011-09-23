@@ -1,27 +1,34 @@
-Special Note for Sproutcore Competition
-=======================================
 
-The Sproutcore 2 source files are in [src/main/sc2](https://github.com/chililog/chililog-server/tree/master/src/main/sc2).
+What is it?
+=====
+ChiliLog is a real time log aggregation, analysis and monitoring tool.
 
-Sproutcore functionality used in the code include:
+* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the Chililog Server for storage.
 
-* Templates
-* jQuery UI integration
-* Data Store
-* State Charts
-* DateTime
-* Bindings and custom binding transforms
-* Strings
+* ChiliLog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
 
-Other technical titbits:
-
-* Using web sockets to stream live data to browser
-* Client coded as static HTML that uses SC2 and jQuery Ajax to communicate with the server.
-* Server coded in Java
-* Server uses open source [MongoDB](http://www.mongodb.org/) to store data, [HornetQ](http://www.jboss.org/hornetq) for pubsub and [Netty](http://www.jboss.org/netty) as a web server.
+* ChiliLog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
 
-__Demo Site__
+Why?
+====
+I had a big problem the other day when my data centre provider claimed that I had exceeded by bandwidth allowance.
+
+To find out what was causing my unusually high bandwidth usage, I had to aggregate logs from the firewall, load balancer, web server and app servers. 
+
+Wow - what a pain in the arse!
+
+The logs were in different formats, the timestamps were in different timezones and I had to wait 1 week before I got access to the firewall logs.
+
+It was at this moment that the idea for ChiliLog was born.  
+
+I tried to find open source software but I could not find one that did everything I needed in one package.  Due to corporate policy, I could not use a cloud logging service.
+
+
+Demo Site
+=========
+
+** Demo site is down for maintenance at the moment. Will be up by the end of Sept 2011. ***
 
 A [demo site](http://demo.chililog.com/workbench) has been setup. You can login as admin/admin.
 
@@ -53,32 +60,6 @@ __Walk Through__
 Other pages have not been implemented. The code to perform CRUD operations with the server have been coded in app_datastore.js and app_engine.js. The HTML pages have not been done - ran out of time.
 
 
-What?
-=====
-ChiliLog is a real time log aggregation, analysis and monitoring tool.
-
-* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the Chililog Server for storage.
-
-* ChiliLog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
-
-* ChiliLog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
-
-
-Why?
-====
-I had a big problem the other day when my data centre provider claimed that I had exceeded by bandwidth allowance.
-
-To find out what was causing my unusually high bandwidth usage, I had to aggregate logs from the firewall, load balancer, web server and app servers. 
-
-Wow - what a pain in the arse!
-
-The logs were in different formats, the timestamps were in different timezones and I had to wait 1 week before I got access to the firewall logs.
-
-It was at this moment that the idea for ChiliLog was born.  
-
-I tried to find open source software but I could not find one that did everything I needed in one package.  Due to corporate policy, I could not use a cloud logging service.
-
-
 When?
 ====
 
@@ -108,4 +89,27 @@ Links
 
 * [Issues](https://github.com/chililog/server/issues)
 
+
+
+Special Note for Sproutcore Coders
+==================================
+
+The Sproutcore 2 source files are in [src/main/sc2](https://github.com/chililog/chililog-server/tree/master/src/main/sc2).
+
+Sproutcore functionality used in the code include:
+
+* Templates
+* jQuery UI integration
+* Data Store
+* State Charts
+* DateTime
+* Bindings and custom binding transforms
+* Strings
+
+Other technical titbits:
+
+* Using web sockets to stream live data to browser
+* Client coded as static HTML that uses SC2 and jQuery Ajax to communicate with the server.
+* Server coded in Java
+* Server uses open source [MongoDB](http://www.mongodb.org/) to store data, [HornetQ](http://www.jboss.org/hornetq) for pubsub and [Netty](http://www.jboss.org/netty) as a web server.
 
