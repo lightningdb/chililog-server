@@ -28,11 +28,11 @@ I tried to find open source software but I could not find one that did everythin
 Demo Site
 =========
 
-** Demo site is down for maintenance at the moment. Will be up by the end of Sept 2011. ***
+__Demo site is down for maintenance at the moment. Will be up by the end of Sept 2011.__
 
-A [demo site](http://demo.chililog.com/workbench) has been setup. You can login as admin/admin.
+[http://demo.chililog.com/workbench](http://demo.chililog.com/workbench). 
 
-It will be done by (late) Sunday night ready for you to review Monday morning. This will save you time from installing and configuring everything.
+You can login as admin/admin.
 
 If you do wish to download it and have a go, see instructions in the [wiki](https://github.com/chililog/chililog-server/wiki).
 
@@ -60,8 +60,17 @@ __Walk Through__
 Other pages have not been implemented. The code to perform CRUD operations with the server have been coded in app_datastore.js and app_engine.js. The HTML pages have not been done - ran out of time.
 
 
-When?
-====
+Technical Titbits
+=================
+
+* Using web sockets to stream live data to browser
+* Client coded as static HTML that uses SC2 and jQuery Ajax to communicate with the server.
+* Server coded in Java
+* Server uses open source [MongoDB](http://www.mongodb.org/) to store data, [HornetQ](http://www.jboss.org/hornetq) for pubsub and [Netty](http://www.jboss.org/netty) as a web server.
+
+
+Roadmap
+=======
 
 ChiliLog is in development and "un-released".
 
@@ -105,11 +114,4 @@ Sproutcore functionality used in the code include:
 * DateTime
 * Bindings and custom binding transforms
 * Strings
-
-Other technical titbits:
-
-* Using web sockets to stream live data to browser
-* Client coded as static HTML that uses SC2 and jQuery Ajax to communicate with the server.
-* Server coded in Java
-* Server uses open source [MongoDB](http://www.mongodb.org/) to store data, [HornetQ](http://www.jboss.org/hornetq) for pubsub and [Netty](http://www.jboss.org/netty) as a web server.
 
