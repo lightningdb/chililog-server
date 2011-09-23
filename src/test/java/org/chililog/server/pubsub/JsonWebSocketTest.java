@@ -352,8 +352,8 @@ public class JsonWebSocketTest {
 
         callbackHandler.messagesReceived.clear();
 
-        // Publish 20 threads each adding 2 log entries = 40 log entries in total
-        for (int i = 0; i < 20; i++) {
+        // Publish 40 threads each adding 2 log entries = 80 log entries in total
+        for (int i = 0; i < 40; i++) {
             PublishThread runnable = new PublishThread();
             Thread thread = new Thread(runnable);
             thread.start();
@@ -362,7 +362,7 @@ public class JsonWebSocketTest {
         // Wait a moment for log entry to be processed
         Thread.sleep(3000);
 
-        assertEquals(40, callbackHandler.messagesReceived.size());
+        assertEquals(80, callbackHandler.messagesReceived.size());
         response = JsonTranslator.getInstance().fromJson(callbackHandler.messagesReceived.get(0),
                 SubscriptionResponseAO.class);
         assertEquals("testSubscribeMultipleConnections", response.getMessageID());

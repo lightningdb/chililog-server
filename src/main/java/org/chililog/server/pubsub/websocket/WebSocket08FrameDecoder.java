@@ -49,7 +49,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This code was originally taken from webbit and modified.
+ * Decodes a web socket frame from wire protocol version 8 format. This code was originally taken from webbit and
+ * modified.
  * 
  * @author https://github.com/joewalnes/webbit
  */
@@ -68,21 +69,44 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
     private Byte opcode = null;
     private int currentFrameLength;
     private ChannelBuffer maskingKey;
+    private int currentPayloadBytesRead = 0;
+    private ChannelBuffer currentPayload = null;
     private List<ChannelBuffer> frames = new ArrayList<ChannelBuffer>();
+    private boolean maskedPayload = false;
+    private boolean receivedClosingHandshake = false;
 
     public static enum State {
         FRAME_START, PARSING_LENGTH, MASKING_KEY, PARSING_LENGTH_2, PARSING_LENGTH_3, PAYLOAD
     }
 
-    public WebSocket08FrameDecoder() {
+    /**
+     * Constructor
+     * 
+     * @param maskedPayload
+     *            Web socket servers must set this to true processed incoming masked payload. Client implementations
+     *            must set this to false.
+     */
+    public WebSocket08FrameDecoder(boolean maskedPayload) {
         super(State.FRAME_START);
+        this.maskedPayload = maskedPayload;
     }
 
     @Override
     protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer, State state)
             throws Exception {
+
+        // Discard all data received if closing handshake was received before.
+        if (receivedClosingHandshake) {
+            buffer.skipBytes(actualReadableBytes());
+            return new CloseWebSocketFrame();
+        }
+
         switch (state) {
             case FRAME_START:
+                currentPayloadBytesRead = 0;
+                currentFrameLength = -1;
+                currentPayload = null;
+
                 byte b = buffer.readByte();
                 byte fin = (byte) (b & 0x80);
                 byte reserved = (byte) (b & 0x70);
@@ -118,16 +142,19 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
                 checkpoint(State.PARSING_LENGTH);
             case PARSING_LENGTH:
                 b = buffer.readByte();
-                byte masked = (byte) (b & 0x80);
-                if (masked == 0) {
-                    throw new CorruptedFrameException("Unmasked frame received");
-                }
+                int length = (byte) (b);
 
-                int length = (byte) (b & 0x7F);
+                if (this.maskedPayload) {
+                    byte masked = (byte) (b & 0x80);
+                    if (masked == 0) {
+                        throw new CorruptedFrameException("Unmasked frame received");
+                    }
+                    length = (byte) (b & 0x7F);
+                }
 
                 if (length < 126) {
                     currentFrameLength = length;
-                    checkpoint(State.MASKING_KEY);
+                    checkpoint(this.maskedPayload ? State.MASKING_KEY : State.PAYLOAD);
                 } else if (length == 126) {
                     checkpoint(State.PARSING_LENGTH_2);
                 } else if (length == 127) {
@@ -136,28 +163,69 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
                 return null;
             case PARSING_LENGTH_2:
                 currentFrameLength = buffer.readShort();
-                checkpoint(State.MASKING_KEY);
+                checkpoint(this.maskedPayload ? State.MASKING_KEY : State.PAYLOAD);
                 return null;
             case PARSING_LENGTH_3:
                 currentFrameLength = buffer.readInt();
-                checkpoint(State.MASKING_KEY);
+                checkpoint(this.maskedPayload ? State.MASKING_KEY : State.PAYLOAD);
                 return null;
             case MASKING_KEY:
                 maskingKey = buffer.readBytes(4);
                 checkpoint(State.PAYLOAD);
+                return null;
             case PAYLOAD:
-                checkpoint(State.FRAME_START);
-                ChannelBuffer payload = buffer.readBytes(currentFrameLength);
-                unmask(payload);
+                // Some times, the payload may not be delivered in 1 nice packet
+                // We need to accumulate the data until we have it all
+                int rbytes = actualReadableBytes();
+                ChannelBuffer payload = null;
 
+                int willHaveReadByteCount = currentPayloadBytesRead + rbytes;
+                if (willHaveReadByteCount == currentFrameLength) {
+                    // We have all our content so proceed to process
+                    payload = buffer.readBytes(rbytes);               
+                } else if (willHaveReadByteCount < currentFrameLength) {
+                    // We don't have all our content so accumulate payload. Returning null means we will get called back
+                    payload = buffer.readBytes(rbytes);
+                    if (currentPayload == null) {
+                        currentPayload = channel.getConfig().getBufferFactory().getBuffer(currentFrameLength);
+                    }
+                    currentPayload.writeBytes(payload);
+                    currentPayloadBytesRead = currentPayloadBytesRead + rbytes;
+                    return null;
+                } else if (willHaveReadByteCount > currentFrameLength) {
+                    // We have more than what we need so read up to the end of frame
+                    // Leave the remainder in the buffer for next frame
+                    payload = buffer.readBytes(currentFrameLength - currentPayloadBytesRead);
+                }
+
+                // Now we have all the data, the next checkpoint must be the next frame
+                checkpoint(State.FRAME_START);
+
+                // Take the data that we have in this packet
+                if (currentPayload == null) {
+                    currentPayload = payload;
+                } else {
+                    currentPayload.writeBytes(payload);
+                }
+
+                // Unmask data if needed
+                if (this.maskedPayload) {
+                    unmask(currentPayload);
+                }
+
+                // Accumulate fragments
                 if (this.opcode == OPCODE_CONT) {
                     this.opcode = fragmentOpcode;
-                    frames.add(payload);
-
-                    payload = channel.getConfig().getBufferFactory().getBuffer(0);
+                    frames.add(currentPayload);
+                    
+                    int totalBytes = 0;
                     for (ChannelBuffer channelBuffer : frames) {
-                        payload.ensureWritableBytes(channelBuffer.readableBytes());
-                        payload.writeBytes(channelBuffer);
+                        totalBytes += channelBuffer.readableBytes();
+                    }
+
+                    currentPayload = channel.getConfig().getBufferFactory().getBuffer(totalBytes);
+                    for (ChannelBuffer channelBuffer : frames) {
+                        currentPayload.writeBytes(channelBuffer);
                     }
 
                     this.fragmentOpcode = null;
@@ -165,19 +233,20 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
                 }
 
                 if (this.opcode == OPCODE_TEXT) {
-                    if (payload.readableBytes() > MAX_LENGTH) {
+                    if (currentPayload.readableBytes() > MAX_LENGTH) {
                         throw new TooLongFrameException();
                     }
-                    return new TextWebSocketFrame(payload);
+                    return new TextWebSocketFrame(currentPayload);
                 } else if (this.opcode == OPCODE_BINARY) {
-                    return new BinaryWebSocketFrame(payload);
+                    return new BinaryWebSocketFrame(currentPayload);
                 } else if (this.opcode == OPCODE_PING) {
-                    return new PingWebSocketFrame(payload);
+                    return new PingWebSocketFrame(currentPayload);
                 } else if (this.opcode == OPCODE_PONG) {
-                    return new PongWebSocketFrame(payload);
+                    return new PongWebSocketFrame(currentPayload);
                 } else if (this.opcode == OPCODE_CLOSE) {
+                    this.receivedClosingHandshake = true;
                     return new CloseWebSocketFrame();
-                }else {
+                } else {
                     throw new UnsupportedOperationException("Cannot decode opcode: " + this.opcode);
                 }
             default:

@@ -38,13 +38,22 @@
 
 package org.chililog.server.pubsub.websocket;
 
+import java.nio.ByteBuffer;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 /**
- * This code was originally taken from webbit and modified.
+ * <p>
+ * Encodes a web socket frame into wire protocol version 8 format. This code was originally taken from webbit and
+ * modified.
+ * </p>
+ * <p>
+ * Currently fragmentation is not supported.  Data is always sent in 1 frame.
+ * </p>
+ * 
  * 
  * @author https://github.com/joewalnes/webbit
  */
@@ -56,14 +65,36 @@ public class WebSocket08FrameEncoder extends OneToOneEncoder {
     private static final byte OPCODE_PING = 0x9;
     private static final byte OPCODE_PONG = 0xA;
 
+    private boolean maskPayload = false;
+
+    /**
+     * Constructor
+     * 
+     * @param maskPayload
+     *            Web socket clients must set this to true to mask payload. Server implementations must set this to
+     *            false.
+     */
+    public WebSocket08FrameEncoder(boolean maskPayload) {
+        this.maskPayload = maskPayload;
+    }
+
     @Override
     protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
+
+        byte[] mask = null;
+
         if (msg instanceof WebSocketFrame) {
             WebSocketFrame frame = (WebSocketFrame) msg;
             ChannelBuffer data = frame.getBinaryData();
-            ChannelBuffer encoded = channel.getConfig().getBufferFactory()
-                    .getBuffer(data.order(), data.readableBytes() + 6);
 
+            // Create buffer with 10 extra bytes for:
+            // 1 byte opCode
+            // 5 bytes length in worst case scenario
+            // 4 bites mask
+            ChannelBuffer encoded = channel.getConfig().getBufferFactory()
+                    .getBuffer(data.order(), data.readableBytes() + 10);
+
+            // Write opcode and length
             byte opcode;
             if (frame instanceof TextWebSocketFrame) {
                 opcode = OPCODE_TEXT;
@@ -78,21 +109,41 @@ public class WebSocket08FrameEncoder extends OneToOneEncoder {
             } else {
                 throw new UnsupportedOperationException("Cannot encode frame of type: " + frame.getClass().getName());
             }
-            encoded.writeByte(0x80 | opcode);
+            encoded.writeByte(0x80 | opcode); // Fragmentation currently not supported
 
             int length = data.readableBytes();
             if (length < 126) {
-                encoded.writeByte(length);
+                byte b = (byte) (this.maskPayload ? (0x80 | (byte) length) : (byte) length);
+                encoded.writeByte(b);
             } else if (length < 65535) {
-                encoded.writeByte(126);
+                byte b = (byte) (this.maskPayload ? (0xFE) : 126);
+                encoded.writeByte(b);
                 encoded.writeShort(length);
             } else {
-                encoded.writeByte(127);
+                byte b = (byte) (this.maskPayload ? (0xFF) : 127);
+                encoded.writeByte(b);
                 encoded.writeInt(length);
             }
 
-            encoded.writeBytes(data, data.readerIndex(), data.readableBytes());
-            encoded = encoded.slice(0, encoded.writerIndex());
+            // Write payload
+            if (this.maskPayload) {
+                Integer random = (int) (Math.random() * Integer.MAX_VALUE);
+                mask = ByteBuffer.allocate(4).putInt(random).array();
+
+                encoded.writeBytes(mask);
+
+                int counter = 0;
+                while (data.readableBytes() > 0) {
+                    byte byteData = data.readByte();
+                    encoded.writeByte(byteData ^ mask[+counter++ % 4]);
+                }
+                
+                counter++;
+            } else {
+                encoded.writeBytes(data, data.readerIndex(), data.readableBytes());
+                encoded = encoded.slice(0, encoded.writerIndex());
+            }
+
             return encoded;
         }
         return msg;

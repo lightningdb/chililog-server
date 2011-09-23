@@ -63,17 +63,7 @@ public class WebSocketServerHandshaker {
     public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
     public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
     public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
-    public static final String SEC_WEBSOCKET_08_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-
-    private static final MessageDigest SHA_1;
-
-    static {
-        try {
-            SHA_1 = MessageDigest.getInstance("SHA1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new InternalError("SHA-1 not supported on this platform");
-        }
-    }
+    public static final String WEBSOCKET_08_ACCEPT_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
     /**
      * Constructor specifying the destination web socket location
@@ -198,9 +188,11 @@ public class WebSocketServerHandshaker {
             res.setStatus(HttpResponseStatus.BAD_REQUEST);
             return;
         }
-        String acceptSeed = key + SEC_WEBSOCKET_08_ACCEPT_GUID;
-        byte[] sha1 = SHA_1.digest(acceptSeed.getBytes(CharsetUtil.US_ASCII));
+        String acceptSeed = key + WEBSOCKET_08_ACCEPT_GUID;
+        byte[] sha1 = sha1(acceptSeed.getBytes(CharsetUtil.US_ASCII));
         String accept = Base64.encode(sha1);
+
+        _logger.debug("HyBi08 Server Handshake key: %s. Response: %s.", key, accept);
 
         res.setStatus(new HttpResponseStatus(101, "Switching Protocols"));
         res.addHeader(Names.UPGRADE, WEBSOCKET.toLowerCase());
@@ -208,7 +200,7 @@ public class WebSocketServerHandshaker {
         res.addHeader(SEC_WEBSOCKET_ACCEPT, accept);
         String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
         if (protocol != null) {
-            res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
+            res.addHeader(SEC_WEBSOCKET_PROTOCOL, selectProtocol(protocol));
         }
 
         ctx.getChannel().write(res);
@@ -216,8 +208,8 @@ public class WebSocketServerHandshaker {
         // Upgrade the connection and send the handshake response.
         ChannelPipeline p = ctx.getChannel().getPipeline();
         p.remove("aggregator");
-        p.replace("decoder", "wsdecoder", new WebSocket08FrameDecoder());
-        p.replace("encoder", "wsencoder", new WebSocket08FrameEncoder());
+        p.replace("decoder", "wsdecoder", new WebSocket08FrameDecoder(true));
+        p.replace("encoder", "wsencoder", new WebSocket08FrameEncoder(false));
     }
 
     /**
@@ -304,7 +296,7 @@ public class WebSocketServerHandshaker {
             res.addHeader(SEC_WEBSOCKET_LOCATION, this.webSocketURL);
             String protocol = req.getHeader(SEC_WEBSOCKET_PROTOCOL);
             if (protocol != null) {
-                res.addHeader(SEC_WEBSOCKET_PROTOCOL, protocol);
+                res.addHeader(SEC_WEBSOCKET_PROTOCOL, selectProtocol(protocol));
             }
 
             // Calculate the answer of the challenge.
@@ -325,7 +317,7 @@ public class WebSocketServerHandshaker {
             res.addHeader(WEBSOCKET_LOCATION, this.webSocketURL);
             String protocol = req.getHeader(WEBSOCKET_PROTOCOL);
             if (protocol != null) {
-                res.addHeader(WEBSOCKET_PROTOCOL, protocol);
+                res.addHeader(WEBSOCKET_PROTOCOL, selectProtocol(protocol));
             }
         }
 
@@ -352,4 +344,30 @@ public class WebSocketServerHandshaker {
         ctx.getChannel().write(frame);
     }
 
+    /**
+     * Select the protocol to support. This method can be overriden by your implementation.
+     * 
+     * @param requestProtocol
+     *            CSV of requested protocol.
+     * @return name of protocol that is supported
+     */
+    protected String selectProtocol(String requestProtocol) {
+        return requestProtocol;
+    }
+
+    /**
+     * SHA-1 hashing. Instance this we think it is not thread safe
+     * 
+     * @param bytes
+     *            byte to hash
+     * @return hashed
+     */
+    private byte[] sha1(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            return md.digest(bytes);
+        } catch (NoSuchAlgorithmException e) {
+            throw new InternalError("SHA-1 not supported on this platform");
+        }
+    }
 }

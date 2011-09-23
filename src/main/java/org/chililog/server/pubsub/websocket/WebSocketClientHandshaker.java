@@ -24,6 +24,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import org.chililog.server.common.Log4JLogger;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -44,6 +45,8 @@ import org.jboss.netty.util.CharsetUtil;
  */
 public class WebSocketClientHandshaker {
 
+    private static Log4JLogger _logger = Log4JLogger.getLogger(WebSocketClientHandshaker.class);
+
     public static final String SEC_WEBSOCKET_VERSION = "Sec-WebSocket-Version";
     public static final String SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
     public static final String SEC_WEBSOCKET_ACCEPT = "Sec-WebSocket-Accept";
@@ -57,7 +60,7 @@ public class WebSocketClientHandshaker {
 
     private String expectedChallengeResponseString = null;
     private byte[] expectedChallengeResponseBytes = null;
-    
+
     private String protocol = null;
 
     /**
@@ -140,7 +143,7 @@ public class WebSocketClientHandshaker {
     public boolean isOpeningHandshakeCompleted() {
         return openningHandshakeCompleted;
     }
-    
+
     /**
      * <p>
      * Sends the opening request to the server:
@@ -168,15 +171,17 @@ public class WebSocketClientHandshaker {
         if (this.webSocketURL.getQuery() != null && this.webSocketURL.getQuery().length() > 0) {
             path = this.webSocketURL.getPath() + "?" + this.webSocketURL.getQuery();
         }
-        
+
         // Get 16 bit nonce and base 64 encode it
         byte[] nonce = createRandomBytes(16);
         String key = Base64.encode(nonce);
-        
+
         String acceptSeed = key + SEC_WEBSOCKET_08_ACCEPT_GUID;
         byte[] sha1 = sha1(acceptSeed.getBytes(CharsetUtil.US_ASCII));
         this.expectedChallengeResponseString = Base64.encode(sha1);
 
+        _logger.debug("HyBi08 Client Handshake key: %s. Expected response: %s.", key, this.expectedChallengeResponseString);
+        
         // Format request
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, path);
         request.addHeader(Names.UPGRADE, Values.WEBSOCKET.toLowerCase());
@@ -191,9 +196,9 @@ public class WebSocketClientHandshaker {
 
         channel.write(request);
 
-        ctx.getPipeline().replace("encoder", "ws-encoder", new WebSocket08FrameEncoder());
+        ctx.getPipeline().replace("encoder", "ws-encoder", new WebSocket08FrameEncoder(true));
     }
-    
+
     /**
      * <p>
      * Process server response:
@@ -213,31 +218,33 @@ public class WebSocketClientHandshaker {
      *            HTTP response returned from the server for the request sent by beginOpeningHandshake00().
      * @throws WebSocketHandshakeException
      */
-    private void endOpeningHandshake08(ChannelHandlerContext ctx, HttpResponse response) throws WebSocketHandshakeException{
+    private void endOpeningHandshake08(ChannelHandlerContext ctx, HttpResponse response)
+            throws WebSocketHandshakeException {
         final HttpResponseStatus status = new HttpResponseStatus(101, "Switching Protocols");
 
         if (!response.getStatus().equals(status)) {
             throw new WebSocketHandshakeException("Invalid handshake response status: " + response.getStatus());
         }
 
-        String upgrade = response.getHeader(Names.UPGRADE); 
+        String upgrade = response.getHeader(Names.UPGRADE);
         if (upgrade == null || !upgrade.equals(Values.WEBSOCKET.toLowerCase())) {
             throw new WebSocketHandshakeException("Invalid handshake response upgrade: "
                     + response.getHeader(Names.UPGRADE));
         }
 
-        String connection = response.getHeader(Names.CONNECTION); 
+        String connection = response.getHeader(Names.CONNECTION);
         if (connection == null || !connection.equals(Values.UPGRADE)) {
             throw new WebSocketHandshakeException("Invalid handshake response connection: "
                     + response.getHeader(Names.CONNECTION));
         }
-        
+
         String accept = response.getHeader(SEC_WEBSOCKET_ACCEPT);
         if (accept == null || !accept.equals(this.expectedChallengeResponseString)) {
-            throw new WebSocketHandshakeException("Invalid challenge");
+            throw new WebSocketHandshakeException(String.format("Invalid challenge. Actual: %s. Expected: %s", accept,
+                    this.expectedChallengeResponseString));
         }
 
-        ctx.getPipeline().replace("decoder", "ws-decoder", new WebSocket08FrameDecoder());
+        ctx.getPipeline().replace("decoder", "ws-decoder", new WebSocket08FrameDecoder(false));
         return;
     }
 
@@ -355,19 +362,19 @@ public class WebSocketClientHandshaker {
             throw new WebSocketHandshakeException("Invalid handshake response status: " + response.getStatus());
         }
 
-        String upgrade = response.getHeader(Names.UPGRADE); 
+        String upgrade = response.getHeader(Names.UPGRADE);
         if (upgrade == null || !upgrade.equals(Values.WEBSOCKET)) {
             throw new WebSocketHandshakeException("Invalid handshake response upgrade: "
                     + response.getHeader(Names.UPGRADE));
         }
 
-        String connection = response.getHeader(Names.CONNECTION); 
+        String connection = response.getHeader(Names.CONNECTION);
         if (connection == null || !connection.equals(Values.UPGRADE)) {
             throw new WebSocketHandshakeException("Invalid handshake response connection: "
                     + response.getHeader(Names.CONNECTION));
         }
 
-        byte[] challenge =  response.getContent().array();
+        byte[] challenge = response.getContent().array();
         if (!Arrays.equals(challenge, expectedChallengeResponseBytes)) {
             throw new WebSocketHandshakeException("Invalid challenge");
         }
@@ -437,7 +444,7 @@ public class WebSocketClientHandshaker {
             throw new InternalError("SHA-1 not supported on this platform");
         }
     }
-    
+
     private int rand(int min, int max) {
         int rand = (int) (Math.random() * max + min);
         return rand;
