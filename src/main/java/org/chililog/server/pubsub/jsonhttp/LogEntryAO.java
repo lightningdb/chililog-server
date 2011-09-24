@@ -31,6 +31,7 @@ public class LogEntryAO {
     private String _source;
     private String _host;
     private String _severity;
+    private String _fields;
     private String _message;
 
     /**
@@ -77,6 +78,20 @@ public class LogEntryAO {
         _severity = severity;
     }
 
+    /**
+     * Returns a string of fields in JSON format. Only used for publications.
+     */
+    public String getFields() {
+        return _fields;
+    }
+
+    public void setFields(String fields) {
+        _fields = fields;
+    }
+
+    /**
+     * Returns the message associated with the log entry
+     */
     public String getMessage() {
         return _message;
     }

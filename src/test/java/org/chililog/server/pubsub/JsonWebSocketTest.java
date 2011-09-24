@@ -21,6 +21,7 @@ package org.chililog.server.pubsub;
 import static org.junit.Assert.*;
 
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -32,6 +33,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryConfigController;
+import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
@@ -182,27 +184,80 @@ public class JsonWebSocketTest {
      *            unique message id
      * @param entryCount
      *            number of log entries to send
+     * @param includePreparsedFields
+     *            If true, fields will be sent
      * @throws Exception
      */
-    public static void sendPublicshRequest(WebSocketClient client,
+    public static void sendPublishRequest(WebSocketClient client,
                                            PublishCallbackHandler callbackHandler,
                                            String msgID,
-                                           int entryCount) throws Exception {
+                                           int entryCount,
+                                           boolean includePreparsedFields) throws Exception {
+        sendPublishRequest(client, callbackHandler, msgID, entryCount, includePreparsedFields, "junit", "localhost",
+                "4", "");
+    }
+
+    /**
+     * Sends a publish request over ws
+     * 
+     * @param client
+     *            Web socket client
+     * @param callbackHandler
+     *            Callback handler to handle incoming responses
+     * @param msgID
+     *            unique message id
+     * @param entryCount
+     *            number of log entries to send
+     * @param includePreparsedFields
+     *            If true, fields will be sent
+     * @param source
+     *            Source setting
+     * @param host
+     *            Host setting
+     * @param severity
+     *            Severity setting
+     * @param msgSuffix
+     *            String to append to message 
+     * @throws Exception
+     */
+    public static void sendPublishRequest(WebSocketClient client,
+                                           PublishCallbackHandler callbackHandler,
+                                           String msgID,
+                                           int entryCount,
+                                           boolean includePreparsedFields,
+                                           String source,
+                                           String host,
+                                           String severity,
+                                           String msgSuffix) throws Exception {
         PublicationRequestAO request = new PublicationRequestAO();
         request.setMessageID(msgID);
         request.setUsername("JsonWsTestUser_Publisher");
         request.setPassword("222");
         request.setRepositoryName(REPOSITORY_NAME);
 
+        StringBuilder preparsedFields = new StringBuilder();
+        preparsedFields.append("{");
+        preparsedFields.append("\"fld_field1\": 1,"); // Integer
+        preparsedFields.append("\"fld_field2\": \"abc\","); // String
+        preparsedFields.append("\"fld_field3\": true,"); // Boolean
+        preparsedFields.append("\"fld_field4\": 8888888888,"); // Long. 10 - digit numbers converts to long
+        preparsedFields.append("\"fld_field5\": \"NumberLong(888)\",");
+        preparsedFields.append("\"fld_field6\": 5.5,"); // Double
+        preparsedFields.append("\"fld_field7\": \"2010-11-29T19:41:46.000Z\",");
+        preparsedFields.append("}");
+
         LogEntryAO[] logEntries = new LogEntryAO[entryCount];
 
         for (int i = 0; i < entryCount; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
-            logEntry.setSource("junit");
-            logEntry.setHost("localhost");
-            logEntry.setSeverity("4");
-            logEntry.setMessage("test message " + i);
+            logEntry.setSource(source);
+            logEntry.setHost(host);
+            logEntry.setSeverity(severity);
+            if (includePreparsedFields) {
+                logEntry.setFields(preparsedFields.toString());
+            }
+            logEntry.setMessage("test message " + i + " " + msgSuffix);
             logEntries[i] = logEntry;
         }
         request.setLogEntries(logEntries);
@@ -239,7 +294,7 @@ public class JsonWebSocketTest {
         assertTrue(callbackHandler.connected);
 
         // Publish
-        sendPublicshRequest(client, callbackHandler, "testPublishOneLogEntry", 1);
+        sendPublishRequest(client, callbackHandler, "testPublishOneLogEntry", 1, true);
 
         // Disconnect
         // Test that all is OK when shutting down server with open connections
@@ -248,6 +303,22 @@ public class JsonWebSocketTest {
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(1, coll.find().count());
 
+        DBObject dbObject = coll.findOne();
+        assertTrue(dbObject.containsField(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
+        assertEquals("junit", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals("localhost", dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(4L, dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertTrue(dbObject.containsField(RepositoryEntryBO.MESSAGE_FIELD_NAME));
+
+        assertEquals(1, dbObject.get("fld_field1"));
+        assertEquals("abc", dbObject.get("fld_field2"));
+        assertEquals(true, dbObject.get("fld_field3"));
+        assertEquals(8888888888L, dbObject.get("fld_field4"));
+        assertEquals(888L, dbObject.get("fld_field5"));
+        assertEquals(5.5d, dbObject.get("fld_field6"));
+        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        assertEquals(sf.parse("2010-11-29T19:41:46GMT"), dbObject.get("fld_field7"));
     }
 
     @Test
@@ -264,7 +335,7 @@ public class JsonWebSocketTest {
         assertTrue(callbackHandler.connected);
 
         // Publish
-        sendPublicshRequest(client, callbackHandler, "testPublishManyLogEntries", 10);
+        sendPublishRequest(client, callbackHandler, "testPublishManyLogEntries", 10, false);
 
         // Disconnect - check that all is OK if shutdown server with no open connections
         client.disconnect();
@@ -289,9 +360,9 @@ public class JsonWebSocketTest {
         assertTrue(callbackHandler.connected);
 
         // Publish
-        sendPublicshRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 1);
-        sendPublicshRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 2);
-        sendPublicshRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 3);
+        sendPublishRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 1, false);
+        sendPublishRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 2, false);
+        sendPublishRequest(client, callbackHandler, "testPublishSubsequentLogEntries", 3, false);
 
         // Disconnect - check that all is OK if shutdown server with no open connections
         client.disconnect();
@@ -350,7 +421,7 @@ public class JsonWebSocketTest {
         assertNull(response.getErrorMessage());
         assertNull(response.getErrorStackTrace());
 
-        callbackHandler.messagesReceived.clear();
+        callbackHandler.messagesReceived.clear(); // clear initial response
 
         // Publish 40 threads each adding 2 log entries = 80 log entries in total
         for (int i = 0; i < 40; i++) {
@@ -376,6 +447,111 @@ public class JsonWebSocketTest {
         assertEquals("junit", logEntry.getSource());
         assertEquals("4", logEntry.getSeverity());
         assertEquals("test message 0", logEntry.getMessage());
+
+    }
+
+    @Test
+    public void testSubscribeWithFitlers() throws Exception {
+        WebSocketClientFactory factory = new WebSocketClientFactory();
+
+        // Setup Publisher
+        PublishCallbackHandler publisherCallbackHandler = new PublishCallbackHandler();
+        WebSocketClient publisherClient = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                publisherCallbackHandler);
+        
+        publisherClient.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(publisherCallbackHandler.connected);
+        
+        // Subscribe
+        SubscribeCallbackHandler subscriberCallbackHandler = new SubscribeCallbackHandler();
+        WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
+                subscriberCallbackHandler);
+        subcriberClient.connect().awaitUninterruptibly();
+        Thread.sleep(500);
+        assertTrue(subscriberCallbackHandler.connected);
+
+        // Filter Severity
+        SubscriptionRequestAO request = new SubscriptionRequestAO();
+        request.setMessageID("testSubscribeMultipleConnections");
+        request.setUsername("JsonWsTestUser_Subscriber");
+        request.setPassword("333");
+        request.setServerity("2"); 
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        String requestJson = JsonTranslator.getInstance().toJson(request);
+        subcriberClient.send(new TextWebSocketFrame(requestJson));
+        Thread.sleep(500);
+
+        assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
+        subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
+
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s1", "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s2", "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s3", "h3", "3", "FilterSeverity3");
+        Thread.sleep(500);
+        
+        assertEquals(2, subscriberCallbackHandler.messagesReceived.size());
+        assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity1"));
+        assertTrue(subscriberCallbackHandler.messagesReceived.get(1).contains("FilterSeverity2"));
+        subscriberCallbackHandler.messagesReceived.clear();
+
+        // Filter Host
+        request = new SubscriptionRequestAO();
+        request.setMessageID("testSubscribeMultipleConnections");
+        request.setUsername("JsonWsTestUser_Subscriber");
+        request.setPassword("333");
+        request.setHost("h3"); 
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        requestJson = JsonTranslator.getInstance().toJson(request);
+        subcriberClient.send(new TextWebSocketFrame(requestJson));
+        Thread.sleep(500);
+
+        assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
+        subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
+
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s1", "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s2", "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s3", "h3", "3", "FilterSeverity3");
+        Thread.sleep(500);
+        
+        assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
+        assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity3"));
+        subscriberCallbackHandler.messagesReceived.clear();
+
+        // Filter Source
+        request = new SubscriptionRequestAO();
+        request.setMessageID("testSubscribeMultipleConnections");
+        request.setUsername("JsonWsTestUser_Subscriber");
+        request.setPassword("333");
+        request.setSource("s1"); 
+        request.setRepositoryName(REPOSITORY_NAME);
+
+        requestJson = JsonTranslator.getInstance().toJson(request);
+        subcriberClient.send(new TextWebSocketFrame(requestJson));
+        Thread.sleep(500);
+
+        assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
+        subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
+
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s1", "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s2", "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
+                "s3", "h3", "3", "FilterSeverity3");
+        Thread.sleep(500);
+        
+        assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
+        assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity1"));
+        subscriberCallbackHandler.messagesReceived.clear();
 
     }
 
@@ -848,7 +1024,8 @@ public class JsonWebSocketTest {
                 assertTrue(callbackHandler.connected);
 
                 // Publish
-                sendPublicshRequest(client, callbackHandler, "PublishThread" + Thread.currentThread().getName(), 2);
+                sendPublishRequest(client, callbackHandler, "PublishThread" + Thread.currentThread().getName(), 2,
+                        false);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

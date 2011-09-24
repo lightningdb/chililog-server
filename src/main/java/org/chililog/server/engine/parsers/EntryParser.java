@@ -23,18 +23,21 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.TextTokenizer;
+import org.chililog.server.data.MongoJsonParser;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
+import org.chililog.server.engine.RepositoryEntryMqMessage;
+
+import com.mongodb.BasicDBObject;
 
 /**
  * <p>
@@ -45,9 +48,6 @@ import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
  * </p>
  */
 public abstract class EntryParser {
-
-    public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    public static final String TIMESTAMP_TIMEZONE = "GMT";
 
     private String _repoName;
     private long _maxKeywords = 0;
@@ -61,6 +61,8 @@ public abstract class EntryParser {
 
     private SimpleDateFormat _dateFormat;
     private TextTokenizer _tokenizer;
+
+    private MongoJsonParser _inputFieldsParser = null;
 
     /**
      * <p>
@@ -112,8 +114,7 @@ public abstract class EntryParser {
         }
 
         // Dates for parsing timestamp
-        _dateFormat = new SimpleDateFormat(TIMESTAMP_FORMAT);
-        _dateFormat.setTimeZone(TimeZone.getTimeZone(TIMESTAMP_TIMEZONE));
+        _dateFormat = RepositoryEntryMqMessage.getDateFormatter();
 
         // Tokenizer for keyword extraction
         _tokenizer = TextTokenizer.getInstance();
@@ -258,6 +259,28 @@ public abstract class EntryParser {
     }
 
     /**
+     * Read the pre-parsed input fields. Convert the JSON format into DBObject that can be stored by mongo.
+     * 
+     * @param fields
+     *            Fields pre-parsed by publishers in JSON format.
+     * @return Fields as mongo DBObject. If fields is null or empty, then an empty DBObject is returned.
+     */
+    protected BasicDBObject readPreparsedFields(String fields) {
+        if (StringUtils.isBlank(fields)) {
+            return new BasicDBObject();
+        }
+        
+        if (_inputFieldsParser == null) {
+            Pattern datePattern = RepositoryEntryMqMessage.getTimestampPattern();
+            Pattern longNumberPattern = RepositoryEntryMqMessage.getLongNumberPattern();
+            _inputFieldsParser = new MongoJsonParser(fields, datePattern, RepositoryEntryMqMessage.TIMESTAMP_FORMAT,
+                    longNumberPattern);
+        }
+
+        return (BasicDBObject) _inputFieldsParser.parse();
+    }
+
+    /**
      * Parse a string for fields. All exceptions are caught and logged. If <code>null</code> is returned, this indicates
      * that the entry should be skipped.
      * 
@@ -270,6 +293,8 @@ public abstract class EntryParser {
      *            domain name, static IP address, host name or dynamic IP address.
      * @param severity
      *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
+     * @param preparsedFields
+     *            Pre-parsed fields in JSON format
      * @param message
      *            Free-form message that provides information about the event
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry is to be skipped and not written
@@ -279,6 +304,7 @@ public abstract class EntryParser {
                                             String source,
                                             String host,
                                             String severity,
+                                            String preparsedFields,
                                             String message);
 
 }

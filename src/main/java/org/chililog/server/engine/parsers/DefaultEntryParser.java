@@ -19,7 +19,6 @@
 package org.chililog.server.engine.parsers;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import org.chililog.server.common.ChiliLogException;
 import org.chililog.server.common.Log4JLogger;
@@ -27,6 +26,8 @@ import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryParserConfigBO;
 import org.chililog.server.data.RepositoryEntryBO.Severity;
+
+import com.mongodb.DBObject;
 
 /**
  * <p>
@@ -69,28 +70,31 @@ public class DefaultEntryParser extends EntryParser {
      *            IP address of the input device or application that created this text entry
      * @param severity
      *            Classifies the importance of the entry. Can be the severity code (0-7) or text.
+     * @param preparsedFields
+     *            Pre-parsed fields in JSON format.
      * @param message
      *            The text for this entry to parse
      * @return <code>RepositoryEntryBO</code> ready for saving to mongoDB. If the entry cannot be parsed, then null is
      *         returned
      */
     @Override
-    public RepositoryEntryBO parse(String timestamp, String source, String host, String severity, String message) {
+    public RepositoryEntryBO parse(String timestamp,
+                                   String source,
+                                   String host,
+                                   String severity,
+                                   String preparsedFields,
+                                   String message) {
         try {
             this.setLastParseError(null);
             checkParseArguments(timestamp, source, host, severity, message);
 
             Severity sev = Severity.parse(severity);
             ArrayList<String> keywords = parseKeywords(source, host, sev, message);
+            DBObject fields = this.readPreparsedFields(preparsedFields);
 
-            RepositoryEntryBO entry = new RepositoryEntryBO();
-            entry.setTimestamp(parseTimestamp(timestamp));
-            entry.setSavedTimestamp(new Date());
-            entry.setSource(source);
-            entry.setHost(host);
-            entry.setSeverity(sev);
-            entry.setKeywords(keywords);
-            entry.setMessage(message);
+            RepositoryEntryBO entry = new RepositoryEntryBO(parseTimestamp(timestamp), source, host, sev, keywords,
+                    message, fields);
+            
             return entry;
         } catch (Exception ex) {
             this.setLastParseError(ex);

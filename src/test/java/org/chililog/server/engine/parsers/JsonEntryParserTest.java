@@ -110,7 +110,7 @@ public class JsonEntryParserTest {
 
         // Save OK
         RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46.0Z", "log1", "127.0.0.1", Severity.Critical.toString(),
-                sb.toString());
+                null, sb.toString());
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -167,7 +167,7 @@ public class JsonEntryParserTest {
 
         // Error because xxx is not json format
         RepositoryEntryBO entry = p.parse("2010-11-29T19:41:46Z", "log1", "127.0.0.1", Severity.Emergency.toString(),
-                "xxx");
+                null, "xxx");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

@@ -21,6 +21,7 @@ package org.chililog.server.pubsub;
 import static org.junit.Assert.*;
 
 import java.net.HttpURLConnection;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,7 @@ import org.chililog.server.common.Log4JLogger;
 import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryConfigController;
+import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
@@ -163,16 +165,19 @@ public class JsonHttpPubishTest {
     }
 
     /**
-     * Send valid lod entry request to the server for processing
+     * Send valid log entry request to the server for processing
      * 
      * @param msgID
      *            message ID
      * @param entryCount
      *            Number of log entries to send
+     * @param includePreparsedFields
+     *            If true, fields will be sent
      * @throws Exception
      *             if error
      */
-    public static void sendPublicshRequest(String msgID, int entryCount) throws Exception {
+    public static void sendPublishRequest(String msgID, int entryCount, boolean includePreparsedFields)
+            throws Exception {
         HttpURLConnection httpConn;
         StringBuilder responseContent = new StringBuilder();
         StringBuilder responseCode = new StringBuilder();
@@ -189,12 +194,26 @@ public class JsonHttpPubishTest {
 
         LogEntryAO[] logEntries = new LogEntryAO[entryCount];
 
+        StringBuilder preparsedFields = new StringBuilder();
+        preparsedFields.append("{");
+        preparsedFields.append("\"fld_field1\": 1,"); // Integer
+        preparsedFields.append("\"fld_field2\": \"abc\","); // String
+        preparsedFields.append("\"fld_field3\": true,"); // Boolean
+        preparsedFields.append("\"fld_field4\": 8888888888,"); // Long. 10 - digit numbers converts to long
+        preparsedFields.append("\"fld_field5\": \"NumberLong(888)\",");
+        preparsedFields.append("\"fld_field6\": 5.5,"); // Double
+        preparsedFields.append("\"fld_field7\": \"2010-11-29T19:41:46.000Z\",");
+        preparsedFields.append("}");
+
         for (int i = 0; i < entryCount; i++) {
             LogEntryAO logEntry = new LogEntryAO();
             logEntry.setTimestamp("2011-01-01T00:00:00.000Z");
             logEntry.setSource("junit");
             logEntry.setHost("localhost");
             logEntry.setSeverity("4");
+            if (includePreparsedFields) {
+                logEntry.setFields(preparsedFields.toString());
+            }
             logEntry.setMessage("test message " + i);
             logEntries[i] = logEntry;
         }
@@ -215,7 +234,7 @@ public class JsonHttpPubishTest {
 
     @Test
     public void testOneLogEntry() throws Exception {
-        sendPublicshRequest("testOneLogEntry", 1);
+        sendPublishRequest("testOneLogEntry", 1, true);
 
         // Wait a moment for log entry to be processed
         Thread.sleep(1000);
@@ -223,6 +242,24 @@ public class JsonHttpPubishTest {
         // Check that the entry is written to the log
         DBCollection coll = _db.getCollection(MONGODB_COLLECTION_NAME);
         assertEquals(1, coll.find().count());
+
+        DBObject dbObject = coll.findOne();
+
+        assertTrue(dbObject.containsField(RepositoryEntryBO.TIMESTAMP_FIELD_NAME));
+        assertTrue(dbObject.containsField(RepositoryEntryBO.SAVED_TIMESTAMP_FIELD_NAME));
+        assertEquals("junit", dbObject.get(RepositoryEntryBO.SOURCE_FIELD_NAME));
+        assertEquals("localhost", dbObject.get(RepositoryEntryBO.HOST_FIELD_NAME));
+        assertEquals(4L, dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
+        assertTrue(dbObject.containsField(RepositoryEntryBO.MESSAGE_FIELD_NAME));
+
+        assertEquals(1, dbObject.get("fld_field1"));
+        assertEquals("abc", dbObject.get("fld_field2"));
+        assertEquals(true, dbObject.get("fld_field3"));
+        assertEquals(8888888888L, dbObject.get("fld_field4"));
+        assertEquals(888L, dbObject.get("fld_field5"));
+        assertEquals(5.5d, dbObject.get("fld_field6"));
+        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        assertEquals(sf.parse("2010-11-29T19:41:46GMT"), dbObject.get("fld_field7"));
     }
 
     /**
@@ -232,9 +269,9 @@ public class JsonHttpPubishTest {
      */
     @Test
     public void testSubsequentRequests() throws Exception {
-        sendPublicshRequest("testSubsequentRequests", 1);
-        sendPublicshRequest("testSubsequentRequests", 2);
-        sendPublicshRequest("testSubsequentRequests", 3);
+        sendPublishRequest("testSubsequentRequests", 1, false);
+        sendPublishRequest("testSubsequentRequests", 2, false);
+        sendPublishRequest("testSubsequentRequests", 3, false);
 
         // Wait a moment for log entry to be processed
         Thread.sleep(1000);
@@ -246,7 +283,7 @@ public class JsonHttpPubishTest {
 
     @Test
     public void testManyLogEntries() throws Exception {
-        sendPublicshRequest("testManyLogEntries", 100);
+        sendPublishRequest("testManyLogEntries", 100, false);
 
         // Wait a moment for log entry to be processed
         Thread.sleep(2000);
@@ -404,7 +441,7 @@ public class JsonHttpPubishTest {
         public void run() {
             try {
                 _logger.debug("HTTP thread " + Thread.currentThread().getName() + " started");
-                sendPublicshRequest("PublishThread " + Thread.currentThread().getName(), 2);
+                sendPublishRequest("PublishThread " + Thread.currentThread().getName(), 2, false);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

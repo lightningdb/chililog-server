@@ -171,19 +171,21 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      * @param frame
      */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
-        _logger.debug("Channel %s got frame type %s.", ctx.getChannel().getId(), frame.getType());
+        _logger.debug("Channel %s got %s frame.", ctx.getChannel().getId(), frame.getType());
 
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {
-            _handshaker.executeClosingHandshake(ctx, (CloseWebSocketFrame)frame);
+            _handshaker.executeClosingHandshake(ctx, (CloseWebSocketFrame) frame);
             return;
         } else if (frame instanceof PingWebSocketFrame) {
             _logger.debug("PingPong");
             ctx.getChannel().write(new PongWebSocketFrame(frame.getBinaryData()));
             return;
+        } else if (!(frame instanceof TextWebSocketFrame)) {
+            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
+                    .getName()));
         }
 
-        // Assume we only get text frames
         TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
         String requestJson = textFrame.getText();
         String responseJson = null;

@@ -18,7 +18,6 @@
 
 package org.chililog.server.engine;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.apache.commons.lang.NullArgumentException;
@@ -28,7 +27,6 @@ import org.chililog.server.data.MongoConnection;
 import org.chililog.server.data.RepositoryEntryBO;
 import org.chililog.server.data.RepositoryEntryController;
 import org.chililog.server.data.RepositoryParserConfigBO;
-import org.chililog.server.data.RepositoryEntryBO.Severity;
 import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 import org.chililog.server.engine.parsers.EntryParser;
 import org.chililog.server.engine.parsers.EntryParserFactory;
@@ -60,37 +58,6 @@ public class RepositoryStorageWorker extends Thread {
 
     private ArrayList<EntryParser> _filteredParsers = new ArrayList<EntryParser>();
     private EntryParser _catchAllParser = null;
-
-    /**
-     * HornetQ property identifying the time stamp of the event log. Format is: 2001-12-31T23:01:01.000Z
-     */
-    public static final String TIMESTAMP_PROPERTY_NAME = "Timestamp";
-
-    /**
-     * HornetQ property identifying the application or service that created the log entry
-     */
-    public static final String SOURCE_PROPERTY_NAME = "Source";
-
-    /**
-     * HornetQ property identifying the computer name or IP address on which the source created the log entry
-     */
-    public static final String HOST_PROPERTY_NAME = "Host";
-
-    /**
-     * HornetQ property identifying the severity of the message. The severity code as a long integer is expected. See
-     * {@link Severity}.
-     */
-    public static final String SEVERITY_PROPERTY_NAME = "Severity";
-
-    /**
-     * Time stamp format for use with {@link SimpleDateFormat}
-     */
-    public static final String TIMESTAMP_FORMAT = EntryParser.TIMESTAMP_FORMAT;
-
-    /**
-     * Time stamp time zone for use with {@link SimpleDateFormat}
-     */
-    public static final String TIMESTAMP_TIMEZONE = EntryParser.TIMESTAMP_TIMEZONE;
 
     /**
      * 
@@ -160,10 +127,11 @@ public class RepositoryStorageWorker extends Thread {
                 ClientMessage messageReceived = messageConsumer.receive(500);
                 if (messageReceived != null) {
                     try {
-                        String ts = messageReceived.getStringProperty(TIMESTAMP_PROPERTY_NAME);
-                        String source = messageReceived.getStringProperty(SOURCE_PROPERTY_NAME);
-                        String host = messageReceived.getStringProperty(HOST_PROPERTY_NAME);
-                        String severity = messageReceived.getStringProperty(SEVERITY_PROPERTY_NAME);
+                        String ts = messageReceived.getStringProperty(RepositoryEntryMqMessage.TIMESTAMP);
+                        String source = messageReceived.getStringProperty(RepositoryEntryMqMessage.SOURCE);
+                        String host = messageReceived.getStringProperty(RepositoryEntryMqMessage.HOST);
+                        String severity = messageReceived.getStringProperty(RepositoryEntryMqMessage.SEVERITY);
+                        String fields = messageReceived.getStringProperty(RepositoryEntryMqMessage.FIELDS);
                         SimpleString messageSimpleString = messageReceived.getBodyBuffer().readNullableSimpleString();
                         String message = "";
                         if (messageSimpleString != null) {
@@ -172,7 +140,7 @@ public class RepositoryStorageWorker extends Thread {
 
                         // Parse message
                         EntryParser entryParser = getParser(source, host);
-                        RepositoryEntryBO repoEntry = entryParser.parse(ts, source, host, severity, message);
+                        RepositoryEntryBO repoEntry = entryParser.parse(ts, source, host, severity, fields, message);
 
                         // Save message
                         if (repoEntry != null) {

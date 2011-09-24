@@ -20,6 +20,8 @@ package org.chililog.server.engine.parsers;
 
 import static org.junit.Assert.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -75,7 +77,7 @@ public class DelimitedEntryParserTest {
     }
 
     @Test
-    public void testOK() throws ChiliLogException {
+    public void testOK() throws ChiliLogException, ParseException {
         RepositoryConfigBO repoInfo = new RepositoryConfigBO();
         repoInfo.setName("junit_test");
         repoInfo.setDisplayName("JUnit Test 1");
@@ -128,9 +130,21 @@ public class DelimitedEntryParserTest {
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoInfo);
         DelimitedEntryParser p = new DelimitedEntryParser(repoInfo, repoParserInfo);
 
+        // Build preparsed fields
+        StringBuilder preparsedFields = new StringBuilder();
+        preparsedFields.append("{");
+        preparsedFields.append("\"fld_p1\": 1,"); // Integer
+        preparsedFields.append("\"fld_p2\": \"abc\","); // String
+        preparsedFields.append("\"fld_p3\": true,"); // Boolean
+        preparsedFields.append("\"fld_p4\": 8888888888,"); // Long. 10 - digit numbers converts to long
+        preparsedFields.append("\"fld_p5\": \"NumberLong(888)\",");
+        preparsedFields.append("\"fld_p6\": 5.5,"); // Double
+        preparsedFields.append("\"fld_p7\": \"2010-11-29T19:41:46.000Z\","); 
+        preparsedFields.append("}");
+
         // Save Line 1 OK
         RepositoryEntryBO entry = p.parse("2001-5-5T01:02:03.001Z", "log1", "127.0.0.1", Severity.Critical.toString(),
-                "line1|2|3|4.4|2001-5-5 5:5:5|True");
+                preparsedFields.toString(), "line1|2|3|4.4|2001-5-5 5:5:5|True");
         assertNotNull(entry);
         DBObject dbObject = entry.toDBObject();
         c.save(_db, entry);
@@ -160,8 +174,17 @@ public class DelimitedEntryParserTest {
         assertEquals(Severity.Critical.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
         assertEquals("line1|2|3|4.4|2001-5-5 5:5:5|True", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
 
-        // Save Line 2 OK
-        entry = p.parse("2021-5-5T05:05:05.002Z", "log1", "127.0.0.1", Severity.Debug.toString(),
+        assertEquals(1, dbObject.get("fld_p1"));
+        assertEquals("abc", dbObject.get("fld_p2"));
+        assertEquals(true, dbObject.get("fld_p3"));
+        assertEquals(8888888888L, dbObject.get("fld_p4"));
+        assertEquals(888L, dbObject.get("fld_p5"));
+        assertEquals(5.5d, dbObject.get("fld_p6"));
+        SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        assertEquals(sf.parse("2010-11-29T19:41:46GMT"), dbObject.get("fld_p7"));
+
+        // Save Line 2 OK - no preparsed fields
+        entry = p.parse("2021-5-5T05:05:05.002Z", "log1", "127.0.0.1", Severity.Debug.toString(), null,
                 "line2|22|23|24.4|2021-5-5 5:5:5|xxx");
         assertNotNull(entry);
         dbObject = entry.toDBObject();
@@ -191,28 +214,35 @@ public class DelimitedEntryParserTest {
         assertEquals(Severity.Debug.toCode(), dbObject.get(RepositoryEntryBO.SEVERITY_FIELD_NAME));
         assertEquals("line2|22|23|24.4|2021-5-5 5:5:5|xxx", dbObject.get(RepositoryEntryBO.MESSAGE_FIELD_NAME));
 
+        assertNull(dbObject.get("fld_p1"));
+        assertNull(dbObject.get("fld_p2"));
+        assertNull(dbObject.get("fld_p3"));
+        assertNull(dbObject.get("fld_p4"));
+        assertNull(dbObject.get("fld_p5"));
+        assertNull(dbObject.get("fld_p6"));
+        
         // Should only be 2 entries
         assertEquals(2, coll.find().count());
 
         // Empty ts, source, host and message is ignored
-        entry = p.parse("", "log1", "127.0.0.1", Severity.Warning.toString(), "aaa");
+        entry = p.parse("", "log1", "127.0.0.1", Severity.Warning.toString(), null, "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T05:05:05.000Z", "", "127.0.0.1", Severity.Warning.toString(), "aaa");
+        entry = p.parse("2021-5-5T05:05:05.000Z", "", "127.0.0.1", Severity.Warning.toString(), null, "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T05:05:05.000Z", "log1", null, Severity.Warning.toString(), "aaa");
+        entry = p.parse("2021-5-5T05:05:05.000Z", "log1", null, Severity.Warning.toString(), null, "aaa");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
-        entry = p.parse("2021-5-5T5:5:5.0Z", "log1", "127.0.0.1", Severity.Warning.toString(), "");
+        entry = p.parse("2021-5-5T5:5:5.0Z", "log1", "127.0.0.1", Severity.Warning.toString(), null, "");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
 
         // Missing field
-        entry = p.parse("2021-5-5T5:5:5Z", "log1", "127.0.0.1", Severity.Debug.toString(), "line3");
+        entry = p.parse("2021-5-5T5:5:5Z", "log1", "127.0.0.1", Severity.Debug.toString(), null, "line3");
         assertNull(entry);
         assertNotNull(p.getLastParseError());
     }

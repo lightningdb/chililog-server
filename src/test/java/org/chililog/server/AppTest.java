@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.chililog.server.App;
@@ -36,7 +35,7 @@ import org.chililog.server.data.UserController;
 import org.chililog.server.data.RepositoryParserConfigBO.AppliesTo;
 import org.chililog.server.data.RepositoryParserConfigBO.ParseFieldErrorHandling;
 import org.chililog.server.engine.MqService;
-import org.chililog.server.engine.RepositoryStorageWorker;
+import org.chililog.server.engine.RepositoryEntryMqMessage;
 import org.chililog.server.engine.parsers.DelimitedEntryParser;
 import org.hornetq.api.core.Message;
 import org.hornetq.api.core.SimpleString;
@@ -192,8 +191,7 @@ public class AppTest {
         // Start
         App.start(null);
 
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = RepositoryEntryMqMessage.getDateFormatter();
 
         // Write some repository entries
         ClientSession producerSession = MqService.getInstance().getTransactionalClientSession("AppTestUser_Publisher",
@@ -204,10 +202,10 @@ public class AppTest {
 
         for (int i = 0; i < 10000; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "AppTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "AppTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             producer.send(message);

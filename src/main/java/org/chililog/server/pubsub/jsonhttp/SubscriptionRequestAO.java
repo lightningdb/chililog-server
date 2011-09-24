@@ -26,6 +26,9 @@ public class SubscriptionRequestAO {
     private String _messageType = "SubscriptionRequest";
     private String _messageID = "";
     private String _repositoryName;
+    private String _host;
+    private String _source;
+    private String _serverity;
     private String _username;
     private String _password;
 
@@ -67,6 +70,42 @@ public class SubscriptionRequestAO {
 
     public void setRepositoryName(String repositoryName) {
         _repositoryName = repositoryName;
+    }
+
+    /**
+     * Only subscribe to log entries from this host
+     */
+    public String getHost() {
+        return _host;
+    }
+
+    
+    public void setHost(String host) {
+        _host = host;
+    }
+    
+    /**
+     * Only subscribe to log entries from this source 
+     */
+    public String getSource() {
+        return _source;
+    }
+
+    
+    public void setSource(String source) {
+        _source = source;
+    }
+    
+    /**
+     * Only subscribe to log entries with this severity or higher 
+     */
+    public String getServerity() {
+        return _serverity;
+    }
+
+    
+    public void setServerity(String serverity) {
+        _serverity = serverity;
     }
 
     /**

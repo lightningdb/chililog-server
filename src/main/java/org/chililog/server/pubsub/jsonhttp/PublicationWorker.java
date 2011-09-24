@@ -33,7 +33,7 @@ import org.chililog.server.data.RepositoryConfigBO;
 import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
-import org.chililog.server.engine.RepositoryStorageWorker;
+import org.chililog.server.engine.RepositoryEntryMqMessage;
 import org.chililog.server.pubsub.MqProducerSessionPool;
 import org.chililog.server.pubsub.Strings;
 import org.chililog.server.pubsub.MqProducerSessionPool.Pooled;
@@ -99,10 +99,13 @@ public class PublicationWorker {
             p = _sessionPool.getPooled();
             for (LogEntryAO logEntry : requestAO.getLogEntries()) {
                 ClientMessage message = p.session.createMessage(Message.TEXT_TYPE, false);
-                message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, logEntry.getTimestamp());
-                message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, logEntry.getSource());
-                message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, logEntry.getHost());
-                message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, logEntry.getSeverity());
+                message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, logEntry.getTimestamp());
+                message.putStringProperty(RepositoryEntryMqMessage.SOURCE, logEntry.getSource());
+                message.putStringProperty(RepositoryEntryMqMessage.HOST, logEntry.getHost());
+                message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, logEntry.getSeverity());
+                if (!StringUtils.isBlank(logEntry.getFields())) {
+                    message.putStringProperty(RepositoryEntryMqMessage.FIELDS, logEntry.getFields());
+                }
                 message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(logEntry.getMessage()));
                 p.producer.send(repoAddress, message);
             }

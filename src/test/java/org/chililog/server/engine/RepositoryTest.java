@@ -20,7 +20,6 @@ package org.chililog.server.engine;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
 import org.chililog.server.common.AppProperties;
@@ -180,8 +179,7 @@ public class RepositoryTest {
 
     @Test
     public void testBasicOK() throws Exception {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = RepositoryEntryMqMessage.getDateFormatter();
 
         // Start
         MqService.getInstance().start();
@@ -197,28 +195,28 @@ public class RepositoryTest {
         ClientProducer producer = producerSession.createProducer(queueAddress);
 
         ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "1");
+        message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+        message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+        message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+        message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "1");
         String entry1 = "line1|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "2");
+        message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+        message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+        message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+        message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "2");
         String entry2 = "line2|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry2));
         producer.send(message);
 
         message = producerSession.createMessage(Message.TEXT_TYPE, false);
-        message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-        message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-        message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-        message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+        message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+        message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+        message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+        message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
         String entry3 = "line3|2|3|4.4|2001-5-5 5:5:5|True";
         message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry3));
         producer.send(message);
@@ -240,8 +238,7 @@ public class RepositoryTest {
 
     @Test
     public void testUpdateRepositoryConfig() throws Exception {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = RepositoryEntryMqMessage.getDateFormatter();
 
         // Start
         MqService.getInstance().start();
@@ -282,10 +279,10 @@ public class RepositoryTest {
 
         for (int i = 1; i <= 10000; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             ;
@@ -322,8 +319,7 @@ public class RepositoryTest {
 
     @Test
     public void testRepositoryStatusSwitching() throws Exception {
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = RepositoryEntryMqMessage.getDateFormatter();
 
         // ************************************************************************************************************
         // ONLINE
@@ -350,10 +346,10 @@ public class RepositoryTest {
 
         for (int i = 1; i <= 10; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             ;
@@ -387,10 +383,10 @@ public class RepositoryTest {
         Thread.sleep(1000);
         try {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
             String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             ;
@@ -425,10 +421,10 @@ public class RepositoryTest {
         Thread.sleep(1000);
         try {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "3");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "3");
             String entry1 = "lineXXX|2|3|4.4|2001-5-5 5:5:5|True";
             message.getBodyBuffer().writeNullableSimpleString(SimpleString.toSimpleString(entry1));
             ;
@@ -455,8 +451,7 @@ public class RepositoryTest {
     @Test
     public void testBadEntries() throws Exception {
         String deadLetterAddress = AppProperties.getInstance().getMqDeadLetterAddress();
-        SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-        sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
+        SimpleDateFormat sf = RepositoryEntryMqMessage.getDateFormatter();
 
         // Start
         MqService.getInstance().start();
@@ -481,10 +476,10 @@ public class RepositoryTest {
         // Write some good entries
         for (int i = 1; i <= 100; i++) {
             ClientMessage message = producerSession.createMessage(Message.TEXT_TYPE, false);
-            message.putStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME, sf.format(new Date()));
-            message.putStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME, "RepositoryTest");
-            message.putStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME, "localhost");
-            message.putStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME, "Debug");
+            message.putStringProperty(RepositoryEntryMqMessage.TIMESTAMP, sf.format(new Date()));
+            message.putStringProperty(RepositoryEntryMqMessage.SOURCE, "RepositoryTest");
+            message.putStringProperty(RepositoryEntryMqMessage.HOST, "localhost");
+            message.putStringProperty(RepositoryEntryMqMessage.SEVERITY, "Debug");
             String entry1 = "line" + i + "|2|3|4.4|2001-5-5 5:5:5|True";
             if (i == 33) {
                 entry1 = i + " - bad entry no delimiter";

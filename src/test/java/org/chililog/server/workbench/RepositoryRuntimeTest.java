@@ -164,13 +164,13 @@ public class RepositoryRuntimeTest {
         RepositoryEntryController c = RepositoryEntryController.getInstance(repoConfig);
         EntryParser p = EntryParserFactory.getParser(repoConfig, repoConfig.getParsers().get(0));
         RepositoryEntryBO entry = p.parse("2011-01-01T05:05:05.100Z", "log1", "127.0.0.1",
-                Severity.Information.toString(), "line1|1");
+                Severity.Information.toString(), null, "line1|1");
         c.save(_db, entry);
 
-        entry = p.parse("2011-01-01T05:05:05.200Z", "log1", "127.0.0.2", Severity.Error.toString(), "line2|2");
+        entry = p.parse("2011-01-01T05:05:05.200Z", "log1", "127.0.0.2", Severity.Error.toString(), null, "line2|2");
         c.save(_db, entry);
 
-        entry = p.parse("2011-01-01T05:05:05.300Z", "log1", "127.0.0.3", Severity.Emergency.toString(), "line3|3");
+        entry = p.parse("2011-01-01T05:05:05.300Z", "log1", "127.0.0.3", Severity.Emergency.toString(), null, "line3|3");
         c.save(_db, entry);
 
         // Start server

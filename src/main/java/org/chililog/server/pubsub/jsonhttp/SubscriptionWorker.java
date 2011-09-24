@@ -18,8 +18,6 @@
 
 package org.chililog.server.pubsub.jsonhttp;
 
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +30,7 @@ import org.chililog.server.data.RepositoryConfigController;
 import org.chililog.server.data.UserBO;
 import org.chililog.server.data.UserController;
 import org.chililog.server.engine.MqService;
-import org.chililog.server.engine.RepositoryStorageWorker;
+import org.chililog.server.engine.RepositoryEntryMqMessage;
 import org.chililog.server.pubsub.Strings;
 import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.workbench.workers.AuthenticationTokenAO;
@@ -81,9 +79,6 @@ public class SubscriptionWorker {
                 throw new IllegalArgumentException("Request content is blank.");
             }
 
-            SimpleDateFormat sf = new SimpleDateFormat(RepositoryStorageWorker.TIMESTAMP_FORMAT);
-            sf.setTimeZone(TimeZone.getTimeZone(RepositoryStorageWorker.TIMESTAMP_TIMEZONE));
-
             // Parse JSON
             SubscriptionRequestAO requestAO = JsonTranslator.getInstance().fromJson(request,
                     SubscriptionRequestAO.class);
@@ -97,7 +92,36 @@ public class SubscriptionWorker {
             String queueName = queueAddress + ".json-http-" + _channel.getId() + "." + UUID.randomUUID().toString();
             _session = MqService.getInstance().getNonTransactionalSystemClientSession();
 
-            _session.createTemporaryQueue(queueAddress, queueName);
+            // Filter messages
+            StringBuilder filter = new StringBuilder();
+            if (!StringUtils.isBlank(requestAO.getHost())) {
+                filter.append(String.format("%s = '%s'", RepositoryEntryMqMessage.HOST, requestAO.getHost()));
+            }
+            if (!StringUtils.isBlank(requestAO.getSource())) {
+                if (filter.length() > 0) {
+                    filter.append(" AND ");
+                }
+                filter.append(String.format("%s = '%s'", RepositoryEntryMqMessage.SOURCE, requestAO.getSource()));
+            }
+            if (!StringUtils.isBlank(requestAO.getServerity())) {
+                if (filter.length() > 0) {
+                    filter.append(" AND ");
+                }
+
+                filter.append(String.format("%s IN (", RepositoryEntryMqMessage.SEVERITY));
+                int sev = Integer.parseInt(requestAO.getServerity());
+                for (int i = 0; i <= sev; i++) {
+                    filter.append(String.format("'%s', ", i));
+                }
+                filter.replace(filter.length() - 1, filter.length(), ")"); // replace last comma with end )
+            }
+
+            if (filter.length() == 0) {
+                _session.createTemporaryQueue(queueAddress, queueName);
+            } else {
+                _logger.debug("Subscription filter %s", filter);
+                _session.createTemporaryQueue(queueAddress, queueName, filter.toString());
+            }
 
             _consumer = _session.createConsumer(queueName);
 
@@ -209,10 +233,10 @@ public class SubscriptionWorker {
                 }
 
                 LogEntryAO logEntry = new LogEntryAO();
-                logEntry.setTimestamp(message.getStringProperty(RepositoryStorageWorker.TIMESTAMP_PROPERTY_NAME));
-                logEntry.setSource(message.getStringProperty(RepositoryStorageWorker.SOURCE_PROPERTY_NAME));
-                logEntry.setHost(message.getStringProperty(RepositoryStorageWorker.HOST_PROPERTY_NAME));
-                logEntry.setSeverity(message.getStringProperty(RepositoryStorageWorker.SEVERITY_PROPERTY_NAME));
+                logEntry.setTimestamp(message.getStringProperty(RepositoryEntryMqMessage.TIMESTAMP));
+                logEntry.setSource(message.getStringProperty(RepositoryEntryMqMessage.SOURCE));
+                logEntry.setHost(message.getStringProperty(RepositoryEntryMqMessage.HOST));
+                logEntry.setSeverity(message.getStringProperty(RepositoryEntryMqMessage.SEVERITY));
                 logEntry.setMessage(message.getBodyBuffer().readNullableSimpleString().toString());
 
                 SubscriptionResponseAO responseAO = new SubscriptionResponseAO(_messageID, logEntry);
