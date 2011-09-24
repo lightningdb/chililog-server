@@ -476,7 +476,7 @@ public class JsonWebSocketTest {
         request.setMessageID("testSubscribeMultipleConnections");
         request.setUsername("JsonWsTestUser_Subscriber");
         request.setPassword("333");
-        request.setServerity("2"); 
+        request.setSeverity("2"); 
         request.setRepositoryName(REPOSITORY_NAME);
 
         String requestJson = JsonTranslator.getInstance().toJson(request);

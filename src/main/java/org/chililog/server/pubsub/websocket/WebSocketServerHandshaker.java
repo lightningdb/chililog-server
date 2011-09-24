@@ -182,6 +182,7 @@ public class WebSocketServerHandshaker {
     private void executeOpeningHandshake08(ChannelHandlerContext ctx, HttpRequest req) throws NoSuchAlgorithmException {
         _logger.debug("Channel %s web socket version 08 handshake", ctx.getChannel().getId());
         HttpResponse res = new DefaultHttpResponse(HTTP_1_1, new HttpResponseStatus(101, "Switching Protocols"));
+        this.version = WebSocketVersion.HYBI08;
 
         String key = req.getHeader(SEC_WEBSOCKET_KEY);
         if (key == null) {

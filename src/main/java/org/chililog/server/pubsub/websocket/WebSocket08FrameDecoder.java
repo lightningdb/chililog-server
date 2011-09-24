@@ -98,7 +98,7 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
         // Discard all data received if closing handshake was received before.
         if (receivedClosingHandshake) {
             buffer.skipBytes(actualReadableBytes());
-            return new CloseWebSocketFrame();
+            return null;
         }
 
         switch (state) {
@@ -154,7 +154,11 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
 
                 if (length < 126) {
                     currentFrameLength = length;
-                    checkpoint(this.maskedPayload ? State.MASKING_KEY : State.PAYLOAD);
+                    if (currentFrameLength == 0) {
+                        checkpoint(State.PAYLOAD);                        
+                    } else {
+                        checkpoint(this.maskedPayload ? State.MASKING_KEY : State.PAYLOAD);
+                    }
                 } else if (length == 126) {
                     checkpoint(State.PARSING_LENGTH_2);
                 } else if (length == 127) {
@@ -191,6 +195,8 @@ public class WebSocket08FrameDecoder extends ReplayingDecoder<WebSocket08FrameDe
                     }
                     currentPayload.writeBytes(payload);
                     currentPayloadBytesRead = currentPayloadBytesRead + rbytes;
+                    
+                    // Return null to wait for more bytes to arrive
                     return null;
                 } else if (willHaveReadByteCount > currentFrameLength) {
                     // We have more than what we need so read up to the end of frame

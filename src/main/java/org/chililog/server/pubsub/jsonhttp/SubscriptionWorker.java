@@ -103,13 +103,13 @@ public class SubscriptionWorker {
                 }
                 filter.append(String.format("%s = '%s'", RepositoryEntryMqMessage.SOURCE, requestAO.getSource()));
             }
-            if (!StringUtils.isBlank(requestAO.getServerity())) {
+            if (!StringUtils.isBlank(requestAO.getSeverity())) {
                 if (filter.length() > 0) {
                     filter.append(" AND ");
                 }
 
                 filter.append(String.format("%s IN (", RepositoryEntryMqMessage.SEVERITY));
-                int sev = Integer.parseInt(requestAO.getServerity());
+                int sev = Integer.parseInt(requestAO.getSeverity());
                 for (int i = 0; i <= sev; i++) {
                     filter.append(String.format("'%s', ", i));
                 }

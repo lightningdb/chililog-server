@@ -28,7 +28,7 @@ public class SubscriptionRequestAO {
     private String _repositoryName;
     private String _host;
     private String _source;
-    private String _serverity;
+    private String _severity;
     private String _username;
     private String _password;
 
@@ -99,13 +99,13 @@ public class SubscriptionRequestAO {
     /**
      * Only subscribe to log entries with this severity or higher 
      */
-    public String getServerity() {
-        return _serverity;
+    public String getSeverity() {
+        return _severity;
     }
 
     
-    public void setServerity(String serverity) {
-        _serverity = serverity;
+    public void setSeverity(String serverity) {
+        _severity = serverity;
     }
 
     /**
