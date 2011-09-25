@@ -35,6 +35,7 @@ import org.chililog.server.pubsub.websocket.PongWebSocketFrame;
 import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketServerHandshaker;
+import org.chililog.server.pubsub.websocket.WebSocketServerHandshakerFactory;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
@@ -111,7 +112,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             // Web socket handshake
             if (req.getUri().equals(WEBSOCKET_PATH)) {
                 String wsURL = "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
-                _handshaker = new WebSocketServerHandshaker(wsURL);
+                _handshaker = new WebSocketServerHandshakerFactory(wsURL, null).newHandshaker(ctx, req);
                 _handshaker.executeOpeningHandshake(ctx, req);
                 return;
             }

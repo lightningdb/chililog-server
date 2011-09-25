@@ -75,6 +75,36 @@ App.SeverityField =App.StackedFieldView.extend({
 
 /**
  * @class
+ * Source field
+ */
+App.SourceField = App.StackedFieldView.extend({
+  label: '_stream.source'.loc(),
+
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+    classNames: 'medium'.w(),
+    valueBinding: 'App.pageController.source',
+    name: 'source',
+    disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
+  })
+});
+
+/**
+ * @class
+ * Host field
+ */
+App.HostField = App.StackedFieldView.extend({
+  label: '_stream.host'.loc(),
+
+  DataView : App.TextBoxView.extend(App.CriteriaFieldDataMixin, {
+    classNames: 'medium'.w(),
+    valueBinding: 'App.pageController.host',
+    name: 'host',
+    disabledBinding: SC.Binding.from('App.pageController.isStreaming').oneWay().bool()
+  })
+});
+
+/**
+ * @class
  * Button to start/stop streaming
  */
 App.ActionButton = App.ButtonView.extend({
@@ -116,7 +146,7 @@ App.ClearButton = App.ButtonView.extend({
    * Remove all div in results and don't show the bottom buttons
    */
   click: function() {
-    var rowCount = $('#results div').remove();
+    var rowCount = $('#results').find("div:gt(0)").remove();
     App.pageController.set('showActionButton2', NO);
   }
 });
@@ -219,6 +249,20 @@ App.pageController = SC.Object.create({
   severity: null,
 
   /**
+   * Value of the source field
+   *
+   * @type String
+   */
+  source: '',
+
+  /**
+   * Value of the host field
+   *
+   * @type String
+   */
+  host: '',
+
+  /**
    * Error message to display
    *
    * @type String
@@ -279,12 +323,6 @@ App.pageController = SC.Object.create({
       return;
     }
 
-    var severity = parseInt(logEntry.Severity);
-    var maxSeverity = parseInt(App.pageController.getPath('severity.value'));
-    if (doSeverityCheck && severity > maxSeverity) {
-      return;
-    }
-
     var scDate = null;
     if (SC.empty(logEntry.Timestamp)) {
       scDate = SC.DateTime.create();
@@ -292,6 +330,7 @@ App.pageController = SC.Object.create({
       scDate = App.DateTime.parseChililogServerDateTime(logEntry.Timestamp);
     }
 
+    var severity = parseInt(logEntry.Severity);
     var severityClassName = '';
     if (severity <= 3) {
       severityClassName = 'important';
@@ -374,6 +413,9 @@ App.streamingController = SC.Object.create({
           MessageType: 'SubscriptionRequest',
           MessageID: new Date().getTime() + '',
           RepositoryName: App.pageController.getPath('repository.name'),
+          Source: App.pageController.getPath('source'),
+          Host: App.pageController.getPath('host'),
+          Severity: App.pageController.getPath('severity.value'),
           Username: App.sessionEngine.getPath('loggedInUser.username'),
           Password: 'token:' + App.sessionEngine.get('authenticationToken')
         };

@@ -46,7 +46,7 @@ import org.chililog.server.pubsub.jsonhttp.SubscriptionRequestAO;
 import org.chililog.server.pubsub.jsonhttp.SubscriptionResponseAO;
 import org.chililog.server.pubsub.websocket.TextWebSocketFrame;
 import org.chililog.server.pubsub.websocket.WebSocketFrame;
-import org.chililog.server.pubsub.websocket.WebSocketVersion;
+import org.chililog.server.pubsub.websocket.WebSocketSpecificationVersion;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -58,7 +58,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 /**
- * Test web socket standard hybi 00
+ * Test web sockets
  * 
  * @author vibul
  * 
@@ -71,7 +71,7 @@ public class JsonWebSocketTest {
     private static final String REPOSITORY_NAME = "json_ws_test";
     private static final String MONGODB_COLLECTION_NAME = "repo_json_ws_test";
 
-    private static WebSocketVersion _wsVersion = WebSocketVersion.HYBI08;
+    private static WebSocketSpecificationVersion _wsVersion = WebSocketSpecificationVersion.V10;
 
     @BeforeClass
     public static void classSetup() throws Exception {
@@ -189,10 +189,10 @@ public class JsonWebSocketTest {
      * @throws Exception
      */
     public static void sendPublishRequest(WebSocketClient client,
-                                           PublishCallbackHandler callbackHandler,
-                                           String msgID,
-                                           int entryCount,
-                                           boolean includePreparsedFields) throws Exception {
+                                          PublishCallbackHandler callbackHandler,
+                                          String msgID,
+                                          int entryCount,
+                                          boolean includePreparsedFields) throws Exception {
         sendPublishRequest(client, callbackHandler, msgID, entryCount, includePreparsedFields, "junit", "localhost",
                 "4", "");
     }
@@ -217,18 +217,18 @@ public class JsonWebSocketTest {
      * @param severity
      *            Severity setting
      * @param msgSuffix
-     *            String to append to message 
+     *            String to append to message
      * @throws Exception
      */
     public static void sendPublishRequest(WebSocketClient client,
-                                           PublishCallbackHandler callbackHandler,
-                                           String msgID,
-                                           int entryCount,
-                                           boolean includePreparsedFields,
-                                           String source,
-                                           String host,
-                                           String severity,
-                                           String msgSuffix) throws Exception {
+                                          PublishCallbackHandler callbackHandler,
+                                          String msgID,
+                                          int entryCount,
+                                          boolean includePreparsedFields,
+                                          String source,
+                                          String host,
+                                          String severity,
+                                          String msgSuffix) throws Exception {
         PublicationRequestAO request = new PublicationRequestAO();
         request.setMessageID(msgID);
         request.setUsername("JsonWsTestUser_Publisher");
@@ -446,7 +446,7 @@ public class JsonWebSocketTest {
         assertEquals("localhost", logEntry.getHost());
         assertEquals("junit", logEntry.getSource());
         assertEquals("4", logEntry.getSeverity());
-        assertEquals("test message 0", logEntry.getMessage());
+        assertEquals("test message 0 ", logEntry.getMessage());
 
     }
 
@@ -458,11 +458,11 @@ public class JsonWebSocketTest {
         PublishCallbackHandler publisherCallbackHandler = new PublishCallbackHandler();
         WebSocketClient publisherClient = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
                 publisherCallbackHandler);
-        
+
         publisherClient.connect().awaitUninterruptibly();
         Thread.sleep(500);
         assertTrue(publisherCallbackHandler.connected);
-        
+
         // Subscribe
         SubscribeCallbackHandler subscriberCallbackHandler = new SubscribeCallbackHandler();
         WebSocketClient subcriberClient = factory.newClient(new URI("ws://localhost:61615/websocket"), _wsVersion,
@@ -476,7 +476,7 @@ public class JsonWebSocketTest {
         request.setMessageID("testSubscribeMultipleConnections");
         request.setUsername("JsonWsTestUser_Subscriber");
         request.setPassword("333");
-        request.setSeverity("2"); 
+        request.setSeverity("2");
         request.setRepositoryName(REPOSITORY_NAME);
 
         String requestJson = JsonTranslator.getInstance().toJson(request);
@@ -486,14 +486,14 @@ public class JsonWebSocketTest {
         assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
         subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
 
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s1", "h1", "1", "FilterSeverity1");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s2", "h2", "2", "FilterSeverity2");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s3", "h3", "3", "FilterSeverity3");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s1",
+                "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s2",
+                "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s3",
+                "h3", "3", "FilterSeverity3");
         Thread.sleep(500);
-        
+
         assertEquals(2, subscriberCallbackHandler.messagesReceived.size());
         assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity1"));
         assertTrue(subscriberCallbackHandler.messagesReceived.get(1).contains("FilterSeverity2"));
@@ -504,7 +504,7 @@ public class JsonWebSocketTest {
         request.setMessageID("testSubscribeMultipleConnections");
         request.setUsername("JsonWsTestUser_Subscriber");
         request.setPassword("333");
-        request.setHost("h3"); 
+        request.setHost("h3");
         request.setRepositoryName(REPOSITORY_NAME);
 
         requestJson = JsonTranslator.getInstance().toJson(request);
@@ -514,14 +514,14 @@ public class JsonWebSocketTest {
         assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
         subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
 
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s1", "h1", "1", "FilterSeverity1");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s2", "h2", "2", "FilterSeverity2");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s3", "h3", "3", "FilterSeverity3");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s1",
+                "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s2",
+                "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s3",
+                "h3", "3", "FilterSeverity3");
         Thread.sleep(500);
-        
+
         assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
         assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity3"));
         subscriberCallbackHandler.messagesReceived.clear();
@@ -531,7 +531,7 @@ public class JsonWebSocketTest {
         request.setMessageID("testSubscribeMultipleConnections");
         request.setUsername("JsonWsTestUser_Subscriber");
         request.setPassword("333");
-        request.setSource("s1"); 
+        request.setSource("s1");
         request.setRepositoryName(REPOSITORY_NAME);
 
         requestJson = JsonTranslator.getInstance().toJson(request);
@@ -541,14 +541,14 @@ public class JsonWebSocketTest {
         assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
         subscriberCallbackHandler.messagesReceived.clear(); // Clear initial response
 
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s1", "h1", "1", "FilterSeverity1");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s2", "h2", "2", "FilterSeverity2");
-        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, 
-                "s3", "h3", "3", "FilterSeverity3");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s1",
+                "h1", "1", "FilterSeverity1");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s2",
+                "h2", "2", "FilterSeverity2");
+        sendPublishRequest(publisherClient, publisherCallbackHandler, "testPublishManyLogEntries", 1, false, "s3",
+                "h3", "3", "FilterSeverity3");
         Thread.sleep(500);
-        
+
         assertEquals(1, subscriberCallbackHandler.messagesReceived.size());
         assertTrue(subscriberCallbackHandler.messagesReceived.get(0).contains("FilterSeverity1"));
         subscriberCallbackHandler.messagesReceived.clear();

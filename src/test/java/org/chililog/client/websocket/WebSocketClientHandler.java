@@ -5,8 +5,9 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 
 import org.chililog.server.pubsub.websocket.WebSocketClientHandshaker;
+import org.chililog.server.pubsub.websocket.WebSocketClientHandshakerFactory;
 import org.chililog.server.pubsub.websocket.WebSocketFrame;
-import org.chililog.server.pubsub.websocket.WebSocketVersion;
+import org.chililog.server.pubsub.websocket.WebSocketSpecificationVersion;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
@@ -33,9 +34,9 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
     private WebSocketCallback callback;
     private Channel channel;
     private WebSocketClientHandshaker handshaker = null;
-    private WebSocketVersion version;
+    private WebSocketSpecificationVersion version;
 
-    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketVersion version, WebSocketCallback callback) {
+    public WebSocketClientHandler(ClientBootstrap bootstrap, URI url, WebSocketSpecificationVersion version, WebSocketCallback callback) {
         this.bootstrap = bootstrap;
         this.url = url;
         this.version = version;
@@ -45,7 +46,7 @@ public class WebSocketClientHandler extends SimpleChannelUpstreamHandler impleme
     @Override
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
         channel = e.getChannel();
-        this.handshaker = new WebSocketClientHandshaker(url, version);
+        this.handshaker = new WebSocketClientHandshakerFactory().newHandshaker(url, version, null);
         handshaker.beginOpeningHandshake(ctx, channel);
     }
 

@@ -110,6 +110,8 @@ SC.STRINGS = {
   '_stream.repository': 'Repository',
   '_stream.severity': 'Severity',
   '_stream.test': 'Send Test Log Entries',
+  '_stream.source': 'Source',
+  '_stream.host': 'Host',
 
   // ********************************************************
   // Search Page

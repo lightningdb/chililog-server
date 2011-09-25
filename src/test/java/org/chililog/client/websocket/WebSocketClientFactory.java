@@ -1,7 +1,7 @@
 
 package org.chililog.client.websocket;
 
-import org.chililog.server.pubsub.websocket.WebSocketVersion;
+import org.chililog.server.pubsub.websocket.WebSocketSpecificationVersion;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -30,11 +30,15 @@ public class WebSocketClientFactory {
      * 
      * @param url
      *            URL to connect to.
+     * @param version
+     *            Web Socket version to support
      * @param callback
      *            Callback interface to receive events
      * @return A WebSocket client. Call {@link WebSocketClient#connect()} to connect.
      */
-    public WebSocketClient newClient(final URI url, final WebSocketVersion version, final WebSocketCallback callback) {
+    public WebSocketClient newClient(final URI url,
+                                     final WebSocketSpecificationVersion version,
+                                     final WebSocketCallback callback) {
         ClientBootstrap bootstrap = new ClientBootstrap(socketChannelFactory);
 
         String protocol = url.getScheme();

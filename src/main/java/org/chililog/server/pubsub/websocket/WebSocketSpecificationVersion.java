@@ -19,14 +19,30 @@
 package org.chililog.server.pubsub.websocket;
 
 /**
- * Versions of the web socket protocol that we support
+ * <p>
+ * Versions of the web socket specification.
+ * </p>
+ * <p>
+ * A specification is tied to one wire protocol version but a protocol version may have use by more than 1 version of
+ * the specification.
+ * </p>
  * 
  * @author vibul
  */
-public enum WebSocketVersion {
+public enum WebSocketSpecificationVersion {
     UNKNOWN,
 
-    HYBI00,
+    /**
+     * <a
+     * href="http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-00">draft-ietf-hybi-thewebsocketprotocol-
+     * 00</a>. 
+     */
+    V00,
 
-    HYBI08
+    /**
+     * <a
+     * href="http://tools.ietf.org/html/draft-ietf-hybi-thewebsocketprotocol-10">draft-ietf-hybi-thewebsocketprotocol-
+     * 10</a>
+     */
+    V10
 }
