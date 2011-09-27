@@ -5,7 +5,7 @@
   <groupId>org.chililog.server</groupId>
   <artifactId>chililog-server</artifactId>
   
-  <!-- REMEMBER to change version in src/main/SC2/app.js too -->
+  <!-- REMEMBER to change version in src/main/SC2/js/app.js too -->
   <version>00.00.02-ALHPA</version>
   
   <packaging>jar</packaging>
