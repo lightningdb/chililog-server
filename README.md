@@ -1,9 +1,9 @@
 
-What is it?
-=====
+What is ChiliLog?
+=================
 ChiliLog is a real time log aggregation, analysis and monitoring tool.
 
-* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the Chililog Server for storage.
+* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the ChiliLog Server for storage.
 
 * ChiliLog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
 
@@ -12,7 +12,7 @@ ChiliLog is a real time log aggregation, analysis and monitoring tool.
 
 Why?
 ====
-I had a big problem the other day when my data centre provider claimed that I had exceeded by bandwidth allowance.
+I had a big problem the other day (back in 2010) when my data centre provider claimed that I had exceeded by bandwidth allowance.
 
 To find out what was causing my unusually high bandwidth usage, I had to aggregate logs from the firewall, load balancer, web server and app servers. 
 
@@ -20,53 +20,36 @@ Wow - what a pain in the arse!
 
 The logs were in different formats, the timestamps were in different timezones and I had to wait 1 week before I got access to the firewall logs.
 
+I tried to find open source software but I could not find one that did everything I needed in one package.
+
 It was at this moment that the idea for ChiliLog was born.  
 
-I tried to find open source software but I could not find one that did everything I needed in one package.  Due to corporate policy, I could not use a cloud logging service.
-
-
-Demo Site
-=========
-
-__Demo site is down for maintenance at the moment. Will be up by the end of Sept 2011.__
-
-[http://demo.chililog.com/workbench](http://demo.chililog.com/workbench). 
-
-You can login as admin/admin.
-
-If you do wish to download it and have a go, see instructions in the [wiki](https://github.com/chililog/chililog-server/wiki).
-
-
-__Walk Through__
-
-1. Open Safari version 5.0+ or Chrome versions 7 to 13 (not 14). Only these browsers support the correct version web sockets. Please make sure your firewall allows traffic through port 8989 for HTTP and port 61615 for HTTP web socket traffic.
-
-2. Goto http://demo.chililog.com/workbench. 
-
-3. Login as admin/admin
-
-4. Click Stream from the menu at the top of the page.
-
-   * Select the __Sandpit__ repository and and click Start.
-   * You will now see live data being published from our logs. We've used web sockets to stream the data down.
-   * Click __Send Test Log Entries__ to generate some of your own log messages
-   * Click Stop to finish.
-
-5. Click Search from the menu at the top of the page
-
-   * Select the __Sandpit__ repository and and click Search.
-   * You will now see historical data including your own test log messages previously generated in step #3.
-
-Other pages have not been implemented. The code to perform CRUD operations with the server have been coded in app_datastore.js and app_engine.js. The HTML pages have not been done - ran out of time.
 
 
 Technical Titbits
 =================
 
-* Using web sockets to stream live data to browser
-* Client coded as static HTML that uses SC2 and jQuery Ajax to communicate with the server.
-* Server coded in Java
-* Server uses open source [MongoDB](http://www.mongodb.org/) to store data, [HornetQ](http://www.jboss.org/hornetq) for pubsub and [Netty](http://www.jboss.org/netty) as a web server.
+I've used ChiliLog to find out about newer technologies (well ... new as of 2010).   
+
+* Browser based client coded as static HTML that uses Sproutcore2 and jQuery Ajax to communicate with the server.
+* Server coded in Java and uses open source
+    * [MongoDB](http://www.mongodb.org/) to store data
+    * [HornetQ](http://www.jboss.org/hornetq) for pubsub, and
+    * [Netty](http://www.jboss.org/netty) as a web server.
+* Tools to help you publish (write) and subscribe (read) log entries from your apps and devices: 
+    * [JavaScirpt](https://github.com/chililog/chililog-javascript-pubsub)
+    * [Java](https://github.com/chililog/chililog-java-pubsub)
+    * [.Net](https://github.com/chililog/chililog-dotnet-pubsub)
+
+
+
+Demo Site
+=========
+
+Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Demo) on how to access our live demo.
+
+You'll create log entries from your browser and view them in real time. 
+
 
 
 Roadmap
@@ -108,10 +91,12 @@ The Sproutcore 2 source files are in [src/main/sc2](https://github.com/chililog/
 Sproutcore functionality used in the code include:
 
 * Templates
-* jQuery UI integration
 * Data Store
 * State Charts
 * DateTime
 * Bindings and custom binding transforms
-* Strings
+* Strings Localization
+* jQuery UI integration
 
+I'll be blogging on how I've used these features soon. 
+ 
