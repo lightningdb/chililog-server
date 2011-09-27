@@ -67,7 +67,7 @@ The current road map is:
 
 * JUL 2011 - Original release date postponed because I am not happy with UI in Sproutcore 1.0. Tables for displaying log entries are not work working very well. (Milestone missed).
 
-* AUG 2011 - UI re-write in Sproutcore 2.0.
+* AUG 2011 - UI re-write in Sproutcore 2.0. (Done)
 
 * OCT 2011 - Tentative alpha release.
 
