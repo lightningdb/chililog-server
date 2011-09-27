@@ -108,12 +108,20 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      * @throws Exception
      */
     private void handleHttpRequest(ChannelHandlerContext ctx, MessageEvent e, HttpRequest req) throws Exception {
+
+        // TODO should invoke workers in a different thread pool to improve performance
+
         if (req.getMethod() == GET) {
             // Web socket handshake
             if (req.getUri().equals(WEBSOCKET_PATH)) {
                 String wsURL = "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
-                _handshaker = new WebSocketServerHandshakerFactory(wsURL, null).newHandshaker(ctx, req);
-                _handshaker.executeOpeningHandshake(ctx, req);
+                WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(wsURL, null);
+                _handshaker = wsFactory.newHandshaker(ctx, req);
+                if (_handshaker == null) {
+                    wsFactory.sendUnsupportedWebSocketVersionResponse(ctx);
+                } else {
+                    _handshaker.executeOpeningHandshake(ctx, req);
+                }
                 return;
             }
         } else if (req.getMethod() == POST && req.getUri().equals(PUBLISH_PATH)) {
@@ -137,6 +145,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(HTTP_1_1,
                     BAD_REQUEST);
             res.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
+            res.setHeader("Access-Control-Allow-Origin", "*");  // Cross Domain: http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/
             res.setContent(ChannelBuffers.copiedBuffer(responseJson.toString(), UTF_8_CHARSET));
             sendHttpResponse(ctx, req, res);
             return;
@@ -173,6 +182,8 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      */
     private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
         _logger.debug("Channel %s got %s frame.", ctx.getChannel().getId(), frame.getType());
+
+        // TODO should invoke workers in a different thread pool to improve performance
 
         // Check for closing frame
         if (frame instanceof CloseWebSocketFrame) {

@@ -61,10 +61,10 @@ public class WebSocketServerHandshakerFactory {
      *            Version of web socket specification to use to connect to the server
      * @param subProtocol
      *            Sub protocol request sent to the server. Null if no sub-protocol support is required.
-     * @throws WebSocketHandshakeException
+     * @return A new WebSocketServerHandshaker for the requested web socket version. Null if web socket version is not
+     *         supported.
      */
-    public WebSocketServerHandshaker newHandshaker(ChannelHandlerContext ctx, HttpRequest req)
-            throws WebSocketHandshakeException {
+    public WebSocketServerHandshaker newHandshaker(ChannelHandlerContext ctx, HttpRequest req) {
 
         String version = req.getHeader(WebSocketClientHandshaker10.SEC_WEBSOCKET_VERSION);
         if (version != null) {
@@ -72,7 +72,7 @@ public class WebSocketServerHandshakerFactory {
                 // Version 8 of the wire protocol - assume version 10 of the specification.
                 return new WebSocketServerHandshaker10(webSocketURL, subProtocols);
             } else {
-                throw new WebSocketHandshakeException("");
+                return null;
             }
         } else {
             // Assume version 00 where version header was not specified
@@ -85,10 +85,8 @@ public class WebSocketServerHandshakerFactory {
      * 
      * @param ctx
      *            Context
-     * @param req
-     *            HTTP Request
      */
-    public void sendUnsupportedWebSocketVersionResponse(ChannelHandlerContext ctx, HttpRequest req) {
+    public void sendUnsupportedWebSocketVersionResponse(ChannelHandlerContext ctx) {
         HttpResponse res = new DefaultHttpResponse(HttpVersion.HTTP_1_1, new HttpResponseStatus(101,
                 "Switching Protocols"));
         res.setStatus(HttpResponseStatus.UPGRADE_REQUIRED);
