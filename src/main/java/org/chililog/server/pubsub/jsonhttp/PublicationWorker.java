@@ -176,9 +176,11 @@ public class PublicationWorker {
 
         // Make sure the user can publish to the repository
         String administratorRole = UserBO.createRepositoryAdministratorRoleName(repoName);
+        String workbenchRole = UserBO.createRepositoryWorkbenchRoleName(repoName);
         String publicationRole = UserBO.createRepositoryPublisherRoleName(repoName);
 
-        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole) && !user.isSystemAdministrator()) {
+        if (!user.hasRole(administratorRole) && !user.hasRole(publicationRole) && 
+                !user.hasRole(workbenchRole) && !user.isSystemAdministrator()) {
             throw new ChiliLogException(Strings.PUBLISHER_AUTHENTICATION_ERROR);
         }
 
