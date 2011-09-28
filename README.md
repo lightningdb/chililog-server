@@ -9,6 +9,11 @@ Chililog is a real time log aggregation, analysis and monitoring tool.
 
 * Chililog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
+Chililog is open source software published under the Apache License Version 2.0.
+
+Hope you find it as useful and we do.
+
+
 
 Why?
 ====
@@ -43,7 +48,7 @@ I've used chililog to find out about newer technologies (well ... new as of 2010
 
 
 
-Demo Site
+Live Demo
 =========
 
 Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Demo) on how to access our live demo.
