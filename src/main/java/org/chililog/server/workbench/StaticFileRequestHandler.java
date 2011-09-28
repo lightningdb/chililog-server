@@ -313,7 +313,12 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         setDateHeader(response);
 
         // Close the connection as soon as the error message is sent.
-        ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        ChannelFuture writeFuture = ctx.getChannel().write(response);
+        
+        // Decide whether to close the connection or not.
+        if (!isKeepAlive((HttpRequest)e.getMessage())) {
+            writeFuture.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     /**
