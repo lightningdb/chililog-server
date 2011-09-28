@@ -1,13 +1,13 @@
 
-What is ChiliLog?
+What is Chililog?
 =================
-ChiliLog is a real time log aggregation, analysis and monitoring tool.
+Chililog is a real time log aggregation, analysis and monitoring tool.
 
-* ChiliLog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the ChiliLog Server for storage.
+* Chililog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the chililog Server for storage.
 
-* ChiliLog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
+* Chililog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
 
-* ChiliLog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
+* Chililog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
 
 Why?
@@ -22,14 +22,14 @@ The logs were in different formats, the timestamps were in different timezones a
 
 I tried to find open source software but I could not find one that did everything I needed in one package.
 
-It was at this moment that the idea for ChiliLog was born.  
+It was at this moment that the idea for chililog was born.  
 
 
 
 Technical Titbits
 =================
 
-I've used ChiliLog to find out about newer technologies (well ... new as of 2010).   
+I've used chililog to find out about newer technologies (well ... new as of 2010).   
 
 * Browser based client coded as static HTML that uses Sproutcore2 and jQuery Ajax to communicate with the server.
 * Server coded in Java and uses open source
@@ -54,10 +54,6 @@ You'll create log entries from your browser and view them in real time.
 
 Roadmap
 =======
-
-ChiliLog is in development and "un-released".
-
-Unfortunately, ChiliLog is not my day job so things are going to take a while.
 
 The current road map is:
 

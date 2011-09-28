@@ -153,6 +153,9 @@ body.login {
 /* =============================================================================
    Index Page
    ============================================================================= */
+#indexContent {
+    margin-top: 80px;
+}
 #indexContent .welcome {
     background-color: whiteSmoke;
     padding: 60px;
