@@ -34,7 +34,6 @@ import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.jboss.netty.handler.codec.http.websocket.WebSocketFrame;
 
 /**
  * <p>
@@ -71,6 +70,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         if (msg instanceof HttpRequest) {
             // New request so let's figure our the service to call
             HttpRequest request = (HttpRequest) msg;
+            _logger.debug("%s %s CHANNEL=%s", request.getMethod(), request.getUri(), e.getChannel().getId());
+            
             String uri = request.getUri();
             if (StringUtils.isBlank(uri)) {
                 send404NotFound(e);
@@ -93,7 +94,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
                 send404NotFound(e);
                 return;
             }
-        } else if (msg instanceof HttpChunk || msg instanceof WebSocketFrame) {
+        } else if (msg instanceof HttpChunk) {
             // If this is HTTP chunk or web socket frame, then use existing _workbenchRequestHandler
         } else {
             throw new NotImplementedException("Message Type " + msg.getClass().getName());

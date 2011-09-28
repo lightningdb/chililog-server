@@ -449,8 +449,8 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
      */
     private void writeLogEntry(MessageEvent e, HttpResponseStatus status, String moreInfo) {
         HttpRequest request = (HttpRequest) e.getMessage();
-        _logger.info("GET %s REMOTE_IP=%s STATUS=%s %s", request.getUri(), e.getRemoteAddress().toString(), status,
-                moreInfo == null ? StringUtils.EMPTY : moreInfo);
+        _logger.info("GET %s REMOTE_IP=%s STATUS=%s CHANNEL=%s %s", request.getUri(), e.getRemoteAddress().toString(),
+                status, e.getChannel().getId(), moreInfo == null ? StringUtils.EMPTY : moreInfo);
         return;
     }
 }
