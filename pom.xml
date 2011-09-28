@@ -59,19 +59,6 @@
         </configuration>
       </plugin>
 
-      <!-- Plugin to clean and build WorkBench UI using sproutcore -->
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>2.4.1</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>${basedir}/src/main/sc/tmp</directory>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-
       <!-- Create source code jar -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

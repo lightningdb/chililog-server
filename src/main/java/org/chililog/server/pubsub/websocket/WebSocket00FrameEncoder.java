@@ -26,8 +26,6 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @version $Rev: 2362 $, $Date: 2010-09-09 19:59:22 +0900 (Thu, 09 Sep 2010) $
  * 
- * @apiviz.landmark
- * @apiviz.uses org.jboss.netty.handler.codec.http.websocket.WebSocketFrame
  */
 @Sharable
 public class WebSocket00FrameEncoder extends OneToOneEncoder {

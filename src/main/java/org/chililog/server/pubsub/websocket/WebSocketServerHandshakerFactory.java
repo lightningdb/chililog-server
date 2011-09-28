@@ -54,13 +54,10 @@ public class WebSocketServerHandshakerFactory {
     /**
      * Instances a new handshaker
      * 
-     * @param webSocketURL
-     *            URL for web socket communications. e.g "ws://myhost.com/mypath". Subsequent web socket frames will be
-     *            sent to this URL.
-     * @param version
-     *            Version of web socket specification to use to connect to the server
-     * @param subProtocol
-     *            Sub protocol request sent to the server. Null if no sub-protocol support is required.
+     * @param ctx
+     *            Context
+     * @param req
+     *            HTTP request that instigated the handshake
      * @return A new WebSocketServerHandshaker for the requested web socket version. Null if web socket version is not
      *         supported.
      */

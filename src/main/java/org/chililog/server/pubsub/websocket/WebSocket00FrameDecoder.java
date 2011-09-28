@@ -27,8 +27,6 @@ import org.jboss.netty.handler.codec.replay.VoidEnum;
  * @author <a href="http://gleamynode.net/">Trustin Lee</a>
  * @version $Rev: 2342 $, $Date: 2010-07-07 14:07:39 +0900 (Wed, 07 Jul 2010) $
  * 
- * @apiviz.landmark
- * @apiviz.uses org.jboss.netty.handler.codec.http.websocket.WebSocketFrame
  */
 public class WebSocket00FrameDecoder extends ReplayingDecoder<VoidEnum> {
 
