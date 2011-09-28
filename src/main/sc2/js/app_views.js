@@ -729,6 +729,10 @@ App.viewUtils = {
     var loggedInUser = App.sessionEngine.get('loggedInUser');
     $('#navUsername').append(loggedInUser.get('displayNameOrUsername') + "&nbsp;");
 
+    if (loggedInUser.get('isSystemAdministrator')) {
+      $('#navAdmin').show();
+    }
+
     // Open top bar menu when clicked
     $('a.menu').click(function (e) {
       var $li = $(this).parent("li").toggleClass('open');
