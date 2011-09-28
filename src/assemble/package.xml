@@ -37,12 +37,6 @@
       <outputDirectory>/workbench</outputDirectory>
     </fileSet>
   </fileSets>
-  <files>
-    <file>
-      <source>${project.build.directory}/classes/buildinfo.properties</source>
-      <destName>/version.txt</destName>
-    </file>
-  </files>  
   <dependencySets>
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
