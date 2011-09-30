@@ -10,12 +10,22 @@ Chililog is a real time log aggregation, analysis and monitoring tool.
 * Chililog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
 
+
+Live Demo
+=========
+
+Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Live-Demo) on how to access our live demo.
+
+You'll create log entries from your browser and view them in real time. 
+
+
+
 How to get hold of Chililog?
-===========================
+============================
 
 Chililog is open source software published under the Apache License Version 2.0. 
 
-Download it from [here](https://github.com/chililog/chililog-server/downloads).
+Download it [here](https://github.com/chililog/chililog-server/downloads).
 
 Hope you find it as useful and we do.
 
@@ -51,16 +61,6 @@ I've used Chililog to find out about newer technologies (well ... new as of 2010
     * [JavaScirpt](https://github.com/chililog/chililog-javascript-pubsub)
     * [Java](https://github.com/chililog/chililog-java-pubsub)
     * [.Net](https://github.com/chililog/chililog-dotnet-pubsub)
-
-
-
-Live Demo
-=========
-
-Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Live-Demo) on how to access our live demo.
-
-You'll create log entries from your browser and view them in real time. 
-
 
 
 Roadmap
