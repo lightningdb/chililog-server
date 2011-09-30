@@ -51,7 +51,7 @@ I've used chililog to find out about newer technologies (well ... new as of 2010
 Live Demo
 =========
 
-Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Demo) on how to access our live demo.
+Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Live-Demo) on how to access our live demo.
 
 You'll create log entries from your browser and view them in real time. 
 
