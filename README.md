@@ -9,14 +9,20 @@ Chililog is a real time log aggregation, analysis and monitoring tool.
 
 * Chililog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
-Chililog is open source software published under the Apache License Version 2.0.
+
+How to get hold of Chililog?
+===========================
+
+Chililog is open source software published under the Apache License Version 2.0. 
+
+Download it from [here](https://github.com/chililog/chililog-server/downloads).
 
 Hope you find it as useful and we do.
 
 
 
-Why?
-====
+Why build it?
+=============
 I had a big problem the other day (back in 2010) when my data centre provider claimed that I had exceeded by bandwidth allowance.
 
 To find out what was causing my unusually high bandwidth usage, I had to aggregate logs from the firewall, load balancer, web server and app servers. 
@@ -27,21 +33,21 @@ The logs were in different formats, the timestamps were in different timezones a
 
 I tried to find open source software but I could not find one that did everything I needed in one package.
 
-It was at this moment that the idea for chililog was born.  
+It was at this moment when the idea for Chililog was born.  
 
 
 
 Technical Titbits
 =================
 
-I've used chililog to find out about newer technologies (well ... new as of 2010).   
+I've used Chililog to find out about newer technologies (well ... new as of 2010).   
 
-* Browser based client coded as static HTML that uses Sproutcore2 and jQuery Ajax to communicate with the server.
+* Chililog has a browser based client coded in HTML5 and javascript. It uses Sproutcore2 and jQuery Ajax to communicate with the server.
 * Server coded in Java and uses open source
     * [MongoDB](http://www.mongodb.org/) to store data
     * [HornetQ](http://www.jboss.org/hornetq) for pubsub, and
     * [Netty](http://www.jboss.org/netty) as a web server.
-* Tools to help you publish (write) and subscribe (read) log entries from your apps and devices: 
+* There are also tools to help you publish (write) and subscribe (read) log entries: 
     * [JavaScirpt](https://github.com/chililog/chililog-javascript-pubsub)
     * [Java](https://github.com/chililog/chililog-java-pubsub)
     * [.Net](https://github.com/chililog/chililog-dotnet-pubsub)
