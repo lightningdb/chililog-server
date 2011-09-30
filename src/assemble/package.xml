@@ -35,6 +35,10 @@
     <fileSet>
       <directory>${basedir}/src/main/sc2</directory>
       <outputDirectory>/workbench</outputDirectory>
+      <excludes>
+        <exclude>.idea/**</exclude>
+        <exclude>.gitignore</exclude>
+      </excludes>
     </fileSet>
   </fileSets>
   <dependencySets>
