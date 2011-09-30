@@ -348,7 +348,7 @@ App.Dialog = SC.View.extend({
     // JQuery UI dialog setup
     this.$().dialog({
         autoOpen: false,
-        height: 620,
+        height: 624,
         width: 690,
         resizable: false,
         modal: true,
