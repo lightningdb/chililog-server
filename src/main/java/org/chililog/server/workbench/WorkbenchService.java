@@ -21,6 +21,7 @@ package org.chililog.server.workbench;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
@@ -152,14 +153,31 @@ public class WorkbenchService {
         _logger.info("Starting Workbench Web Sever on " + appProperties.getWorkbenchHost() + ":"
                 + appProperties.getWorkbenchPort() + "...");
 
-        _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool());
+        // Create socket factory
+        int workerCount = appProperties.getWorkbenchNettyWorkerThreadPoolSize();
+        if (workerCount == 0) {
+            _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+                    Executors.newCachedThreadPool());
+        } else {
+            _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+                    Executors.newCachedThreadPool(), workerCount);
+        }
 
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
+        // Setup thread pool to run our handler
+        // It makes sure the events from the same Channel are executed sequentially; i.e. event 1 is executed before
+        // event 2. However event 1 may be executed on a different thread to event 2.
+        OrderedMemoryAwareThreadPoolExecutor pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+                appProperties.getWorkbenchNettyHandlerThreadPoolSize(),
+                appProperties.getWorkbenchNettyHandlerThreadPoolMaxChannelMemorySize(),
+                appProperties.getWorkbenchNettyHandlerThreadPoolMaxTotalMemorySize(),
+                appProperties.getWorkbenchNettyHandlerThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS,
+                Executors.defaultThreadFactory());
+
         // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new HttpServerPipelineFactory());
+        bootstrap.setPipelineFactory(new HttpServerPipelineFactory(pipelineExecutor));
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getWorkbenchHost());

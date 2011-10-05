@@ -153,35 +153,43 @@ public class AppPropertiesTest {
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolSize() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolSize();
+    public void testPubSubJsonHttpProtocolNettyWorkerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyWorkerThreadPoolSize();
+        assertEquals(0, s);
+        assertTrue(AppProperties.getInstance().toString()
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE));
+    }
+    
+    @Test
+    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize();
         assertEquals(16, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize();
-        assertEquals(1048576, s);
+    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize();
+        assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize();
-        assertEquals(1048576, s);
+    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize();
+        assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds();
-        assertEquals(30, s);
+    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds();
+        assertEquals(3, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS));
     }
 
     @Test
@@ -224,7 +232,7 @@ public class AppPropertiesTest {
     @Test
     public void testWorkbenchHost() throws UnknownHostException {
         String s = AppProperties.getInstance().getWorkbenchHost();
-        assertEquals("localhost", s);
+        assertEquals("0.0.0.0", s);
         assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_HOST));
     }
 
@@ -236,34 +244,41 @@ public class AppPropertiesTest {
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolSize() throws UnknownHostException {
-        int s = AppProperties.getInstance().getWorkbenchTaskThreadPoolSize();
+    public void testWorkbenchNettyWorkerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getWorkbenchNettyWorkerThreadPoolSize();
+        assertEquals(0, s);
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_NETTY_WORKER_THREAD_POOL_SIZE));
+    }
+    
+    @Test
+    public void testWorkbenchNettyHandlerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getWorkbenchNettyHandlerThreadPoolSize();
         assertEquals(16, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_SIZE));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.WORKBENCH_NETTY_HANDLER_THREAD_POOL_SIZE));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolMaxChannelMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getWorkbenchTaskThreadPoolMaxChannelMemorySize();
-        assertEquals(1048576, s);
+    public void testWorkbenchNettyHandlerThreadPoolMaxChannelMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getWorkbenchNettyHandlerThreadPoolMaxChannelMemorySize();
+        assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+                .contains(AppProperties.WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolMaxThreadMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getWorkbenchTaskThreadPoolMaxThreadMemorySize();
-        assertEquals(1048576, s);
+    public void testWorkbenchNettyHandlerThreadPoolMaxTotalMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getWorkbenchNettyHandlerThreadPoolMaxTotalMemorySize();
+        assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE));
+                .contains(AppProperties.WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE));
     }
 
     @Test
-    public void testWorkbenchTaskThreadPoolKeepAliveSeconds() throws UnknownHostException {
-        int s = AppProperties.getInstance().getWorkbenchTaskThreadPoolKeepAliveSeconds();
-        assertEquals(30, s);
+    public void testWorkbenchNettyHandlerThreadPoolKeepAliveSeconds() throws UnknownHostException {
+        int s = AppProperties.getInstance().getWorkbenchNettyHandlerThreadPoolKeepAliveSeconds();
+        assertEquals(3, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS));
+                .contains(AppProperties.WORKBENCH_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS));
     }
 
     @Test

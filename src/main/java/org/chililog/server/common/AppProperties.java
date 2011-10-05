@@ -593,63 +593,78 @@ public class AppProperties {
     }
 
     /**
-     * Returns the maximum number of active threads to execute tasks
+     * Returns the maximum number of active threads used by netty to execute our handler
      */
-    public int getPubSubJsonHttpProtocolTaskThreadPoolSize() {
-        return _pubSubJsonHttpProtocolTaskThreadPoolSize;
+    public int getPubSubJsonHttpProtocolNettyWorkerThreadPoolSize() {
+        return _pubSubJsonHttpProtocolNettyWorkerThreadPoolSize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE = "pubsub.json-http.task_thread_pool.size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE = "pubsub.json-http.netty_worker_thread_pool.size";
 
-    private int _pubSubJsonHttpProtocolTaskThreadPoolSize = 0;
+    private int _pubSubJsonHttpProtocolNettyWorkerThreadPoolSize = 0;
 
-    static int loadPubSubJsonHttpProtocolTaskThreadPoolSize(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_SIZE, 16);
+    static int loadPubSubJsonHttpProtocolNettyWorkerThreadPoolSize(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE, 0);
+    }
+    
+    /**
+     * Returns the maximum number of active threads used by netty to execute our handler
+     */
+    public int getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize() {
+        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolSize;
+    }
+
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE = "pubsub.json-http.netty_handler_thread_pool.size";
+
+    private int _pubSubJsonHttpProtocolNettyHandlerThreadPoolSize = 0;
+
+    static int loadPubSubJsonHttpProtocolNettyHandlerThreadPoolSize(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE, 16);
     }
 
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize() {
-        return _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize;
+    public long getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize() {
+        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.task_thread_pool.max_channel_memory_size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_channel_memory_size";
 
-    private long _pubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize = 0;
+    private long _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxChannelMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
+    static long loadPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize(Properties properties) {
+        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 0);
     }
 
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize() {
-        return _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize;
+    public long getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize() {
+        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "pubsub.json-http.task_thread_pool.max_thread_memory_size";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_thread_memory_size";
 
-    private long _pubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize = 0;
+    private long _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolTaskThreadPoolMaxThreadMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+    static long loadPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize(Properties properties) {
+        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE, 0);
     }
 
     /**
-     * Returns the amount of time for an inactive thread to shut itself down
+     * Returns the amount of time for an inactive thread before it is shutdown
      */
-    public int getPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds() {
-        return _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds;
+    public int getPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds() {
+        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.task_thread_pool.keep_alive_seconds";
+    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.netty_handler_thread_pool.keep_alive_seconds";
 
-    private int _pubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds = 0;
+    private int _pubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds = 0;
 
-    static int loadPubSubJsonHttpProtocolTaskThreadPoolKeepAliveSeconds(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+    static int loadPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS, 3);
     }
 
     /**
@@ -797,65 +812,80 @@ public class AppProperties {
     static int loadWorkbenchPort(Properties properties) {
         return loadInt(properties, WORKBENCH_PORT, 8989);
     }
-
+    
     /**
-     * Returns the maximum number of active threads to execute tasks
+     * Returns the maximum number of threads in the thread pool used by netty for processing channels 
      */
-    public int getWorkbenchTaskThreadPoolSize() {
-        return _workbenchTaskThreadPoolSize;
+    public int getWorkbenchNettyWorkerThreadPoolSize() {
+        return _workbenchNettyWorkerThreadPoolSize;
     }
 
-    static final String WORKBENCH_TASK_THREAD_POOL_SIZE = "workbench.task_thread_pool.size";
+    static final String WORKBENCH_NETTY_WORKER_THREAD_POOL_SIZE = "workbench.netty_worker_thread_pool.size";
 
-    private int _workbenchTaskThreadPoolSize = 0;
+    private int _workbenchNettyWorkerThreadPoolSize = 0;
 
-    static int loadWorkbenchTaskThreadPoolSize(Properties properties) {
-        return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_SIZE, 16);
+    static int loadWorkbenchNettyWorkerThreadPoolSize(Properties properties) {
+        return loadInt(properties, WORKBENCH_NETTY_WORKER_THREAD_POOL_SIZE, 0);
     }
-
+    
     /**
-     * Returns maximum total size of the queued events per channel (0 to disable).
+     * Returns the maximum number of threads in the thread pool used by netty to execute our handler
      */
-    public long getWorkbenchTaskThreadPoolMaxChannelMemorySize() {
-        return _workbenchTaskThreadPoolMaxChannelMemorySize;
+    public int getWorkbenchNettyHandlerThreadPoolSize() {
+        return _workbenchNettyHandlerThreadPoolSize;
     }
 
-    static final String WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "workbench.task_thread_pool.max_channel_memory_size";
+    static final String WORKBENCH_NETTY_HANDLER_THREAD_POOL_SIZE = "workbench.netty_handler_thread_pool.size";
 
-    private long _workbenchTaskThreadPoolMaxChannelMemorySize = 0;
+    private int _workbenchNettyHandlerThreadPoolSize = 0;
 
-    static long loadWorkbenchTaskThreadPoolMaxChannelMemorySize(Properties properties) {
-        return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 1048576);
-    }
-
-    /**
-     * Returns maximum total size of the queued events for this pool (0 to disable).
-     */
-    public long getWorkbenchTaskThreadPoolMaxThreadMemorySize() {
-        return _workbenchTaskThreadPoolMaxThreadMemorySize;
-    }
-
-    static final String WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE = "workbench.task_thread_pool.max_thread_memory_size";
-
-    private long _workbenchTaskThreadPoolMaxThreadMemorySize = 0;
-
-    static long loadWorkbenchTaskThreadPoolMaxThreadMemorySize(Properties properties) {
-        return loadLong(properties, WORKBENCH_TASK_THREAD_POOL_MAX_THREAD_MEMORY_SIZE, 1048576);
+    static int loadWorkbenchNettyHandlerThreadPoolSize(Properties properties) {
+        return loadInt(properties, WORKBENCH_NETTY_HANDLER_THREAD_POOL_SIZE, 16);
     }
 
     /**
-     * Returns the amount of time for an inactive thread to shut itself down
+     * Returns maximum total size of the queued events per channel. 0 to disable. Defaults to 0.
      */
-    public int getWorkbenchTaskThreadPoolKeepAliveSeconds() {
-        return _workbenchTaskThreadPoolKeepAliveSeconds;
+    public long getWorkbenchNettyHandlerThreadPoolMaxChannelMemorySize() {
+        return _workbenchNettyHandlerThreadPoolMaxChannelMemorySize;
     }
 
-    static final String WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS = "workbench.task_thread_pool.keep_alive_seconds";
+    static final String WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "workbench.netty_handler_thread_pool.max_channel_memory_size";
 
-    private int _workbenchTaskThreadPoolKeepAliveSeconds = 0;
+    private long _workbenchNettyHandlerThreadPoolMaxChannelMemorySize = 0;
 
-    static int loadWorkbenchTaskThreadPoolKeepAliveSeconds(Properties properties) {
-        return loadInt(properties, WORKBENCH_TASK_THREAD_POOL_KEEP_ALIVE_SECONDS, 30);
+    static long loadWorkbenchNettyHandlerThreadPoolMaxChannelMemorySize(Properties properties) {
+        return loadLong(properties, WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 0);
+    }
+
+    /**
+     * Returns maximum total size of the queued events for this pool. 0 to disable. Defaults to 0
+     */
+    public long getWorkbenchNettyHandlerThreadPoolMaxTotalMemorySize() {
+        return _workbenchNettyHandlerThreadPoolMaxTotalMemorySize;
+    }
+
+    static final String WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE = "workbench.netty_handler_thread_pool.max_total_memory_size";
+
+    private long _workbenchNettyHandlerThreadPoolMaxTotalMemorySize = 0;
+
+    static long loadWorkbenchNettyHandlerThreadPoolMaxTotalMemorySize(Properties properties) {
+        return loadLong(properties, WORKBENCH_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE, 0);
+    }
+
+    /**
+     * Returns the amount of time for an inactive thread before it is terminated. Defaults to 3 seconds.
+     */
+    public int getWorkbenchNettyHandlerThreadPoolKeepAliveSeconds() {
+        return _workbenchNettyHandlerThreadPoolKeepAliveSeconds;
+    }
+
+    static final String WORKBENCH_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS = "workbench.netty_handler_thread_pool.keep_alive_seconds";
+
+    private int _workbenchNettyHandlerThreadPoolKeepAliveSeconds = 0;
+
+    static int loadWorkbenchNettyHandlerThreadPoolKeepAliveSeconds(Properties properties) {
+        return loadInt(properties, WORKBENCH_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS, 3);
     }
 
     /**

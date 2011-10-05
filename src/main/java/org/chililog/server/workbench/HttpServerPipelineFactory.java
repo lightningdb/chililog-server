@@ -28,6 +28,8 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.stream.ChunkedWriteHandler;
 
@@ -38,11 +40,17 @@ import org.jboss.netty.handler.stream.ChunkedWriteHandler;
  */
 public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
+    private OrderedMemoryAwareThreadPoolExecutor _pipelineExecutor = null;
+
     /**
      * Constructor
+     * 
+     * @param executor
+     *            Thread pool to use for executing requests
      */
-    public HttpServerPipelineFactory() {
-    }
+    public HttpServerPipelineFactory(OrderedMemoryAwareThreadPoolExecutor pipelineExecutor) {
+        _pipelineExecutor = pipelineExecutor;
+}
 
     /**
      * Creates an HTTP Pipeline for our server
@@ -78,6 +86,9 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         // Compress
         pipeline.addLast("deflater", new HttpContentCompressor(1));
 
+        // Execute the handler in a new thread
+        pipeline.addLast("pipelineExecutor", new ExecutionHandler(_pipelineExecutor));
+        
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());
 

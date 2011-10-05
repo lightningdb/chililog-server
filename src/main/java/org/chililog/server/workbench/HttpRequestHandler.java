@@ -61,17 +61,24 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
     private WorkbenchRequestHandler _workbenchRequestHandler = null;
 
     /**
+     * Constructor
+     */
+    public HttpRequestHandler() {
+        super();
+    }
+
+    /**
      * Handles incoming messages by routing to services
      */
     @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+    public void messageReceived(final ChannelHandlerContext ctx, final MessageEvent e) throws Exception {
         Object msg = e.getMessage();
 
         if (msg instanceof HttpRequest) {
             // New request so let's figure our the service to call
             HttpRequest request = (HttpRequest) msg;
             _logger.debug("%s %s CHANNEL=%s", request.getMethod(), request.getUri(), e.getChannel().getId());
-            
+
             String uri = request.getUri();
             if (StringUtils.isBlank(uri)) {
                 send404NotFound(e);
@@ -101,6 +108,7 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
 
         _workbenchRequestHandler.processMessage(ctx, e);
+
         return;
 
     }

@@ -130,7 +130,7 @@ public class JsonHttpService {
         // Create producer session pool equivalent to the number of threads for Json HTTP so that each thread does not
         // have to wait for a session
         _mqProducerSessionPool = new MqProducerSessionPool(AppProperties.getInstance()
-                .getPubSubJsonHttpProtocolTaskThreadPoolSize());
+                .getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize());
 
         AppProperties appProperties = AppProperties.getInstance();
 
