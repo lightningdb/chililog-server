@@ -50,7 +50,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
      */
     public HttpServerPipelineFactory(OrderedMemoryAwareThreadPoolExecutor pipelineExecutor) {
         _pipelineExecutor = pipelineExecutor;
-}
+    }
 
     /**
      * Creates an HTTP Pipeline for our server
@@ -88,7 +88,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
 
         // Execute the handler in a new thread
         pipeline.addLast("pipelineExecutor", new ExecutionHandler(_pipelineExecutor));
-        
+
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());
 

@@ -550,211 +550,211 @@ public class AppProperties {
     /**
      * Returns Flag to indicate if the JSON HTTP protocol is to be enabled for pubsub use
      */
-    public boolean getPubSubJsonHttpProtocolEnabled() {
-        return _pubSubJsonHttpProtocolEnabled;
+    public boolean getPubSubJsonHttpEnabled() {
+        return _pubSubJsonHttpEnabled;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED = "pubsub.json-http.enabled";
+    static final String PUB_SUB_JSON_HTTP_ENABLED = "pubsub.json-http.enabled";
 
-    private boolean _pubSubJsonHttpProtocolEnabled = false;
+    private boolean _pubSubJsonHttpEnabled = false;
 
-    static boolean loadPubSubJsonHttpProtocolEnabled(Properties properties) {
-        return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_ENABLED, false);
+    static boolean loadPubSubJsonHttpEnabled(Properties properties) {
+        return loadBoolean(properties, PUB_SUB_JSON_HTTP_ENABLED, false);
     }
 
     /**
      * Returns the IP address to use for binding our UI web server
      */
-    public String getPubSubJsonHttpProtocolHost() {
-        return _pubSubJsonHttpProtocolHost;
+    public String getPubSubJsonHttpHost() {
+        return _pubSubJsonHttpHost;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_HOST = "pubsub.json-http.host";
+    static final String PUB_SUB_JSON_HTTP_HOST = "pubsub.json-http.host";
 
-    private String _pubSubJsonHttpProtocolHost = null;
+    private String _pubSubJsonHttpHost = null;
 
-    static String loadPubSubJsonHttpProtocolHost(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_HOST);
+    static String loadPubSubJsonHttpHost(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_HOST);
     }
 
     /**
      * Returns the IP port to use for binding our UI web server
      */
-    public int getPubSubJsonHttpProtocolPort() {
-        return _pubSubJsonHttpProtocolPort;
+    public int getPubSubJsonHttpPort() {
+        return _pubSubJsonHttpPort;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_PORT = "pubsub.json-http.port";
+    static final String PUB_SUB_JSON_HTTP_PORT = "pubsub.json-http.port";
 
-    private int _pubSubJsonHttpProtocolPort = 0;
+    private int _pubSubJsonHttpPort = 0;
 
-    static int loadPubSubJsonHttpProtocolPort(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_PORT, 61615);
+    static int loadPubSubJsonHttpPort(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_PORT, 61615);
     }
 
     /**
      * Returns the maximum number of active threads used by netty to execute our handler
      */
-    public int getPubSubJsonHttpProtocolNettyWorkerThreadPoolSize() {
-        return _pubSubJsonHttpProtocolNettyWorkerThreadPoolSize;
+    public int getPubSubJsonHttpNettyWorkerThreadPoolSize() {
+        return _pubSubJsonHttpNettyWorkerThreadPoolSize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE = "pubsub.json-http.netty_worker_thread_pool.size";
+    static final String PUB_SUB_JSON_HTTP_NETTY_WORKER_THREAD_POOL_SIZE = "pubsub.json-http.netty_worker_thread_pool.size";
 
-    private int _pubSubJsonHttpProtocolNettyWorkerThreadPoolSize = 0;
+    private int _pubSubJsonHttpNettyWorkerThreadPoolSize = 0;
 
-    static int loadPubSubJsonHttpProtocolNettyWorkerThreadPoolSize(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE, 0);
+    static int loadPubSubJsonHttpNettyWorkerThreadPoolSize(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_NETTY_WORKER_THREAD_POOL_SIZE, 0);
     }
     
     /**
      * Returns the maximum number of active threads used by netty to execute our handler
      */
-    public int getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize() {
-        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolSize;
+    public int getPubSubJsonHttpNettyHandlerThreadPoolSize() {
+        return _pubSubJsonHttpNettyHandlerThreadPoolSize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE = "pubsub.json-http.netty_handler_thread_pool.size";
+    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_SIZE = "pubsub.json-http.netty_handler_thread_pool.size";
 
-    private int _pubSubJsonHttpProtocolNettyHandlerThreadPoolSize = 0;
+    private int _pubSubJsonHttpNettyHandlerThreadPoolSize = 0;
 
-    static int loadPubSubJsonHttpProtocolNettyHandlerThreadPoolSize(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE, 16);
+    static int loadPubSubJsonHttpNettyHandlerThreadPoolSize(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_SIZE, 16);
     }
 
     /**
      * Returns maximum total size of the queued events per channel (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize() {
-        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize;
+    public long getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize() {
+        return _pubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_channel_memory_size";
+    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_channel_memory_size";
 
-    private long _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize = 0;
+    private long _pubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 0);
+    static long loadPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize(Properties properties) {
+        return loadLong(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 0);
     }
 
     /**
      * Returns maximum total size of the queued events for this pool (0 to disable).
      */
-    public long getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize() {
-        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize;
+    public long getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize() {
+        return _pubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_thread_memory_size";
+    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_thread_memory_size";
 
-    private long _pubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize = 0;
+    private long _pubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize = 0;
 
-    static long loadPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE, 0);
+    static long loadPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize(Properties properties) {
+        return loadLong(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE, 0);
     }
 
     /**
      * Returns the amount of time for an inactive thread before it is shutdown
      */
-    public int getPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds() {
-        return _pubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds;
+    public int getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds() {
+        return _pubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.netty_handler_thread_pool.keep_alive_seconds";
+    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.netty_handler_thread_pool.keep_alive_seconds";
 
-    private int _pubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds = 0;
+    private int _pubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds = 0;
 
-    static int loadPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS, 3);
+    static int loadPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds(Properties properties) {
+        return loadInt(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS, 3);
     }
 
     /**
      * Returns Flag to indicate if the SSL is to be supported
      */
-    public boolean getPubSubJsonHttpProtocolSslEnabled() {
-        return _pubSubJsonHttpProtocolSslEnabled;
+    public boolean getPubSubJsonHttpSslEnabled() {
+        return _pubSubJsonHttpSslEnabled;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED = "pubsub.json-http.ssl_enabled";
+    static final String PUB_SUB_JSON_HTTP_SSL_ENABLED = "pubsub.json-http.ssl_enabled";
 
-    private boolean _pubSubJsonHttpProtocolSslEnabled = false;
+    private boolean _pubSubJsonHttpSslEnabled = false;
 
-    static boolean loadPubSubJsonHttpProtocolSslEnabled(Properties properties) {
-        return loadBoolean(properties, PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED, false);
+    static boolean loadPubSubJsonHttpSslEnabled(Properties properties) {
+        return loadBoolean(properties, PUB_SUB_JSON_HTTP_SSL_ENABLED, false);
     }
 
     /**
      * Returns the path to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStorePath() {
-        return _pubSubJsonHttpProtocolKeyStorePath;
+    public String getPubSubJsonHttpKeyStorePath() {
+        return _pubSubJsonHttpKeyStorePath;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH = "pubsub.json-http.key_store_path";
+    static final String PUB_SUB_JSON_HTTP_KEY_STORE_PATH = "pubsub.json-http.key_store_path";
 
-    private String _pubSubJsonHttpProtocolKeyStorePath = null;
+    private String _pubSubJsonHttpKeyStorePath = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStorePath(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH, null);
+    static String loadPubSubJsonHttpKeyStorePath(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_KEY_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStorePassword() {
-        return _pubSubJsonHttpProtocolKeyStorePassword;
+    public String getPubSubJsonHttpKeyStorePassword() {
+        return _pubSubJsonHttpKeyStorePassword;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD = "pubsub.json-http.key_store_password";
+    static final String PUB_SUB_JSON_HTTP_KEY_STORE_PASSWORD = "pubsub.json-http.key_store_password";
 
-    private String _pubSubJsonHttpProtocolKeyStorePassword = null;
+    private String _pubSubJsonHttpKeyStorePassword = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStorePassword(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD, null);
+    static String loadPubSubJsonHttpKeyStorePassword(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_KEY_STORE_PASSWORD, null);
     }
 
     /**
      * Returns the password to the key inside to the key store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolKeyStoreKeyPassword() {
-        return _pubSubJsonHttpProtocolKeyStoreKeyPassword;
+    public String getPubSubJsonHttpKeyStoreKeyPassword() {
+        return _pubSubJsonHttpKeyStoreKeyPassword;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD = "pubsub.json-http.key_store_key_password";
+    static final String PUB_SUB_JSON_HTTP_KEY_STORE_KEY_PASSWORD = "pubsub.json-http.key_store_key_password";
 
-    private String _pubSubJsonHttpProtocolKeyStoreKeyPassword = null;
+    private String _pubSubJsonHttpKeyStoreKeyPassword = null;
 
-    static String loadPubSubJsonHttpProtocolKeyStoreKeyPassword(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD, null);
+    static String loadPubSubJsonHttpKeyStoreKeyPassword(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_KEY_STORE_KEY_PASSWORD, null);
     }
 
     /**
      * Returns the path to the trust store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolTrustStorePath() {
-        return _pubSubJsonHttpProtocolTrustStorePath;
+    public String getPubSubJsonHttpTrustStorePath() {
+        return _pubSubJsonHttpTrustStorePath;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PATH = "pubsub.json-http.trust_store_path";
+    static final String PUB_SUB_JSON_HTTP_TRUST_STORE_PATH = "pubsub.json-http.trust_store_path";
 
-    private String _pubSubJsonHttpProtocolTrustStorePath = null;
+    private String _pubSubJsonHttpTrustStorePath = null;
 
-    static String loadPubSubJsonHttpProtocolTrustStorePath(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PATH, null);
+    static String loadPubSubJsonHttpTrustStorePath(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_TRUST_STORE_PATH, null);
     }
 
     /**
      * Returns the password to the trust store to use for SSL
      */
-    public String getPubSubJsonHttpProtocolTrustStorePassword() {
-        return _pubSubJsonHttpProtocolTrustStorePassword;
+    public String getPubSubJsonHttpTrustStorePassword() {
+        return _pubSubJsonHttpTrustStorePassword;
     }
 
-    static final String PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PASSWORD = "pubsub.json-http.trust_store_password";
+    static final String PUB_SUB_JSON_HTTP_TRUST_STORE_PASSWORD = "pubsub.json-http.trust_store_password";
 
-    private String _pubSubJsonHttpProtocolTrustStorePassword = null;
+    private String _pubSubJsonHttpTrustStorePassword = null;
 
-    static String loadPubSubJsonHttpProtocolTrustStorePassword(Properties properties) {
-        return loadString(properties, PUB_SUB_JSON_HTTP_PROTOCOL_TRUST_STORE_PASSWORD, null);
+    static String loadPubSubJsonHttpTrustStorePassword(Properties properties) {
+        return loadString(properties, PUB_SUB_JSON_HTTP_TRUST_STORE_PASSWORD, null);
     }
 
     // *****************************************************************************************************************

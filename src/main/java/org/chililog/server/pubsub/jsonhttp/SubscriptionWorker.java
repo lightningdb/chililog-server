@@ -243,6 +243,9 @@ public class SubscriptionWorker {
 
                 SubscriptionResponseAO responseAO = new SubscriptionResponseAO(_messageID, logEntry);
                 String responseJson = JsonTranslator.getInstance().toJson(responseAO);
+
+                _logger.debug("Handling message: %s", responseJson);
+
                 _channel.write(new TextWebSocketFrame(responseJson));
 
                 return;

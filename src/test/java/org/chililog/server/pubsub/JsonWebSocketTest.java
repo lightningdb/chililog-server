@@ -954,7 +954,7 @@ public class JsonWebSocketTest {
         assertFalse(response.isSuccess());
         assertNotNull(response.getErrorMessage());
         assertNotNull(response.getErrorStackTrace());
-        assertEquals("PubSub.SubscriberAuthenticationError", response.getErrorMessage());
+        assertEquals("Access denied.", response.getErrorMessage());
     }
 
     @Test
@@ -1107,7 +1107,7 @@ public class JsonWebSocketTest {
         @Override
         public void onMessage(WebSocketClient client, WebSocketFrame frame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-            _logger.debug("Publish WebSocket Received Message:" + textFrame.getText());
+            _logger.debug("Subscribe WebSocket Received Message:" + textFrame.getText());
             messagesReceived.add(textFrame.getText());
         }
 

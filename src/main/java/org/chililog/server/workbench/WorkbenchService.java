@@ -163,7 +163,7 @@ public class WorkbenchService {
                     Executors.newCachedThreadPool(), workerCount);
         }
 
-        // Configure the server.
+        // Configure the server
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
         // Setup thread pool to run our handler

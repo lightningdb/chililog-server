@@ -28,6 +28,8 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
+import org.jboss.netty.handler.execution.ExecutionHandler;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -37,12 +39,17 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
 
+    private OrderedMemoryAwareThreadPoolExecutor _pipelineExecutor = null;
+
     /**
      * Constructor
+     * 
+     * @param executor
+     *            Thread pool to use for executing requests
      */
-    public JsonHttpServerPipelineFactory() {
+    public JsonHttpServerPipelineFactory(OrderedMemoryAwareThreadPoolExecutor pipelineExecutor) {
+        _pipelineExecutor = pipelineExecutor;
     }
-
     /**
      * Creates an HTTP Pipeline for our server
      */
@@ -53,7 +60,7 @@ public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
         ChannelPipeline pipeline = pipeline();
 
         // SSL handling
-        if (appProperties.getPubSubJsonHttpProtocolSslEnabled()) {
+        if (appProperties.getPubSubJsonHttpSslEnabled()) {
             SSLEngine engine = JsonHttpSslContextManager.getInstance().getServerContext().createSSLEngine();
             engine.setUseClientMode(false);
             pipeline.addLast("ssl", new SslHandler(engine));
@@ -67,6 +74,9 @@ public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
 
         // Encodes HTTTPRequest message to ChannelBuffer
         pipeline.addLast("encoder", new HttpResponseEncoder());
+
+        // Execute the handler in a new thread
+        pipeline.addLast("pipelineExecutor", new ExecutionHandler(_pipelineExecutor));
 
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new JsonHttpRequestHandler());

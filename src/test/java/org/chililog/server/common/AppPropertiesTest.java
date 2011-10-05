@@ -134,94 +134,94 @@ public class AppPropertiesTest {
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolEnabled() throws UnknownHostException {
-        assertTrue(AppProperties.getInstance().getPubSubJsonHttpProtocolEnabled());
+    public void testPubSubJsonHttpEnabled() throws UnknownHostException {
+        assertTrue(AppProperties.getInstance().getPubSubJsonHttpEnabled());
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolHost() throws UnknownHostException {
-        String s = AppProperties.getInstance().getPubSubJsonHttpProtocolHost();
+    public void testPubSubJsonHttpHost() throws UnknownHostException {
+        String s = AppProperties.getInstance().getPubSubJsonHttpHost();
         assertEquals("0.0.0.0", s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_HOST));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_HOST));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolPort() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolPort();
+    public void testPubSubJsonHttpPort() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpPort();
         assertEquals(61615, s);
-        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_PORT));
+        assertTrue(AppProperties.getInstance().toString().contains(AppProperties.PUB_SUB_JSON_HTTP_PORT));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolNettyWorkerThreadPoolSize() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyWorkerThreadPoolSize();
+    public void testPubSubJsonHttpNettyWorkerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpNettyWorkerThreadPoolSize();
         assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_WORKER_THREAD_POOL_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_WORKER_THREAD_POOL_SIZE));
     }
     
     @Test
-    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolSize() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize();
+    public void testPubSubJsonHttpNettyHandlerThreadPoolSize() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolSize();
         assertEquals(16, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxChannelMemorySize();
+    public void testPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize();
         assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolMaxTotalMemorySize();
+    public void testPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize() throws UnknownHostException {
+        long s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize();
         assertEquals(0, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpProtocolNettyHandlerThreadPoolKeepAliveSeconds();
+    public void testPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds() throws UnknownHostException {
+        int s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds();
         assertEquals(3, s);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolSSLEnabled() throws UnknownHostException {
-        boolean b = AppProperties.getInstance().getPubSubJsonHttpProtocolSslEnabled();
+    public void testPubSubJsonHttpSSLEnabled() throws UnknownHostException {
+        boolean b = AppProperties.getInstance().getPubSubJsonHttpSslEnabled();
         assertFalse(b);
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_SSL_ENABLED));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_SSL_ENABLED));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStorePath() throws UnknownHostException {
-        String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStorePath();
+    public void testPubSubJsonHttpKeyStorePath() throws UnknownHostException {
+        String s = AppProperties.getInstance().getPubSubJsonHttpKeyStorePath();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PATH));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_KEY_STORE_PATH));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStorePassword() throws UnknownHostException {
-        String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStorePassword();
+    public void testPubSubJsonHttpKeyStorePassword() throws UnknownHostException {
+        String s = AppProperties.getInstance().getPubSubJsonHttpKeyStorePassword();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_PASSWORD));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_KEY_STORE_PASSWORD));
     }
 
     @Test
-    public void testPubSubJsonHttpProtocolKeyStoreKeyPassword() throws UnknownHostException {
-        String s = AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStoreKeyPassword();
+    public void testPubSubJsonHttpKeyStoreKeyPassword() throws UnknownHostException {
+        String s = AppProperties.getInstance().getPubSubJsonHttpKeyStoreKeyPassword();
         assertTrue(StringUtils.isBlank(s));
         assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_PROTOCOL_KEY_STORE_KEY_PASSWORD));
+                .contains(AppProperties.PUB_SUB_JSON_HTTP_KEY_STORE_KEY_PASSWORD));
     }
 
     @Test

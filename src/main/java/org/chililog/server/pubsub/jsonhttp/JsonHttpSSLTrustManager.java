@@ -79,8 +79,8 @@ public class JsonHttpSSLTrustManager {
         try {
             // create a "default" JSSE X509TrustManager.
             KeyStore ks = KeyStore.getInstance("JKS");
-            ks.load(new FileInputStream(AppProperties.getInstance().getPubSubJsonHttpProtocolTrustStorePath()),
-                    AppProperties.getInstance().getPubSubJsonHttpProtocolTrustStorePassword().toCharArray());
+            ks.load(new FileInputStream(AppProperties.getInstance().getPubSubJsonHttpTrustStorePath()),
+                    AppProperties.getInstance().getPubSubJsonHttpTrustStorePassword().toCharArray());
 
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
             trustManagerFactory.init(ks);

@@ -78,7 +78,7 @@ public class PubSubService {
     public void start() {
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (appProperties.getPubSubJsonHttpProtocolEnabled()) {
+        if (appProperties.getPubSubJsonHttpEnabled()) {
             JsonHttpService.getInstance().start();
         }
     }
@@ -89,7 +89,7 @@ public class PubSubService {
     public void stop() {
         AppProperties appProperties = AppProperties.getInstance();
 
-        if (appProperties.getPubSubJsonHttpProtocolEnabled()) {
+        if (appProperties.getPubSubJsonHttpEnabled()) {
             JsonHttpService.getInstance().stop();
         }
     }

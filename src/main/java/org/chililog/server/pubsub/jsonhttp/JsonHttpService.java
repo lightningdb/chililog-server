@@ -21,6 +21,7 @@ package org.chililog.server.pubsub.jsonhttp;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
@@ -35,6 +36,7 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * <p>
@@ -130,7 +132,7 @@ public class JsonHttpService {
         // Create producer session pool equivalent to the number of threads for Json HTTP so that each thread does not
         // have to wait for a session
         _mqProducerSessionPool = new MqProducerSessionPool(AppProperties.getInstance()
-                .getPubSubJsonHttpProtocolNettyHandlerThreadPoolSize());
+                .getPubSubJsonHttpNettyHandlerThreadPoolSize());
 
         AppProperties appProperties = AppProperties.getInstance();
 
@@ -139,19 +141,38 @@ public class JsonHttpService {
             return;
         }
 
-        _logger.info("Starting PubSub JSON HTTP  Web Sever on " + appProperties.getPubSubJsonHttpProtocolHost() + ":"
-                + appProperties.getPubSubJsonHttpProtocolPort() + "...");
+        _logger.info("Starting PubSub JSON HTTP  Web Sever on " + appProperties.getPubSubJsonHttpHost() + ":"
+                + appProperties.getPubSubJsonHttpPort() + "...");
 
-        _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
-                Executors.newCachedThreadPool());
+        // Create channel factory
+        int workerCount = appProperties.getPubSubJsonHttpNettyWorkerThreadPoolSize();
+        if (workerCount == 0) {
+            _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+                    Executors.newCachedThreadPool());
+        } else {
+            _channelFactory = new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+                    Executors.newCachedThreadPool(), workerCount);
+        }
 
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
-        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory());
+        // Setup thread pool to run our handler
+        // It makes sure the events from the same Channel are executed sequentially; i.e. event 1 is executed before
+        // event 2. However event 1 may be executed on a different thread to event 2.
+        OrderedMemoryAwareThreadPoolExecutor pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolSize(),
+                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize(),
+                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize(),
+                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS,
+                Executors.defaultThreadFactory());
+
+
+        // Set up the event pipeline factory.
+        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(pipelineExecutor));
 
         // Bind and start to accept incoming connections.
-        String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpProtocolHost());
+        String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpHost());
         for (String h : hosts) {
             if (StringUtils.isBlank(h)) {
                 if (hosts.length == 1) {
@@ -162,8 +183,8 @@ public class JsonHttpService {
             }
 
             SocketAddress address = h.equals("0.0.0.0") ? new InetSocketAddress(
-                    appProperties.getPubSubJsonHttpProtocolPort()) : new InetSocketAddress(h,
-                    appProperties.getPubSubJsonHttpProtocolPort());
+                    appProperties.getPubSubJsonHttpPort()) : new InetSocketAddress(h,
+                    appProperties.getPubSubJsonHttpPort());
             Channel channel = bootstrap.bind(address);
             _allChannels.add(channel);
         }

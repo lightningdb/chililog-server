@@ -73,12 +73,12 @@ public class JsonHttpSslContextManager {
             try {
                 KeyStore ks = KeyStore.getInstance("JKS");
                 FileInputStream fin = new FileInputStream(AppProperties.getInstance()
-                        .getPubSubJsonHttpProtocolKeyStorePath());
-                ks.load(fin, AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStorePassword().toCharArray());
+                        .getPubSubJsonHttpKeyStorePath());
+                ks.load(fin, AppProperties.getInstance().getPubSubJsonHttpKeyStorePassword().toCharArray());
 
                 // Set up key manager factory to use our key store
                 KeyManagerFactory kmf = KeyManagerFactory.getInstance(algorithm);
-                kmf.init(ks, AppProperties.getInstance().getPubSubJsonHttpProtocolKeyStoreKeyPassword().toCharArray());
+                kmf.init(ks, AppProperties.getInstance().getPubSubJsonHttpKeyStoreKeyPassword().toCharArray());
 
                 // Initialise the SSLContext to work with our key managers.
                 serverContext = SSLContext.getInstance(PROTOCOL);
