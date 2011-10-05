@@ -722,12 +722,12 @@ App.pageController = SC.Object.create({
     SC.Object.create({label: '', value: ''}),
     SC.Object.create({label: '_search.timespan.5'.loc(), value: '5'}),
     SC.Object.create({label: '_search.timespan.15'.loc(), value: '15'}),
-    SC.Object.create({label: '_search.timespan.30'.loc(), value: '30'}),
+    SC.Object.create({label: '_search.timespan.30'.loc(), value: '30', selected: YES}),
     SC.Object.create({label: '_search.timespan.60'.loc(), value: '60'}),
     SC.Object.create({label: '_search.timespan.1440'.loc(), value: '1440'}),
     SC.Object.create({label: '_search.timespan.10080'.loc(), value: '10080'}),
     SC.Object.create({label: '_search.timespan.20160'.loc(), value: '20160'}),
-    SC.Object.create({label: '_search.timespan.43200'.loc(), value: '43200', selected: YES})
+    SC.Object.create({label: '_search.timespan.43200'.loc(), value: '43200'})
   ],
 
   /**
