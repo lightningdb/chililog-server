@@ -25,6 +25,7 @@ import javax.net.ssl.SSLEngine;
 import org.chililog.server.common.AppProperties;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
+import org.jboss.netty.handler.codec.http.HttpContentCompressor;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
@@ -75,7 +76,7 @@ public class HttpServerPipelineFactory implements ChannelPipelineFactory {
         }
 
         // Compress
-        pipeline.addLast("deflater", new ConditionalHttpContentCompressor());
+        pipeline.addLast("deflater", new HttpContentCompressor(1));
 
         // Handler to dispatch processing to our services
         pipeline.addLast("handler", new HttpRequestHandler());

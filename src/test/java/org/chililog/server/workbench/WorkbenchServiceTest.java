@@ -295,7 +295,7 @@ public class WorkbenchServiceTest {
                 }
             }
 
-            // Should get back a 304
+            // Should get back a 200
             assertEquals("HTTP/1.1 200 OK", responseCode);
             assertTrue(!StringUtils.isBlank(headers.get("Date")));
 

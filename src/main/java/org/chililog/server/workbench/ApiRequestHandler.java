@@ -55,7 +55,6 @@ import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -330,7 +329,6 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
             response.setHeader(CONTENT_TYPE, result.getResponseContentType());
             if (result.getResponseContentIOStyle() == ContentIOStyle.ByteArray) {
                 byte[] content = (byte[]) result.getResponseContent();
-                toogleCompression(ctx, content.length > 4096); // Compress if > 4K
                 response.setContent(ChannelBuffers.copiedBuffer(content));
             } else {
                 throw new NotImplementedException("ContentIOStyle " + result.getResponseContentIOStyle().toString());
@@ -367,9 +365,6 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
     private void writeResponse(ChannelHandlerContext ctx, MessageEvent e, Exception ex) throws Exception {
         // Decide whether to close the connection or not.
         boolean keepAlive = isKeepAlive(_request);
-
-        // No need to compress errors. Will be small in size
-        toogleCompression(ctx, false);
 
         // Build the response object.
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -443,21 +438,6 @@ public class ApiRequestHandler extends WorkbenchRequestHandler {
 
         Calendar time = new GregorianCalendar();
         response.setHeader(HttpHeaders.Names.DATE, dateFormatter.format(time.getTime()));
-    }
-
-    /**
-     * Turn on/off compression
-     * 
-     * @param ctx
-     *            context
-     * @param doCompression
-     *            True to turn compression on, False to turn it off
-     */
-    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression) {
-        ChannelHandler deflater = ctx.getPipeline().get("deflater");
-        if (deflater instanceof ConditionalHttpContentCompressor) {
-            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
-        }
     }
 
     /**

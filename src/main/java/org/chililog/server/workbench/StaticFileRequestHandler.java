@@ -32,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -44,7 +45,6 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
-import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
@@ -165,10 +165,6 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         // Log
         writeLogEntry(e, OK, null);
 
-        // Turn compression on/off
-        boolean doCompression = checkDoCompression(filePath, fileLength);
-        toogleCompression(ctx, doCompression);
-
         // Create the response
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
         setContentLength(response, fileLength);
@@ -178,16 +174,7 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         // Write the content.
         Channel ch = e.getChannel();
         ChannelFuture writeFuture;
-        if (doCompression) {
-            // Cannot use ChunkedFile or zero-copy if we want to do compression
-            // Must read file contents and set it as the contents
-            byte[] buffer = new byte[(int) fileLength];
-            raf.readFully(buffer);
-            raf.close();
-
-            response.setContent(ChannelBuffers.copiedBuffer(buffer));
-            writeFuture = ch.write(response);
-        } else if (AppProperties.getInstance().getWorkbenchSslEnabled()) {
+        if (AppProperties.getInstance().getWorkbenchSslEnabled()) {
             // Cannot use zero-copy with HTTPS
 
             // Write the initial line and the header.
@@ -283,8 +270,6 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
     private void sendError(ChannelHandlerContext ctx, MessageEvent e, HttpResponseStatus status, String moreInfo) {
         writeLogEntry(e, status, moreInfo);
 
-        toogleCompression(ctx, false);
-
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, status);
         setDateHeader(response);
 
@@ -292,8 +277,12 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         response.setHeader(CONTENT_TYPE, "text/plain; charset=UTF-8");
         response.setContent(ChannelBuffers.copiedBuffer("Failure: " + status.toString() + "\r\n", CharsetUtil.UTF_8));
 
-        // Close the connection as soon as the error message is sent.
-        ctx.getChannel().write(response).addListener(ChannelFutureListener.CLOSE);
+        ChannelFuture writeFuture = ctx.getChannel().write(response);
+        
+        // Decide whether to close the connection or not.
+        if (!isKeepAlive((HttpRequest)e.getMessage())) {
+            writeFuture.addListener(ChannelFutureListener.CLOSE);
+        }
     }
 
     /**
@@ -307,42 +296,15 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
     private void sendNotModified(ChannelHandlerContext ctx, MessageEvent e) {
         writeLogEntry(e, HttpResponseStatus.NOT_MODIFIED, null);
 
-        toogleCompression(ctx, false);
-
         HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.NOT_MODIFIED);
         setDateHeader(response);
 
-        // Close the connection as soon as the error message is sent.
         ChannelFuture writeFuture = ctx.getChannel().write(response);
         
         // Decide whether to close the connection or not.
         if (!isKeepAlive((HttpRequest)e.getMessage())) {
             writeFuture.addListener(ChannelFutureListener.CLOSE);
         }
-    }
-
-    /**
-     * <p>
-     * Figure out if we should do try to do HTTP compression or not based on the file extension and file size
-     * </p>
-     * 
-     * @param filePath
-     *            Path to the file
-     * @return true if compression on the file should be performed, false if not
-     */
-    private boolean checkDoCompression(String filePath, long fileLength) {
-        // If < 4096 bytes, compression makes the file bigger and/or CPU used vs time saved is small
-        // If > 1 MB, don't compress. Just chunk download because it takes too much memory to read everything in
-        if (fileLength < 4096 || fileLength > 1048576) {
-            return false;
-        }
-
-        String s = filePath.toLowerCase();
-        if (s.endsWith(".html") || s.endsWith(".js") || s.endsWith(".css") || s.endsWith(".txt") || s.endsWith(".json")
-                || s.endsWith(".xml")) {
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -431,20 +393,6 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         response.setHeader(HttpHeaders.Names.LAST_MODIFIED, dateFormatter.format(new Date(filetoCache.lastModified())));
     }
 
-    /**
-     * Turn on/off compression
-     * 
-     * @param ctx
-     *            context
-     * @param doCompression
-     *            True to turn compression on, False to turn it off
-     */
-    private void toogleCompression(ChannelHandlerContext ctx, boolean doCompression) {
-        ChannelHandler deflater = ctx.getPipeline().get("deflater");
-        if (deflater instanceof ConditionalHttpContentCompressor) {
-            ((ConditionalHttpContentCompressor) deflater).setDoCompression(doCompression);
-        }
-    }
 
     /**
      * Write audit log entry
@@ -456,6 +404,14 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         HttpRequest request = (HttpRequest) e.getMessage();
         _logger.info("GET %s REMOTE_IP=%s STATUS=%s CHANNEL=%s %s", request.getUri(), e.getRemoteAddress().toString(),
                 status, e.getChannel().getId(), moreInfo == null ? StringUtils.EMPTY : moreInfo);
+        
+        StringBuilder sb = new StringBuilder("Request Headers\n");
+        List<java.util.Map.Entry<String, String>> headers = request.getHeaders();
+        for (java.util.Map.Entry<String, String> entry : headers){
+            sb.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
+        }
+        _logger.debug(sb.toString());
+        
         return;
     }
 }
