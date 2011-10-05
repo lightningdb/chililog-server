@@ -1021,6 +1021,9 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
 
       // Save
       App.repositoryConfigEngine._convertApiObjectsToRecords([data], App.RepositoryConfigRecord);
+
+      // Clear the cache of repository status to force reload
+      localStorage.removeItem(App.REPOSITORY_STATUS_LOCAL_STORE_KEY);
     }
     catch (err) {
       error = err;
@@ -1098,6 +1101,9 @@ App.repositoryConfigEngine = SC.Object.create(App.EngineMixin, {
       error = err;
       SC.Logger.error('repositoryConfigEngine.endErase: ' + err);
     }
+
+    // Clear the cache of repository status to force reload
+    localStorage.removeItem(App.REPOSITORY_STATUS_LOCAL_STORE_KEY);
 
     // Callback
     if (!SC.none(this.callbackFunction)) {
