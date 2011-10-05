@@ -1306,7 +1306,7 @@ App.statechart = SC.Statechart.create({
       startShowMore: function() {
         var criteria = App.pageController.get('previousSearchCriteria');
         criteria.startPage = criteria.startPage + 1;
-        App.repositoryRuntimeEngine.find(criteria, this, this.endShowMore);
+        App.repositoryRuntimeEngine.findLogEntries(criteria, this, this.endShowMore);
       },
 
       /**
