@@ -179,7 +179,7 @@ App.TestMessageButton = App.ButtonView.extend({
 
     try {
       var me = this;
-      var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
+      var webSocket = new App.WebSocket('ws://' + document.domain + ':61615/websocket');
 
       webSocket.onopen = function () {
         SC.Logger.log('Test Socket opening');
@@ -411,7 +411,7 @@ App.streamingController = SC.Object.create({
   startStreaming: function() {
     try {
       $('#results').css('display', 'block');
-      var webSocket = new WebSocket('ws://' + document.domain + ':61615/websocket');
+      var webSocket = new App.WebSocket('ws://' + document.domain + ':61615/websocket');
 
       webSocket.onopen = function () {
         SC.Logger.log('Socket opening');
@@ -548,7 +548,7 @@ App.statechart = SC.Statechart.create({
 // --------------------------------------------------------------------------------------------------------------------
 App.pageFileName = "stream.html";
 
-if (!window.WebSocket) {
+if (!App.WebSocket) {
   App.pageController.set('errorMessage', 'Your browser does not support web sockets :-( Try using the latest version of Chrome or Safari');
 }
 
