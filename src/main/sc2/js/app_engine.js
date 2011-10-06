@@ -789,7 +789,8 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     headers['X-Chililog-Do-Page-Count'] = 'false';
 
     var context = { criteria: criteria, callbackTarget: callbackTarget,
-      callbackFunction: callbackFunction, callbackParams: callbackParams
+      callbackFunction: callbackFunction, callbackParams: callbackParams,
+      documentID: criteria.documentID, records: []
     };
 
     $.ajax({
