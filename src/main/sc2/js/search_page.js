@@ -339,7 +339,7 @@ App.NoRowsView = App.BlockMessageView.extend({
  */
 App.Dialog = SC.View.extend({
   attributeBindings: ['title'],
-  
+
   title: '_search.logEntries'.loc(),
 
   didInsertElement: function() {
@@ -794,12 +794,13 @@ App.pageController = SC.Object.create({
     if (SC.empty(formattedMessage)) {
       formattedMessage = '&nbsp;';
     } else {
-      formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
       if (formattedMessage.length > 100) {
         // Add spaces to break long lines (word-break not working in chrome)
-        formattedMessage = formattedMessage.replace(/([^\s-]{20})/g, '$1&shy;');
+        formattedMessage = formattedMessage.replace(/([\.;:,_-])/g, '$1<wbr/>');
       }
     }
+    formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
+
 
     // Save log entry in our array
     var displayedLogEntries = App.pageController.get('displayedLogEntries');
@@ -922,7 +923,7 @@ App.dialogController = SC.Object.create({
    * @type Strings
    */
   keywordsString: null,
-  
+
   /**
    * Array of field objects. Each object has a 'name' and 'value' property
    *
@@ -946,7 +947,7 @@ App.dialogController = SC.Object.create({
 
   /**
    * Flag to indicate if there are later log entries that can be displayed
-   * 
+   *
    * @type Boolean
    */
   hasLaterEntries: NO,

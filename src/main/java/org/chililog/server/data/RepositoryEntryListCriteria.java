@@ -197,29 +197,26 @@ public class RepositoryEntryListCriteria extends ListCriteria {
     }
 
     /**
-     * The severity code; i.e 0-7. 
+     * The severity code; i.e 0-7.
      */
     public String getSeverity() {
         return _severity;
     }
 
-    
     public void setSeverity(String severity) {
         _severity = severity;
     }
 
     /**
-     * Matching host entry 
+     * Matching host entry
      */
     public String getHost() {
         return _host;
     }
 
-    
     public void setHost(String host) {
         _host = host;
     }
-
 
     /**
      * Matching source entry
@@ -228,7 +225,6 @@ public class RepositoryEntryListCriteria extends ListCriteria {
         return _source;
     }
 
-    
     public void setSource(String source) {
         _source = source;
     }
@@ -241,6 +237,7 @@ public class RepositoryEntryListCriteria extends ListCriteria {
     public BasicDBObject getConditionsDbObject() throws IOException {
         BasicDBObject o = null;
 
+        // Other conditions
         if (StringUtils.isBlank(_conditions) || _conditions.equals("{}")) {
             o = new BasicDBObject();
         } else {
@@ -248,19 +245,30 @@ public class RepositoryEntryListCriteria extends ListCriteria {
             o = (BasicDBObject) parser.parse();
         }
 
-        if (_from != null) {
-            o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$gte", _from));
+        // Timestamp
+        if (_from != null || _to != null) {
+            BasicDBObject ts = new BasicDBObject();
+            if (_from != null) {
+                ts.put("$gte", _from);
+            }
+            if (_to != null) {
+                ts.put("$lte", _to);
+            }
+            o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, ts);
         }
-        if (_to != null) {
-            o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
+
+        // Severity - need range query so we miss out on index lookup
+        if (!StringUtils.isBlank(_severity)) {
+            o.put(RepositoryEntryBO.SEVERITY_FIELD_NAME, new BasicDBObject("$lte", Integer.parseInt(_severity)));
         }
-        
+
+        // Keywords
         ArrayList<String> keywordsList = new ArrayList<String>();
         if (!StringUtils.isBlank(_keywords)) {
             ArrayList<String> l = TextTokenizer.getInstance().tokenize(_keywords, 200);
             keywordsList.addAll(l);
         }
-        
+
         // EntryParser.parseKeywords() puts source, severity and host into the keywords so that they are indexed
         ArrayList<String> shList = new ArrayList<String>();
         if (!StringUtils.isBlank(_source)) {
@@ -269,22 +277,22 @@ public class RepositoryEntryListCriteria extends ListCriteria {
         if (!StringUtils.isBlank(_host)) {
             shList.add("h=" + _host);
         }
-        if (!StringUtils.isBlank(_severity)) {
-            o.put(RepositoryEntryBO.SEVERITY_FIELD_NAME, new BasicDBObject("$lte", Integer.parseInt(_severity)));                            
-        }
-        
+
+        // Keywords
         if (_keywordUsage == KeywordUsage.All) {
             keywordsList.addAll(shList);
             if (keywordsList.size() > 0) {
-                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$all", keywordsList));                            
+                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$all", keywordsList));
             }
         } else {
+            BasicDBObject kw = new BasicDBObject();
             if (keywordsList.size() > 0) {
-                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$in", keywordsList));
+                kw.put("$in", keywordsList);
             }
             if (shList.size() > 0) {
-                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$all", shList));
+                kw.put("$all", shList);
             }
+            o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, kw);
         }
 
         return o;

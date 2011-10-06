@@ -880,9 +880,13 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
         msg = msg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
       }
 
-      // Markup and then replace tokens with tags (so that injected tags don't get marked up)
-      var highlightedMsg = msg; //SC.RenderContext.escapeHTML(msg);
+      // Markup
+      msg = msg.replace(/&/g, '&amp;');
+      msg = msg.replace(/</g, '&lt;');
+      msg = msg.replace(/>/g, '&gt;');
 
+      // then replace tokens with tags (so that injected tags don't get marked up)
+      var highlightedMsg = msg;
       if (keywordsRegexArray.length > 0) {
         highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
         highlightedMsg = highlightedMsg.replace(/###Chililog###/g, '</span>');
