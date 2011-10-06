@@ -121,6 +121,13 @@ App.DateTime = {
   }
 };
 
+App.WebSocket = null;
+if (window.WebSocket) {
+  App.WebSocket = window.WebSocket;
+} else if (window.MozWebSocket) {
+// Firefox uses non standard naming for some reason???
+  App.WebSocket = window.MozWebSocket;
+}
 
 
 /**

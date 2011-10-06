@@ -783,6 +783,7 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
       var conditionsJson = JSON.stringify(criteria.conditions);
       headers['X-Chililog-Conditions'] = conditionsJson;
     }
+    headers['X-Chililog-Order-By'] = criteria.orderBy;
     headers['X-Chililog-Start-Page'] = criteria.startPage + '';
     headers['X-Chililog-Records-Per-Page'] = criteria.recordsPerPage + '';
     headers['X-Chililog-Do-Page-Count'] = 'false';

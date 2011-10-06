@@ -1186,6 +1186,7 @@ App.statechart = SC.Statechart.create({
             conditions: conditions,
             keywordUsage: 'All',
             keywords: App.pageController.get('keywords'),
+            orderBy: '{ \'ts\' : 1 }',
             startPage: 1,
             recordsPerPage: App.pageController.get('rowsPerSearch'),
             doPageCount: 'false'

@@ -406,7 +406,7 @@ public class RepositoryRuntimeWorker extends Worker {
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_ORDER_BY_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_ORDER_BY_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
-            criteria.setOrderBy(s);
+            criteria.setOrderBy(s.trim());
         }
 
         s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_QUERYSTRING_PARAMETER_NAME,

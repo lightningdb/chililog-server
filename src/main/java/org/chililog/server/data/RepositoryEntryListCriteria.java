@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.TextTokenizer;
+import org.chililog.server.data.RepositoryEntryBO.Severity;
 
 import com.mongodb.BasicDBObject;
 
@@ -257,8 +258,10 @@ public class RepositoryEntryListCriteria extends ListCriteria {
             o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, ts);
         }
 
-        // Severity - need range query so we miss out on index lookup
-        if (!StringUtils.isBlank(_severity)) {
+        // Severity - need range query so we miss out on index lookup. If debug, leave out criteria because
+        // we want everything returned. Hopefully this speed things up because mongo wont have to scan resultset
+        // to check if severity is valid 
+        if (!StringUtils.isBlank(_severity) && !_severity.equals(Severity.Debug.toCode().toString())) {
             o.put(RepositoryEntryBO.SEVERITY_FIELD_NAME, new BasicDBObject("$lte", Integer.parseInt(_severity)));
         }
 
