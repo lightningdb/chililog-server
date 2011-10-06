@@ -869,31 +869,38 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
     // Highlight keywords
     var msg = repoEntryAO['message'];
     if (SC.empty(msg)) {
-      repoEntryAO['messageWithKeywordsHilighted'] = '';
+      repoEntryAO['markedUpMessage'] = '&nbsp;';
     } else {
       //Clone to protect original
-      msg = new String(msg);
+      var markedUpMsg = new String(msg);
 
       // Replace keywords to tokens
       for (var i = 0; i < keywordsRegexArray.length; i++) {
         var keywordsRegex = keywordsRegexArray[i];
-        msg = msg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
+        markedUpMsg = markedUpMsg.replace(keywordsRegex, '~~~Chililog~~~$1###Chililog###');
       }
 
       // Markup
-      msg = msg.replace(/&/g, '&amp;');
-      msg = msg.replace(/</g, '&lt;');
-      msg = msg.replace(/>/g, '&gt;');
+      markedUpMsg = markedUpMsg.replace(/&/g, '&amp;');
+      markedUpMsg = markedUpMsg.replace(/</g, '&lt;');
+      markedUpMsg = markedUpMsg.replace(/>/g, '&gt;');
 
       // then replace tokens with tags (so that injected tags don't get marked up)
-      var highlightedMsg = msg;
       if (keywordsRegexArray.length > 0) {
-        highlightedMsg = highlightedMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
-        highlightedMsg = highlightedMsg.replace(/###Chililog###/g, '</span>');
+        markedUpMsg = markedUpMsg.replace(/~~~Chililog~~~/g, '<span class="keyword">');
+        markedUpMsg = markedUpMsg.replace(/###Chililog###/g, '</span>');
       }
 
-      repoEntryAO['messageWithKeywordsHilighted'] = highlightedMsg;
+      // Add spaces to break long lines
+      if (msg.length > 100) {
+        markedUpMsg = markedUpMsg.replace(/([\.;:,_-])/g, '$1<wbr/>');
+      }
+
+      // Convert new lines
+      markedUpMsg = markedUpMsg.replace(/\n/g, '<br/>');
     }
+
+    repoEntryAO['markedUpMessage'] = markedUpMsg;
     return;
   },
 
@@ -918,7 +925,8 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
   }
 
 
-});
+})
+  ;
 
 // --------------------------------------------------------------------------------------------------------------------
 // repositoryConfigEngine

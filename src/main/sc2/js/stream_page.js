@@ -171,8 +171,8 @@ App.TestMessageButton = App.ButtonView.extend({
       Username: App.sessionEngine.getPath('loggedInUser.username'),
       Password: 'token:' + App.sessionEngine.get('authenticationToken'),
       LogEntries: [
-        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '7', Message: 'Test DEBUG message sent from browser ' + navigator.userAgent},
-        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '4', Message: 'Test WARNING message with a timestamp ' + new Date() },
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '7', Message: 'Test DEBUG message sent from browser with all sorts of funny characters <test>!@#$%^&*()_+{}[]:";\'<>,.?/</test> ' + navigator.userAgent},
+        { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '4', Message: 'Test WARNING message with a timestamp and a very long example of a java class path org.chililog.server.pubsub.websocket.AVeryLongClassName. The time is now ' + new Date() },
         { Timestamp: ts, Source: 'workbench', Host: 'local', Severity: '3', Message: 'Test ERROR message sent by ' + username}
       ]
     };
@@ -342,11 +342,18 @@ App.pageController = SC.Object.create({
     if (SC.empty(formattedMessage)) {
       formattedMessage = '&nbsp;';
     } else {
-      formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
-      if (formattedMessage.length > 100) {
-        // Add spaces to break long lines (word-break not working in chrome)
-        formattedMessage = formattedMessage.replace(/([^\s]{20})/g, '$1&shy;');
+      // Markup
+      formattedMessage = formattedMessage.replace(/&/g, '&amp;');
+      formattedMessage = formattedMessage.replace(/</g, '&lt;');
+      formattedMessage = formattedMessage.replace(/>/g, '&gt;');
+
+      // Add spaces to break long lines
+      if (logEntry.Message.length > 100) {
+        formattedMessage = formattedMessage.replace(/([\.;:,_-])/g, '$1<wbr/>');
       }
+
+      // Convert new lines
+      formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
     }
 
     var newLogEntryHtml = '<div class="logEntry">' +

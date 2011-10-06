@@ -790,18 +790,6 @@ App.pageController = SC.Object.create({
       severityClassName = 'warning';
     }
 
-    var formattedMessage = logEntry.messageWithKeywordsHilighted;
-    if (SC.empty(formattedMessage)) {
-      formattedMessage = '&nbsp;';
-    } else {
-      if (formattedMessage.length > 100) {
-        // Add spaces to break long lines (word-break not working in chrome)
-        formattedMessage = formattedMessage.replace(/([\.;:,_-])/g, '$1<wbr/>');
-      }
-    }
-    formattedMessage = formattedMessage.replace(/\n/g, '<br/>');
-
-
     // Save log entry in our array
     var displayedLogEntries = App.pageController.get('displayedLogEntries');
     displayedLogEntries.push(logEntry);
@@ -811,7 +799,7 @@ App.pageController = SC.Object.create({
       '<div class="row">' +
         '<div class="left">' + App.DateTime.toChililogLocalDateTime(scDate) + '</div>' +
         '<div class="right">' +
-          formattedMessage +
+          logEntry.markedUpMessage +
           '<div class="rightFooter">' +
             '<span class="severity"><span class="label ' + severityClassName+ '">severity:</span> ' + App.REPOSITORY_ENTRY_SEVERITY_MAP[severity] + '</span>' +
             '<span class="divider">|</span>' +
