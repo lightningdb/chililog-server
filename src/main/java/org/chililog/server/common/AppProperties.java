@@ -623,51 +623,6 @@ public class AppProperties {
     }
 
     /**
-     * Returns maximum total size of the queued events per channel (0 to disable).
-     */
-    public long getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize() {
-        return _pubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize;
-    }
-
-    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_channel_memory_size";
-
-    private long _pubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize = 0;
-
-    static long loadPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE, 0);
-    }
-
-    /**
-     * Returns maximum total size of the queued events for this pool (0 to disable).
-     */
-    public long getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize() {
-        return _pubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize;
-    }
-
-    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE = "pubsub.json-http.netty_handler_thread_pool.max_thread_memory_size";
-
-    private long _pubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize = 0;
-
-    static long loadPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize(Properties properties) {
-        return loadLong(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE, 0);
-    }
-
-    /**
-     * Returns the amount of time for an inactive thread before it is shutdown
-     */
-    public int getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds() {
-        return _pubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds;
-    }
-
-    static final String PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS = "pubsub.json-http.netty_handler_thread_pool.keep_alive_seconds";
-
-    private int _pubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds = 0;
-
-    static int loadPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds(Properties properties) {
-        return loadInt(properties, PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS, 3);
-    }
-
-    /**
      * Returns Flag to indicate if the SSL is to be supported
      */
     public boolean getPubSubJsonHttpSslEnabled() {

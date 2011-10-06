@@ -20,6 +20,8 @@ package org.chililog.server.pubsub.jsonhttp;
 
 import static org.jboss.netty.channel.Channels.*;
 
+import java.util.concurrent.Executor;
+
 import javax.net.ssl.SSLEngine;
 
 import org.chililog.server.common.AppProperties;
@@ -28,8 +30,6 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.handler.codec.http.HttpChunkAggregator;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 import org.jboss.netty.handler.ssl.SslHandler;
 
 /**
@@ -39,17 +39,18 @@ import org.jboss.netty.handler.ssl.SslHandler;
  */
 public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
 
-    private OrderedMemoryAwareThreadPoolExecutor _pipelineExecutor = null;
+    private Executor _executor = null;
 
     /**
      * Constructor
      * 
      * @param executor
-     *            Thread pool to use for executing requests
+     *            ThreadPool to use for processing requests
      */
-    public JsonHttpServerPipelineFactory(OrderedMemoryAwareThreadPoolExecutor pipelineExecutor) {
-        _pipelineExecutor = pipelineExecutor;
+    public JsonHttpServerPipelineFactory(Executor executor) {
+        _executor = executor;
     }
+
     /**
      * Creates an HTTP Pipeline for our server
      */
@@ -75,11 +76,15 @@ public class JsonHttpServerPipelineFactory implements ChannelPipelineFactory {
         // Encodes HTTTPRequest message to ChannelBuffer
         pipeline.addLast("encoder", new HttpResponseEncoder());
 
-        // Execute the handler in a new thread
-        pipeline.addLast("pipelineExecutor", new ExecutionHandler(_pipelineExecutor));
+        // Execute the handler in a new thread via OrderedMemoryAwareThreadPoolExecutor
+        // Removed because we get funny errors like handshaking not completed and
+        // "Message of type 'org.jboss.netty.buffer.BigEndianHeapChannelBuffer' is not supported."
+        // Maybe OrderedMemoryAwareThreadPoolExecutor does not work well with duplex channel???
+        //
+        // pipeline.addLast("pipelineExecutor", new ExecutionHandler(_pipelineExecutor));
 
         // Handler to dispatch processing to our services
-        pipeline.addLast("handler", new JsonHttpRequestHandler());
+        pipeline.addLast("handler", new JsonHttpRequestHandler(_executor));
 
         return pipeline;
     }

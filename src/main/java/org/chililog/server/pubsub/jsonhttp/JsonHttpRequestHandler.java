@@ -26,6 +26,7 @@ import static org.jboss.netty.handler.codec.http.HttpVersion.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.concurrent.Executor;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.Log4JLogger;
@@ -58,6 +59,8 @@ import org.jboss.netty.util.CharsetUtil;
  */
 public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
 
+    private Executor _executor = null;
+
     private static Log4JLogger _logger = Log4JLogger.getLogger(JsonHttpRequestHandler.class);
 
     private static final String PUBLISH_PATH = "/publish";
@@ -69,6 +72,16 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
     private SubscriptionWorker _subscriptionWorker = null;
 
     private WebSocketServerHandshaker _handshaker = null;
+
+    /**
+     * Constructor
+     * 
+     * @param executor
+     *            ThreadPool to use for processing requests
+     */
+    public JsonHttpRequestHandler(Executor executor) {
+        _executor = executor;
+    }
 
     /**
      * Handles incoming HTTP data
@@ -107,7 +120,8 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      *            HTTP request
      * @throws Exception
      */
-    private void handleHttpRequest(ChannelHandlerContext ctx, MessageEvent e, HttpRequest req) throws Exception {
+    private void handleHttpRequest(final ChannelHandlerContext ctx, final MessageEvent e, final HttpRequest req)
+            throws Exception {
 
         // TODO should invoke workers in a different thread pool to improve performance
 
@@ -126,28 +140,48 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             }
         } else if (req.getMethod() == POST && req.getUri().equals(PUBLISH_PATH)) {
             // Get request content
-            ChannelBuffer content = req.getContent();
+            final ChannelBuffer content = req.getContent();
             if (!content.readable()) {
                 throw new IllegalStateException("HTTP request content is NOT readable");
             }
 
-            byte[] requestContent = content.array();
-            String requestJson = bytesToString(requestContent);
-            PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
-            StringBuilder responseJson = new StringBuilder();
+            _executor.execute(new Runnable() {
 
-            _logger.debug("Publication Worker Request:\n%s", requestJson);
+                @Override
+                public void run() {
+                    try {
+                        byte[] requestContent = content.array();
+                        String requestJson = bytesToString(requestContent);
+                        PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance()
+                                .getMqProducerSessionPool());
+                        StringBuilder responseJson = new StringBuilder();
 
-            boolean success = worker.process(requestJson, responseJson);
+                        _logger.debug("Channel %s Publication Worker Request:\n%s", ctx.getChannel().getId(),
+                                requestJson);
 
-            _logger.debug("Publication Worker Response:\n%s", responseJson);
+                        boolean success = worker.process(requestJson, responseJson);
 
-            HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(HTTP_1_1,
-                    BAD_REQUEST);
-            res.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
-            res.setHeader("Access-Control-Allow-Origin", "*");  // Cross Domain: http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/
-            res.setContent(ChannelBuffers.copiedBuffer(responseJson.toString(), UTF_8_CHARSET));
-            sendHttpResponse(ctx, req, res);
+                        _logger.debug("Channel %s Publication Worker Response:\n%s", ctx.getChannel().getId(),
+                                responseJson);
+
+                        HttpResponse res = success ? new DefaultHttpResponse(HTTP_1_1, OK) : new DefaultHttpResponse(
+                                HTTP_1_1, BAD_REQUEST);
+                        res.setHeader(CONTENT_TYPE, "application/json; charset=UTF-8");
+
+                        // Cross Domain:
+                        // http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/
+                        res.setHeader("Access-Control-Allow-Origin", "*");
+
+                        res.setContent(ChannelBuffers.copiedBuffer(responseJson.toString(), UTF_8_CHARSET));
+                        sendHttpResponse(ctx, req, res);
+                        return;
+                    } catch (Exception exception) {
+                        _logger.debug(exception, "Error handling PubSub JSON HTTP Request");
+                        e.getChannel().close();
+                    }
+                }
+            });
+
             return;
         }
 
@@ -180,7 +214,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      * @param ctx
      * @param frame
      */
-    private void handleWebSocketFrame(ChannelHandlerContext ctx, WebSocketFrame frame) {
+    private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
         _logger.debug("Channel %s got %s frame.", ctx.getChannel().getId(), frame.getType());
 
         // TODO should invoke workers in a different thread pool to improve performance
@@ -199,41 +233,57 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
         }
 
         TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-        String requestJson = textFrame.getText();
-        String responseJson = null;
+        final String requestJson = textFrame.getText();
 
         if (StringUtils.isBlank(requestJson)) {
             return;
         }
 
-        _logger.debug("Channel %s Request JSON: %s", ctx.getChannel().getId(), requestJson);
+        _executor.execute(new Runnable() {
 
-        // Process according to request type
-        // We do a quick peek in the json in order to dispatch to the required worker
-        String first50Characters = requestJson.length() > 50 ? requestJson.substring(0, 50) : requestJson;
-        if (first50Characters.indexOf("\"PublicationRequest\"") > 0) {
-            PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance().getMqProducerSessionPool());
+            @Override
+            public void run() {
+                try {
+                    _logger.debug("Channel %s Request JSON: %s", ctx.getChannel().getId(), requestJson);
 
-            StringBuilder sb = new StringBuilder();
-            worker.process(requestJson, sb);
-            responseJson = sb.toString();
-        } else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0) {
-            // If existing subscription exists, stop it first
-            if (_subscriptionWorker != null) {
-                _subscriptionWorker.stop();
+                    String responseJson = null;
+
+                    // Process according to request type
+                    // We do a quick peek in the json in order to dispatch to the required worker
+                    String first50Characters = requestJson.length() > 50 ? requestJson.substring(0, 50) : requestJson;
+                    if (first50Characters.indexOf("\"PublicationRequest\"") > 0) {
+                        PublicationWorker worker = new PublicationWorker(JsonHttpService.getInstance()
+                                .getMqProducerSessionPool());
+
+                        StringBuilder sb = new StringBuilder();
+                        worker.process(requestJson, sb);
+                        responseJson = sb.toString();
+                    } else if (first50Characters.indexOf("\"SubscriptionRequest\"") > 0) {
+                        // If existing subscription exists, stop it first
+                        if (_subscriptionWorker != null) {
+                            _subscriptionWorker.stop();
+                        }
+
+                        _subscriptionWorker = new SubscriptionWorker(ctx.getChannel());
+
+                        StringBuilder sb = new StringBuilder();
+                        _subscriptionWorker.process(requestJson, sb);
+                        responseJson = sb.toString();
+                    } else {
+                        throw new UnsupportedOperationException("Unsupported request: " + requestJson);
+                    }
+
+                    _logger.debug("Channel %s Response JSON: %s", ctx.getChannel().getId(), responseJson);
+                    ctx.getChannel().write(new TextWebSocketFrame(responseJson));
+
+                    return;
+                } catch (Exception exception) {
+                    _logger.debug(exception, "Error handling PubSub JSON HTTP Request");
+                    ctx.getChannel().close();
+                }
             }
+        });
 
-            _subscriptionWorker = new SubscriptionWorker(ctx.getChannel());
-
-            StringBuilder sb = new StringBuilder();
-            _subscriptionWorker.process(requestJson, sb);
-            responseJson = sb.toString();
-        } else {
-            throw new UnsupportedOperationException("Unsupported request: " + requestJson);
-        }
-
-        _logger.debug("Response JSON: %s", responseJson);
-        ctx.getChannel().write(new TextWebSocketFrame(responseJson));
     }
 
     /**

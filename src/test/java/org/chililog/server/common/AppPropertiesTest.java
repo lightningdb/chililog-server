@@ -169,30 +169,6 @@ public class AppPropertiesTest {
     }
 
     @Test
-    public void testPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize();
-        assertEquals(0, s);
-        assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_CHANNEL_MEMORY_SIZE));
-    }
-
-    @Test
-    public void testPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize() throws UnknownHostException {
-        long s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize();
-        assertEquals(0, s);
-        assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_MAX_TOTAL_MEMORY_SIZE));
-    }
-
-    @Test
-    public void testPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds() throws UnknownHostException {
-        int s = AppProperties.getInstance().getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds();
-        assertEquals(3, s);
-        assertTrue(AppProperties.getInstance().toString()
-                .contains(AppProperties.PUB_SUB_JSON_HTTP_NETTY_HANDLER_THREAD_POOL_KEEP_ALIVE_SECONDS));
-    }
-
-    @Test
     public void testPubSubJsonHttpSSLEnabled() throws UnknownHostException {
         boolean b = AppProperties.getInstance().getPubSubJsonHttpSslEnabled();
         assertFalse(b);

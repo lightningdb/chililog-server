@@ -20,8 +20,8 @@ package org.chililog.server.pubsub.jsonhttp;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.chililog.server.common.AppProperties;
@@ -36,7 +36,6 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
 
 /**
  * <p>
@@ -158,18 +157,10 @@ public class JsonHttpService {
         ServerBootstrap bootstrap = new ServerBootstrap(_channelFactory);
 
         // Setup thread pool to run our handler
-        // It makes sure the events from the same Channel are executed sequentially; i.e. event 1 is executed before
-        // event 2. However event 1 may be executed on a different thread to event 2.
-        OrderedMemoryAwareThreadPoolExecutor pipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
-                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolSize(),
-                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolMaxChannelMemorySize(),
-                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolMaxTotalMemorySize(),
-                appProperties.getPubSubJsonHttpNettyHandlerThreadPoolKeepAliveSeconds(), TimeUnit.SECONDS,
-                Executors.defaultThreadFactory());
-
+        Executor executor = Executors.newFixedThreadPool(appProperties.getPubSubJsonHttpNettyHandlerThreadPoolSize());        
 
         // Set up the event pipeline factory.
-        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(pipelineExecutor));
+        bootstrap.setPipelineFactory(new JsonHttpServerPipelineFactory(executor));
 
         // Bind and start to accept incoming connections.
         String[] hosts = TransportConfiguration.splitHosts(appProperties.getPubSubJsonHttpHost());
