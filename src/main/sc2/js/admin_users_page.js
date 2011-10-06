@@ -205,7 +205,7 @@ App.Dialog = SC.View.extend({
     // JQuery UI dialog setup
     this.$().dialog({
       autoOpen: false,
-      height: 390,
+      height: 440,
       width: 850,
       resizable: false,
       modal: true,
@@ -325,8 +325,7 @@ App.DialogStatusField = App.FieldView.extend({
         return value.get('value');
       }
     })
-  }),
-  isVisibleBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool().not()
+  })
 });
 
 /**
@@ -335,18 +334,22 @@ App.DialogStatusField = App.FieldView.extend({
  */
 App.DialogPasswordField = App.FieldView.extend({
   label: '_admin.user.password'.loc(),
-  isRequired: YES,
+  isRequiredBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool(),
   helpMessageDidChange: function() {
+    var isNewRecord = App.pageController.get('isNewSelectedRecord');
     var msg = App.pageController.get('passwordErrorMessage');
-    this._updateHelp(msg, YES);
-  }.observes('App.pageController.passwordErrorMessage'),
+    if (!isNewRecord && SC.empty(msg)) {
+      this._updateHelp('_admin.user.password.editHelp'.loc(), NO);
+    } else {
+      this._updateHelp(msg, YES);
+    }
+  }.observes('App.pageController.passwordErrorMessage', 'App.pageController.isNewSelectedRecord'),
 
   DataView : App.TextBoxView.extend(App.DialogFieldDataMixin, {
     classNames: 'large'.w(),
     type: 'password',
     valueBinding: 'App.pageController.selectedRecord.password'
-  }),
-  isVisibleBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool()
+  })
 });
 
 /**
@@ -355,7 +358,7 @@ App.DialogPasswordField = App.FieldView.extend({
  */
 App.DialogConfirmPasswordField = App.FieldView.extend({
   label: '_admin.user.confirmPassword'.loc(),
-  isRequired: YES,
+  isRequiredBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool(),
   helpMessageDidChange: function() {
     var msg = App.pageController.get('confirmPasswordErrorMessage');
     this._updateHelp(msg, YES);
@@ -365,8 +368,7 @@ App.DialogConfirmPasswordField = App.FieldView.extend({
     classNames: 'large'.w(),
     type: 'password',
     valueBinding: 'App.pageController.confirmPassword'
-  }),
-  isVisibleBinding: SC.Binding.from('App.pageController.isNewSelectedRecord').oneWay().bool()
+  })
 });
 
 /**
@@ -401,7 +403,7 @@ App.DialogIsSystemAdministratorField = App.FieldView.extend({
 App.DialogRepoAccessField = App.FieldView.extend({
   label: '_admin.user.repositoryAccesses'.loc(),
   DataView : App.SelectView.extend(App.DialogFieldDataMixin, {
-    classNames: 'xxlarge'.w(),
+    classNames: 'xxlarge tall'.w(),
     multiple: YES,
     contentBinding: 'App.pageController.selectedRecordRepositoryAccesses'
 
@@ -963,6 +965,7 @@ App.pageController = SC.Object.create({
 
     var documentVersion = selectedRecord.get(App.DOCUMENT_VERSION_RECORD_FIELD_NAME);
     if (documentVersion === 0) {
+      // New user - password is required
       var password = selectedRecord.get('password');
       var confirmPassword = App.pageController.get('confirmPassword');
       if (SC.empty(password)) {
@@ -979,6 +982,23 @@ App.pageController = SC.Object.create({
       } else if (password !== confirmPassword) {
         App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.invalid'.loc());
         isError = YES;
+      }
+    } else {
+      // Existing user - password is optional
+      var password = selectedRecord.get('password');
+      var confirmPassword = App.pageController.get('confirmPassword');
+      if (!SC.empty(password)) {
+        if (password.length < 8) {
+          App.pageController.set('passwordErrorMessage', '_admin.user.password.invalid'.loc());
+          isError = YES;
+        }
+        if (SC.empty(confirmPassword)) {
+          App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.required'.loc());
+          isError = YES;
+        } else if (password !== confirmPassword) {
+          App.pageController.set('confirmPasswordErrorMessage', '_admin.user.confirmPassword.invalid'.loc());
+          isError = YES;
+        }
       }
     }
 

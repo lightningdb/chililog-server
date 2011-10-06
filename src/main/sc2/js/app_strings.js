@@ -197,6 +197,7 @@ SC.STRINGS = {
   '_admin.user.password': 'New Password',
   '_admin.user.password.invalid': 'You password must be at least 8 characters long.',
   '_admin.user.password.required': 'Required',
+  '_admin.user.password.editHelp': 'Leave blank to keep the user\'s existing password',
   '_admin.user.confirmPassword': 'Confirm Password',
   '_admin.user.confirmPassword.help': 'Re-enter you new password to confirm that you have typed it correctly',
   '_admin.user.confirmPassword.invalid': 'New Password and Confirm Password are not the same.',
