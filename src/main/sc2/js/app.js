@@ -50,7 +50,7 @@ App.$error = function(errorCode, params, errorFieldId) {
     message = SC.String.fmt(localized, params);
   }
 
-  var err = { message: message };
+  var err = { isAppError: true, message: message };
   if (!SC.none(errorCode) && errorCode.charAt(0) === '_') {
     err.errorCode = errorCode;
   }

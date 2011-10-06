@@ -1254,7 +1254,7 @@ App.statechart = SC.Statechart.create({
           App.pageController.set('rowsFound', recordCount > 0);
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
 
           // Set focus on field if specified
           if (!SC.empty(error.errorFieldId)) {
@@ -1304,7 +1304,7 @@ App.statechart = SC.Statechart.create({
           var recordCount = SC.none(records) ? 0 : records.length;
           App.pageController.set('canShowMore', recordCount === App.pageController.get('rowsPerSearch'));
         } else {
-          App.pageController.set('errorMessage', error);
+          App.pageController.set('errorMessage', error.message);
         }
 
         $('#results').css('display', recordCount > 0 ? 'block' : 'none');
