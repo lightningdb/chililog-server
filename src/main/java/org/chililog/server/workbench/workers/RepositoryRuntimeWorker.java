@@ -18,6 +18,7 @@
 
 package org.chililog.server.workbench.workers;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,20 +70,30 @@ public class RepositoryRuntimeWorker extends Worker {
     public static final String READONLY_OPERATION = "readonly";
     public static final String OFFLINE_OPERATION = "offline";
 
-    public static final String ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME = "query_type";
-    public static final String ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME = "fields";
-    public static final String ENTRY_QUERY_KEYWORD_USAGE_URI_QUERYSTRING_PARAMETER_NAME = "keyword_usage";
-    public static final String ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME = "keywords";
-    public static final String ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME = "conditions";
-    public static final String ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME = "orderBy";
-    public static final String ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME = "initial";
-    public static final String ENTRY_QUERY_REDUCE_URI_QUERYSTRING_PARAMETER_NAME = "reduce";
-    public static final String ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME = "finalize";
+    public static final String ENTRY_QUERY_TYPE_QUERYSTRING_PARAMETER_NAME = "query_type";
+    public static final String ENTRY_QUERY_FIELDS_QUERYSTRING_PARAMETER_NAME = "fields";
+    public static final String ENTRY_QUERY_FROM_TIMESTAMP_QUERYSTRING_PARAMETER_NAME = "from";
+    public static final String ENTRY_QUERY_TO_TIMESTAMP_QUERYSTRING_PARAMETER_NAME = "to";
+    public static final String ENTRY_QUERY_KEYWORD_USAGE_QUERYSTRING_PARAMETER_NAME = "keyword_usage";
+    public static final String ENTRY_QUERY_KEYWORDS_QUERYSTRING_PARAMETER_NAME = "keywords";
+    public static final String ENTRY_QUERY_SEVERITY_QUERYSTRING_PARAMETER_NAME = "severity";
+    public static final String ENTRY_QUERY_HOST_QUERYSTRING_PARAMETER_NAME = "host";
+    public static final String ENTRY_QUERY_SOURCE_QUERYSTRING_PARAMETER_NAME = "source";
+    public static final String ENTRY_QUERY_CONDITIONS_QUERYSTRING_PARAMETER_NAME = "conditions";
+    public static final String ENTRY_QUERY_ORDER_BY_QUERYSTRING_PARAMETER_NAME = "order_by";
+    public static final String ENTRY_QUERY_INITIAL_QUERYSTRING_PARAMETER_NAME = "initial";
+    public static final String ENTRY_QUERY_REDUCE_QUERYSTRING_PARAMETER_NAME = "reduce";
+    public static final String ENTRY_QUERY_FINALIZE_QUERYSTRING_PARAMETER_NAME = "finalize";
 
     public static final String ENTRY_QUERY_TYPE_HEADER_NAME = "X-ChiliLog-Query-Type";
     public static final String ENTRY_QUERY_FIELDS_HEADER_NAME = "X-ChiliLog-Fields";
-    public static final String ENTRY_QUERY_KEYWORDS_HEADER_NAME = "X-ChiliLog-Keywords";
+    public static final String ENTRY_QUERY_FROM_TIMESTAMP_HEADER_NAME = "X-ChiliLog-From";
+    public static final String ENTRY_QUERY_TO_TIMESTAMP_HEADER_NAME = "X-ChiliLog-To";
     public static final String ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME = "X-ChiliLog-Keywords-Usage";
+    public static final String ENTRY_QUERY_KEYWORDS_HEADER_NAME = "X-ChiliLog-Keywords";
+    public static final String ENTRY_QUERY_SEVERITY_HEADER_NAME = "X-ChiliLog-Severity";
+    public static final String ENTRY_QUERY_HOST_HEADER_NAME = "X-ChiliLog-Host";
+    public static final String ENTRY_QUERY_SOURCE_HEADER_NAME = "X-ChiliLog-Source";
     public static final String ENTRY_QUERY_CONDITIONS_HEADER_NAME = "X-ChiliLog-Conditions";
     public static final String ENTRY_QUERY_ORDER_BY_HEADER_NAME = "X-ChiliLog-Order-By";
     public static final String ENTRY_QUERY_INITIAL_HEADER_NAME = "X-ChiliLog-Initial";
@@ -249,7 +260,7 @@ public class RepositoryRuntimeWorker extends Worker {
                 // Load criteria
                 QueryType queryType = Enum.valueOf(
                         QueryType.class,
-                        this.getQueryStringOrHeaderValue(ENTRY_QUERY_TYPE_URI_QUERYSTRING_PARAMETER_NAME,
+                        this.getQueryStringOrHeaderValue(ENTRY_QUERY_TYPE_QUERYSTRING_PARAMETER_NAME,
                                 ENTRY_QUERY_TYPE_HEADER_NAME, false).toUpperCase());
                 RepositoryEntryListCriteria criteria = loadCriteria();
 
@@ -318,50 +329,87 @@ public class RepositoryRuntimeWorker extends Worker {
      * 
      * @returns query criteria
      * @throws ChiliLogException
+     * @throws ParseException 
      */
-    private RepositoryEntryListCriteria loadCriteria() throws ChiliLogException {
+    private RepositoryEntryListCriteria loadCriteria() throws ChiliLogException, ParseException {
         String s;
 
         RepositoryEntryListCriteria criteria = new RepositoryEntryListCriteria();
         this.loadBaseListCriteriaParameters(criteria);
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FIELDS_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FIELDS_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_FIELDS_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setFields(s);
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
-                ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FROM_TIMESTAMP_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_FROM_TIMESTAMP_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
-            criteria.setConditions(s);
+            criteria.setFrom(s);
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORD_USAGE_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_TO_TIMESTAMP_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_TO_TIMESTAMP_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setTo(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORD_USAGE_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setKeywordUsage(Enum.valueOf(RepositoryEntryListCriteria.KeywordUsage.class, s));
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORDS_URI_QUERYSTRING_PARAMETER_NAME,
-                ENTRY_QUERY_KEYWORDS_HEADER_NAME, true);
-        if (!StringUtils.isBlank(s)) {
-            criteria.setKeywords(s);
-        }
-
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setConditions(s);
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_ORDER_BY_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORD_USAGE_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_KEYWORD_USAGE_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setKeywordUsage(Enum.valueOf(RepositoryEntryListCriteria.KeywordUsage.class, s));
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_KEYWORDS_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_KEYWORDS_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setKeywords(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_SEVERITY_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_SEVERITY_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setSeverity(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_HOST_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_HOST_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setHost(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_SOURCE_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_SOURCE_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setSource(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_CONDITIONS_QUERYSTRING_PARAMETER_NAME,
+                ENTRY_QUERY_CONDITIONS_HEADER_NAME, true);
+        if (!StringUtils.isBlank(s)) {
+            criteria.setConditions(s);
+        }
+
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_ORDER_BY_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_ORDER_BY_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setOrderBy(s);
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_INITIAL_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_INITIAL_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setInitial(s);
@@ -372,7 +420,7 @@ public class RepositoryRuntimeWorker extends Worker {
             criteria.setReduceFunction(s);
         }
 
-        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FINALIZE_URI_QUERYSTRING_PARAMETER_NAME,
+        s = this.getQueryStringOrHeaderValue(ENTRY_QUERY_FINALIZE_QUERYSTRING_PARAMETER_NAME,
                 ENTRY_QUERY_FINALIZE_HEADER_NAME, true);
         if (!StringUtils.isBlank(s)) {
             criteria.setFinalizeFunction(s);

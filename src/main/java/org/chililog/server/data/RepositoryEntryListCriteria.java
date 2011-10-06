@@ -19,6 +19,8 @@
 package org.chililog.server.data;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Pattern;
@@ -41,6 +43,9 @@ public class RepositoryEntryListCriteria extends ListCriteria {
     private String _fields = null;
     private String _conditions = null;
     private String _keywords = null;
+    private String _severity = null;
+    private String _host = null;
+    private String _source = null;
     private KeywordUsage _keywordUsage = KeywordUsage.All;
     private String _orderBy = null;
     private String _initial = null;
@@ -70,6 +75,18 @@ public class RepositoryEntryListCriteria extends ListCriteria {
         _from = from;
     }
 
+    public void setFrom(String from) throws ParseException {
+        if (StringUtils.isBlank(from)) {
+            return;
+        }
+        SimpleDateFormat sf = new SimpleDateFormat(DATE_FORMAT);
+        if (from.endsWith("Z")) {
+            // Simple date format does not recognise Z time zone so make it GMT
+            from = from.substring(0, from.length() - 1) + "GMT";
+        }
+        _from = sf.parse(from);
+    }
+
     /**
      * Returns the timestamp from which the search should stop. If set, this is added to the condition.
      */
@@ -79,6 +96,18 @@ public class RepositoryEntryListCriteria extends ListCriteria {
 
     public void setTo(Date to) {
         _to = to;
+    }
+
+    public void setTo(String to) throws ParseException {
+        if (StringUtils.isBlank(to)) {
+            return;
+        }
+        SimpleDateFormat sf = new SimpleDateFormat(DATE_FORMAT);
+        if (to.endsWith("Z")) {
+            // Simple date format does not recognise Z time zone so make it GMT
+            to = to.substring(0, to.length() - 1) + "GMT";
+        }
+        _to = sf.parse(to);
     }
 
     /**
@@ -143,7 +172,7 @@ public class RepositoryEntryListCriteria extends ListCriteria {
 
     /**
      * <p>
-     * The keywords to append to the conditions property (if any). Keywords are parsed and normalized via
+     * The keywords to append to the conditions property (if any). Keywords will be parsed and normalized
      * </p>
      */
     public String getKeywords() {
@@ -168,6 +197,43 @@ public class RepositoryEntryListCriteria extends ListCriteria {
     }
 
     /**
+     * The severity code; i.e 0-7. 
+     */
+    public String getSeverity() {
+        return _severity;
+    }
+
+    
+    public void setSeverity(String severity) {
+        _severity = severity;
+    }
+
+    /**
+     * Matching host entry 
+     */
+    public String getHost() {
+        return _host;
+    }
+
+    
+    public void setHost(String host) {
+        _host = host;
+    }
+
+
+    /**
+     * Matching source entry
+     */
+    public String getSource() {
+        return _source;
+    }
+
+    
+    public void setSource(String source) {
+        _source = source;
+    }
+
+    /**
      * Returns the conditions as DBObject
      * 
      * @throws IOException
@@ -175,7 +241,7 @@ public class RepositoryEntryListCriteria extends ListCriteria {
     public BasicDBObject getConditionsDbObject() throws IOException {
         BasicDBObject o = null;
 
-        if (StringUtils.isBlank(_conditions)) {
+        if (StringUtils.isBlank(_conditions) || _conditions.equals("{}")) {
             o = new BasicDBObject();
         } else {
             MongoJsonParser parser = new MongoJsonParser(_conditions, DATE_PATTERN, DATE_FORMAT, LONG_NUMBER_PATTERN);
@@ -188,10 +254,37 @@ public class RepositoryEntryListCriteria extends ListCriteria {
         if (_to != null) {
             o.put(RepositoryEntryBO.TIMESTAMP_FIELD_NAME, new BasicDBObject("$lte", _to));
         }
+        
+        ArrayList<String> keywordsList = new ArrayList<String>();
         if (!StringUtils.isBlank(_keywords)) {
-            String operator = _keywordUsage == KeywordUsage.All ? "$all" : "$in";
             ArrayList<String> l = TextTokenizer.getInstance().tokenize(_keywords, 200);
-            o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject(operator, l));
+            keywordsList.addAll(l);
+        }
+        
+        // EntryParser.parseKeywords() puts source, severity and host into the keywords so that they are indexed
+        ArrayList<String> shList = new ArrayList<String>();
+        if (!StringUtils.isBlank(_source)) {
+            shList.add("s=" + _source);
+        }
+        if (!StringUtils.isBlank(_host)) {
+            shList.add("h=" + _host);
+        }
+        if (!StringUtils.isBlank(_severity)) {
+            o.put(RepositoryEntryBO.SEVERITY_FIELD_NAME, new BasicDBObject("$lte", Integer.parseInt(_severity)));                            
+        }
+        
+        if (_keywordUsage == KeywordUsage.All) {
+            keywordsList.addAll(shList);
+            if (keywordsList.size() > 0) {
+                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$all", keywordsList));                            
+            }
+        } else {
+            if (keywordsList.size() > 0) {
+                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$in", keywordsList));
+            }
+            if (shList.size() > 0) {
+                o.put(RepositoryEntryBO.KEYWORDS_FIELD_NAME, new BasicDBObject("$all", shList));
+            }
         }
 
         return o;

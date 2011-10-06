@@ -1148,59 +1148,52 @@ App.statechart = SC.Statechart.create({
           }
 
           // Make up time condition
+          var fromTs = null;
+          var toTs = null;
           if (SC.none(conditions.ts) && !SC.empty(App.pageController.getPath('timespan.value'))) {
             var minutesAgo = parseInt(App.pageController.getPath('timespan.value')) * -1;
-            conditions.ts = {
-              '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.create().advance({minute: minutesAgo})),
-              '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.create())
-            };
+            fromTs = App.DateTime.toChililogServerDateTime(SC.DateTime.create().advance({minute: minutesAgo}));
+            toTs = App.DateTime.toChililogServerDateTime(SC.DateTime.create());
           }
           if (SC.none(conditions.ts)) {
             var parseFormat = '%Y-%m-%d %H:%M:%S';
             var from = App.pageController.get('fromDateTime');
             var to = App.pageController.get('toDateTime');
             if (!SC.empty(from) && !SC.empty(to)) {
-              conditions.ts = {
-                '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat)),
-                '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat))
-              };
-              if (SC.DateTime.compare(conditions.ts['$gte'], conditions.ts['$lte']) > 0) {
+              fromTs = App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat));
+              toTs = App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat));
+              if (SC.DateTime.compare(fromTs, toTs) > 0) {
                 throw App.$error('_search.dateTimeRangeError', null, 'fromDateField');
               }
             } else if (!SC.empty(from)) {
-              conditions.ts = {
-                '$gte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat))
-              };
+              fromTs = App.DateTime.toChililogServerDateTime(SC.DateTime.parse(from, parseFormat));
             } else if (!SC.empty(to)) {
-              conditions.ts = {
-                '$lte': App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat))
-              };
+              toTs = App.DateTime.toChililogServerDateTime(SC.DateTime.parse(to, parseFormat));
             }
           }
 
           // Source, host and severity
-          if (SC.none(conditions.source)) {
-            var source = App.pageController.get('source');
-            if (!SC.empty(source)) {
-              conditions.source = source;
-            }
+          var source = App.pageController.get('source');
+          if (SC.empty(source)) {
+            source = null;
           }
-          if (SC.none(conditions.host)) {
-            var host = App.pageController.get('host');
-            if (!SC.empty(host)) {
-              conditions.host = host;
-            }
+          var host = App.pageController.get('host');
+          if (SC.empty(host)) {
+            host = null;
           }
-          if (SC.none(conditions.severity)) {
-            var severity = App.pageController.getPath('severity.value');
-            if (!SC.empty(severity)) {
-              conditions.severity = { '$lte' : parseInt(severity) };
-            }
+          var severity = App.pageController.getPath('severity.value');
+          if (SC.empty(severity)) {
+            severity = null;
           }
 
           // Final criteria
           var criteria = {
             documentID: App.pageController.getPath('repository.documentID'),
+            fromTs: fromTs,
+            toTs: toTs,
+            source: source,
+            host: host,
+            severity: severity,
             conditions: conditions,
             keywordUsage: 'All',
             keywords: App.pageController.get('keywords'),

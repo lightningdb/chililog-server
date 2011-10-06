@@ -241,16 +241,17 @@ public abstract class EntryParser {
         StringBuilder sb = new StringBuilder();
         ArrayList<String> l = _tokenizer.tokenize(message, _maxKeywords);
 
-        // Add source to keywords
+        // Add source, host and severity to keywords so that it is indexed
+        // Our index consists of keywords and timestamp.
+        // See RepositoryEntryListCriteria for search parameters that use the s, h and v parameters.
+        
         sb.append("s=").append(source);
         l.add(sb.toString());
 
-        // Add host to keywords
         sb.setLength(0);
         sb.append("h=").append(host);
         l.add(sb.toString());
 
-        // Add severity to keywords
         sb.setLength(0);
         sb.append("v=").append(severity.toCode());
         l.add(sb.toString());

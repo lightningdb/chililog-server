@@ -758,16 +758,31 @@ App.repositoryRuntimeEngine = SC.Object.create(App.EngineMixin, {
    * @param {Hash} [callbackParams] Optional Hash to pass into the callback function.
    */
   findLogEntries: function(criteria, callbackTarget, callbackFunction, callbackParams) {
-    var conditionsJson = '';
-    if (!SC.empty(criteria.conditions)) {
-      conditionsJson = JSON.stringify(criteria.conditions);
-    }
-
     var headers = this._createAjaxRequestHeaders();
     headers['X-Chililog-Query-Type'] = 'Find';
-    headers['X-Chililog-Conditions'] = conditionsJson;
-    headers['X-Chililog-Keywords-Usage'] = criteria.keywordUsage;
-    headers['X-Chililog-Keywords'] = criteria.keywords;
+    if (!SC.empty(criteria.fromTs)) {
+      headers['X-Chililog-From'] = criteria.fromTs;
+    }
+    if (!SC.empty(criteria.toTs)) {
+      headers['X-Chililog-To'] = criteria.toTs;
+    }
+    if (!SC.empty(criteria.severity)) {
+      headers['X-Chililog-Severity'] = criteria.severity;
+    }
+    if (!SC.empty(criteria.host)) {
+      headers['X-Chililog-Host'] = criteria.host;
+    }
+    if (!SC.empty(criteria.source)) {
+      headers['X-Chililog-Source'] = criteria.source;
+    }
+    headers['X-Chililog-Keywords-Usage'] = SC.empty(criteria.keywordUsage) ? 'All' : criteria.keywordUsage;
+    if (!SC.empty(criteria.keywords)) {
+      headers['X-Chililog-Keywords'] = criteria.keywords;
+    }
+    if (!SC.none(criteria.conditions)) {
+      var conditionsJson = JSON.stringify(criteria.conditions);
+      headers['X-Chililog-Conditions'] = conditionsJson;
+    }
     headers['X-Chililog-Start-Page'] = criteria.startPage + '';
     headers['X-Chililog-Records-Per-Page'] = criteria.recordsPerPage + '';
     headers['X-Chililog-Do-Page-Count'] = 'false';
