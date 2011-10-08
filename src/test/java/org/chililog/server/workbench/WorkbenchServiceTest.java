@@ -314,7 +314,27 @@ public class WorkbenchServiceTest {
 
         return;
     }
-
+    
+    /**
+     * Check if we redirect to index.html successfully
+     * 
+     * @throws IOException
+     */
+    @Test()
+    public void testRedirectToIndexHtml() throws IOException {
+        URL url = new URL("http://localhost:8989/workbench");
+        URLConnection conn = url.openConnection();
+        HashMap<String, String> headers = new HashMap<String, String>();
+        String responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        assertEquals("HTTP/1.1 200 OK", responseCode);
+        
+        url = new URL("http://localhost:8989/workbench/");
+        conn = url.openConnection();
+        headers = new HashMap<String, String>();
+        responseCode = ApiUtils.getResponseHeaders(conn, headers);
+        assertEquals("HTTP/1.1 200 OK", responseCode);
+    }
+    
     /**
      * Check for ApiNotFound error. 404 Not Found
      * 

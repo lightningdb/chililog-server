@@ -171,9 +171,8 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
         HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.FOUND);
         response.addHeader("Location", indexHTML);
-        e.getChannel().write(response);
-        e.getChannel().close(); // future.addListener(ChannelFutureListener.CLOSE);
-
+        ChannelFuture future = e.getChannel().write(response);
+        future.addListener(ChannelFutureListener.CLOSE);
     }
 
     /**
