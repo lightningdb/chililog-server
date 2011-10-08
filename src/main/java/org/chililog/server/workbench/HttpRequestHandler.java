@@ -115,28 +115,14 @@ public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
     /**
      * <p>
-     * Upon exception, send an HTTP Response with a status of <code>500 Internal Server Error</code> back to the caller.
+     * Upon exception, just close the channel.  Running over the Internet means we tend to get funny connection issues
+     * at times.
      * </p>
-     * <p>
-     * The error details is returned as text in the response content. For example:
-     * </p>
-     * 
-     * <pre>
-     * ERROR: error message
-     * 
-     * STACK TRACE:  Test Error
-     * at com.chililog.server.common.ChiliLogExceptionTest.testWrapping(ChiliLogExceptionTest.java:68)
-     * at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-     * at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
-     * at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
-     * at java.lang.reflect.Method.invoke(Method.java:597)
-     * at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:44)
-     * </pre>
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
         try {
-            _logger.debug(e.getCause(), "ERROR: Unhandled exception: " + e.getCause().getMessage()
+            _logger.error(e.getCause(), "ERROR: Unhandled exception: " + e.getCause().getMessage()
                     + ". Closing channel " + ctx.getChannel().getId());
             e.getChannel().close();
         } catch (Exception ex) {
