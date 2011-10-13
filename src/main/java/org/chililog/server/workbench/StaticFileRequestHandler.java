@@ -146,7 +146,11 @@ public class StaticFileRequestHandler extends WorkbenchRequestHandler {
         if (!StringUtils.isBlank(ifModifiedSince)) {
             SimpleDateFormat dateFormatter = new SimpleDateFormat(HTTP_DATE_FORMAT, Locale.US);
             Date ifModifiedSinceDate = dateFormatter.parse(ifModifiedSince);
-            if (ifModifiedSinceDate.getTime() == file.lastModified()) {
+            
+            // Only compare up to the second because the datetime format we send to the client does not have milliseconds 
+            long ifModifiedSinceDateSeconds = ifModifiedSinceDate.getTime() / 1000;
+            long fileLastModifiedSeconds = file.lastModified() / 1000;
+            if (ifModifiedSinceDateSeconds == fileLastModifiedSeconds) {
                 sendNotModified(ctx, e);
                 return;
             }
