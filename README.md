@@ -1,13 +1,13 @@
 
 What is Chililog?
 =================
-Chililog is a real time log aggregation, analysis and monitoring tool.
+Chililog is a log aggregation, analysis and monitoring server.
 
-* Chililog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to the chililog Server for storage.
+* Chililog aggregates your log entries using 'publishers'.  The goal is to create publishers that work on different platforms/frameworks/languages. Publishers transmits your log entries to Chililog Server for storage.
 
-* Chililog allows you to view aggregated logs in real time and also to search for historical entries. Because your logs are parsed, you can filter and sort the log data.
+* Chililog allows you to view your aggregated logs in real time. You can also search, filter and sort historical log entries.
 
-* Chililog can also monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
+* Chililog monitors your logs for patterns that you define. If your pattern is matched, you will be notified.
 
 
 
@@ -84,10 +84,17 @@ The current road map is:
 Links
 =====
 
+* [Web Site](http://www.chililog.org)
+
 * [Documentation](https://github.com/chililog/chililog-server/wiki) 
 
 * [Issues](https://github.com/chililog/server/issues)
 
+* [Twitter](https://github.com/chililog/server/issues)
+
+* [Forum](http://groups.google.com/group/chililog)
+
+* [Blog](http://blog.chililog.org)
 
 
 Special Note for Sproutcore Coders
@@ -105,5 +112,5 @@ Sproutcore functionality used in the code include:
 * Strings Localization
 * jQuery UI integration
 
-I'll be blogging on how I've used these features soon. 
+I'm slowly [blogging](http://blog.chililog.org) about my experiences with Sproutcore 2.
  
