@@ -88,9 +88,9 @@ Links
 
 * [Documentation](https://github.com/chililog/chililog-server/wiki) 
 
-* [Issues](https://github.com/chililog/server/issues)
+* [Issues](https://github.com/chililog/chililog-server/issues)
 
-* [Twitter](https://github.com/chililog/server/issues)
+* [Twitter](http://www.twitter.com/chililog)
 
 * [Forum](http://groups.google.com/group/chililog)
 
