@@ -1,21 +1,18 @@
-//
-// Copyright 2011 Cinch Logic Pty Ltd.
-//
-// http://www.chililog.com
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-
+/*
+ * Copyright 2010 Red Hat, Inc.
+ *
+ * Red Hat licenses this file to you under the Apache License, version 2.0
+ * (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at:
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
 package org.chililog.server.pubsub.websocket;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -23,32 +20,63 @@ import org.jboss.netty.buffer.ChannelBuffer;
 /**
  * Base class for web socket frames
  * 
- * @author vibul
+ * @author <a href="http://www.jboss.org/netty/">The Netty Project</a>
  */
 public abstract class WebSocketFrame {
 
-    /**
-     * Contents of this frame
-     */
-    private ChannelBuffer binaryData;
+	/**
+	 * Flag to indicate if this frame is the final fragment in a message. The
+	 * first fragment (frame) may also be the final fragment.
+	 */
+	private boolean finalFragment = true;
 
-    /**
-     * Returns the type of this frame.
-     */
-    public abstract WebSocketFrameType getType();
+	/**
+	 *  RSV1, RSV2, RSV3 used for extensions 
+	 */
+	private int rsv = 0;
+	
+	/**
+	 * Contents of this frame
+	 */
+	private ChannelBuffer binaryData;
 
-    /**
-     * Returns binary data
-     */
-    public ChannelBuffer getBinaryData() {
-        return binaryData;
-    }
+	/**
+	 * Returns binary data
+	 */
+	public ChannelBuffer getBinaryData() {
+		return binaryData;
+	}
 
-    /**
-     * Sets the binary data for this frame
-     */
-    public void setBinaryData(ChannelBuffer binaryData) {
-        this.binaryData = binaryData;
-    }
+	/**
+	 * Sets the binary data for this frame
+	 */
+	public void setBinaryData(ChannelBuffer binaryData) {
+		this.binaryData = binaryData;
+	}
+
+	/**
+	 * Flag to indicate if this frame is the final fragment in a message. The
+	 * first fragment (frame) may also be the final fragment.
+	 */
+	public boolean isFinalFragment() {
+		return finalFragment;
+	}
+
+	public void setFinalFragment(boolean finalFragment) {
+		this.finalFragment = finalFragment;
+	}
+
+	/**
+	 * Bits used for extensions to the standard. 
+	 */
+	public int getRsv() {
+		return rsv;
+	}
+
+	public void setRsv(int rsv) {
+		this.rsv = rsv;
+	}
+	
+	
 
 }

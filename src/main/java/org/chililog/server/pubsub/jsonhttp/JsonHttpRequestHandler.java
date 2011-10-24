@@ -129,7 +129,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
             // Web socket handshake
             if (req.getUri().equals(WEBSOCKET_PATH)) {
                 String wsURL = "ws://" + req.getHeader(HttpHeaders.Names.HOST) + WEBSOCKET_PATH;
-                WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(wsURL, null);
+                WebSocketServerHandshakerFactory wsFactory = new WebSocketServerHandshakerFactory(wsURL, null, false);
                 _handshaker = wsFactory.newHandshaker(ctx, req);
                 if (_handshaker == null) {
                     wsFactory.sendUnsupportedWebSocketVersionResponse(ctx);
@@ -215,7 +215,7 @@ public class JsonHttpRequestHandler extends SimpleChannelUpstreamHandler {
      * @param frame
      */
     private void handleWebSocketFrame(final ChannelHandlerContext ctx, final WebSocketFrame frame) {
-        _logger.debug("Channel %s got %s frame.", ctx.getChannel().getId(), frame.getType());
+        _logger.debug("Channel %s got %s frame.", ctx.getChannel().getId(), frame.getClass().getName());
 
         // TODO should invoke workers in a different thread pool to improve performance
 
