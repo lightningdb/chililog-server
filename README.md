@@ -14,9 +14,9 @@ Chililog is a log aggregation, analysis and monitoring server.
 Live Demo
 =========
 
-Here are the [instructions](https://github.com/chililog/chililog-server/wiki/Live-Demo) on how to access our live demo.
+Here are the [video and DYI instructions](http://blog.chililog.org/2011/10/24/remote-javascript-logging/) on how to access our live demo.
 
-You'll create log entries from your browser and view them in real time. 
+You'll stream javascript console.log from one browser to another browser via Chililog.
 
 
 
